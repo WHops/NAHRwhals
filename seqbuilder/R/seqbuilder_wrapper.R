@@ -17,6 +17,8 @@ library(optparse)
 
 source_here('seqbuilder.R')
 source_here('seqbuilder_functions.R')
+source_here('seqplotter.R')
+
 
 
 # sourcefiles = list.files(sourcedir)
@@ -45,5 +47,13 @@ outplot = opt$outplot
 
 
 simulate_seq(seqlen, sdfile, outfasta)
-#dotplot_seq(outfasta, outplot)
-print('done')
+
+# Make an exact dotplot, in case this is feasible. 
+# Otherwise (or additionally?) we are going to make a minimap2 dotplot. 
+if (seqlen <= 25000){
+  print('making exact plot.')
+  make_dotplot(outfasta, outfasta, 15, outplot)
+} else if (seqlen > 25000){
+  print('Sequence1 is too long for exact dotplot (>25 kbp)')
+}
+

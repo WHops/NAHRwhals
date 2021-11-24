@@ -40,7 +40,7 @@ simulate_seq <- function(seqlen, sdfile, outfasta, debugmode=F){
   
   if (debugmode){
     seqlen = 10000
-    sdfile = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/data/sds_.bed'
+    sdfile = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/data/sds.bed'
     outfasta = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/seq.fa'
   }
   
