@@ -67,10 +67,10 @@ make_dotplot <- function(seq1link, seq2link, wsize, outfile, save=T, debugmode=F
   p = dotPlotr(seq1seq, seq2seq, wsize)
   p = p + labs(x=seq1name, y=seq2name)
   p
-  print(paste0('Done. Dotplot for simulated sequence written to: ', outplot))
+  print(paste0('Done. Dotplot for simulated sequence written to: ', outfile))
 
     if (save==T){
-    ggsave(outplot, plot=p, device='pdf', height=10, width=10, units = 'in')
+    ggsave(outfile, plot=p, device='pdf', height=10, width=10, units = 'in')
   } else if (save==F){
     return(p)
   }

@@ -5,23 +5,23 @@ model_sds <- function(seq_base, sds, sds_name){
   
   sds_sub = sds[sds$sdname == sds_name,]
   partner_upstr = substr(seq_base,sds_sub[1,'start'], sds_sub[1,'end'])
-  partner_upstr_snpped = add_snps(partner_upstr, sds[1,'similarity'])
+  partner_upstr_snpped = add_snps(partner_upstr, sds_sub[1,'similarity'])
 
   # Copy SD over
   if (sds_sub[2,'strand'] == '+'){
-    substr(seq_base,sds_sub[2,'start'], sds_sub[2,'end']) = partner_upstr
+    substr(seq_base,sds_sub[2,'start'], sds_sub[2,'end']) = partner_upstr_snpped
   } else if (sds_sub[2,'strand'] == '-'){
-    substr(seq_base,sds_sub[2,'start'], sds_sub[2,'end']) = rc(partner_upstr)
+    substr(seq_base,sds_sub[2,'start'], sds_sub[2,'end']) = rc(partner_upstr_snpped)
   } else {
     stop("Error in simulating SDs. Check your input SD bedfile.")
   }
   return(seq_base)
 }
 
-add_snps <- function(seq, similarity){
+add_snps <- function(seq, similarity, seed=1234){
   
   bases= c('A','C','G','T')
-  
+  set.seed(seed)
   # According to similarity, choose bases to mutate. 
   # Bases can mutate to self, so we add one third to bases to mutate.
   idx_to_change = sample(nchar(seq), (1-(similarity/100)) * (4/3) * nchar(seq))

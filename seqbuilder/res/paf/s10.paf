@@ -1,0 +1,5 @@
+sim-sequence	10000	0	10000	+	sim-sequence	10000	0	10000	10000	10000	0	NM:i:0	ms:i:10000	AS:i:10000	nn:i:0	tp:A:S	cm:i:1839	s1:i:9990	de:f:0	rl:i:0	cg:Z:10000M
+sim-sequence	10000	999	2000	-	sim-sequence	10000	3999	5000	994	1001	60	NM:i:7	ms:i:966	AS:i:966	nn:i:0	tp:A:P	cm:i:158	s1:i:946	s2:i:0	de:f:0.0070	zd:i:2	rl:i:0	cg:Z:1001M
+sim-sequence	10000	3999	5000	-	sim-sequence	10000	999	2000	994	1001	0	NM:i:7	ms:i:966	AS:i:966	nn:i:0	tp:A:S	cm:i:158	s1:i:946	de:f:0.0070	zd:i:1	rl:i:0	cg:Z:1001M
+sim-sequence	10000	6034	7000	-	sim-sequence	10000	7999	8965	823	966	60	NM:i:143	ms:i:251	AS:i:251	nn:i:0	tp:A:P	cm:i:9	s1:i:120	s2:i:0	de:f:0.1480	zd:i:2	rl:i:0	cg:Z:966M
+sim-sequence	10000	7999	8965	-	sim-sequence	10000	6034	7000	823	966	0	NM:i:143	ms:i:251	AS:i:251	nn:i:0	tp:A:S	cm:i:9	s1:i:120	de:f:0.1480	zd:i:1	rl:i:0	cg:Z:966M
