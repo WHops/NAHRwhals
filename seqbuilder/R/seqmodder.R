@@ -25,10 +25,18 @@ mutate_seq <- function(seq_fasta, sds_bed, sv_instr_txt, outfasta, outsd){
   
   # Make every SV
   for (n_sv in 1:dim(svs)[1]){
-    
-    seq_sds = carry_out_inv(seq, sds, svs[n_sv,])
-    seq = seq_sds[[1]]
-    sds = seq_sds[[2]]
+    print(n_sv)
+    if (svs[n_sv,]$SV == 'INV'){
+      seq_sds = carry_out_inv(seq, sds, svs[n_sv,])
+      seq = seq_sds[[1]]
+      sds = seq_sds[[2]]
+    } else if (svs[n_sv,]$SV == 'DEL'){
+      seq_sds = carry_out_del(seq, sds, svs[n_sv,])
+      seq = seq_sds[[1]]
+      sds = seq_sds[[2]]
+    } else {
+      stop(paste0("Unknown mutation type: ",  svs[n_sv,]$SV))
+    }
   }
   
   writeFasta(data.frame(name='sim-sequence-mutated', seq=seq),
@@ -40,15 +48,62 @@ mutate_seq <- function(seq_fasta, sds_bed, sv_instr_txt, outfasta, outsd){
 }
 
 
+carry_out_del <- function(seq, sds, sv){
+  
+  #### A) Delete sequence 
+  sds_backup = sds
+  # Make helpers for sequence deletion
+  sds$sd_middle = sds$start + ((sds$end - sds$start) / 2)
+  sds_specific = sds[sds$sdname == sv$SD,]
+  
+  # Check if SD is possible given SD orientation
+  stopifnot("Error: DEL can not be simulated by inversely oriented SDs." = 
+              all(sds_specific$strand == '+'))
+  
+  # Remove sequence
+  seq_mutated = paste0(
+    substr(seq, 1, sds_specific[1,]$sd_middle),
+    substr(seq, sds_specific[2,]$sd_middle, nchar(seq))
+  )
+
+  #### B) Update SDs table information
+  
+  # First, remove the downstream copy of the mediator SD
+  # This is not elegantly coded. 
+  sds[sds$sdname == sv$SD,] = sds[sds$sdname == sv$SD,][1,]
+  sds = unique(sds)
+  
+  # Which SDs are buried inside the inversion of interest?
+  sds$buried_in_inv =   sds$start >= sds_specific[1,'end'] & 
+    sds$end <= sds_specific[2,'start']
+  
+  # ... remove those
+  sds = sds[!sds$buried_in_inv,]
+  
+  # Everything else gets shifted upstream by the amount of deletion. 
+  delsize = sds_specific[2,]$end - sds_specific[1,]$end
+  
+  sds[sds$start > sds_specific[1,]$end]$start = 
+    sds[sds$start > sds_specific[1,]$end]$start - delsize
+  
+  sds[sds$start > sds_specific[1,]$end]$end = 
+    sds[sds$start > sds_specific[1,]$end]$end- delsize
+  
+  return(list(seq_mutated, sds))
+}
+
+
+
+
+
+
+
+
 carry_out_inv <- function(seq, sds, sv){
   
-  # TODO: nested repeats will be a big problem
+  # TODO: What if a repeat is (partially) contained in another repeat? 
   
-
-  
-
-  
-  # A) Invert sequence
+  #### A) Invert sequence 
   
   # Make helpers for sequence inversion
   sds$sd_middle = sds$start + ((sds$end - sds$start) / 2)
@@ -61,7 +116,7 @@ carry_out_inv <- function(seq, sds, sv){
   substr(seq, sds_specific[1,]$sd_middle, sds_specific[2,]$sd_middle) = 
     as.character(reverseComplement(DNAString(substr(seq, sds_specific[1,]$sd_middle, sds_specific[2,]$sd_middle))))
   
-  # B) Update sds table information
+  #### B) Update SDs table information
   sds_revisited = sds_document_inversion(sds, sv)
 
   

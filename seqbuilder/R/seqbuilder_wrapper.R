@@ -60,28 +60,46 @@ outplot1 = paste0(plotdir, outprefix, '.pdf')
 outplot2 = paste0(plotdir, outprefix, 'minimap')
 outmutfasta = paste0(fadir, outprefix, '_mut.fa')
 outmutsd = paste0(fadir, outprefix, '_mut.bed')
+outmutpaf = paste0(pafdir, outprefix, '_mut.paf')
+outplot3 = paste0(plotdir, outprefix, '_mut.pdf')
+outplot4 = paste0(plotdir, outprefix, 'minimap_mut')
 
 
-# ## MAKE THE SEQUENCE
-# simulate_seq(seqlen, sdfile, outfasta)
-# 
-# # Make an exact dotplot, in case this is feasible. 
-# # Otherwise (or additionally?) we are going to make a minimap2 dotplot. 
-# if (seqlen <= 25000){
-#   print('making exact plot.')
-#   make_dotplot(outfasta, outfasta, 15, outplot1)
-# } else if (seqlen > 25000){
-#   print('Sequence1 is too long for exact dotplot (>25 kbp)')
-# }
-# 
-# ## MAKE A MINIMAP2+DOTPLOTLY dotplot
-# system(paste0("minimap2 -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", outfasta, " ", outfasta, " > ", outpaf))
-# system(paste0("./pafCoordsDotPlotly.R -i ", outpaf, 
-#                                      " -o ", outplot2,
-#                                      " -m 50 -p 10 -q 10"))
+## MAKE THE SEQUENCE
+simulate_seq(seqlen, sdfile, outfasta)
+
+# Make an exact dotplot, in case this is feasible.
+# Otherwise (or additionally?) we are going to make a minimap2 dotplot.
+if (seqlen <= 25000){
+  print('making exact plot.')
+  make_dotplot(outfasta, outfasta, 15, outplot1)
+} else if (seqlen > 25000){
+  print('Sequence1 is too long for exact dotplot (>25 kbp)')
+}
+
+## MAKE A MINIMAP2+DOTPLOTLY dotplot
+system(paste0("minimap2 -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", outfasta, " ", outfasta, " > ", outpaf))
+system(paste0("./pafCoordsDotPlotly.R -i ", outpaf,
+                                     " -o ", outplot2,
+                                     " -m 50 -p 10 -q 10"))
 
 
 ## MUTATE THE SEQUENCE
 mutate_seq(outfasta, sdfile, svfile, outmutfasta, outmutsd)
+
+# Make an exact dotplot, in case this is feasible.
+# Otherwise (or additionally?) we are going to make a minimap2 dotplot.
+if (seqlen <= 25000){
+  print('making exact plot.')
+  make_dotplot(outfasta, outmutfasta, 15, outplot3)
+} else if (seqlen > 25000){
+  print('Sequence1 is too long for exact dotplot (>25 kbp)')
+}
+
+## MAKE A MINIMAP2+DOTPLOTLY dotplot
+system(paste0("minimap2 -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", outfasta, " ", outmutfasta, " > ", outmutpaf))
+system(paste0("./pafCoordsDotPlotly.R -i ", outmutpaf,
+              " -o ", outplot4,
+              " -m 50 -p 10 -q 10"))
 
 
