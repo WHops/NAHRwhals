@@ -2,5 +2,5 @@ simcontig	1000	2000	SDA	99	-
 simcontig	4000	5000	SDA	99	-
 simcontig	6000	7000	SDB	90	-
 simcontig	8000	9000	SDB	90	-
-simcontig	2200	2700	SDC	95	-
-simcontig	5200	5700	SDC	95	-
+simcontig	2200	2700	SDC	95	+
+simcontig	5200	5700	SDC	95	+

@@ -63,12 +63,43 @@ carry_out_del <- function(seq, sds, sv){
   # Remove sequence
   seq_mutated = paste0(
     substr(seq, 1, sds_specific[1,]$sd_middle),
-    substr(seq, sds_specific[2,]$sd_middle, nchar(seq))
+    substr(seq, sds_specific[2,]$sd_middle + 1, nchar(seq))
   )
 
   #### B) Update SDs table information
   
-  # First, remove the downstream copy of the mediator SD
+  sds_revisited = sds_document_deletion(sds, sv)
+  
+  return(list(seq_mutated, sds))
+}
+
+
+
+
+carry_out_dup <- function(seq, sds, sv){
+  
+  n_sv = 1
+  sv = svs[n_sv,]
+  #### A) Duplicate sequence 
+  sds_backup = sds
+  # Make helpers for sequence duplication
+  sds$sd_middle = sds$start + ((sds$end - sds$start) / 2)
+  sds_specific = sds[sds$sdname == sv$SD,]
+  
+  # Check if SD is possible given SD orientation
+  stopifnot("Error: DUP can not be simulated by inversely oriented SDs." = 
+              all(sds_specific$strand == '+'))
+  
+  # Remove sequence
+  seq_mutated = paste0(
+    substr(seq, 1, sds_specific[2,]$sd_middle), # Seq up to upstream bp
+    substr(seq, sds_specific[1,]$sd_middle + 1, sds_specific[2,]$sd_middle),
+    substr(seq, sds_specific[2,]$sd_middle + 1, nchar(seq))
+  )
+  
+  #### B) Update SDs table information
+  
+  # First, add the downstream copy of the mediator SD
   # This is not elegantly coded. 
   sds[sds$sdname == sv$SD,] = sds[sds$sdname == sv$SD,][1,]
   sds = unique(sds)
@@ -91,8 +122,6 @@ carry_out_del <- function(seq, sds, sv){
   
   return(list(seq_mutated, sds))
 }
-
-
 
 
 
@@ -122,6 +151,7 @@ carry_out_inv <- function(seq, sds, sv){
   
   return(list(seq, sds_revisited))
 }
+
 
 sds_document_inversion <- function(sds, sv){
   
@@ -173,5 +203,34 @@ sds_document_inversion <- function(sds, sv){
       sds$sd_middle = NULL
       sds$buried_in_inv = NULL
   }
+  return(sds)
+}
+
+sds_document_deletion(sds, sv){
+  # First, remove the downstream copy of the mediator SD
+  # This is not elegantly coded. 
+  sds[sds$sdname == sv$SD,] = sds[sds$sdname == sv$SD,][1,]
+  sds = unique(sds)
+  
+  # Which SDs are buried inside the inversion of interest?
+  sds$buried_in_inv =   sds$start >= sds_specific[1,'end'] & 
+    sds$end <= sds_specific[2,'start']
+  
+  # ... remove those
+  sds = sds[!sds$buried_in_inv,]
+  
+  # Everything else gets shifted upstream by the amount of deletion. 
+  delsize = sds_specific[2,]$end - sds_specific[1,]$end
+  
+  sds[sds$start > sds_specific[1,]$end]$start = 
+    sds[sds$start > sds_specific[1,]$end]$start - delsize
+  
+  sds[sds$start > sds_specific[1,]$end]$end = 
+    sds[sds$start > sds_specific[1,]$end]$end- delsize
+  
+  # Remove helpercolumns
+  sds$sd_middle = NULL
+  sds$buried_in_inv = NULL
+  
   return(sds)
 }
