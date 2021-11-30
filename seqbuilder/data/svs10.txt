@@ -1,1 +1,1 @@
-SDC	DUP
+SDA	INV

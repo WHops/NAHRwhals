@@ -1,17 +1,17 @@
 # Whoeps, 24th Nov 2021
 
 
-model_sds <- function(seq_base, sds, sds_name){
+model_sds <- function(seq_base, sds, uid){
   
-  sds_sub = sds[sds$sdname == sds_name,]
-  partner_upstr = substr(seq_base,sds_sub[1,'start'], sds_sub[1,'end'])
-  partner_upstr_snpped = add_snps(partner_upstr, sds_sub[1,'similarity'])
+  sds_sub = sds[sds$uid == uid,]
+  partner_upstr = substr(seq_base,sds_sub[1,'chromStart'], sds_sub[1,'chromEnd'])
+  partner_upstr_snpped = add_snps(partner_upstr, sds_sub[1,'fracMatch'])
 
   # Copy SD over
   if (sds_sub[2,'strand'] == '+'){
-    substr(seq_base,sds_sub[2,'start'], sds_sub[2,'end']) = partner_upstr_snpped
+    substr(seq_base,sds_sub[2,'chromStart'], sds_sub[2,'chromEnd']) = partner_upstr_snpped
   } else if (sds_sub[2,'strand'] == '-'){
-    substr(seq_base,sds_sub[2,'start'], sds_sub[2,'end']) = rc(partner_upstr_snpped)
+    substr(seq_base,sds_sub[2,'chromStart'], sds_sub[2,'chromEnd']) = rc(partner_upstr_snpped)
   } else {
     stop("Error in simulating SDs. Check your input SD bedfile.")
   }
@@ -24,7 +24,9 @@ add_snps <- function(seq, similarity, seed=1234){
   set.seed(seed)
   # According to similarity, choose bases to mutate. 
   # Bases can mutate to self, so we add one third to bases to mutate.
-  idx_to_change = sample(nchar(seq), (1-(similarity/100)) * (4/3) * nchar(seq))
+  # Going from 'similarity/100' to 'similarity' because now we work with
+  # similarity between 0 and 1, not 0 and 100 in the sd file. 
+  idx_to_change = sample(nchar(seq), (1-similarity) * (4/3) * nchar(seq))
   for (index in idx_to_change){
     substr(seq, index, index) = sample(bases, 1)
     
@@ -40,23 +42,30 @@ simulate_seq <- function(seqlen, sdfile, outfasta, debugmode=F){
   
   if (debugmode){
     seqlen = 10000
-    sdfile = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/data/sds.bed'
+    sdfile = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/data/sds10y.tsv'
     outfasta = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/seq.fa'
   }
   
-  bed_colnames = c('seqname','start','end','sdname','similarity','strand')
-  sds = read.table(sdfile); colnames(sds) = bed_colnames
+  sds_colnames = c(
+    "chrom", "chromStart", "chromEnd", "name",
+    "score","strand", "otherChrom","otherStart", "otherEnd",
+    "otherSize", "uid", "posBasesHit", "testResult",
+    "verdict", "chits","ccov","alignfile","alignL","indelN",
+    "indelS","alignB","matchB","mismatchB", "transitionsB",
+    "transversionsB","fracMatch","fracMatchIndel","jcK", "k2K"
+  )
+  sds = read.table(sdfile); colnames(sds) = sds_colnames
 
   stopifnot("Number of SDs is not a multiple of two" = dim(sds)[1] %% 2 == 0)
-  stopifnot("SD coordinates exceed sequence length" = max(sds[,c('start', 'end')]) < seqlen)
+  stopifnot("SD coordinates exceed sequence length" = max(sds[,c('chromStart', 'chromEnd', 'otherStart', 'otherEnd')]) < seqlen)
   
   # Get a random sequence of desired length
   seq_base = randDNASeq(seqlen, 0.46)
 
   # Add the SDs
   seq_modified = seq_base
-  for (sdname in unique(sds$sdname)){
-    seq_modified = model_sds(seq_modified, sds, sdname)
+  for (uid in unique(sds$uid)){
+    seq_modified = model_sds(seq_modified, sds, uid)
   }
   
   writeFasta(data.frame(name='sim-sequence', seq=seq_modified),
