@@ -1,0 +1,3 @@
+simcontig	10000	20000	SDA	simcontig	40000	50000	-	0.99
+simcontig	60000	70000	SDB	simcontig	80000	90000	-	0.90
+simcontig	22000	27000	SDC	simcontig	52000	57000	+	0.95

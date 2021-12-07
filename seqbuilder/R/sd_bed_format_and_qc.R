@@ -133,7 +133,7 @@ if (sys.nframe() == 0){
   # Define input
   inbed = commandArgs(trailingOnly=TRUE)[1]
   outtsv = commandArgs(trailingOnly=TRUE)[2]
-  inbed = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/data/sds10y.bed"
+  #inbed = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/data/sds10y.bed"
   
   sds_raw = read.table(inbed, sep='\t')
   colnames(sds_raw) = c('chrom','chromStart',

@@ -21,14 +21,16 @@ dotplotly_dotplot <- function(opt){
     cat(paste0("produce interactive plot (-x): ", opt$interactive,"\n"))
     cat(paste0("reference IDs to keep (-r): ", opt$refIDs,"\n"))
   }
-  #opt$output_filename = unlist(strsplit(opt$output_filename, "/"))[length(unlist(strsplit(opt$output_filename, "/")))]
+  opt$output_filename = unlist(strsplit(opt$output_filename, "/"))[length(unlist(strsplit(opt$output_filename, "/")))]
   
-  # debug=T
-  # if (debug){
-  #   opt$min_query_aln = 0
-  #   opt$min_align = 0
-  #   opt$input_filename = '../res/miniout1000.paf'
-  # }
+  debug=T
+  if (debug){
+    opt=list()
+    opt$min_query_aln = 0
+    opt$min_align = 0
+    opt$on_target = T
+    opt$input_filename = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/paf/blub.paf'
+  }
   # read in alignments
   alignments = read.table(opt$input_filename, stringsAsFactors = F, fill = T, row.names=NULL, comment.char='')
   # read in originvbed
@@ -127,17 +129,17 @@ dotplotly_dotplot <- function(opt){
   # 
   ## make new query alignments for dot plot
   # subtract queryStart and Ends by the minimum alignment coordinate + 1
-  queryMin = tapply(c(alignments$queryEnd, alignments$queryStart), c(alignments$queryID,alignments$queryID), min)
-  names(queryMin) = levels(alignments$queryID)
+  #queryMin = tapply(c(alignments$queryEnd, alignments$queryStart), c(alignments$queryID,alignments$queryID), min)
+  #names(queryMin) = levels(alignments$queryID)
   
   #[W, 2nd June 2021. Removing this because I think it's pointless].
-  alignments$queryStart = as.numeric(alignments$queryStart - queryMin[match(as.character(alignments$queryID),names(queryMin))] + 1)
-  alignments$queryEnd = as.numeric(alignments$queryEnd - queryMin[match(as.character(alignments$queryID),names(queryMin))] + 1)
+  #alignments$queryStart = as.numeric(alignments$queryStart - queryMin[match(as.character(alignments$queryID),names(queryMin))] + 1)
+  #alignments$queryEnd = as.numeric(alignments$queryEnd - queryMin[match(as.character(alignments$queryID),names(queryMin))] + 1)
   
-  queryMax = tapply(c(alignments$queryEnd, alignments$queryStart), c(alignments$queryID,alignments$queryID), max)
-  names(queryMax) = levels(alignments$queryID)
-  alignments$queryStart2 = alignments$queryStart #+ #sapply(as.character(alignments$queryID), function(x) ifelse(x == names(queryMax)[1], 0, cumsum(queryMax)[match(x, names(queryMax)) - 1]) )
-  alignments$queryEnd2 = alignments$queryEnd #+     #sapply(as.character(alignments$queryID), function(x) ifelse(x == names(queryMax)[1], 0, cumsum(queryMax)[match(x, names(queryMax)) - 1]) )
+  #queryMax = tapply(c(alignments$queryEnd, alignments$queryStart), c(alignments$queryID,alignments$queryID), max)
+  #names(queryMax) = levels(alignments$queryID)
+  #alignments$queryStart2 = alignments$queryStart #+ #sapply(as.character(alignments$queryID), function(x) ifelse(x == names(queryMax)[1], 0, cumsum(queryMax)[match(x, names(queryMax)) - 1]) )
+  #alignments$queryEnd2 = alignments$queryEnd #+     #sapply(as.character(alignments$queryID), function(x) ifelse(x == names(queryMax)[1], 0, cumsum(queryMax)[match(x, names(queryMax)) - 1]) )
   
   # get mean percent ID per contig
   #   calc percent ID based on on-target alignments only
@@ -153,7 +155,7 @@ dotplotly_dotplot <- function(opt){
   }
   
   # plot
-  yTickMarks = tapply(alignments$queryEnd2, alignments$queryID, max)
+  yTickMarks = tapply(alignments$queryEnd, alignments$queryID, max)
   options(warn = -1) # turn off warnings
   if (TRUE) {
     gp = ggplot(alignments) +

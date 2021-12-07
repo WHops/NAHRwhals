@@ -1,0 +1,11 @@
+sim-sequence_0-1999	2000	0	2000	+	sim-sequence	10000	0	2000	2000	2000	0	NM:i:0	ms:i:2000	AS:i:2000	nn:i:0	tp:A:S	cm:i:362	s1:i:1987	de:f:0	rl:i:0	cg:Z:2000M
+sim-sequence_0-1999	2000	999	2000	-	sim-sequence	10000	3999	5000	993	1001	0	NM:i:8	ms:i:961	AS:i:961	nn:i:0	tp:A:S	cm:i:155	s1:i:904	de:f:0.0080	rl:i:0	cg:Z:1001M
+sim-sequence_2000-3999	2000	0	2000	+	sim-sequence	10000	2000	4000	2000	2000	0	NM:i:0	ms:i:2000	AS:i:2000	nn:i:0	tp:A:S	cm:i:363	s1:i:1991	de:f:0	rl:i:0	cg:Z:2000M
+sim-sequence_2000-3999	2000	203	700	+	sim-sequence	10000	5203	5700	474	497	0	NM:i:23	ms:i:382	AS:i:382	nn:i:0	tp:A:S	cm:i:28	s1:i:239	de:f:0.0463	rl:i:0	cg:Z:497M
+sim-sequence_4000-5999	2000	0	2000	+	sim-sequence	10000	4000	6000	2000	2000	0	NM:i:0	ms:i:2000	AS:i:2000	nn:i:0	tp:A:S	cm:i:352	s1:i:1987	de:f:0	rl:i:0	cg:Z:2000M
+sim-sequence_4000-5999	2000	0	1000	-	sim-sequence	10000	999	1999	992	1000	0	NM:i:8	ms:i:960	AS:i:960	nn:i:0	tp:A:S	cm:i:155	s1:i:904	de:f:0.0080	rl:i:0	cg:Z:1000M
+sim-sequence_4000-5999	2000	1203	1700	+	sim-sequence	10000	2203	2700	474	497	0	NM:i:23	ms:i:382	AS:i:382	nn:i:0	tp:A:S	cm:i:28	s1:i:239	de:f:0.0463	rl:i:0	cg:Z:497M
+sim-sequence_6000-7999	2000	0	2000	+	sim-sequence	10000	6000	8000	2000	2000	0	NM:i:0	ms:i:2000	AS:i:2000	nn:i:0	tp:A:S	cm:i:379	s1:i:1997	de:f:0	rl:i:0	cg:Z:2000M
+sim-sequence_6000-7999	2000	3	997	-	sim-sequence	10000	8002	8996	895	994	0	NM:i:99	ms:i:499	AS:i:499	nn:i:0	tp:A:S	cm:i:13	s1:i:147	de:f:0.0996	rl:i:0	cg:Z:994M
+sim-sequence_8000-9999	2000	0	2000	+	sim-sequence	10000	8000	10000	2000	2000	0	NM:i:0	ms:i:2000	AS:i:2000	nn:i:0	tp:A:S	cm:i:348	s1:i:1990	de:f:0	rl:i:0	cg:Z:2000M
+sim-sequence_8000-9999	2000	2	996	-	sim-sequence	10000	6003	6997	895	994	0	NM:i:99	ms:i:499	AS:i:499	nn:i:0	tp:A:S	cm:i:13	s1:i:147	de:f:0.0996	rl:i:0	cg:Z:994M

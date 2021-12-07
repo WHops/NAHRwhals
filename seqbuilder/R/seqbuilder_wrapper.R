@@ -55,7 +55,11 @@ dir.create(pafdir)
 dir.create(plotdir)
 
 outfasta = paste0(fadir, outprefix, '.fa')
-outpaf = paste0(pafdir, outprefix, '.paf')
+outfasta_chunk = paste0(fadir, outprefix, '_chunked.fa')
+outpaf = paste0(pafdir, outprefix, '_chunked.paf')
+outpaf_correct = paste0(pafdir, outprefix, '_chunked_corrected.paf')
+outpaf_correcter = paste0(pafdir, outprefix, '.paf')
+
 outplot1 = paste0(plotdir, outprefix, '.pdf')
 outplot2 = paste0(plotdir, outprefix, 'minimap')
 outmutfasta = paste0(fadir, outprefix, '_mut.fa')
@@ -78,8 +82,13 @@ if (seqlen <= 25000){
 }
 
 ## MAKE A MINIMAP2+DOTPLOTLY dotplot
-system(paste0("minimap2 -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", outfasta, " ", outfasta, " > ", outpaf))
-system(paste0("./pafCoordsDotPlotly.R -i ", outpaf,
+
+# Chunkify outfasta
+system(paste0("../../../bbmap/shred.sh in=", outfasta, " out=", outfasta_chunk, " length=2000"))
+system(paste0("minimap2 -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", outfasta, " ", outfasta_chunk, " > ", outpaf))
+system(paste0("../scripts/awk_on_paf.sh ", outpaf, " ", outpaf_correct))
+system(paste0("./compress_paf.R ", outpaf_correct, " ", outpaf_correcter))
+system(paste0("./pafCoordsDotPlotly.R -i ", outpaf_correcter,
                                      " -o ", outplot2,
                                      " -m 50 -p 10 -q 10"))
 
