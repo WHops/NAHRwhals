@@ -1,4 +1,0 @@
-sim-sequence-mutated	8101	999	3797	-	sim-sequence	10000	2203	5000	2780	2798	0	NM:i:18	ms:i:2704	AS:i:2704	nn:i:0	tp:A:S	cm:i:468	s1:i:2608	de:f:0.0064	rl:i:0	cg:Z:246M1I2551M
-sim-sequence-mutated	8101	4104	7097	-	sim-sequence	10000	6003	8996	2911	2993	0	NM:i:82	ms:i:2583	AS:i:2583	nn:i:0	tp:A:S	cm:i:394	s1:i:2189	de:f:0.0274	rl:i:0	cg:Z:2993M
-sim-sequence-mutated	8101	6103	8101	+	sim-sequence	10000	8002	10000	1940	1998	60	NM:i:58	ms:i:1708	AS:i:1708	nn:i:0	tp:A:P	cm:i:262	s1:i:1421	s2:i:0	de:f:0.0290	zd:i:2	rl:i:0	cg:Z:1998M
-sim-sequence-mutated	8101	3298	5098	+	sim-sequence	10000	5198	6997	1731	1800	0	NM:i:69	ms:i:1451	AS:i:1451	nn:i:0	tp:A:S	cm:i:555	s1:i:3011	de:f:0.0383	zd:i:1	rl:i:0	cg:Z:251M1I1548M

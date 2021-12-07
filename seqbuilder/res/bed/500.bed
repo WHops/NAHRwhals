@@ -1,0 +1,5 @@
+sim-sequence	1000	2000	sim-sequence_1000-1999	sim-sequence	3999	4999	-	0.992
+sim-sequence	2203	2700	sim-sequence_2203-2699	sim-sequence	5203	5700	+	0.953722334004024
+sim-sequence	5799	6000	sim-sequence_5500-5999	sim-sequence	9099	9300	+	0.955223880597015
+sim-sequence	6003	6500	sim-sequence_6000-6499	sim-sequence	8499	8996	-	0.917505030181087
+sim-sequence	6510	6997	sim-sequence_6500-6999	sim-sequence	8002	8489	-	0.885010266940452

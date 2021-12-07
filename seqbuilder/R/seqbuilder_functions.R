@@ -1,5 +1,21 @@
 # 
 
+# Chunkify outfasta
+shred_seq <- function(infasta, outfasta_chunk, chunklen, scriptloc='../../../bbmap/shred.sh'){
+  system(paste0(scriptloc," in=", infasta, " out=", outfasta_chunk, " length=", chunklen))
+}
+
+# Self explanatory
+run_minimap2 <- function(fastatarget, fastaquery, outpaf, minimap2loc = "/Users/hoeps/opt/anaconda3/bin/minimap2"){
+  system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
+}
+
+# Use awk to adjust some coordinates. 
+awk_edit_paf <- function(inpaf, outpaf){
+  system(paste0("../scripts/awk_on_paf.sh ", inpaf, " ", outpaf))
+}
+
+
 #from https://bootstrappers.umassmed.edu/guides/main/r_writeFasta.html
 writeFasta<-function(data, filename){
   fastaLines = c()

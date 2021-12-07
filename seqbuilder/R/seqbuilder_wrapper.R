@@ -11,104 +11,143 @@ source_here <- function(x, ...) {
   source(file.path(dir, x), ...)
 }
 
-library(optparse)
-
-source_here('seqbuilder.R')
-source_here('seqbuilder_functions.R')
-source_here('seqplotter.R')
-source_here('pafCoordsDotPlotly.R')
-source_here('seqmodder.R')
-
-
-# sourcefiles = list.files(sourcedir)
-# sourcefiles = sourcefiles[sourcefiles != 'seqbuilder_wrapper.R']
-# sapply(paste0(sourcedir,sourcefiles), source)
-
-# INPUT
-option_list = list(
-  make_option(c("-l", "--seqlen"), type="numeric", default=NULL,
-              help="Total sequence length [bp]", metavar="numeric"),
-  make_option(c("-s", "--sdfile"), type="character", default=NULL,
-              help="Bedfile with desired SDs", metavar="character"),
-  make_option(c("-v", "--SVfile"), type="character", default=NULL,
-              help="Textfile with SVs to model", metavar="character"),
-  make_option(c("-o", "--outprefix"), type="character", default="./outputcorr/", 
-              help="Output fasta", metavar="character")
+## MAKE A MINIMAP2+DOTPLOTLY dotplot
+make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplot, 
+                                         chunklen = 2000, keep_ref = 50, 
+                                         plot_size = 10, keep_intermediate = T){
   
-  )
-
-opt <- parse_args(OptionParser(option_list=option_list))
-
-seqlen = opt$seqlen
-sdfile = opt$sdfile
-svfile = opt$SVfile
-outprefix = opt$outprefix
-
-
-# Prepare the output directories
-fadir = "../res/fa/"
-pafdir = "../res/paf/"
-plotdir = "../res/plot/"
-
-dir.create(fadir)
-dir.create(pafdir)
-dir.create(plotdir)
-
-outfasta = paste0(fadir, outprefix, '.fa')
-outfasta_chunk = paste0(fadir, outprefix, '_chunked.fa')
-outpaf = paste0(pafdir, outprefix, '_chunked.paf')
-outpaf_correct = paste0(pafdir, outprefix, '_chunked_corrected.paf')
-outpaf_correcter = paste0(pafdir, outprefix, '.paf')
-
-outplot1 = paste0(plotdir, outprefix, '.pdf')
-outplot2 = paste0(plotdir, outprefix, 'minimap')
-outmutfasta = paste0(fadir, outprefix, '_mut.fa')
-outmutsd = paste0(fadir, outprefix, '_mut.bed')
-outmutpaf = paste0(pafdir, outprefix, '_mut.paf')
-outplot3 = paste0(plotdir, outprefix, '_mut.pdf')
-outplot4 = paste0(plotdir, outprefix, 'minimap_mut')
-
-
-## MAKE THE SEQUENCE
-simulate_seq(seqlen, sdfile, outfasta)
-
-# Make an exact dotplot, in case this is feasible.
-# Otherwise (or additionally?) we are going to make a minimap2 dotplot.
-if (seqlen <= 25000){
-  print('making exact plot.')
-  make_dotplot(outfasta, outfasta, 15, outplot1)
-} else if (seqlen > 25000){
-  print('Sequence1 is too long for exact dotplot (>25 kbp)')
+  # Define intermediate files
+  queryfasta_chunk = paste0(queryfasta, ".chunk.fa")
+  outpaf_chunk = paste0(outpaf, '.chunk')
+  outpaf_awk = paste0(outpaf, '.awked')
+  
+  # Run a series of chunking, aligning and merging functions/scripts
+  shred_seq(queryfasta, queryfasta_chunk, chunklen)
+  run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk)
+  awk_edit_paf(outpaf_chunk, outpaf_awk)
+  compress_paf_fnct(outpaf_awk, outpaf)
+  pafdotplot_make(outpaf, outplot, keep_ref=keep_ref, plot_size=plot_size)
 }
 
-## MAKE A MINIMAP2+DOTPLOTLY dotplot
 
-# Chunkify outfasta
-system(paste0("../../../bbmap/shred.sh in=", outfasta, " out=", outfasta_chunk, " length=2000"))
-system(paste0("minimap2 -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", outfasta, " ", outfasta_chunk, " > ", outpaf))
-system(paste0("../scripts/awk_on_paf.sh ", outpaf, " ", outpaf_correct))
-system(paste0("./compress_paf.R ", outpaf_correct, " ", outpaf_correcter))
-system(paste0("./pafCoordsDotPlotly.R -i ", outpaf_correcter,
-                                     " -o ", outplot2,
-                                     " -m 50 -p 10 -q 10"))
+# runs only when script is run by itself
+if (sys.nframe() == 0){
+  
+  library(optparse)
+  
+  suppressMessages(source_here('seqbuilder.R'))
+  suppressMessages(source_here('seqbuilder_functions.R'))
+  suppressMessages(source_here('seqplotter.R'))
+  suppressMessages(source_here('pafCoordsDotPlotly.R'))
+  suppressMessages(source_here('seqmodder.R'))
+  suppressMessages(source_here('compress_paf.R'))
+  suppressMessages(source_here('paf_to_bed.R'))
+  suppressMessages(source_here('sd_to_bed.R'))
+  
+
+  # INPUT
+  option_list = list(
+    make_option(c("-l", "--seqlen"), type="numeric", default=NULL,
+                help="Total sequence length [bp]", metavar="numeric"),
+    make_option(c("-s", "--sdfile"), type="character", default=NULL,
+                help="Bedfile with desired SDs", metavar="character"),
+    make_option(c("-v", "--SVfile"), type="character", default=NULL,
+                help="Textfile with SVs to model", metavar="character"),
+    make_option(c("-o", "--outprefix"), type="character", default="./outputcorr/", 
+                help="Output fasta", metavar="character"),
+    make_option(c("-c", "--chunklen"), type="numeric", default=1000, 
+                help="Length of chunks to use for minimap2", metavar="character")
+    
+    )
+  
+  debug=F
+  if (debug){
+    opt = list()
+    seqlen = 10000
+    sdfile = "../data/sds10y.tsv"
+    svfile = "../data/svs10.txt"
+    outprefix = "debug"
+    chunklen = 1000
+  } else {
+    opt <- parse_args(OptionParser(option_list=option_list))
+    
+    seqlen = opt$seqlen
+    sdfile = opt$sdfile
+    svfile = opt$SVfile
+    chunklen = opt$chunklen
+    outprefix = opt$outprefix
+  }
+  
+  # Prepare the output directories
+
+  fadir = "../res/fa/"
+  pafdir = "../res/paf/"
+  plotdir = "../res/plot/"
+  beddir = "../res/bed/"
+  
+  for (dir in c('fa', 'paf', 'plot', 'bed')){
+    dir.create(paste0("../res/",dir,"/"))
+  }
 
 
-## MUTATE THE SEQUENCE
-mutate_seq(outfasta, sdfile, svfile, outmutfasta, outmutsd)
-
-# Make an exact dotplot, in case this is feasible.
-# Otherwise (or additionally?) we are going to make a minimap2 dotplot.
-if (seqlen <= 25000){
-  print('making exact plot.')
-  make_dotplot(outfasta, outmutfasta, 15, outplot3)
-} else if (seqlen > 25000){
-  print('Sequence1 is too long for exact dotplot (>25 kbp)')
+  # Files containing simulated sequence before mut
+  outfasta = paste0(fadir, outprefix, '.fa')
+  outpaf = paste0(pafdir, outprefix, '_chunked.paf')
+  outbed = paste0(beddir, outprefix, '.bed')
+  
+  outplot1 = paste0(plotdir, outprefix, '.pdf')
+  outplot2 = paste0(plotdir, outprefix, 'minimap')
+  
+  # Files containing simulated sequence after mut
+  outmutfasta = paste0(fadir, outprefix, '_mut.fa')
+  outmutsd = paste0(fadir, outprefix, '_mut.bed')
+  outmutpaf = paste0(pafdir, outprefix, '_mut.paf')
+  outmutpaf_self = paste0(pafdir, outprefix, '_mut_self.paf')
+  outmutbed = paste0(beddir, outprefix, '_mut.bed')
+  outmutbedgt = paste0(beddir, outprefix, '_mut_gt.bed')
+  
+  outplot3 = paste0(plotdir, outprefix, '_mut.pdf')
+  outplot4 = paste0(plotdir, outprefix, 'minimap_mut')
+  outplot5 = paste0(plotdir, outprefix, '_mut.self.pdf')
+  outplot6 = paste0(plotdir, outprefix, '_mut.self.gt.pdf')
+  
+  
+  ## MAKE THE SEQUENCE
+  simulate_seq(seqlen, sdfile, outfasta)
+  
+  # Make an exact dotplot, in case this is feasible.
+  # Otherwise (..additionally) we are going to make a minimap2 dotplot.
+  if (seqlen <= 25000){
+    make_dotplot(outfasta, outfasta, 15, outplot1)
+  }
+  
+  # Make minimap2 alignment
+  make_chunked_minimap_alnment(outfasta, outfasta, outpaf, outplot2, chunklen = chunklen)
+  
+  # Write bedfile
+  paf_write_bed(outpaf, outbed)
+  
+  
+  ## MUTATE THE SEQUENCE
+  mutate_seq(outfasta, sdfile, svfile, outmutfasta, outmutsd)
+  sd_to_bed(outmutsd, outmutbedgt)
+  
+  
+  # Make an exact dotplot, in case this is feasible.
+  # Otherwise (or additionally?) we are going to make a minimap2 dotplot.
+  if (seqlen <= 25000){
+    make_dotplot(outfasta, outmutfasta, 15, outplot3)
+    make_dotplot(outmutfasta, outmutfasta, 15, outplot6)
+    
+  }
+  
+  ## MAKE A MINIMAP2+DOTPLOTLY dotplot
+  #make_chunked_minimap_alnment(outfasta, outmutfasta, outmutpaf, outplot4, chunklen = chunklen)
+  
+  ## MAKE A MINIMAP2+DOTPLOTLY dotplot with self
+  make_chunked_minimap_alnment(outmutfasta, outmutfasta, outmutpaf_self, outplot5, chunklen = chunklen)
+  # Write bedfile
+  paf_write_bed(outmutpaf_self, outmutbed)
+  
 }
-
-## MAKE A MINIMAP2+DOTPLOTLY dotplot
-system(paste0("minimap2 -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", outfasta, " ", outmutfasta, " > ", outmutpaf))
-system(paste0("./pafCoordsDotPlotly.R -i ", outmutpaf,
-              " -o ", outplot4,
-              " -m 50 -p 10 -q 10"))
-
 

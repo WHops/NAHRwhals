@@ -1,0 +1,7 @@
+simcontig	1000	2000	SDA	simcontig	4000	5000	-	0.99
+simcontig	1000	2000	SDAa2	simcontig	7000	8000	-	0.99
+simcontig	2200	2700	SDC	simcontig	5200	5700	+	0.95
+simcontig	2200	2700	SDCa2	simcontig	8200	8700	+	0.95
+simcontig	4000	5000	SDAb2	simcontig	7000	8000	-	0.99
+simcontig	5200	5700	SDCb2	simcontig	8200	8700	+	0.95
+simcontig	18000	19000	SDB	simcontig	14000	15000	-	0.9

@@ -1,5 +1,0 @@
-sim-sequence-mutated	100000	39999	100000	+	sim-sequence	100000	39999	100000	59959	60001	0	NM:i:42	ms:i:59791	AS:i:59791	nn:i:0	tp:A:S	cm:i:10862	s1:i:59874	de:f:0.0007	zd:i:2	rl:i:0	cg:Z:60001M
-sim-sequence-mutated	100000	9998	50001	-	sim-sequence	100000	9998	50001	39877	40003	0	NM:i:126	ms:i:39373	AS:i:39373	nn:i:0	tp:A:S	cm:i:6837	s1:i:38959	de:f:0.0031	rl:i:0	cg:Z:40003M
-sim-sequence-mutated	100000	0	19980	+	sim-sequence	100000	0	19980	19938	19980	0	NM:i:42	ms:i:19770	AS:i:19770	nn:i:0	tp:A:S	cm:i:3514	s1:i:19370	de:f:0.0021	zd:i:1	rl:i:0	cg:Z:19980M
-sim-sequence-mutated	100000	59998	70000	-	sim-sequence	100000	79999	90001	8989	10002	0	NM:i:1013	ms:i:4937	AS:i:4937	nn:i:0	tp:A:S	cm:i:213	s1:i:2291	de:f:0.1013	zd:i:2	rl:i:0	cg:Z:10002M
-sim-sequence-mutated	100000	80020	90001	-	sim-sequence	100000	59998	69979	8969	9981	0	NM:i:1012	ms:i:4921	AS:i:4921	nn:i:0	tp:A:S	cm:i:212	s1:i:2280	de:f:0.1014	zd:i:1	rl:i:0	cg:Z:9981M

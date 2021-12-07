@@ -21,9 +21,9 @@ dotplotly_dotplot <- function(opt){
     cat(paste0("produce interactive plot (-x): ", opt$interactive,"\n"))
     cat(paste0("reference IDs to keep (-r): ", opt$refIDs,"\n"))
   }
-  opt$output_filename = unlist(strsplit(opt$output_filename, "/"))[length(unlist(strsplit(opt$output_filename, "/")))]
+  #opt$output_filename = unlist(strsplit(opt$output_filename, "/"))[length(unlist(strsplit(opt$output_filename, "/")))]
   
-  debug=T
+  debug=F
   if (debug){
     opt=list()
     opt$min_query_aln = 0
@@ -210,6 +210,7 @@ dotplotly_dotplot <- function(opt){
   }
   # gp
   #ggsave(filename = paste0(opt$output_filename, ".png"), width = opt$plot_size, height = opt$plot_size, units = "in", dpi = 300, limitsize = F)
+  print(paste0(opt$output_filename, ".pdf"))
   ggsave(filename = paste0(opt$output_filename, ".pdf"), width = opt$plot_size, height = opt$plot_size, units = "in", device='pdf', limitsize = F)
   print('png and pdf saved')
   if(opt$interactive){
@@ -225,6 +226,24 @@ dotplotly_dotplot <- function(opt){
   #
 }
 
+pafdotplot_make <- function(inpaf_link, outplot_link, min_align = 11, min_query_aln = 11,
+                            keep_ref = 10000, similarity = T, h_lines = T, interactive = F,
+                            plot_size = 10, on_target = T, v = F){
+  
+  opt = list(input_filename=inpaf_link,
+             output_filename=outplot_link,
+             min_align = min_align, 
+             min_query_aln = min_query_aln,
+             keep_ref=keep_ref, 
+             similarity=similarity, 
+             h_lines=h_lines, 
+             interactive=interactive, 
+             plot_size=plot_size, 
+             on_target = on_target, 
+             v=v)
+
+  dotplotly_dotplot(opt)
+}
 
 
 # runs only when script is run by itself

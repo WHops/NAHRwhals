@@ -35,8 +35,7 @@ dotPlotr <- function(seq1, seq2, wsize = 5, wstep = 1, nmatch = -1){
     geom_point(data=p2, aes(x=x,y=y), shape=15, size=0.5) + 
     coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
     theme_bw()
-  print(p)
-  
+
   return(p)
   
 }
@@ -66,13 +65,13 @@ make_dotplot <- function(seq1link, seq2link, wsize, outfile, save=T, debugmode=F
   print('sequences loaded')
   p = dotPlotr(seq1seq, seq2seq, wsize)
   p = p + labs(x=seq1name, y=seq2name)
-  p
-  print(paste0('Done. Dotplot for simulated sequence written to: ', outfile))
-
+  
     if (save==T){
-    ggsave(outfile, plot=p, device='pdf', height=10, width=10, units = 'in')
+      ggsave(outfile, plot=p, device='pdf', height=5, width=8, units = 'in')
+      print(paste0('Done. Dotplot for simulated sequence written to: ', outfile))
+      
   } else if (save==F){
-    return(p)
+      return(p)
   }
   
 }

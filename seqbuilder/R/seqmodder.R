@@ -84,7 +84,7 @@ sds_document_inversion <- function(sds, sv){
 carry_out_del <- function(seq, sds, sv){
   
   #### A) Delete sequence 
-
+  #sv = svs[n_sv,]
   # Make helpers for sequence deletion
   sds_specific = sds[sds$uid == sv$SD,]
   
@@ -106,10 +106,15 @@ carry_out_del <- function(seq, sds, sv){
 }
 sds_document_deletion <- function(sds, sv){
   
+  sds_specific = sds[sds$uid == sv$SD,]
+  
   # First, remove the downstream copy of the mediator SD
   # This is not elegantly coded. 
   sds[sds$uid == sv$SD,] = sds[sds$uid == sv$SD,][1,]
   sds = unique(sds)
+  
+  # add this line? 
+  sds_specific = sds[sds$uid == sv$SD,]
   
   # Which SDs are buried inside the inversion of interest?
   sds$buried_in_del = (  
@@ -124,14 +129,14 @@ sds_document_deletion <- function(sds, sv){
   # Everything else gets shifted upstream by the amount of deletion. 
   delsize = sds_specific[2,]$chromEnd - sds_specific[1,]$chromEnd
   
-  sds[sds$chromStart > sds_specific[1,]$chromEnd] = transform(
-    sds[sds$chromStart > sds_specific[1,]$chromEnd],
+  sds[sds$chromStart > sds_specific[1,]$chromEnd,] = transform(
+    sds[sds$chromStart > sds_specific[1,]$chromEnd,],
     chromStart = chromStart - delsize,
     chromEnd   = chromEnd - delsize
   )
   
-  sds[sds$otherStart > sds_specific[1,]$otherEnd] = transform(
-    sds[sds$otherStart > sds_specific[1,]$otherEnd],
+  sds[sds$otherStart > sds_specific[1,]$otherEnd,] = transform(
+    sds[sds$otherStart > sds_specific[1,]$otherEnd,],
     otherStart = otherStart - delsize,
     otherEnd   = otherEnd - delsize
   )
@@ -144,8 +149,104 @@ sds_document_deletion <- function(sds, sv){
 }
 
 
-carry_out_dup <- function(seq, sds, sv){
+
+expand_one_of_pair <- function(sds, uid, n_of_pair, dupsize){
   
+  # We put in the whole sds first. 
+  
+  
+  orig = sds[sds$uid == uid,]
+  copy1 = sds[sds$uid == uid,]
+  
+  if (n_of_pair == 1){
+    # 1-1.5
+    copy1[1,] = transform(
+      copy1[1,],
+      otherStart = chromStart + dupsize,
+      otherEnd = chromEnd + dupsize
+    )
+    
+    # 1.5-1
+    copy1[2,] = transform(
+      copy1[2,],
+      chromStart = otherStart + dupsize,
+      chromEnd = otherEnd + dupsize
+    )
+    
+    copy2 = orig
+    
+    # 1.5-2
+    copy2[1,] = transform(
+      copy2[1,],
+      chromStart = chromStart + dupsize,
+      chromEnd = chromEnd + dupsize
+    )
+    
+    # 2-1.5
+    copy2[2,] = transform(
+      copy2[2,],
+      otherStart = otherStart + dupsize,
+      otherEnd = otherEnd + dupsize
+    )
+  } else if (n_of_pair == 2){
+    # 1-3
+    copy1[1,] = transform(
+      copy1[1,],
+      otherStart = otherStart + dupsize,
+      otherEnd = otherEnd + dupsize
+    )
+    
+    # 3-1
+    copy1[2,] = transform(
+      copy1[2,],
+      chromStart = chromStart + dupsize,
+      chromEnd = chromEnd + dupsize
+    )
+    
+    copy2 = copy1
+    
+    # 2-3
+    copy2[1,] = transform(
+      copy2[1,],
+      chromStart = otherStart - dupsize,
+      chromEnd = otherEnd - dupsize
+      
+    )
+    
+    # 3-2
+    copy2[2,] = transform(
+      copy2[2,],
+      otherStart = chromStart - dupsize,
+      otherEnd = chromEnd - dupsize
+    )
+  }
+  copy1$uid = paste0(orig$uid, 'a', n_of_pair)
+  copy2$uid = paste0(orig$uid, 'b', n_of_pair)
+  
+  all = rbind(rbind(sds, copy1), copy2)
+  
+  return(all)
+}
+expand_whole_pair <- function(sds, uid, dupsize){
+  
+  sds = sds_bu
+  sds1 = expand_one_of_pair(sds, uid, 1, dupsize)
+  sds2 = expand_one_of_pair(sds1, uid, 2, dupsize)
+  
+  # Add the last connection (between the two new SDs)
+  # Manually. 
+  to_cp = sds2[sds2$uid == uid,]
+  to_cp[,c('chromStart', 'chromEnd', 'otherStart', 'otherEnd')] = 
+    to_cp[,c('chromStart', 'chromEnd', 'otherStart', 'otherEnd')] + dupsize
+  to_cp$uid = paste0(to_co$uid, '3')
+  sds3 = rbind(sds2, to_cp)
+  
+  sds3 = sds3[order(sds3$chromStart),]
+  
+  return(sds3)
+}
+
+carry_out_dup <- function(seq, sds, sv){
   
   #### A) Duplicate sequence 
   
@@ -167,80 +268,79 @@ carry_out_dup <- function(seq, sds, sv){
   
   sds_revisited = sds_document_duplication(sds, sv)
   
-  return(list(seq_mutated, sds))
+  return(list(seq_mutated, sds_revisited))
 }
 sds_document_duplication <- function(sds,sv){
   
-  # Everything else gets shifted downstream by the amount of duplication 
+  sds_specific = sds[sds$uid == sv$SD,]
+  #sds_bu = sds
+  #sv_bu = sv
+  sds = sds[sds$uid %in% c("SDA", "SDB", "SDC"),]
+
+  # Remember this for later
+  uid_orig = unique(sds$uid)
+  
   dupsize = sds_specific[2,]$chromEnd - sds_specific[1,]$chromEnd
   
-  orig = sds[sds$uid == svs[1,'SD'],]
-  copy1 = sds[sds$uid == svs[1,'SD'],]
-
-  copy1[1,] = transform(
-    copy1[1,],
-    otherStart = otherStart + dupsize,
-    otherEnd = otherEnd + dupsize
-  )
-  copy1[2,] = transform(
-    copy1[2,],
-    chromStart = chromStart + dupsize,
-    chromEnd = chromEnd + dupsize
-  )
+  sds = expand_one_of_pair(sds, "SDC", 2,  dupsize)
   
-  copy2 = copy1
+  # Which SDs are buried inside the duplication of interest?
+  sds$buried_in_dup =   sds$chromStart >= sds_specific[1,'chromEnd'] & 
+    sds$chromEnd <= sds_specific[2,'chromStart']
+   
+  pairs_one_duplicated = 
+    unique((sds %>% group_by(uid) %>% filter(sum(buried_in_dup)==1))$uid)
   
-  copy2[1,] = transform(
-    copy2[1,],
-    chromStart = chromStart + dupsize,
-    chromEnd = chromEnd + dupsize
-
-  )
-  copy2[2,] = transform(
-    copy2[2,],
-    otherStart = otherStart + dupsize,
-    otherEnd = otherEnd + dupsize
-  )
+  pairs_two_duplicated = 
+    unique((sds %>% group_by(uid) %>% filter(sum(buried_in_dup)==2))$uid)
   
-  copy1$uid = paste0(orig$uid, 'a')
-  copy2$uid = paste0(orig$uid, 'b')
+  for (uid in pairs_one_duplicated){
+    sds = expand_one_of_pair(sds, uid, 2,  dupsize)
+  }
   
-  all = rbind(rbind(orig, copy1), copy2)
-  
-  #sds[sds$uid == sv$SD,] = sds[sds$uid == sv$SD,][1,]
-  #sds = unique(sds)
-  
-  # Which SDs are buried inside the inversion of interest?
-  sds$buried_in_inv =   sds$start >= sds_specific[1,'end'] & 
-    sds$end <= sds_specific[2,'start']
-  
-  # ... remove those
-  sds = sds[!sds$buried_in_inv,]
+  for (uid in pairs_two_duplicated){
+    sds = expand_whole_pair(sds, uid, dupsize)
+  }
   
   # Everything else gets shifted upstream by the amount of deletion. 
-  delsize = sds_specific[2,]$end - sds_specific[1,]$end
+
+  # Chrom starts, ends
+  sds_predup = sds[sds$uid %in% uid_orig,]
   
-  sds[sds$start > sds_specific[1,]$end]$start = 
-    sds[sds$start > sds_specific[1,]$end]$start - delsize
   
-  sds[sds$start > sds_specific[1,]$end]$end = 
-    sds[sds$start > sds_specific[1,]$end]$end- delsize
+  sds_predup[sds_predup$chromStart > sds_specific[1,]$otherEnd,] = transform(
+    sds_predup[sds_predup$chromStart > sds_specific[1,]$otherEnd,],
+    chromStart = chromStart + dupsize,
+    chromEnd   = chromEnd + dupsize
+  )
   
-  return(list(seq_mutated, sds))
+  sds_predup[sds_predup$otherStart > sds_specific[1,]$otherEnd,] = transform(
+    sds_predup[sds_predup$otherStart > sds_specific[1,]$otherEnd,],
+    otherStart = otherStart + dupsize,
+    otherEnd   = otherEnd + dupsize
+  )
+  
+  # Adjust starts and ends of everything downstream
+  sds_predup[sds_predup$chromStart > (sds_specific[1,]$otherEnd),]$chromStart = 
+    sds_predup[sds_predup$chromStart > sds_specific[1,]$otherEnd,]$chromStart + dupsize
+  
+  sds_predup[sds_predup$chromEnd > sds_specific[1,]$otherEnd,]$chromEnd = 
+    sds_predup[sds_predup$chromEnd > sds_specific[1,]$otherEnd,]$chromEnd + dupsize
+  
+  
+  # Re-merge
+  sds_return = rbind(sds_predup, sds[!sds$uid %in% uid_orig,])
+  sds_return = sds_return[order(sds_return$uid),]
+  
+  return(sds_return)
 }
-
-
-
-
-
-
-
 
 
 mutate_seq <- function(seq_fasta, sds_tsv, sv_instr_txt, outfasta, outsd){
   
+  debug=F
   if (debug){
-    seq_fasta = "../res/fa/s10.fa"
+    seq_fasta = "../res/fa/500.fa"
     sds_tsv = "../data/sds10y.tsv"
     sv_instr_txt = "../data/svs10.txt"
   }
@@ -260,9 +360,10 @@ mutate_seq <- function(seq_fasta, sds_tsv, sv_instr_txt, outfasta, outsd){
     "transversionsB","fracMatch","fracMatchIndel","jcK", "k2K"
   )
   sds = read.table(sds_tsv); colnames(sds) = sds_colnames
-  
+
   # Load Mutation instructions
   svs = read.table(sv_instr_txt, sep='\t'); colnames(svs) = c('SD', 'SV')
+  
   
   # We assume the breakpoint is always in the middle of the repeat. 
   # If we want the breakpoints different at some point, this here is
@@ -278,6 +379,10 @@ mutate_seq <- function(seq_fasta, sds_tsv, sv_instr_txt, outfasta, outsd){
       sds = seq_sds[[2]]
     } else if (svs[n_sv,]$SV == 'DEL'){
       seq_sds = carry_out_del(seq, sds, svs[n_sv,])
+      seq = seq_sds[[1]]
+      sds = seq_sds[[2]]
+    } else if (svs[n_sv,]$SV == 'DUP'){
+      seq_sds = carry_out_dup(seq, sds, svs[n_sv,])
       seq = seq_sds[[1]]
       sds = seq_sds[[2]]
     } else {
