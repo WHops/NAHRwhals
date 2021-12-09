@@ -1,7 +1,30 @@
 # 
 
+## MAKE A MINIMAP2+DOTPLOTLY dotplot
+make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplot, 
+                                         chunklen = 2000, keep_ref = 50, 
+                                         plot_size = 10, keep_intermediate = T,
+                                         sdlink = F){
+  
+  # Define intermediate files
+  queryfasta_chunk = paste0(queryfasta, ".chunk.fa")
+  outpaf_chunk = paste0(outpaf, '.chunk')
+  outpaf_awk = paste0(outpaf, '.awked')
+  
+  # Run a series of chunking, aligning and merging functions/scripts
+  shred_seq(queryfasta, queryfasta_chunk, chunklen)
+  run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk)
+  awk_edit_paf(outpaf_chunk, outpaf_awk)
+  compress_paf_fnct(outpaf_awk, outpaf)
+  print('#################')
+  print(outplot)
+  pafdotplot_make(outpaf, outplot, keep_ref=keep_ref, plot_size=plot_size,
+                  sdlink = sdlink)
+}
+
 # Chunkify outfasta
 shred_seq <- function(infasta, outfasta_chunk, chunklen, scriptloc='../../../bbmap/shred.sh'){
+  print(paste0(scriptloc," in=", infasta, " out=", outfasta_chunk, " length=", chunklen))
   system(paste0(scriptloc," in=", infasta, " out=", outfasta_chunk, " length=", chunklen))
 }
 

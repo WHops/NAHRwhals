@@ -11,23 +11,7 @@ source_here <- function(x, ...) {
   source(file.path(dir, x), ...)
 }
 
-## MAKE A MINIMAP2+DOTPLOTLY dotplot
-make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplot, 
-                                         chunklen = 2000, keep_ref = 50, 
-                                         plot_size = 10, keep_intermediate = T){
-  
-  # Define intermediate files
-  queryfasta_chunk = paste0(queryfasta, ".chunk.fa")
-  outpaf_chunk = paste0(outpaf, '.chunk')
-  outpaf_awk = paste0(outpaf, '.awked')
-  
-  # Run a series of chunking, aligning and merging functions/scripts
-  shred_seq(queryfasta, queryfasta_chunk, chunklen)
-  run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk)
-  awk_edit_paf(outpaf_chunk, outpaf_awk)
-  compress_paf_fnct(outpaf_awk, outpaf)
-  pafdotplot_make(outpaf, outplot, keep_ref=keep_ref, plot_size=plot_size)
-}
+
 
 
 # runs only when script is run by itself
@@ -86,7 +70,7 @@ if (sys.nframe() == 0){
   beddir = "../res/bed/"
   
   for (dir in c('fa', 'paf', 'plot', 'bed')){
-    dir.create(paste0("../res/",dir,"/"))
+    dir.create(paste0("../res/",dir,"/"), showWarnings=F)
   }
 
 
@@ -100,7 +84,7 @@ if (sys.nframe() == 0){
   
   # Files containing simulated sequence after mut
   outmutfasta = paste0(fadir, outprefix, '_mut.fa')
-  outmutsd = paste0(fadir, outprefix, '_mut.bed')
+  outmutsd = paste0(pafdir, outprefix, '_mut_self_gt.paf')
   outmutpaf = paste0(pafdir, outprefix, '_mut.paf')
   outmutpaf_self = paste0(pafdir, outprefix, '_mut_self.paf')
   outmutbed = paste0(beddir, outprefix, '_mut.bed')
@@ -128,26 +112,31 @@ if (sys.nframe() == 0){
   paf_write_bed(outpaf, outbed)
   
   
-  ## MUTATE THE SEQUENCE
-  mutate_seq(outfasta, sdfile, svfile, outmutfasta, outmutsd)
-  sd_to_bed(outmutsd, outmutbedgt)
-  
-  
-  # Make an exact dotplot, in case this is feasible.
-  # Otherwise (or additionally?) we are going to make a minimap2 dotplot.
-  if (seqlen <= 25000){
-    make_dotplot(outfasta, outmutfasta, 15, outplot3)
-    make_dotplot(outmutfasta, outmutfasta, 15, outplot6)
+  if (is.null(svfile)){
+    print("No Mutation input. Only returning primary sequences")
+  } else {
+      
+    ## MUTATE THE SEQUENCE
+    mutate_seq(outfasta, sdfile, svfile, outmutfasta, outmutsd)
+    sd_to_bed(outmutsd, outmutbedgt)
     
+    
+    # Make an exact dotplot, in case this is feasible.
+    # Otherwise (or additionally?) we are going to make a minimap2 dotplot.
+    if (seqlen <= 25000){
+      make_dotplot(outfasta, outmutfasta, 15, outplot3)
+      make_dotplot(outmutfasta, outmutfasta, 15, outplot6)
+      
+    }
+    
+    ## MAKE A MINIMAP2+DOTPLOTLY dotplot
+    #make_chunked_minimap_alnment(outfasta, outmutfasta, outmutpaf, outplot4, chunklen = chunklen)
+    
+    ## MAKE A MINIMAP2+DOTPLOTLY dotplot with self
+    make_chunked_minimap_alnment(outmutfasta, outmutfasta, outmutpaf_self, outplot5, 
+                                 chunklen = chunklen, sdlink = outmutsd)
+    # Write bedfile
+    paf_write_bed(outmutpaf_self, outmutbed)
   }
-  
-  ## MAKE A MINIMAP2+DOTPLOTLY dotplot
-  #make_chunked_minimap_alnment(outfasta, outmutfasta, outmutpaf, outplot4, chunklen = chunklen)
-  
-  ## MAKE A MINIMAP2+DOTPLOTLY dotplot with self
-  make_chunked_minimap_alnment(outmutfasta, outmutfasta, outmutpaf_self, outplot5, chunklen = chunklen)
-  # Write bedfile
-  paf_write_bed(outmutpaf_self, outmutbed)
-  
 }
 

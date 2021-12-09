@@ -1,10 +1,16 @@
 # Whoeps, 25th Nov 2021
 library(Biostrings)
-
+library(dplyr)
 debug = F
 
 
 carry_out_inv <- function(seq, sds, sv){
+  library(Biostrings)
+  
+  # We assume the breakpoint is always in the middle of the repeat. 
+  # If we want the breakpoints different at some point, this here is
+  # the place to change this. 
+  sds$sd_middle = sds$chromStart + ((sds$chromEnd - sds$chromStart) / 2)
   
   # TODO: What if a repeat is (partially) contained in another repeat? 
   
@@ -16,6 +22,8 @@ carry_out_inv <- function(seq, sds, sv){
   # Check if SD is possible given SD orientation
   stopifnot("Error: INV can not be simulated by directly oriented SDs." = 
               all(sds_specific$strand == '-'))
+  test = DNAString(substr(seq, sds_specific[1,]$sd_middle, sds_specific[2,]$sd_middle))
+  
   
   substr(seq, sds_specific[1,]$sd_middle, sds_specific[2,]$sd_middle) = 
     as.character(reverseComplement(DNAString(substr(seq, sds_specific[1,]$sd_middle, sds_specific[2,]$sd_middle))))
@@ -23,7 +31,7 @@ carry_out_inv <- function(seq, sds, sv){
   #### B) Update SDs table information
   sds_revisited = sds_document_inversion(sds, sv)
   
-  
+  print('are we good')
   return(list(seq, sds_revisited))
 }
 sds_document_inversion <- function(sds, sv){
@@ -71,17 +79,17 @@ sds_document_inversion <- function(sds, sv){
       strand = ifelse(strand == '+', '-', '+')
     )
     
-    # Remove helpercolumns
-    sds$sd_middle = NULL
     sds$buried_in_inv = NULL
   }
   return(sds)
 }
 
-
-
-
 carry_out_del <- function(seq, sds, sv){
+  
+  # We assume the breakpoint is always in the middle of the repeat. 
+  # If we want the breakpoints different at some point, this here is
+  # the place to change this. 
+  sds$sd_middle = sds$chromStart + ((sds$chromEnd - sds$chromStart) / 2)
   
   #### A) Delete sequence 
   #sv = svs[n_sv,]
@@ -102,19 +110,14 @@ carry_out_del <- function(seq, sds, sv){
   
   sds_revisited = sds_document_deletion(sds, sv)
   
-  return(list(seq_mutated, sds))
+  return(list(seq_mutated, sds_revisited))
 }
 sds_document_deletion <- function(sds, sv){
   
   sds_specific = sds[sds$uid == sv$SD,]
   
-  # First, remove the downstream copy of the mediator SD
-  # This is not elegantly coded. 
-  sds[sds$uid == sv$SD,] = sds[sds$uid == sv$SD,][1,]
-  sds = unique(sds)
-  
-  # add this line? 
-  sds_specific = sds[sds$uid == sv$SD,]
+  # Remove the mediator pair
+  sds = sds[!sds$uid == sv$SD,]
   
   # Which SDs are buried inside the inversion of interest?
   sds$buried_in_del = (  
@@ -142,13 +145,10 @@ sds_document_deletion <- function(sds, sv){
   )
   
   # Remove helpercolumns
-  sds$sd_middle = NULL
   sds$buried_in_inv = NULL
   
   return(sds)
 }
-
-
 
 expand_one_of_pair <- function(sds, uid, n_of_pair, dupsize){
   
@@ -248,6 +248,11 @@ expand_whole_pair <- function(sds, uid, dupsize){
 
 carry_out_dup <- function(seq, sds, sv){
   
+  # We assume the breakpoint is always in the middle of the repeat. 
+  # If we want the breakpoints different at some point, this here is
+  # the place to change this. 
+  sds$sd_middle = sds$chromStart + ((sds$chromEnd - sds$chromStart) / 2)
+  
   #### A) Duplicate sequence 
   
   # Make helpers for sequence duplication
@@ -302,6 +307,8 @@ sds_document_duplication <- function(sds,sv){
     sds = expand_whole_pair(sds, uid, dupsize)
   }
   
+  
+  
   # Everything else gets shifted upstream by the amount of deletion. 
 
   # Chrom starts, ends
@@ -328,8 +335,30 @@ sds_document_duplication <- function(sds,sv){
     sds_predup[sds_predup$chromEnd > sds_specific[1,]$otherEnd,]$chromEnd + dupsize
   
   
+  # Add the duplication itself 
+  
+  print(sds_specific)
+  sds_dup = sds_specific
+  sds_dup[1,] = transform(
+    sds_dup[1,],
+    chromEnd = otherEnd,
+    otherEnd = otherEnd + dupsize
+  )
+  sds_dup[2,] = transform(
+    sds_dup[2,],
+    chromEnd = chromEnd + dupsize,
+    otherEnd = chromEnd
+  )
+  sds_dup$uid = paste0(sds_dup$uid, 'dup')
+  sds_dup$buried_in_dup = F
+  print('@@########################')
+  print(sds_dup)
+  print('@@########################')
+  print(sds_predup)
   # Re-merge
-  sds_return = rbind(sds_predup, sds[!sds$uid %in% uid_orig,])
+  sds_return = rbind(rbind(sds_predup, sds[!sds$uid %in% uid_orig,]), sds_dup)
+  #sds_return = rbind(sds_predup, sds[!sds$uid %in% uid_orig,])
+  
   sds_return = sds_return[order(sds_return$uid),]
   
   return(sds_return)
@@ -340,7 +369,7 @@ mutate_seq <- function(seq_fasta, sds_tsv, sv_instr_txt, outfasta, outsd){
   
   debug=F
   if (debug){
-    seq_fasta = "../res/fa/500.fa"
+    seq_fasta = "../res/fa/invs.fa"
     sds_tsv = "../data/sds10y.tsv"
     sv_instr_txt = "../data/svs10.txt"
   }
@@ -365,10 +394,7 @@ mutate_seq <- function(seq_fasta, sds_tsv, sv_instr_txt, outfasta, outsd){
   svs = read.table(sv_instr_txt, sep='\t'); colnames(svs) = c('SD', 'SV')
   
   
-  # We assume the breakpoint is always in the middle of the repeat. 
-  # If we want the breakpoints different at some point, this here is
-  # the place to change this. 
-  sds$sd_middle = sds$chromStart + ((sds$chromEnd - sds$chromStart) / 2)
+
   
   # Make every SV
   for (n_sv in 1:dim(svs)[1]){

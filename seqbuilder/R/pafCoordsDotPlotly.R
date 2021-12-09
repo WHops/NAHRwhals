@@ -20,16 +20,18 @@ dotplotly_dotplot <- function(opt){
     cat(paste0("show % identity for on-target alignments only (-t): ", opt$similarity,"\n"))
     cat(paste0("produce interactive plot (-x): ", opt$interactive,"\n"))
     cat(paste0("reference IDs to keep (-r): ", opt$refIDs,"\n"))
+    
   }
   #opt$output_filename = unlist(strsplit(opt$output_filename, "/"))[length(unlist(strsplit(opt$output_filename, "/")))]
   
+  print(opt)
   debug=F
   if (debug){
     opt=list()
     opt$min_query_aln = 0
     opt$min_align = 0
     opt$on_target = T
-    opt$input_filename = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/paf/blub.paf'
+    opt$input_filename = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/paf/invs_mut_self.paf'
   }
   # read in alignments
   alignments = read.table(opt$input_filename, stringsAsFactors = F, fill = T, row.names=NULL, comment.char='')
@@ -208,6 +210,20 @@ dotplotly_dotplot <- function(opt){
       theme_bw()
     
   }
+
+  if (opt$sdlink != F){
+    sd_simple = sd_to_bed(opt$sdlink)
+    
+    gp = gp + geom_rect(data=sd_simple, aes(xmin=chromStart, xmax=chromEnd, 
+                                            ymin=otherStart, ymax=otherEnd),
+                         alpha=0.25, fill='orange') + 
+              geom_rect(data=sd_simple, aes(xmin=chromStart, xmax=chromEnd, 
+                                            ymin=chromStart, ymax=otherEnd),
+                        alpha=0.25, fill='grey') + 
+              geom_rect(data=sd_simple, aes(xmin=chromStart, xmax=otherEnd, 
+                                            ymin=otherStart, ymax=otherEnd),
+                        alpha=0.25, fill='grey')
+  }
   # gp
   #ggsave(filename = paste0(opt$output_filename, ".png"), width = opt$plot_size, height = opt$plot_size, units = "in", dpi = 300, limitsize = F)
   print(paste0(opt$output_filename, ".pdf"))
@@ -228,8 +244,11 @@ dotplotly_dotplot <- function(opt){
 
 pafdotplot_make <- function(inpaf_link, outplot_link, min_align = 11, min_query_aln = 11,
                             keep_ref = 10000, similarity = T, h_lines = T, interactive = F,
-                            plot_size = 10, on_target = T, v = F){
+                            plot_size = 10, on_target = T, v = F, sdlink = F){
   
+  print('sup')
+  print(sdlink)
+  print('sup2')
   opt = list(input_filename=inpaf_link,
              output_filename=outplot_link,
              min_align = min_align, 
@@ -240,7 +259,8 @@ pafdotplot_make <- function(inpaf_link, outplot_link, min_align = 11, min_query_
              interactive=interactive, 
              plot_size=plot_size, 
              on_target = on_target, 
-             v=v)
+             v=v,
+             sdlink=sdlink)
 
   dotplotly_dotplot(opt)
 }
