@@ -2,11 +2,11 @@
 
 # Functions
 
+# I think this does what it should do. 
 sd_to_bed <- function(sdlink, outbedfile=NULL){
   
   library(dplyr)
   sd = read.table(sdlink, sep='\t')
-  
   colnames(sd) =  c(
     "chrom", "chromStart", "chromEnd", "name",
     "score","strand", "otherChrom","otherStart", "otherEnd",

@@ -44,9 +44,7 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link){
   
   # Identify alignments that border each other: same strand, and end of of is the start
   # of the other.
-  # rowpairs = which( (outer(inpaf$qend, inpaf$qstart, '-') == 0) &
-  #                     (outer(inpaf$strand, inpaf$strand, '==')), arr.ind = T)
-  
+
   tolerance_bp = 10
   rowpairs = which( ( abs(outer(inpaf$qend, inpaf$qstart, '-')) < tolerance_bp) &
                       (

@@ -1,0 +1,6 @@
+simcontig	0	500	SD1	simcontig	600	1100	+	1
+simcontig	1600	2100	SD2	simcontig	2200	2700	+	1
+simcontig	3200	3700	SD3	simcontig	3800	4300	+	1
+simcontig	4800	5300	SD4	simcontig	5400	5900	+	1
+simcontig	6400	6900	SD5	simcontig	7000	7500	+	1
+simcontig	8000	8500	SD6	simcontig	8600	9100	+	1

@@ -1,5 +1,7 @@
 #!/usr/local/bin/Rscript
 
+# Give parameters, and this script makes an instructions bedfile
+# for creating a sequence of choice with seqbuilder.
 
 library(optparse)
 
@@ -8,8 +10,10 @@ option_list = list(
               help="Total sequence length [bp]", metavar="numeric"),
   make_option(c("-s", "--sdlen"), type="numeric", default=NULL,
               help="length of sds", metavar="numeric"),
-  make_option(c("-d", "--distance"), type="numeric", default=NULL,
-              help="distance between SDs", metavar="numeric"),
+  make_option(c("-d", "--inner_sd_dist"), type="numeric", default=NULL,
+              help="distance between the two paris of an SD", metavar="numeric"),
+  make_option(c("-i", "--inter_sd_dist"), type="numeric", default=NULL, 
+              help="distance between one pair and its neighbour", metavar="numeric"),
   make_option(c("-m", "--fracmatch"), type="numeric", default=NULL, 
               help="SD similarity", metavar="numeric"),
   make_option(c("-o", "--outfile"), type="character", default=NULL, 
@@ -36,19 +40,14 @@ colnames_bed = c('chrom','chromStart',
                       'chromEnd', 'uid', 'otherChrom',
                       'otherStart','otherEnd', 'strand', 'fracMatch')
 
-opt$inter_sd_len = 100
-n_sds = floor(opt$seqlen / ((opt$sdlen*3) + opt$distance))
-print(n_sds)
+n_sds = floor(opt$seqlen / ((opt$sdlen*2) + opt$inner_sd_dist + opt$inter_sd_dist))
 contig = "simcontig"
-print((0:(n_sds-1)))
-print(((opt$sdlen * 2) + opt$inter_sd_len + opt$dist))
-chromStart = (0:(n_sds-1)) * ((opt$sdlen * 2) + opt$inter_sd_len + opt$dist)
+chromStart = (0:(n_sds-1)) * ((opt$sdlen * 2) + opt$inner_sd_dist + opt$inter_sd_dist)
 chromEnd = chromStart + opt$sdlen
-otherStart = chromEnd + opt$inter_sd_len
+otherStart = chromEnd + opt$inter_sd_dist
 otherEnd = otherStart + opt$sdlen
 uid = paste0("SD", 1:n_sds)
 
-print(chromStart)
 sds = data.frame('chrom' = contig, 
                      'chromStart' = chromStart,
                      'chromEnd' = chromEnd, 
@@ -58,5 +57,7 @@ sds = data.frame('chrom' = contig,
                      'otherEnd' = otherEnd, 
                      'strand' = '+',
                      'fracmatch' = opt$fracmatch)
+
+
 
 write.table(sds, file=opt$outfile, sep='\t', row.names=F, col.names=F, quote=F)

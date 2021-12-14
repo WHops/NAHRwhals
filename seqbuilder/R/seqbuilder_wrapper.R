@@ -106,7 +106,9 @@ if (sys.nframe() == 0){
   }
   
   # Make minimap2 alignment
-  make_chunked_minimap_alnment(outfasta, outfasta, outpaf, outplot2, chunklen = chunklen)
+  make_chunked_minimap_alnment(outfasta, outfasta, outpaf, outplot2, 
+                               chunklen = chunklen,
+                               hllink = opt$sdfile, hltype = 'sd')
   
   # Write bedfile
   paf_write_bed(outpaf, outbed)
@@ -133,6 +135,7 @@ if (sys.nframe() == 0){
     #make_chunked_minimap_alnment(outfasta, outmutfasta, outmutpaf, outplot4, chunklen = chunklen)
     
     ## MAKE A MINIMAP2+DOTPLOTLY dotplot with self
+    print('here')
     make_chunked_minimap_alnment(outmutfasta, outmutfasta, outmutpaf_self, outplot5, 
                                  chunklen = chunklen, sdlink = outmutsd)
     # Write bedfile

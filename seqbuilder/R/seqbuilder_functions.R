@@ -4,7 +4,8 @@
 make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplot, 
                                          chunklen = 2000, keep_ref = 50, 
                                          plot_size = 10, keep_intermediate = T,
-                                         sdlink = F){
+                                         hllink = hllink,
+                                         hltype = NULL){
   
   # Define intermediate files
   queryfasta_chunk = paste0(queryfasta, ".chunk.fa")
@@ -16,10 +17,9 @@ make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplo
   run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk)
   awk_edit_paf(outpaf_chunk, outpaf_awk)
   compress_paf_fnct(outpaf_awk, outpaf)
-  print('#################')
-  print(outplot)
   pafdotplot_make(outpaf, outplot, keep_ref=keep_ref, plot_size=plot_size,
-                  sdlink = sdlink)
+                  hllink = hllink, hltype = hltype)
+  
 }
 
 # Chunkify outfasta
@@ -30,7 +30,9 @@ shred_seq <- function(infasta, outfasta_chunk, chunklen, scriptloc='../../../bbm
 
 # Self explanatory
 run_minimap2 <- function(fastatarget, fastaquery, outpaf, minimap2loc = "/Users/hoeps/opt/anaconda3/bin/minimap2"){
-  system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
+  #system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
+  system(paste0(minimap2loc," -x asm20 -P -c -s 0 -M 0.2 ", fastatarget, " ", fastaquery, " > ", outpaf))
+  
 }
 
 # Use awk to adjust some coordinates. 

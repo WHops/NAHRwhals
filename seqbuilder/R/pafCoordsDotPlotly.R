@@ -211,9 +211,30 @@ dotplotly_dotplot <- function(opt){
     
   }
 
-  if (opt$sdlink != F){
-    sd_simple = sd_to_bed(opt$sdlink)
+  if (opt$hllink != F){
     
+    # if sdlink links to sd file (e.g. because it is a groundtruth):
+      # Format to bed (... why exactly?)
+      # sd_simple = sd_to_bed(opt$sdlink)
+    
+    # Load in the annotation file. Can be different formats.
+    if (opt$hltype == 'bed'){
+      print('Taking a bedfile as highlighting input')
+      sd_simple = read.table(opt$hllink, sep='\t')
+      colnames(sd_simple) =  c('chrom','chromStart',
+                              'chromEnd', 'uid', 'otherChrom',
+                              'otherStart','otherEnd', 'strand', 'fracMatch')
+    } else if (opt$hltype == 'sd'){
+      print(opt$hllink)
+      print('Taking an sdfile as highlighting input')
+      sd_simple = sd_to_bed(opt$hllink, outbedfile=NULL)
+    } else if (opt$hltype == 'paf'){
+      print('Taking a paffile as highlighting input')
+      sd_simple = paf_write_bed(opt$hllink, outsdbed_link = NULL)
+    }
+
+        print(sd_simple)
+    # Assumes sd_simple is in BED format - each SD only once. (?)
     gp = gp + geom_rect(data=sd_simple, aes(xmin=chromStart, xmax=chromEnd, 
                                             ymin=otherStart, ymax=otherEnd),
                          alpha=0.25, fill='orange') + 
@@ -244,11 +265,9 @@ dotplotly_dotplot <- function(opt){
 
 pafdotplot_make <- function(inpaf_link, outplot_link, min_align = 11, min_query_aln = 11,
                             keep_ref = 10000, similarity = T, h_lines = T, interactive = F,
-                            plot_size = 10, on_target = T, v = F, sdlink = F){
+                            plot_size = 10, on_target = T, v = F, hllink = F, hltype = NULL){
   
-  print('sup')
-  print(sdlink)
-  print('sup2')
+
   opt = list(input_filename=inpaf_link,
              output_filename=outplot_link,
              min_align = min_align, 
@@ -260,7 +279,8 @@ pafdotplot_make <- function(inpaf_link, outplot_link, min_align = 11, min_query_
              plot_size=plot_size, 
              on_target = on_target, 
              v=v,
-             sdlink=sdlink)
+             hllink=hllink,
+             hltype=hltype)
 
   dotplotly_dotplot(opt)
 }
