@@ -1,0 +1,9 @@
+simcontig	0	16384	SD1	simcontig	17384	33768	-	0.95
+simcontig	50152	66536	SD2	simcontig	67536	83920	-	0.95
+simcontig	100304	116688	SD3	simcontig	117688	134072	-	0.95
+simcontig	150456	166840	SD4	simcontig	167840	184224	-	0.95
+simcontig	200608	216992	SD5	simcontig	217992	234376	-	0.95
+simcontig	250760	267144	SD6	simcontig	268144	284528	-	0.95
+simcontig	300912	317296	SD7	simcontig	318296	334680	-	0.95
+simcontig	351064	367448	SD8	simcontig	368448	384832	-	0.95
+simcontig	401216	417600	SD9	simcontig	418600	434984	-	0.95

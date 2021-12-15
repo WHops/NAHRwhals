@@ -34,7 +34,7 @@ if (sys.nframe() == 0){
     make_option(c("-l", "--seqlen"), type="numeric", default=NULL,
                 help="Total sequence length [bp]", metavar="numeric"),
     make_option(c("-s", "--sdfile"), type="character", default=NULL,
-                help="Bedfile with desired SDs", metavar="character"),
+                help="TSV file with desired SDs", metavar="character"),
     make_option(c("-v", "--SVfile"), type="character", default=NULL,
                 help="Textfile with SVs to model", metavar="character"),
     make_option(c("-o", "--outprefix"), type="character", default="./outputcorr/", 
@@ -132,12 +132,12 @@ if (sys.nframe() == 0){
     }
     
     ## MAKE A MINIMAP2+DOTPLOTLY dotplot
-    #make_chunked_minimap_alnment(outfasta, outmutfasta, outmutpaf, outplot4, chunklen = chunklen)
+    make_chunked_minimap_alnment(outfasta, outmutfasta, outmutpaf, outplot4, chunklen = chunklen)
     
     ## MAKE A MINIMAP2+DOTPLOTLY dotplot with self
     print('here')
     make_chunked_minimap_alnment(outmutfasta, outmutfasta, outmutpaf_self, outplot5, 
-                                 chunklen = chunklen, sdlink = outmutsd)
+                                 chunklen = chunklen, hllink = outmutsd, hltype = 'paf')
     # Write bedfile
     paf_write_bed(outmutpaf_self, outmutbed)
   }

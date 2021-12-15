@@ -16,6 +16,8 @@ option_list = list(
               help="distance between one pair and its neighbour", metavar="numeric"),
   make_option(c("-m", "--fracmatch"), type="numeric", default=NULL, 
               help="SD similarity", metavar="numeric"),
+  make_option(c("-r", "--strand"), type="character", default=NULL, 
+              help="strand", metavar="character"),
   make_option(c("-o", "--outfile"), type="character", default=NULL, 
               help="Length of chunks to use for minimap2", metavar="character")
   
@@ -55,7 +57,7 @@ sds = data.frame('chrom' = contig,
                      'otherChrom' = contig,
                      'otherStart' = otherStart, 
                      'otherEnd' = otherEnd, 
-                     'strand' = '+',
+                     'strand' = opt$strand,
                      'fracmatch' = opt$fracmatch)
 
 

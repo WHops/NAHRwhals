@@ -1,0 +1,2 @@
+simcontig	0	65536	SD1	simcontig	66536	132072	+	0.95
+simcontig	197608	263144	SD2	simcontig	264144	329680	+	0.95
