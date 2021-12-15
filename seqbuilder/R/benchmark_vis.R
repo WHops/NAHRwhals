@@ -18,11 +18,10 @@ ggplot(res[(res$sim == 0.99),]) + geom_point(aes(x=chunklen, y=id, fill=as.chara
 
 plots = list()
 count = 1
-for (strand in c('-', '+')){
+for (strand in c('+', '-')){
   for (sim in c(0.99, 0.95, 0.90)){
-    print(dim(resp))
     resp = res[(res$strand==strand) & (res$sim == sim),]
-    print(resp)
+    print(dim(resp))
     plots[[paste0('p', count)]] = 
       ggplot(resp) + geom_tile(aes(x=sdlen, y=chunklen, fill=id)) + 
       scale_fill_viridis_c(limits=c(0.25,1)) + 
