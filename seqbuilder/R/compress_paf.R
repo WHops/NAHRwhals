@@ -32,6 +32,7 @@ merge_rows <- function(paffile, nl1, nl2){
 }
 
 compress_paf_fnct <- function(inpaf_link, outpaf_link){
+  inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res_500k/paf/run_1024_1024_0.90_+_chunked.paf.chunk"
   inpaf = read.table(inpaf_link, sep='\t')
   
   colnames_paf = c('qname','qlen','qstart','qend',
@@ -46,7 +47,7 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link){
   # Identify alignments that border each other: same strand, and end of of is the start
   # of the other.
 
-  tolerance_bp = 1
+  tolerance_bp = 10
   # rowpairs = which( ( abs(outer(inpaf$qend, inpaf$qstart, '-')) > tolerance_bp) &
   #                     (
   #                       (abs(outer(inpaf$tend, inpaf$tstart, '-')) < tolerance_bp) |
@@ -68,7 +69,7 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link){
   
   # Resolve multi-pairs 
   # By taking blobs of pairs and keeping only the top two
-  
+  # TODO. 
   n_occur <- data.frame(table(rowpairs$row))
   n_occur[n_occur$Freq > 1,]
   rowpairs[rowpairs$row %in% n_occur$Var1[n_occur$Freq > 1],]

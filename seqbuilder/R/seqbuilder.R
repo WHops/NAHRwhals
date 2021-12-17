@@ -1,6 +1,23 @@
 # Whoeps, 24th Nov 2021
 
-
+#' Introduce repeats to a simulated sequence
+#' 
+#' This function takes a DNA sequence and an SD instruction (.tsv format), 
+#' and introduces this SD. 
+#' Also calls add_snps function, to introduce snps in the SD pair, 
+#' to create the similarity specified in the input tsv. 
+#' 
+#' @param seq_base A DNA sequence, as character
+#' @param sds A table including columns 'chromStart', 'chromEnd', 'uid', 'strand'
+#' @param uid Name of the SD pair to be created. Must appear (exactly) twice in sds.
+#' 
+#' @examples 
+#' 
+#' Some example function call or so.
+#' 
+#' @author Wolfram Höps
+#' @rdname seq_modeling
+#' @export
 model_sds <- function(seq_base, sds, uid){
   
   sds_sub = sds[sds$uid == uid,]
@@ -18,10 +35,22 @@ model_sds <- function(seq_base, sds, uid){
   return(seq_base)
 }
 
+#' Add snps to a simulated SD pair
+#' 
+#' Mutate a proportion of bases in a DNA sequence. Can be used to 
+#' simulate evolutionary divergence of two SD pairs.
+#' 
+#' @param seq DNA sequence, as 'character'
+#' @param similarity How similar should the result be to the input (fraction of bases, [0-1])
+#' 
+#' @author Wolfram Höps
+#' @rdname seq_modeling
+#' @export
 add_snps <- function(seq, similarity, seed=1234){
   
   bases= c('A','C','G','T')
   set.seed(seed)
+  
   # According to similarity, choose bases to mutate. 
   # Bases can mutate to self, so we add one third to bases to mutate.
   # Going from 'similarity/100' to 'similarity' because now we work with
@@ -36,7 +65,14 @@ add_snps <- function(seq, similarity, seed=1234){
 }
 
 
-#' Create a simulated sequence
+#' Create a simulated DNA sequence, containing SDs of desired similarity
+#' 
+#' @param seqlen [numeric] length of simulated sequence in bp
+#' @param sdfile [character] A link to an SD file of the form of SD_hg38.tsv tables. 
+#' @param outfasta [character] a link to the outputfasta that will be saved
+#' 
+#' @author Wolfram Höps
+#' @rdname seq_modeling
 #' @export
 simulate_seq <- function(seqlen, sdfile, outfasta, debugmode=F){
   
@@ -46,6 +82,7 @@ simulate_seq <- function(seqlen, sdfile, outfasta, debugmode=F){
     outfasta = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/seq.fa'
   }
   
+  # Load and QC SD input file
   sds_colnames = c(
     "chrom", "chromStart", "chromEnd", "name",
     "score","strand", "otherChrom","otherStart", "otherEnd",
@@ -73,11 +110,6 @@ simulate_seq <- function(seqlen, sdfile, outfasta, debugmode=F){
   
   print(paste0('Done. Simulated sequence written to: ', outfasta))
 }
-
-
-#sdfile_large = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/data/sds_large.bed"
-#outfasta = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/seq.fa"
-#simulate_seq(1000000, sdfile_large, outfasta)
 
 
 

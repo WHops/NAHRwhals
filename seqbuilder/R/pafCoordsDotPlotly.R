@@ -5,7 +5,17 @@ suppressPackageStartupMessages(library(optparse))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(plotly))
 
-
+#' A core function for plotting a paf. This is extracted and edited from 
+#' the dotplotly package. Should be run through the 'pafdotplot_make' wrapperfunction
+#' which helps in selecting input parameters.
+#'   
+#' @param opt a list of parameters. 
+#' @return a ggplot2 object: exact dotplot between the two seqs. 
+#' 
+#' 
+#' @author Tom Poorten, edited by Wolfram Höps
+#' @rdname plotting
+#' @export
 dotplotly_dotplot <- function(opt){
     
   if(opt$v){

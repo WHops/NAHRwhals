@@ -1,7 +1,15 @@
 #!/usr/local/bin/Rscript
 
-# Functions
 
+#' A helperfunction (2/2) for the process of turning a bed to tsv. 
+#'   
+#' @param sds [data frame] an intermediate sds file between bed and tsv. Produced by 
+#' make_sd_partners, the other helperfunction.
+#' @return a tsv dataframe
+#' 
+#' @author Wolfram Höps
+#' @rdname format_bed_to_tsv
+#' @export
 add_and_fix_columns <- function(sds){
   colnames_final = c(
     "chrom", "chromStart", "chromEnd", "name",
@@ -11,8 +19,6 @@ add_and_fix_columns <- function(sds){
     "indelS","alignB","matchB","mismatchB", "transitionsB",
     "transversionsB","fracMatch","fracMatchIndel","jcK", "k2K"
   )
-  
-  
   
   # To fill with NA
   cols_fill_na = c('testResult','verdict','chits','ccov','alignfile')
@@ -37,8 +43,18 @@ add_and_fix_columns <- function(sds){
   return(sds)
 }
 
-
+#' A helperfunction (1/2) for the process of turning a bed to tsv. 
+#'   
+#' @param sds_raw [data frame] a loaded bedfile with column names annotated.
+#' @return a dataframe that is in some intermediate state between bed and tsv and
+#' which needs to be plugged into add_and_fix_columns (another helperfunction) next.
+#' 
+#' 
+#' @author Wolfram Höps
+#' @rdname format_bed_to_tsv
+#' @export
 make_sd_partners <- function(sds_raw){
+  
   # Create the partners
   sds_partners <- transform(
     sds_raw, 
@@ -59,8 +75,17 @@ make_sd_partners <- function(sds_raw){
 }
 
 
-###############################################################
-# zipFastener for TWO dataframes of unequal length
+#' A helperfunction for the helperfunction. Does some technical dataframe zipping stuff. 
+#'   
+#' @param df1 [data frame] a dataframe
+#' @param df2 [data frame] a dataframe
+#' @param along [1,2] axis along which to zip fasten merge whatever
+#' @return merged dataframe
+#' 
+#' 
+#' @author Unk - someone from the internet.
+#' @rdname format_bed_to_tsv
+#' @export
 zipFastener <- function(df1, df2, along=2)
 {
   # parameter checking
@@ -105,18 +130,22 @@ zipFastener <- function(df1, df2, along=2)
   if(along==2) res <- cbind(df1,df2)[ , index]           
   return(res)
 }
-###############################################################
 
 
 
-#' @title QC of input SD file
-#' @description  Run a few tests to see if there are obvious problems with the input
-#' @author Whoeps
+#' QC of the input bedfile. 
+#'   
+#' @param sds_raw [data frame] a loaded bedfile with column names annotated.
+#' @return an error if there is something to complain about. (Päckla Schelln
+#' is schnell aufgmacht :P)
+#' 
+#' @author Wolfram Höps
+#' @rdname format_bed_to_tsv
 #' @export
-run_qc_sd_raw <- function(sds_raw){
+run_qc_bed_df <- function(sds_raw){
   stopifnot("Number of fields !=  9. Check fields (tab separation)" = 
               dim(sds_raw)[2] == 9)
-  stopifnot("unique SD identifiers are now unique" = 
+  stopifnot("unique SD identifiers are not unique" = 
               dim(sds_raw)[1] == length(unique(sds_raw$uid)))
   stopifnot("Not all pairs are equally sized" = 
               unique((sds_raw$chromEnd - sds_raw$chromStart) == (sds_raw$otherEnd - sds_raw$otherStart)) == T)
@@ -141,7 +170,7 @@ if (sys.nframe() == 0){
                         'otherStart','otherEnd', 'strand', 'fracMatch')
   
   # Run QC
-  run_qc_sd_raw(sds_raw)
+  run_qc_bed_df(sds_raw)
   
   # Transform
   sds_partnered = make_sd_partners(sds_raw)

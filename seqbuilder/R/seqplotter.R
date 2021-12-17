@@ -3,7 +3,21 @@ library(dotplot)
 library(Biostrings)
 library(ggplot2)
 
-
+#' A helperfunction for making an exact dotplot, wrapping a functionality of dotplot package. 
+#' Should not be used for sequences above 25 kbp. 
+#' 
+#' @desciption Give me two sequences (character of DNAString I think), 
+#' and I will return to you a ggplot object with an exact (bp-precise)
+#' dotplot. This relies on the mkDotPlotDataFrame function from 'dotplot' package. 
+#'   
+#' @param seq1 A DNA sequence, as character or DNAString
+#' @param seq2 A DNA sequence, as character or DNAString
+#' @return a ggplot2 object: exact dotplot between the two seqs. 
+#' 
+#' 
+#' @author Wolfram Höps
+#' @rdname plotting
+#' @export
 dotPlotr <- function(seq1, seq2, wsize = 5, wstep = 1, nmatch = -1){
 
   if (length(seq1[1]) > 1)
@@ -40,24 +54,39 @@ dotPlotr <- function(seq1, seq2, wsize = 5, wstep = 1, nmatch = -1){
   
 }
 
-
-make_dotplot <- function(seq1link, seq2link, wsize, outfile, save=T, debugmode=F){
+#' Main wrapper function for making an exact dotplot. Should not be used for sequences
+#' above 25 kbp. 
+#' 
+#' @desciption Give me two sequences (character of DNAString I think), 
+#' and I will return to you a ggplot object with an exact (bp-precise)
+#' dotplot. This relies on the mkDotPlotDataFrame function from 'dotplot' package. 
+#'   
+#' @param seq1link [character/link] A link to a target fasta file, as character or DNAString
+#' @param seq2link [character/link] A link to a query fasta file, as character or DNAString
+#' @param save [bool] if T, save plot to a file. Otherwise, return.
+#' @return a ggplot2 object or nothing, depending on the 'save' parameter. 
+#' 
+#' 
+#' @author Wolfram Höps
+#' @rdname plotting
+#' @export
+make_dotplot <- function(targetfa, queryfa, wsize, outfile, save=T, debugmode=F){
   
   
   if (debugmode){
-    seq1link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/blub.fa'
-    seq2link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/blub.fa'
+    targetfa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/blub.fa'
+    queryfa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/blub.fa'
     outfile = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/blub.pdf'
     wsize=10
   }
   
   # Load both
-  seq1f = readDNAStringSet(seq1link)
+  seq1f = readDNAStringSet(targetfa)
   seq1name = names(seq1f)
   seq1seq = as.character(seq1f)
   
   # Load both
-  seq2f = readDNAStringSet(seq2link)
+  seq2f = readDNAStringSet(queryfa)
   seq2name = names(seq2f)
   seq2seq = as.character(seq2f)
   
@@ -120,7 +149,6 @@ if (sys.nframe() == 0){
   print(seqlen1)
   dotplot_size = seqlen1 * seqlen2
   
-  print(dotplot_size)
   if (dotplot_size < (25000**2)){
     print('making exact plot.')
     make_dotplot(seqfile_1, seqfile_2, 10, outplot)

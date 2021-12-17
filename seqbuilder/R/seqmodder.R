@@ -1,10 +1,98 @@
 # Whoeps, 25th Nov 2021
-library(Biostrings)
-library(dplyr)
-debug = F
+
+#' Introduce mutations to a DNA sequence. 
+#' 
+#' This is sitting at the core of the nahrchainer module. 
+#' 
+#' @param seq_fasta [character/link] A single-sequence fasta file containing the
+#' original sequence, which is to be modified. Should contain SDs. 
+#' @param sds_tsv [character/link] A tsv file DESCRIBING the seq_fasta. This information will
+#' be used to update presumed SD position post modification (not working well yet).
+#' @param sv_instr_txt [character/link] A tab-separated file with colums [SD-uid, SV].
+#' SD-uid has to be existing in sds_tsv. SV can be [INV, DEL, DUP]. s
+#' @param outfasta [character/link] Outputfile for the modified fasta
+#' @param outsd [character/link] Outputfile for the modified SD tsv file. 
+#' @return nothing. But output files written. 
+#' 
+#' @author Wolfram Höps
+#' @rdname seq_mutating
+#' @export
+mutate_seq <- function(seq_fasta, sds_tsv, sv_instr_txt, outfasta, outsd, debug=F){
+  
+  library(Biostrings)
+  library(dplyr)
+  
+  debug=F
+  if (debug){
+    seq_fasta = "../res/fa/invs.fa"
+    sds_tsv = "../data/sds10y.tsv"
+    sv_instr_txt = "../data/svs10.txt"
+  }
+  
+  # Load both sequence
+  seqf = readDNAStringSet(seq_fasta)
+  seqname = names(seqf)
+  seq = as.character(seqf)
+  
+  # Load sd info
+  sds_colnames = c(
+    "chrom", "chromStart", "chromEnd", "name",
+    "score","strand", "otherChrom","otherStart", "otherEnd",
+    "otherSize", "uid", "posBasesHit", "testResult",
+    "verdict", "chits","ccov","alignfile","alignL","indelN",
+    "indelS","alignB","matchB","mismatchB", "transitionsB",
+    "transversionsB","fracMatch","fracMatchIndel","jcK", "k2K"
+  )
+  sds = read.table(sds_tsv); colnames(sds) = sds_colnames
+  
+  # Load Mutation instructions
+  svs = read.table(sv_instr_txt, sep='\t'); colnames(svs) = c('SD', 'SV')
+  
+  
+  # Make every SV
+  for (n_sv in 1:dim(svs)[1]){
+    if (svs[n_sv,]$SV == 'INV'){
+      seq_sds = carry_out_inv(seq, sds, svs[n_sv,])
+      seq = seq_sds[[1]]
+      sds = seq_sds[[2]]
+    } else if (svs[n_sv,]$SV == 'DEL'){
+      seq_sds = carry_out_del(seq, sds, svs[n_sv,])
+      seq = seq_sds[[1]]
+      sds = seq_sds[[2]]
+    } else if (svs[n_sv,]$SV == 'DUP'){
+      seq_sds = carry_out_dup(seq, sds, svs[n_sv,])
+      seq = seq_sds[[1]]
+      sds = seq_sds[[2]]
+    } else {
+      stop(paste0("Unknown mutation type: ",  svs[n_sv,]$SV))
+    }
+  }
+  
+  # Write output files
+  writeFasta(data.frame(name='sim-sequence-mutated', seq=seq),
+             filename=outfasta)
+  
+  write.table(sds, file=outsd, sep='\t', col.names=F, row.names = F, quote = F)
+  
+  print('Success! Mutated sequence and sd written.')
+}
 
 
+#' Introduce an INV to a DNA sequence
+#' 
+#' @description This function is typically called by the mutate_seq function
+#' 
+#' @param seq [character] DNA sequence as character vector
+#' @param sds [data.frame] A dataframe with tsv SD information
+#' @param sv [data.frame] A data framewith columns [SD-uid, SV].
+#' SD-uid has to be existing in sds_tsv. SV can be [INV, DEL, DUP]
+#' @return a list object containing the mutated sequence and sds dataframe. 
+#' 
+#' @author Wolfram Höps
+#' @rdname seq_mutating
+#' @export
 carry_out_inv <- function(seq, sds, sv){
+  
   library(Biostrings)
   
   # We assume the breakpoint is always in the middle of the repeat. 
@@ -31,9 +119,24 @@ carry_out_inv <- function(seq, sds, sv){
   #### B) Update SDs table information
   sds_revisited = sds_document_inversion(sds, sv)
   
-  print('are we good')
   return(list(seq, sds_revisited))
 }
+
+
+#' Document the introduction of an INV in the SD tsv dataframe. 
+#' 
+#' @description This function is typically called by the carry_out_inv function.
+#' ALSO the function is highly experimental and probably not working.
+#' We recommend not rely on it at this point. 
+#' 
+#' @param sds [data.frame] A dataframe with tsv SD information
+#' @param sv [data.frame] A data framewith columns [SD-uid, SV].
+#' SD-uid has to be existing in sds_tsv. SV can be [INV, DEL, DUP]
+#' @returns a mutated sds dataframe. 
+#' 
+#' @author Wolfram Höps
+#' @rdname seq_mutating
+#' @export
 sds_document_inversion <- function(sds, sv){
   
   # Calculating again here. 
@@ -84,6 +187,20 @@ sds_document_inversion <- function(sds, sv){
   return(sds)
 }
 
+#' Introduce a DEL to a DNA sequence
+#' 
+#' @description This function is typically called by the mutate_seq function
+#' 
+#' 
+#' @param seq [character] DNA sequence as character vector
+#' @param sds [data.frame] A dataframe with tsv SD information
+#' @param sv [data.frame] A data framewith columns [SD-uid, SV].
+#' SD-uid has to be existing in sds_tsv. SV can be [INV, DEL, DUP]
+#' @return a list object containing the mutated sequence and sds dataframe. 
+#' 
+#' @author Wolfram Höps
+#' @rdname seq_mutating
+#' @export
 carry_out_del <- function(seq, sds, sv){
   
   # We assume the breakpoint is always in the middle of the repeat. 
@@ -112,6 +229,21 @@ carry_out_del <- function(seq, sds, sv){
   
   return(list(seq_mutated, sds_revisited))
 }
+
+#' Document the introduction of a DEL in the SD tsv dataframe. 
+#' 
+#' @description This function is typically called by the carry_out_del function.
+#' ALSO the function is highly experimental and probably not working.
+#' We recommend not rely on it at this point. 
+#' 
+#' @param sds [data.frame] A dataframe with tsv SD information
+#' @param sv [data.frame] A data framewith columns [SD-uid, SV].
+#' SD-uid has to be existing in sds_tsv. SV can be [INV, DEL, DUP]
+#' @returns a mutated sds dataframe. 
+#' 
+#' @author Wolfram Höps
+#' @rdname seq_mutating
+#' @export
 sds_document_deletion <- function(sds, sv){
   
   sds_specific = sds[sds$uid == sv$SD,]
@@ -150,6 +282,11 @@ sds_document_deletion <- function(sds, sv){
   return(sds)
 }
 
+#' Helperfunction 1/2 for carry_out_dup
+#' 
+#' @author Wolfram Höps
+#' @rdname seq_mutating
+#' @export
 expand_one_of_pair <- function(sds, uid, n_of_pair, dupsize){
   
   # We put in the whole sds first. 
@@ -227,6 +364,12 @@ expand_one_of_pair <- function(sds, uid, n_of_pair, dupsize){
   
   return(all)
 }
+
+#' Helperfunction 2/2 for carry_out_dup
+#' 
+#' @author Wolfram Höps
+#' @rdname seq_mutating
+#' @export
 expand_whole_pair <- function(sds, uid, dupsize){
   
   sds = sds_bu
@@ -246,6 +389,19 @@ expand_whole_pair <- function(sds, uid, dupsize){
   return(sds3)
 }
 
+#' Introduce a DUP to a DNA sequence
+#' 
+#' @description This function is typically called by the mutate_seq function
+#' 
+#' @param seq [character] DNA sequence as character vector
+#' @param sds [data.frame] A dataframe with tsv SD information
+#' @param sv [data.frame] A data framewith columns [SD-uid, SV].
+#' SD-uid has to be existing in sds_tsv. SV can be [INV, DEL, DUP]
+#' @return a list object containing the mutated sequence and sds dataframe. 
+#' 
+#' @author Wolfram Höps
+#' @rdname seq_mutating
+#' @export
 carry_out_dup <- function(seq, sds, sv){
   
   # We assume the breakpoint is always in the middle of the repeat. 
@@ -275,6 +431,22 @@ carry_out_dup <- function(seq, sds, sv){
   
   return(list(seq_mutated, sds_revisited))
 }
+
+
+#' Document the introduction of a DUP in the SD tsv dataframe. 
+#' 
+#' @description This function is typically called by the carry_out_dup function.
+#' ALSO the function is highly experimental and probably not working.
+#' We recommend not rely on it at this point. 
+#' 
+#' @param sds [data.frame] A dataframe with tsv SD information
+#' @param sv [data.frame] A data framewith columns [SD-uid, SV].
+#' SD-uid has to be existing in sds_tsv. SV can be [INV, DEL, DUP]
+#' @returns a mutated sds dataframe. 
+#' 
+#' @author Wolfram Höps
+#' @rdname seq_mutating
+#' @export
 sds_document_duplication <- function(sds,sv){
   
   sds_specific = sds[sds$uid == sv$SD,]
@@ -365,61 +537,4 @@ sds_document_duplication <- function(sds,sv){
 }
 
 
-mutate_seq <- function(seq_fasta, sds_tsv, sv_instr_txt, outfasta, outsd){
-  
-  debug=F
-  if (debug){
-    seq_fasta = "../res/fa/invs.fa"
-    sds_tsv = "../data/sds10y.tsv"
-    sv_instr_txt = "../data/svs10.txt"
-  }
-  
-  # Load both sequence
-  seqf = readDNAStringSet(seq_fasta)
-  seqname = names(seqf)
-  seq = as.character(seqf)
-  
-  # Load sd info
-  sds_colnames = c(
-    "chrom", "chromStart", "chromEnd", "name",
-    "score","strand", "otherChrom","otherStart", "otherEnd",
-    "otherSize", "uid", "posBasesHit", "testResult",
-    "verdict", "chits","ccov","alignfile","alignL","indelN",
-    "indelS","alignB","matchB","mismatchB", "transitionsB",
-    "transversionsB","fracMatch","fracMatchIndel","jcK", "k2K"
-  )
-  sds = read.table(sds_tsv); colnames(sds) = sds_colnames
 
-  # Load Mutation instructions
-  svs = read.table(sv_instr_txt, sep='\t'); colnames(svs) = c('SD', 'SV')
-  
-  
-
-  
-  # Make every SV
-  for (n_sv in 1:dim(svs)[1]){
-    print(n_sv)
-    if (svs[n_sv,]$SV == 'INV'){
-      seq_sds = carry_out_inv(seq, sds, svs[n_sv,])
-      seq = seq_sds[[1]]
-      sds = seq_sds[[2]]
-    } else if (svs[n_sv,]$SV == 'DEL'){
-      seq_sds = carry_out_del(seq, sds, svs[n_sv,])
-      seq = seq_sds[[1]]
-      sds = seq_sds[[2]]
-    } else if (svs[n_sv,]$SV == 'DUP'){
-      seq_sds = carry_out_dup(seq, sds, svs[n_sv,])
-      seq = seq_sds[[1]]
-      sds = seq_sds[[2]]
-    } else {
-      stop(paste0("Unknown mutation type: ",  svs[n_sv,]$SV))
-    }
-  }
-  
-  writeFasta(data.frame(name='sim-sequence-mutated', seq=seq),
-             filename=outfasta)
-  
-  write.table(sds, file=outsd, sep='\t', col.names=F, row.names = F, quote = F)
-  
-  print('Success! Mutated sequence and sd written.')
-}
