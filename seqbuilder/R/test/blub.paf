@@ -1,3 +1,0 @@
-sim-sequence-mutated_0-9999	100	0	10000	+	sim-sequence-mutated	10000	0	10000	10000	10000	0
-sim-sequence-mutated_1000-1999	100	1000	2000	-	sim-sequence-mutated	10000	3999	4999	989	994	0
-sim-sequence-mutated_4000-4999	100	4000	5000	-	sim-sequence-mutated	10000	999	1999	989	994	0

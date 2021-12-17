@@ -25,8 +25,8 @@
 make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplot, 
                                          chunklen = 1000, keep_ref = 10000, 
                                          plot_size = 10, 
-                                         hllink = hllink,
-                                         hltype = NULL){
+                                         hllink = F,
+                                         hltype = F){
   
   # Define intermediate files
   queryfasta_chunk = paste0(queryfasta, ".chunk.fa")
@@ -38,9 +38,11 @@ make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplo
   # Single-sequence query fasta gets chopped into pieces.
   shred_seq(queryfasta, queryfasta_chunk, chunklen)
   
+  print(targetfasta)
+  print(queryfasta_chunk)
   # Self explanatory
   run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk)
-  
+  print(outpaf_chunk)
   # Awk is used to correct the seuqence names. This is because I know only there
   # how to use regex...
   awk_edit_paf(outpaf_chunk, outpaf_awk)
@@ -48,6 +50,7 @@ make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplo
   # paf of fragmented paf gets put back together. 
   compress_paf_fnct(outpaf_awk, outpaf)
   
+  print(hllink)
   # Make a dotplot of that final paf (and with sd highlighting). 
   pafdotplot_make(outpaf, outplot, keep_ref=keep_ref, plot_size=plot_size,
                   hllink = hllink, hltype = hltype)
@@ -101,10 +104,10 @@ run_minimap2 <- function(targetfasta, queryfasta, outpaf, minimap2loc = "/Users/
   #system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
   
   # Some self-defined parameters
-  #system(paste0(minimap2loc," -x asm20 -P -c -s 0 -M 0.2 ", targetfasta, " ", queryfasta, " > ", outpaf))
+  system(paste0(minimap2loc," -x asm20 -P -c -s 0 -M 0.2 ", targetfasta, " ", queryfasta, " > ", outpaf))
   
   #pbmm2: CCS/HIFI
-  system(paste0(minimap2loc," -k 19 -w 10 -u -o 5 -O 56 -e 4 -E 1 -A 2 -B 5 -z 400 -Z 50  -r 2000   -L 0.5 -g 5000", targetfasta, " ", queryfasta, " > ", outpaf))
+  #system(paste0(minimap2loc," -k 19 -w 10 -u -o 5 -O 56 -e 4 -E 1 -A 2 -B 5 -z 400 -Z 50  -r 2000 -L 0.5 -g 5000", targetfasta, " ", queryfasta, " > ", outpaf))
   
   
 }

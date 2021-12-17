@@ -302,24 +302,27 @@ dotplotly_dotplot <- function(opt){
 #' @export
 pafdotplot_make <- function(inpaf_link, outplot_link, min_align = 11, min_query_aln = 11,
                             keep_ref = 10000, similarity = T, h_lines = T, interactive = F,
-                            plot_size = 10, on_target = T, v = F, hllink = F, hltype = NULL){
+                            plot_size = 10, on_target = T, v = F, hllink = F, hltype = F){
   
-
+  print('sup')
   opt = list(input_filename=inpaf_link,
              output_filename=outplot_link,
-             min_align = min_align, 
+             min_align = min_align,
              min_query_aln = min_query_aln,
-             keep_ref=keep_ref, 
-             similarity=similarity, 
-             h_lines=h_lines, 
-             interactive=interactive, 
-             plot_size=plot_size, 
-             on_target = on_target, 
-             v=v,
-             hllink=hllink,
+             keep_ref=keep_ref,
+             similarity=similarity,
+             h_lines=h_lines,
+             interactive=interactive,
+             plot_size=plot_size,
+             on_target = on_target,
+             v=v, 
+             hllink=hllink, 
              hltype=hltype)
-
+ 
+  print('pre')
+  print(opt)
   dotplotly_dotplot(opt)
+  print('hi')
 }
 
 
