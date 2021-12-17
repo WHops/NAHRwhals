@@ -5,13 +5,16 @@ suppressPackageStartupMessages(library(optparse))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(plotly))
 
-#' A core function for plotting a paf. This is extracted and edited from 
-#' the dotplotly package. Should be run through the 'pafdotplot_make' wrapperfunction
+#' A core function for plotting a paf. 
+#' 
+#' @ description This is extracted and an edited version of 
+#' the script "pafCoordsDotPlotly.R" from the dotplotly package 
+#' (https://github.com/tpoorten/dotPlotly) by Tom Poorten. 
+#' Should be run through the 'pafdotplot_make' wrapper function
 #' which helps in selecting input parameters.
 #'   
 #' @param opt a list of parameters. 
-#' @return a ggplot2 object: exact dotplot between the two seqs. 
-#' 
+#' @return Nothing, but writes a pdf with a dotplot.
 #' 
 #' @author Tom Poorten, edited by Wolfram Höps
 #' @rdname plotting
@@ -273,6 +276,30 @@ dotplotly_dotplot <- function(opt){
   #
 }
 
+
+#' Wrapperfunction for turning a paf (and an SD highlight annotation) into a dotplot pdf.
+#' 
+#' @description T
+#'   
+#' @param inpaf_link [character/link] a link to the paf to be plotted
+#' @param outplot_link [character/link] a link to where the output pdf will be saved
+#' @param min_align not sure. set to 11, keep it there.
+#' @param min_query_aln not sure. set to 11, keep it there.
+#' @param keep_ref number of sequences to keep or something. Dont touch. 
+#' @param similarity [T/F] indicate sequence similarity by color code (default: T)
+#' @param h_lines [T/F] plot horizontal lines (default: T)
+#' @param interactive [T/F] unsure. Dotplotly? Untested, keep at F. 
+#' @param plot_size [numeric] plot size in inch.
+#' @param on_target [T/F] dont remember. default: T
+#' @param v [T/F] unsure. default: F
+#' @param hllink [character/link] link to an SD annotation file (bed, tsv or paf) to include as 
+#' highlights in the plot.
+#' @param hltype [character] filetype of hllink. Can be 'NULL', 'bed', 'tsv', 'paf'.
+#' @return Nothing, but writes a pdf with a dotplot.
+#' 
+#' @author Wolfram Höps
+#' @rdname plotting
+#' @export
 pafdotplot_make <- function(inpaf_link, outplot_link, min_align = 11, min_query_aln = 11,
                             keep_ref = 10000, similarity = T, h_lines = T, interactive = F,
                             plot_size = 10, on_target = T, v = F, hllink = F, hltype = NULL){

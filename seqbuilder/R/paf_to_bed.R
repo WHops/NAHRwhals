@@ -1,11 +1,18 @@
-# Turn paf to SD bed
-
-
-
-# Go from a paf file (fresh out of minimap2) to a 
-# filtered paf file (only nondiagonal) and then
-# to a bedfile. The Bedfile will have the wrong colnames
+#' Wrapperfunction to go from a paf file (fresh out of minimap2) to a 
+#' filtered paf file (only nondiagonal) and then
+#' to a bedfile.
+#'  
+#' @description The Bedfile will have the wrong colnames
 # but it doesn't matter because it's saved without them. 
+#'   
+#' @param inpaf_link [character/link] a link to the inpaf to be converted to bed.
+#' @param outsdbed_link [character/link] a link to the output bedfile. Can be NULL, then 
+#' the output will be returned
+#' @return a bed dataframe if outsdbed_link is NULL.
+#' 
+#' @author Wolfram Höps
+#' @rdname format_paf_to_bed
+#' @export
 paf_write_bed <- function(inpaf_link, outsdbed_link){
   
   paf_sd = paf_to_sd_paf(inpaf_link)
@@ -19,7 +26,17 @@ paf_write_bed <- function(inpaf_link, outsdbed_link){
 }
 
 
-# Filter paf to sd relevant entries
+#' Helperfunction (1/2) for paf_write_bed. 
+#' 
+#' @description Cuts down a paf to entries where query > target. Not 100% sure
+#' what is going on here. 
+#'   
+#' @param inpaf_link [character/link] a link to the inpaf to be converted to bed.
+#' @return a filtered pseudo-paf file. Gotta double-check this. 
+#' 
+#' @author Wolfram Höps
+#' @rdname format_paf_to_bed
+#' @export
 paf_to_sd_paf <- function(inpaf_link){
   
   inpaf = read.table(inpaf_link, sep='\t')
@@ -31,6 +48,7 @@ paf_to_sd_paf <- function(inpaf_link){
   
   # For safety: sort entries by qstart
   inpaf = inpaf[order(inpaf$qstart),]
+  
   #paf_sd = inpaf
   paf_sd = inpaf[(
     (inpaf$qstart != inpaf$tstart) &
@@ -43,7 +61,14 @@ paf_to_sd_paf <- function(inpaf_link){
 }
 
 
-# Convert to bed
+#' Convert a trimmed-down paf to bed? Not sure either about this. 
+#' 
+#' @param inpaf [data frame] a link to the inpaf to be converted to bed.
+#' @return a bed-file style dataframe.
+#' 
+#' @author Wolfram Höps
+#' @rdname format_paf_to_bed
+#' @export
 paf_to_bed <- function(inpaf){
   
   # In case colnames are not yet there

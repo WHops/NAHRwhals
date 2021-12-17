@@ -75,8 +75,18 @@ shred_seq <- function(infasta, outfasta_chunk, chunklen, scriptloc='../../../bbm
 
 #' Submit a system command to run minimap2
 #' 
-#' @description This is a helperfunction to run minimap2
-#' 
+#' @description This is a helperfunction to run minimap2. Also check out:
+#' https://github.com/PacificBiosciences/pbmm2/ . Minimap2 parameters:
+#'  -k   k-mer size (no larger than 28). [-1]
+#' -w   Minimizer window size. [-1]
+#' -u   Disable homopolymer-compressed k-mer (compression is active for SUBREAD & UNROLLED presets).
+#' -A   Matching score. [-1]
+#' -B   Mismatch penalty. [-1]
+#' -z   Z-drop score. [-1]
+#' -Z   Z-drop inversion score. [-1]
+#' -r   Bandwidth used in chaining and DP-based alignment. [-1]
+#' -g   Stop chain enlongation if there are no minimizers in N bp. [-1]
+#' #' 
 #' @param targetfasta [character/link] link to the 'target' single-sequence fasta (sometimes reference, e.g. chm13.)
 #' @param queryfasta [character/link] link to the 'query' fasta. Can be single or multi-fasta
 #' @param outpaf [character/link] Path to the output paffile to be written.
@@ -89,7 +99,13 @@ shred_seq <- function(infasta, outfasta_chunk, chunklen, scriptloc='../../../bbm
 #' @export
 run_minimap2 <- function(targetfasta, queryfasta, outpaf, minimap2loc = "/Users/hoeps/opt/anaconda3/bin/minimap2"){
   #system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
-  system(paste0(minimap2loc," -x asm20 -P -c -s 0 -M 0.2 ", targetfasta, " ", queryfasta, " > ", outpaf))
+  
+  # Some self-defined parameters
+  #system(paste0(minimap2loc," -x asm20 -P -c -s 0 -M 0.2 ", targetfasta, " ", queryfasta, " > ", outpaf))
+  
+  #pbmm2: CCS/HIFI
+  system(paste0(minimap2loc," -k 19 -w 10 -u -o 5 -O 56 -e 4 -E 1 -A 2 -B 5 -z 400 -Z 50  -r 2000   -L 0.5 -g 5000", targetfasta, " ", queryfasta, " > ", outpaf))
+  
   
 }
 

@@ -2,7 +2,16 @@
 
 # Functions
 
-# I think this does what it should do. 
+#' Convert a (normal, double-entry-) tsv file to bed
+#' 
+#' @param sdlink [character/link] a link to the input sd file to be converted to bed.
+#' @param outbedfile [character/link/NULL] a link to the output bedfile. If null, a 
+#' bed-like dataframe is returned
+#' @return a bed-file style dataframe if outbedfile == NULL
+#' 
+#' @author Wolfram Höps
+#' @rdname format_sd_to_bed
+#' @export
 sd_to_bed <- function(sdlink, outbedfile=NULL){
   
   library(dplyr)
@@ -20,7 +29,6 @@ sd_to_bed <- function(sdlink, outbedfile=NULL){
                  'otherChrom', 'otherStart', 'otherEnd', 
                  'strand', 'fracMatch')]
   
-  print(sd_keep)
   sd_keep_uniq = sd_keep %>% group_by(uid) %>% slice(1)
   sd_keep_uniq_sort = sd_keep_uniq[order(sd_keep_uniq$chromStart),]
   

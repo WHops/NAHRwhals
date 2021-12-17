@@ -1,5 +1,17 @@
 #!/usr/local/bin/Rscript
 
+#' Helperfunction (1/1) of compress_paf_fnct
+#' 
+#' @description Melt two alignment entries into one.
+#' 
+#' @param paffile [data frame] loaded paffile with colnames
+#' @param nl1 [character/link] line number of first-of-pair
+#' @param nl2 [character/link] line number of second-of-pair
+#' @return paffile with one row less (bc a pair has been merged)
+#' 
+#' @author Wolfram Höps
+#' @rdname alignment
+#' @export
 merge_rows <- function(paffile, nl1, nl2){
   
   # query name
@@ -31,31 +43,39 @@ merge_rows <- function(paffile, nl1, nl2){
   
 }
 
+#' Melt the alignment pieces back together after chunkifying them earlier.   
+#' 
+#' @description This is a crucial module for finding the SDs later, and poses
+#' the last part of the chunk-minimap2-edit-melt workflow. This might need more 
+#' work in the future, because melting is not so straight forward. 
+#' 
+#' @param inpaf_link [character/link] link to the chunked paf
+#' @param outpaf_link [character/link] link to the molten output paf
+#' 
+#' @author Wolfram Höps
+#' @rdname alignment
+#' @export
 compress_paf_fnct <- function(inpaf_link, outpaf_link){
+  
+  debug = F
+  if (debug){
   inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res_500k/paf/run_1024_1024_0.90_+_chunked.paf.chunk"
+  } 
+  
+  # Read and col-annotate the input paf
   inpaf = read.table(inpaf_link, sep='\t')
   
   colnames_paf = c('qname','qlen','qstart','qend',
                    'strand','tname','tlen','tstart',
                    'tend','nmatch','alen','mapq')
-  
   colnames(inpaf)[1:length(colnames_paf)] = colnames_paf
   
   # For safety: sort entries by qstart
   inpaf = inpaf[order(inpaf$qstart),]
   
   # Identify alignments that border each other: same strand, and end of of is the start
-  # of the other.
-
+  # of the other. With some tolerance
   tolerance_bp = 10
-  # rowpairs = which( ( abs(outer(inpaf$qend, inpaf$qstart, '-')) > tolerance_bp) &
-  #                     (
-  #                       (abs(outer(inpaf$tend, inpaf$tstart, '-')) < tolerance_bp) |
-  #                       (abs(outer(inpaf$tstart, inpaf$tend, '-')) < tolerance_bp)
-  #                     ) &
-  #                     (outer(inpaf$strand, inpaf$strand, '==')),
-  #                   arr.ind = T)
-  
   rowpairs = as.data.frame(which( ( abs(outer(inpaf$qend, inpaf$qstart, '-')) > 0) &
                       (
                           (abs(outer(inpaf$tstart, inpaf$tend, '-')) < tolerance_bp) |
@@ -70,9 +90,9 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link){
   # Resolve multi-pairs 
   # By taking blobs of pairs and keeping only the top two
   # TODO. 
-  n_occur <- data.frame(table(rowpairs$row))
-  n_occur[n_occur$Freq > 1,]
-  rowpairs[rowpairs$row %in% n_occur$Var1[n_occur$Freq > 1],]
+  #n_occur <- data.frame(table(rowpairs$row))
+  #n_occur[n_occur$Freq > 1,]
+  #rowpairs[rowpairs$row %in% n_occur$Var1[n_occur$Freq > 1],]
   
   
   # Go through each pair, make the merge. We go through the lines backwards,
