@@ -17,8 +17,7 @@ source_here <- function(x, ...) {
 # runs only when script is run by itself
 if (sys.nframe() == 0){
   
-  library(optparse)
-  
+
   suppressMessages(source_here('seqbuilder.R'))
   suppressMessages(source_here('seqbuilder_functions.R'))
   suppressMessages(source_here('seqplotter.R'))
@@ -31,15 +30,15 @@ if (sys.nframe() == 0){
 
   # INPUT
   option_list = list(
-    make_option(c("-l", "--seqlen"), type="numeric", default=NULL,
+    optparse::make_option(c("-l", "--seqlen"), type="numeric", default=NULL,
                 help="Total sequence length [bp]", metavar="numeric"),
-    make_option(c("-s", "--sdfile"), type="character", default=NULL,
+    optparse::make_option(c("-s", "--sdfile"), type="character", default=NULL,
                 help="TSV file with desired SDs", metavar="character"),
-    make_option(c("-v", "--SVfile"), type="character", default=NULL,
+    optparse::make_option(c("-v", "--SVfile"), type="character", default=NULL,
                 help="Textfile with SVs to model", metavar="character"),
-    make_option(c("-o", "--outprefix"), type="character", default="./outputcorr/", 
+    optparse::make_option(c("-o", "--outprefix"), type="character", default="./outputcorr/", 
                 help="Output fasta", metavar="character"),
-    make_option(c("-c", "--chunklen"), type="numeric", default=1000, 
+    optparse::make_option(c("-c", "--chunklen"), type="numeric", default=1000, 
                 help="Length of chunks to use for minimap2", metavar="character")
     
     )

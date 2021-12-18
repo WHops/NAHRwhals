@@ -19,9 +19,6 @@
 #' @export
 mutate_seq <- function(seq_fasta, sds_tsv, sv_instr_txt, outfasta, outsd, debug=F){
   
-  library(Biostrings)
-  library(dplyr)
-  
   debug=F
   if (debug){
     seq_fasta = "../res/fa/invs.fa"
@@ -30,8 +27,8 @@ mutate_seq <- function(seq_fasta, sds_tsv, sv_instr_txt, outfasta, outsd, debug=
   }
   
   # Load both sequence
-  seqf = readDNAStringSet(seq_fasta)
-  seqname = names(seqf)
+  seqf = Biostrings::readDNAStringSet(seq_fasta)
+  seqname = names(seqf) #should be Biostrings too?
   seq = as.character(seqf)
   
   # Load sd info
@@ -93,8 +90,6 @@ mutate_seq <- function(seq_fasta, sds_tsv, sv_instr_txt, outfasta, outsd, debug=
 #' @export
 carry_out_inv <- function(seq, sds, sv){
   
-  library(Biostrings)
-  
   # We assume the breakpoint is always in the middle of the repeat. 
   # If we want the breakpoints different at some point, this here is
   # the place to change this. 
@@ -110,11 +105,11 @@ carry_out_inv <- function(seq, sds, sv){
   # Check if SD is possible given SD orientation
   stopifnot("Error: INV can not be simulated by directly oriented SDs." = 
               all(sds_specific$strand == '-'))
-  test = DNAString(substr(seq, sds_specific[1,]$sd_middle, sds_specific[2,]$sd_middle))
+  test = Biostrings::DNAString(substr(seq, sds_specific[1,]$sd_middle, sds_specific[2,]$sd_middle))
   
   
   substr(seq, sds_specific[1,]$sd_middle, sds_specific[2,]$sd_middle) = 
-    as.character(reverseComplement(DNAString(substr(seq, sds_specific[1,]$sd_middle, sds_specific[2,]$sd_middle))))
+    as.character(Biostrings::reverseComplement(Biostrings::DNAString(substr(seq, sds_specific[1,]$sd_middle, sds_specific[2,]$sd_middle))))
   
   #### B) Update SDs table information
   sds_revisited = sds_document_inversion(sds, sv)

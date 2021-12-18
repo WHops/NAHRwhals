@@ -14,7 +14,7 @@ source_here <- function(x, ...) {
 # runs only when script is run by itself
 if (sys.nframe() == 0){
   
-  library(optparse)
+ 
   
   suppressMessages(source_here('seqbuilder.R'))
   suppressMessages(source_here('seqbuilder_functions.R'))
@@ -37,13 +37,13 @@ if (sys.nframe() == 0){
   } else {
     opt <- parse_args(OptionParser(option_list=option_list))
     option_list = list(
-      make_option(c("-i", "--input_fasta"), type="character", default=NULL,
+      optparse::make_option(c("-i", "--input_fasta"), type="character", default=NULL,
                   help="input fasta", metavar="character"),
-      make_option(c("-r", "--reference"), type="character", default='hg38',
+      optparse::make_option(c("-r", "--reference"), type="character", default='hg38',
                   help="Reference sequence. Can be 'hg38', 'chm13' or a custom input fasta.", metavar="character"),
-      make_option(c("-o", "--outfile"), type="character", default=NULL,
+      optparse::make_option(c("-o", "--outfile"), type="character", default=NULL,
                   help="Outputfile with SVs", metavar="character"),
-      make_option(c("-c", "--chunklen"), type="numeric", default=512,
+      optparse::make_option(c("-c", "--chunklen"), type="numeric", default=512,
                   help="Chunklen", metavar="numeric"),
     )
     
