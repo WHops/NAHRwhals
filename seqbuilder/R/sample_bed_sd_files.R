@@ -5,22 +5,21 @@
 
 # runs only when script is run by itself
 if (sys.nframe() == 0){
-  library(optparse)
-  
+
   option_list = list(
-    make_option(c("-t", "--seqlen"), type="numeric", default=NULL,
+    optparse::make_option(c("-t", "--seqlen"), type="numeric", default=NULL,
                 help="Total sequence length [bp]", metavar="numeric"),
-    make_option(c("-s", "--sdlen"), type="numeric", default=NULL,
+    optparse::make_option(c("-s", "--sdlen"), type="numeric", default=NULL,
                 help="length of sds", metavar="numeric"),
-    make_option(c("-d", "--inner_sd_dist"), type="numeric", default=NULL,
+    optparse::make_option(c("-d", "--inner_sd_dist"), type="numeric", default=NULL,
                 help="distance between the two paris of an SD", metavar="numeric"),
-    make_option(c("-i", "--inter_sd_dist"), type="numeric", default=NULL, 
+    optparse::make_option(c("-i", "--inter_sd_dist"), type="numeric", default=NULL, 
                 help="distance between one pair and its neighbour", metavar="numeric"),
-    make_option(c("-m", "--fracmatch"), type="numeric", default=NULL, 
+    optparse::make_option(c("-m", "--fracmatch"), type="numeric", default=NULL, 
                 help="SD similarity", metavar="numeric"),
-    make_option(c("-r", "--strand"), type="character", default=NULL, 
+    optparse::make_option(c("-r", "--strand"), type="character", default=NULL, 
                 help="strand", metavar="character"),
-    make_option(c("-o", "--outfile"), type="character", default=NULL, 
+    optparse::make_option(c("-o", "--outfile"), type="character", default=NULL, 
                 help="Length of chunks to use for minimap2", metavar="character")
     
   )
@@ -37,8 +36,8 @@ if (sys.nframe() == 0){
   
   options(error=traceback)
   
-  parser <- OptionParser(usage = "%prog -i alignments.coords -o out [options]",option_list=option_list)
-  opt = parse_args(parser)
+  parser <- optparse::OptionParser(usage = "%prog -i alignments.coords -o out [options]",option_list=option_list)
+  opt = optparse::parse_args(parser)
   print(opt)
   colnames_bed = c('chrom','chromStart',
                         'chromEnd', 'uid', 'otherChrom',

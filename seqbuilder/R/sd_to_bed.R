@@ -14,7 +14,6 @@
 #' @export
 sd_to_bed <- function(sdlink, outbedfile=NULL){
   
-  library(dplyr)
   sd = read.table(sdlink, sep='\t')
   colnames(sd) =  c(
     "chrom", "chromStart", "chromEnd", "name",
@@ -29,7 +28,9 @@ sd_to_bed <- function(sdlink, outbedfile=NULL){
                  'otherChrom', 'otherStart', 'otherEnd', 
                  'strand', 'fracMatch')]
   
-  sd_keep_uniq = sd_keep %>% group_by(uid) %>% slice(1)
+  #sd_keep_uniq = sd_keep %>% group_by(uid) %>% slice(1)
+  sd_keep_uniq = dplyr::slice(dplyr::group_by(sd_keep, uid), 1)
+  
   sd_keep_uniq_sort = sd_keep_uniq[order(sd_keep_uniq$chromStart),]
   
   if (is.null(outbedfile)){

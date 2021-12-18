@@ -85,7 +85,7 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link){
                     arr.ind = T))
   
   # Plot those pairs?
-  ggplot(rowpairs) + geom_point(aes(x=row, y=col))
+  ggplot(rowpairs) + geom_point(ggplot2::aes(x=row, y=col))
   
   # Resolve multi-pairs 
   # By taking blobs of pairs and keeping only the top two

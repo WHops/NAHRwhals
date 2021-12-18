@@ -1,12 +1,9 @@
 library(Rcpp)
-library(dotplot)
-library(Biostrings)
-library(ggplot2)
 
 #' A helperfunction for making an exact dotplot, wrapping a functionality of dotplot package. 
 #' Should not be used for sequences above 25 kbp. 
 #' 
-#' @desciption Give me two sequences (character of DNAString I think), 
+#' @description Give me two sequences (character of DNAString I think), 
 #' and I will return to you a ggplot object with an exact (bp-precise)
 #' dotplot. This relies on the mkDotPlotDataFrame function from 'dotplot' package. 
 #'   
@@ -38,17 +35,18 @@ dotPlotr <- function(seq1, seq2, wsize = 5, wstep = 1, nmatch = -1){
   nmatch = 15
   wstep = 1
 
-  seq2r = as.character(reverseComplement(DNAString(seq2)))
+  seq2r = as.character(Biostrings:reverseComplement(Biostrings:DNAString(seq2)))
   
-  p1 = mkDotPlotDataFrame(seq1, paste0(seq2), wsize, wstep, nmatch)
-  p2 = mkDotPlotDataFrame(seq1, seq2r, wsize, wstep, nmatch)
+  p1 = dotplot::mkDotPlotDataFrame(seq1, paste0(seq2), wsize, wstep, nmatch)
+  p2 = dotplot::mkDotPlotDataFrame(seq1, seq2r, wsize, wstep, nmatch)
 
   p2$y = nchar(seq2r) - p2$y
   
-  p = ggplot() + geom_point(data=p1, aes(x=x,y=y), shape=15, size=0.5)  + 
-    geom_point(data=p2, aes(x=x,y=y), shape=15, size=0.5) + 
-    coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
-    theme_bw()
+  p = ggplot2::ggplot() + 
+        ggplot2::geom_point(data=p1, ggplot2::aes(x=x,y=y), shape=15, size=0.5)  + 
+        ggplot2::geom_point(data=p2, ggplot2::aes(x=x,y=y), shape=15, size=0.5) + 
+        ggplot2::coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+        ggplot2::theme_bw()
 
   return(p)
   
@@ -57,7 +55,7 @@ dotPlotr <- function(seq1, seq2, wsize = 5, wstep = 1, nmatch = -1){
 #' Main wrapper function for making an exact dotplot. Should not be used for sequences
 #' above 25 kbp. 
 #' 
-#' @desciption Give me two sequences (character of DNAString I think), 
+#' @description Give me two sequences (character of DNAString I think), 
 #' and I will return to you a ggplot object with an exact (bp-precise)
 #' dotplot. This relies on the mkDotPlotDataFrame function from 'dotplot' package. 
 #'   
@@ -81,22 +79,22 @@ make_dotplot <- function(targetfa, queryfa, wsize, outfile, save=T, debugmode=F)
   }
   
   # Load both
-  seq1f = readDNAStringSet(targetfa)
+  seq1f = Biostrings::readDNAStringSet(targetfa)
   seq1name = names(seq1f)
   seq1seq = as.character(seq1f)
   
   # Load both
-  seq2f = readDNAStringSet(queryfa)
+  seq2f = Biostrings::readDNAStringSet(queryfa)
   seq2name = names(seq2f)
   seq2seq = as.character(seq2f)
   
   
   print('sequences loaded')
   p = dotPlotr(seq1seq, seq2seq, wsize)
-  p = p + labs(x=seq1name, y=seq2name)
+  p = p + ggplot2::labs(x=seq1name, y=seq2name)
   
     if (save==T){
-      ggsave(outfile, plot=p, device='pdf', height=5, width=8, units = 'in')
+      ggplot2::ggsave(outfile, plot=p, device='pdf', height=5, width=8, units = 'in')
       print(paste0('Done. Dotplot for simulated sequence written to: ', outfile))
       
   } else if (save==F){
@@ -122,21 +120,20 @@ if (sys.nframe() == 0){
     source(file.path(dir, x), ...)
   }
   
-  source_here('seqbuilder_functions.R')
-  library(optparse)
+  #source_here('seqbuilder_functions.R')
 
   # INPUT
   option_list = list(
-    make_option(c("-a", "--seqfile_1"), type="character", default=NULL,
+    optparse::make_option(c("-a", "--seqfile_1"), type="character", default=NULL,
                 help="Fastafile 1", metavar="character"),
-    make_option(c("-b", "--seqfile_2"), type="character", default=NULL,
+    optparse::make_option(c("-b", "--seqfile_2"), type="character", default=NULL,
                 help="Fastafile 2", metavar="character"),
-    make_option(c("-o", "--outplot"), type="character", default=NULL,
+    optparse::make_option(c("-o", "--outplot"), type="character", default=NULL,
                 help="output plot", metavar="character"),
-    make_option(c("-w", "--wsize"), type="numeric", default=10,
+    optparse::make_option(c("-w", "--wsize"), type="numeric", default=10,
                 help="Windowsize", metavar="numeric")
   )
-  opt <- parse_args(OptionParser(option_list=option_list))
+  opt <- optparse::parse_args(OptionParser(option_list=option_list))
   
   seqfile_1 = opt$seqfile_1
   seqfile_2 = opt$seqfile_2
@@ -144,8 +141,8 @@ if (sys.nframe() == 0){
   wsize = opt$wsize
   
   # Test seqlength
-  seqlen1 = as.numeric(nchar(as.character(readDNAStringSet(seqfile_1))))
-  seqlen2 = as.numeric(nchar(as.character(readDNAStringSet(seqfile_2))))
+  seqlen1 = as.numeric(nchar(as.character(Biostrings::readDNAStringSet(seqfile_1))))
+  seqlen2 = as.numeric(nchar(as.character(Biostrings::readDNAStringSet(seqfile_2))))
   print(seqlen1)
   dotplot_size = seqlen1 * seqlen2
   

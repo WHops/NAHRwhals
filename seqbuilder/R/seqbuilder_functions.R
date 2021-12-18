@@ -1,3 +1,9 @@
+#' A testfunction to see if nahrtoolkit is loaded
+#' @export
+nahr_ready <- function(){
+  print('The NAHRtoolkit is loaded and ready to go.')
+}
+
 #' A core wrapper function. Give me two fasta files and I'll give you
 #' an output paf and a dotplot pdf. 
 #' 

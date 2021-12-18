@@ -106,24 +106,23 @@ compare_sd_paf_input_output <- function(preslink, ptruelink, chunklen, runname, 
 # runs only when script is run by itself
 if (sys.nframe() == 0){
   
-  library(optparse)
 
     # INPUT
   option_list = list(
-    make_option(c("-p", "--preslink"), type="character", default=NULL,
+    optparse::make_option(c("-p", "--preslink"), type="character", default=NULL,
                 help="Link to a results PAF file", metavar="character"),
-    make_option(c("-q", "--ptruelink"), type="character", default=NULL,
+    optparse::make_option(c("-q", "--ptruelink"), type="character", default=NULL,
                 help="Link to an instructions SD file", metavar="character"),
-    make_option(c("-c", "--chunklen"), type="character", default=0,
+    optparse::make_option(c("-c", "--chunklen"), type="character", default=0,
                 help="chunklength used", metavar="character"),
-    make_option(c("-n", "--runname"), type="character", default=NULL,
+    optparse::make_option(c("-n", "--runname"), type="character", default=NULL,
                 help="Name that the result will apear in outfile", metavar="character"),
-    make_option(c("-r", "--strand"), type="character", default=NULL,
+    optparse::make_option(c("-r", "--strand"), type="character", default=NULL,
                 help="Strand", metavar="character"),
-    make_option(c("-o", "--outfile"), type="character", default=NULL,
+    optparse::make_option(c("-o", "--outfile"), type="character", default=NULL,
                 help="Outfile summarizing resulte", metavar="character")
   )
-  opt <- parse_args(OptionParser(option_list=option_list))
+  opt <- optparse::parse_args(OptionParser(option_list=option_list))
   
   preslink = opt$preslink
   ptruelink = opt$ptruelink

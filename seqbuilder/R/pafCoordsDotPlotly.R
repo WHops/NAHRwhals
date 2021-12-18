@@ -1,13 +1,10 @@
 #!/usr/bin/env Rscript
 
 ## Make Dot Plot with Percent Divergence on color scale
-suppressPackageStartupMessages(library(optparse))
-suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(plotly))
 
 #' A core function for plotting a paf. 
 #' 
-#' @ description This is extracted and an edited version of 
+#' @description This is extracted and an edited version of 
 #' the script "pafCoordsDotPlotly.R" from the dotplotly package 
 #' (https://github.com/tpoorten/dotPlotly) by Tom Poorten. 
 #' Should be run through the 'pafdotplot_make' wrapper function
@@ -173,12 +170,12 @@ dotplotly_dotplot <- function(opt){
   yTickMarks = tapply(alignments$queryEnd, alignments$queryID, max)
   options(warn = -1) # turn off warnings
   if (TRUE) {
-    gp = ggplot(alignments) +
-      #geom_point(mapping = aes(y = refStart2, x = queryStart2),
+    gp = ggplot2::ggplot(alignments) +
+      #geom_point(mapping = ggplot2::aes(y = refStart2, x = queryStart2),
       #           size = 0.009) +
-      #geom_point(mapping = aes(y = refEnd2, x = queryEnd2),
+      #geom_point(mapping = ggplot2::aes(y = refEnd2, x = queryEnd2),
       #           size = 0.009) +
-      geom_segment(aes(
+      ggplot2::geom_segment(ggplot2::aes(
         y = queryStart,
         yend = queryEnd,
         x = refStart,
@@ -195,9 +192,9 @@ dotplotly_dotplot <- function(opt){
           round(lenAln / 1000, 1)
         )
       )) +
-      # geom_rect(inherit.aes=FALSE, aes(xmin=200000, xmax=200000+(originv$end-originv$start), ymin=0,
+      # geom_rect(inherit.ggplot2::aes=FALSE, ggplot2::aes(xmin=200000, xmax=200000+(originv$end-originv$start), ymin=0,
       #            ymax=max(refEnd2)), color="transparent", fill="orange", alpha=0.05) +
-      #geom_rect(inherit.aes=FALSE, aes(xmin=200000, xmax=200000+(originv$end-originv$start), ymin=0,
+      #geom_rect(inherit.ggplot2::aes=FALSE, ggplot2::aes(xmin=200000, xmax=200000+(originv$end-originv$start), ymin=0,
       #             ymax=max(refEnd2)), color="transparent", fill="orange", alpha=0.002) +
       #scale_x_continuous(breaks = cumsum(chromMax),
       #                   labels = levels(alignments$refID)) +
@@ -213,7 +210,7 @@ dotplotly_dotplot <- function(opt){
     #{ if(opt$h_lines){ geom_hline(yintercept = yTickMarks,
     #                              color = "grey60",
     #                              size = .1) }} +
-    labs(color = "Percent ID", 
+    ggplot2::labs(color = "Percent ID", 
          title = opt$input_filename) +
       xlab(as.character(alignments$refID[1])) +
       ylab(as.character(alignments$queryID[1])) + 
@@ -248,20 +245,20 @@ dotplotly_dotplot <- function(opt){
 
         print(sd_simple)
     # Assumes sd_simple is in BED format - each SD only once. (?)
-    gp = gp + geom_rect(data=sd_simple, aes(xmin=chromStart, xmax=chromEnd, 
+    gp = gp + ggplot2::geom_rect(data=sd_simple, ggplot2::aes(xmin=chromStart, xmax=chromEnd, 
                                             ymin=otherStart, ymax=otherEnd),
                          alpha=0.25, fill='orange') + 
-              geom_rect(data=sd_simple, aes(xmin=chromStart, xmax=chromEnd, 
+              ggplot2::geom_rect(data=sd_simple, ggplot2::aes(xmin=chromStart, xmax=chromEnd, 
                                             ymin=chromStart, ymax=otherEnd),
                         alpha=0.25, fill='grey') + 
-              geom_rect(data=sd_simple, aes(xmin=chromStart, xmax=otherEnd, 
+              ggplot2::geom_rect(data=sd_simple, ggplot2::aes(xmin=chromStart, xmax=otherEnd, 
                                             ymin=otherStart, ymax=otherEnd),
                         alpha=0.25, fill='grey')
   }
   # gp
   #ggsave(filename = paste0(opt$output_filename, ".png"), width = opt$plot_size, height = opt$plot_size, units = "in", dpi = 300, limitsize = F)
   print(paste0(opt$output_filename, ".pdf"))
-  ggsave(filename = paste0(opt$output_filename, ".pdf"), width = opt$plot_size, height = opt$plot_size, units = "in", device='pdf', limitsize = F)
+  ggplot2::ggsave(filename = paste0(opt$output_filename, ".pdf"), width = opt$plot_size, height = opt$plot_size, units = "in", device='pdf', limitsize = F)
   print('png and pdf saved')
   if(opt$interactive){
     pdf(NULL)
@@ -331,50 +328,50 @@ if (sys.nframe() == 0){
   debugmode = F
   if (!debugmode){
     option_list <- list(
-      make_option(c("-i","--input"), type="character", default=NULL,
+      optparse::make_option(c("-i","--input"), type="character", default=NULL,
                   help="coords file from mummer program 'show.coords' [default %default]",
                   dest="input_filename"),
-      make_option(c("-o","--output"), type="character", default="out",
+      optparse::make_option(c("-o","--output"), type="character", default="out",
                   help="output filename prefix [default %default]",
                   dest="output_filename"),
-      make_option(c("-v", "--verbose"), action="store_true", default=TRUE,
+      optparse::make_option(c("-v", "--verbose"), action="store_true", default=TRUE,
                   help="Print out all parameter settings [default]"),
-      make_option(c("-q", "--min-query-length"), type="numeric", default=400000,
+      optparse::make_option(c("-q", "--min-query-length"), type="numeric", default=400000,
                   help="filter queries with total alignments less than cutoff X bp [default %default]",
                   dest="min_query_aln"),
-      make_option(c("-m", "--min-alignment-length"), type="numeric", default=10000,
+      optparse::make_option(c("-m", "--min-alignment-length"), type="numeric", default=10000,
                   help="filter alignments less than cutoff X bp [default %default]",
                   dest="min_align"),
-      make_option(c("-p","--plot-size"), type="numeric", default=15,
+      optparse::make_option(c("-p","--plot-size"), type="numeric", default=15,
                   help="plot size X by X inches [default %default]",
                   dest="plot_size"),
-      make_option(c("-l", "--show-horizontal-lines"), action="store_true", default=FALSE,
+      optparse::make_option(c("-l", "--show-horizontal-lines"), action="store_true", default=FALSE,
                   help="turn on horizontal lines on plot for separating scaffolds  [default %default]",
                   dest="h_lines"),
-      make_option(c("-k", "--number-ref-chromosomes"), type="numeric", default=NULL,
+      optparse::make_option(c("-k", "--number-ref-chromosomes"), type="numeric", default=NULL,
                   help="number of sorted reference chromosomes to keep [default all chromosmes]",
                   dest="keep_ref"),
-      make_option(c("-s", "--identity"), action="store_true", default=FALSE,
+      optparse::make_option(c("-s", "--identity"), action="store_true", default=FALSE,
                   help="turn on color alignments by % identity [default %default]",
                   dest="similarity"),
-      make_option(c("-t", "--identity-on-target"), action="store_true", default=FALSE,
+      optparse::make_option(c("-t", "--identity-on-target"), action="store_true", default=FALSE,
                   help="turn on calculation of % identity for on-target alignments only [default %default]",
                   dest="on_target"),
-      make_option(c("-x", "--interactive-plot-off"), action="store_false", default=TRUE,
+      optparse::make_option(c("-x", "--interactive-plot-off"), action="store_false", default=TRUE,
                   help="turn off production of interactive plotly [default %default]",
                   dest="interactive"),
-      make_option(c("-r", "--reference-ids"), type="character", default=NULL,
+      optparse::make_option(c("-r", "--reference-ids"), type="character", default=NULL,
                   help="comma-separated list of reference IDs to keep [default %default]",
                   dest="refIDs"),
-      make_option(c("-j", "--originvbed"), type="character", default=NULL,
+      optparse::make_option(c("-j", "--originvbed"), type="character", default=NULL,
                   help="inversion length in bp",
                   dest="originvbed")
     )
     
     options(error=traceback)
     
-    parser <- OptionParser(usage = "%prog -i alignments.coords -o out [options]",option_list=option_list)
-    opt = parse_args(parser)
+    parser <- optparse::OptionParser(usage = "%prog -i alignments.coords -o out [options]",option_list=option_list)
+    opt = optparse::parse_args(parser)
     
   } else if (debugmode==T){
     
