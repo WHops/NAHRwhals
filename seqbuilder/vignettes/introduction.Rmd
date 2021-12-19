@@ -1,5 +1,5 @@
 ---
-title: "introduction"
+title: "Introduction to NAHRtoolkit"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{introductin}
@@ -10,10 +10,46 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  options(tibble.print_min = 4, tibble.print_max = 4)
+
 )
 ```
 
 ```{r setup}
 library(nahrtoolkit)
+```
+
+NAHRtoolkit provides functions to generate sequences with repetitive elements, 
+invoke minimap2 to spot repeats and run tree-like algorithms to detect likely
+repeat-mediated SVs. 
+
+## Example use cases.
+
+### `confirm_loaded_nahr()`: Check if loading has been successful
+
+`nahrtoolkit::confirm_loaded_nahr()` Tests if loading has been successful.
+
+```{r}
+confirm_loaded_nahr()
+```
+
+### Use case 1: Make a dotplot visualisation of two fasta files. 
+
+
+We start with creating two dotplots of a fasta file with itself. First, let us specify an example sequence.
+(Note: the example sequence has been created from the commandline, using: 
+Rscript seqbuilder_wrapper.R -l 10000 -s ../data/sds10y.tsv -o 10ktest
+)
+
+```{r}
+samplefasta_link = system.file('extdata', '10ktest.fa', package='nahrtoolkit')
+```
+
+If the sequence is not too long, we can use an exact dotplot to visualize the ground truth.
+
+```{r}
+
+#make_dotplot(outfasta, outfasta, 15, outplot1)
+
 ```

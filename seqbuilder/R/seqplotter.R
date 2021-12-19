@@ -35,7 +35,7 @@ dotPlotr <- function(seq1, seq2, wsize = 5, wstep = 1, nmatch = -1){
   nmatch = 15
   wstep = 1
 
-  seq2r = as.character(Biostrings:reverseComplement(Biostrings:DNAString(seq2)))
+  seq2r = as.character(Biostrings::reverseComplement(Biostrings::DNAString(seq2)))
   
   p1 = dotplot::mkDotPlotDataFrame(seq1, paste0(seq2), wsize, wstep, nmatch)
   p2 = dotplot::mkDotPlotDataFrame(seq1, seq2r, wsize, wstep, nmatch)

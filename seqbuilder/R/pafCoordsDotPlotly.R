@@ -212,12 +212,12 @@ dotplotly_dotplot <- function(opt){
     #                              size = .1) }} +
     ggplot2::labs(color = "Percent ID", 
          title = opt$input_filename) +
-      xlab(as.character(alignments$refID[1])) +
-      ylab(as.character(alignments$queryID[1])) + 
-      scale_x_continuous(labels = scales::comma) + 
-      scale_y_continuous(labels = scales::comma) +
-      coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
-      theme_bw()
+      ggplot2::xlab(as.character(alignments$refID[1])) +
+      ggplot2::ylab(as.character(alignments$queryID[1])) + 
+      ggplot2::scale_x_continuous(labels = scales::comma) + 
+      ggplot2::scale_y_continuous(labels = scales::comma) +
+      ggplot2::coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+      ggplot2:: theme_bw()
     
   }
 

@@ -1,6 +1,8 @@
 #' A testfunction to see if nahrtoolkit is loaded
+#' @author Wolfram Höps
+#' @rdname Package_test
 #' @export
-nahr_ready <- function(){
+confirm_loaded_nahr <- function(){
   print('The NAHRtoolkit is loaded and ready to go.')
 }
 
