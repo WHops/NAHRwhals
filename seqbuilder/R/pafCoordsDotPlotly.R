@@ -230,7 +230,8 @@ dotplotly_dotplot <- function(opt){
                               'uid', 'chromName', 'chromStart', 'chromEnd',
                               'strand','id')
     }
-
+    
+    sd_simple = sd_simple[(sd_simple$chromEnd - sd_simple$chromStart > opt$minsdlen), ]
     # Assumes sd_simple is in BED format - each SD only once. (?)
     gp = gp + ggplot2::geom_rect(data=sd_simple, ggplot2::aes(xmin=chromStart, xmax=chromEnd, 
                                             ymin=otherStart, ymax=otherEnd),
@@ -293,7 +294,7 @@ dotplotly_dotplot <- function(opt){
 pafdotplot_make <- function(inpaf_link, outplot_link, min_align = 11, min_query_aln = 11,
                             keep_ref = 10000, similarity = T, h_lines = T, interactive = F,
                             plot_size = 10, on_target = T, v = F, hllink = F, hltype = F,
-                            save=T){
+                            save=T, minsdlen = 5000){
   
   opt = list(input_filename=inpaf_link,
              output_filename=outplot_link,
@@ -308,7 +309,8 @@ pafdotplot_make <- function(inpaf_link, outplot_link, min_align = 11, min_query_
              v=v, 
              hllink=hllink, 
              hltype=hltype, 
-             save=save)
+             save=save, 
+             minsdlen=minsdlen)
  
   plot = dotplotly_dotplot(opt)
   return(plot)

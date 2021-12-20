@@ -31,7 +31,7 @@ confirm_loaded_nahr <- function(){
 #' @rdname alignment
 #' @export
 make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplot, 
-                                         chunklen = 1000, keep_ref = 10000, 
+                                         chunklen = 1000, keep_ref = 10000, minsdlen = 2000,
                                          plot_size = 10, saveplot=T, savepaf=T,
                                          hllink = F,
                                          hltype = F){
@@ -57,7 +57,7 @@ make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplo
   
   # Make a dotplot of that final paf (and with sd highlighting). 
   miniplot = pafdotplot_make(outpaf, outplot, keep_ref=keep_ref, plot_size=plot_size,
-                  hllink = outpaf, hltype = hltype, save=saveplot)
+                  hllink = outpaf, hltype = hltype, minsdlen = minsdlen, save=saveplot)
   
   if (saveplot == F){
     print('returning your plot')
