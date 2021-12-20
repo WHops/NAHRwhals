@@ -12,7 +12,6 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   options(tibble.print_min = 4, tibble.print_max = 4)
-
 )
 ```
 
@@ -23,6 +22,11 @@ library(nahrtoolkit)
 NAHRtoolkit provides functions to generate sequences with repetitive elements, 
 invoke minimap2 to spot repeats and run tree-like algorithms to detect likely
 repeat-mediated SVs. 
+
+## Big weaknesses in implementation
+
+bbmap shred.sh script is kinda needed but not properly installed/referred.
+
 
 ## Example use cases.
 
@@ -44,12 +48,29 @@ Rscript seqbuilder_wrapper.R -l 10000 -s ../data/sds10y.tsv -o 10ktest
 
 ```{r}
 samplefasta_link = system.file('extdata', '10ktest.fa', package='nahrtoolkit')
+samplepaf_link = paste0(samplefasta_link, '.paf')
 ```
 
 If the sequence is not too long, we can use an exact dotplot to visualize the ground truth.
 
 ```{r}
 
-#make_dotplot(outfasta, outfasta, 15, outplot1)
-
+exact_plot = make_dotplot(samplefasta_link, samplefasta_link, 15, save=F)
+print(exact_plot)
 ```
+
+Alternatively, if the sequences are very long, we can also use Minimap2 to generate us a dotplot. Note how segdups are being highlighted. 
+
+```{r, warning = FALSE, message = FALSE}
+
+minimap2_inferred_plot = 
+  make_chunked_minimap_alnment(samplefasta_link, samplefasta_link, samplepaf_link, 
+                               outplot=NULL, chunklen = 500, saveplot=F, 
+                               hllink = samplepaf_link, hltype = 'paf')
+
+
+print(minimap2_inferred_plot)
+```
+
+
+### Use case 1: Make a dotplot visualisation of two fasta files. 

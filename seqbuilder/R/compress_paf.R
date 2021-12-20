@@ -14,6 +14,9 @@
 #' @export
 merge_rows <- function(paffile, nl1, nl2){
   
+  # paffile = inpaf
+  # nl1 = rowpairs[1,1]
+  # nl2 = rowpairs[1,2]
   # query name
   paffile[nl1,]$qname = paste0(
     sub("_.*", "", paffile[nl1,]$qname), 
@@ -55,11 +58,17 @@ merge_rows <- function(paffile, nl1, nl2){
 #' @author Wolfram Höps
 #' @rdname alignment
 #' @export
+#' 
+#' 
 compress_paf_fnct <- function(inpaf_link, outpaf_link){
+  
+  
+
   
   debug = F
   if (debug){
-  inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res_500k/paf/run_1024_1024_0.90_+_chunked.paf.chunk"
+  inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/teppich/res_500k/paf/run_1024_1024_0.90_+_chunked.paf.chunk"
+  inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf.awked"
   } 
   
   # Read and col-annotate the input paf
@@ -76,16 +85,17 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link){
   # Identify alignments that border each other: same strand, and end of of is the start
   # of the other. With some tolerance
   tolerance_bp = 10
-  rowpairs = as.data.frame(which( ( abs(outer(inpaf$qend, inpaf$qstart, '-')) > 0) &
+  rowpairs = data.frame(which( ( abs(outer(inpaf$qend, inpaf$qstart, '-')) < tolerance_bp) & # Take only one half of the minus matrix so pairs dont appear twice. 
                       (
-                          (abs(outer(inpaf$tstart, inpaf$tend, '-')) < tolerance_bp) |
-                          (abs(outer(inpaf$tstart, inpaf$tend, '-')) < tolerance_bp)
+                        (abs(outer(inpaf$tend, inpaf$tstart, '-')) < tolerance_bp) |
+                        (abs(outer(inpaf$tstart, inpaf$tend, '-')) < tolerance_bp)
                       ) &
                       (outer(inpaf$strand, inpaf$strand, '==')),
                     arr.ind = T))
+
   
   # Plot those pairs?
-  ggplot2::ggplot(rowpairs) + ggplot2::geom_point(ggplot2::aes(x=row, y=col))
+  #ggplot2::ggplot(rowpairs) + ggplot2::geom_point(ggplot2::aes(x=row, y=col))
   
   # Resolve multi-pairs 
   # By taking blobs of pairs and keeping only the top two

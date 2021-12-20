@@ -1,4 +1,3 @@
-library(Rcpp)
 
 #' A helperfunction for making an exact dotplot, wrapping a functionality of dotplot package. 
 #' Should not be used for sequences above 25 kbp. 
@@ -30,14 +29,19 @@ dotPlotr <- function(seq1, seq2, wsize = 5, wstep = 1, nmatch = -1){
   if (nmatch > wsize)
     stop("nmatch > wsize is not allowed")
   
+  # Yes these shouldn't be loaded directly. But anything else crashes the code, 
+  # So we leave it like that FOR NOW. 
+  library(Rcpp)
+  library(dotplot)
   
   wsize = 15
   nmatch = 15
   wstep = 1
 
   seq2r = as.character(Biostrings::reverseComplement(Biostrings::DNAString(seq2)))
+
   
-  p1 = dotplot::mkDotPlotDataFrame(seq1, paste0(seq2), wsize, wstep, nmatch)
+  p1 = mkDotPlotDataFrame(seq1, paste0(seq2), wsize, wstep, nmatch)
   p2 = dotplot::mkDotPlotDataFrame(seq1, seq2r, wsize, wstep, nmatch)
 
   p2$y = nchar(seq2r) - p2$y
@@ -133,7 +137,7 @@ if (sys.nframe() == 0){
     optparse::make_option(c("-w", "--wsize"), type="numeric", default=10,
                 help="Windowsize", metavar="numeric")
   )
-  opt <- optparse::parse_args(OptionParser(option_list=option_list))
+  opt <- optparse::parse_args(optparse::OptionParser(option_list=option_list))
   
   seqfile_1 = opt$seqfile_1
   seqfile_2 = opt$seqfile_2

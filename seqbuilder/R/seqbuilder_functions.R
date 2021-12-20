@@ -32,7 +32,7 @@ confirm_loaded_nahr <- function(){
 #' @export
 make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplot, 
                                          chunklen = 1000, keep_ref = 10000, 
-                                         plot_size = 10, 
+                                         plot_size = 10, saveplot=T, savepaf=T,
                                          hllink = F,
                                          hltype = F){
   
@@ -46,22 +46,23 @@ make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplo
   # Single-sequence query fasta gets chopped into pieces.
   shred_seq(queryfasta, queryfasta_chunk, chunklen)
   
-  print(targetfasta)
-  print(queryfasta_chunk)
+
   # Self explanatory
   run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk)
-  print(outpaf_chunk)
   # Awk is used to correct the seuqence names. This is because I know only there
   # how to use regex...
   awk_edit_paf(outpaf_chunk, outpaf_awk)
-  
   # paf of fragmented paf gets put back together. 
   compress_paf_fnct(outpaf_awk, outpaf)
   
-  print(hllink)
   # Make a dotplot of that final paf (and with sd highlighting). 
-  pafdotplot_make(outpaf, outplot, keep_ref=keep_ref, plot_size=plot_size,
-                  hllink = hllink, hltype = hltype)
+  miniplot = pafdotplot_make(outpaf, outplot, keep_ref=keep_ref, plot_size=plot_size,
+                  hllink = outpaf, hltype = hltype, save=saveplot)
+  
+  if (saveplot == F){
+    print('returning your plot')
+    return(miniplot)
+  }
   
 }
 
@@ -79,7 +80,8 @@ make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplo
 #' @author Wolfram Höps
 #' @rdname alignment
 #' @export
-shred_seq <- function(infasta, outfasta_chunk, chunklen, scriptloc='../../../bbmap/shred.sh'){
+shred_seq <- function(infasta, outfasta_chunk, chunklen, 
+                      scriptloc='/Users/hoeps/PhD/projects/nahrcall/bbmap/shred.sh'){
   print(paste0(scriptloc," in=", infasta, " out=", outfasta_chunk, " length=", chunklen))
   system(paste0(scriptloc," in=", infasta, " out=", outfasta_chunk, " length=", chunklen))
 }
@@ -133,8 +135,11 @@ run_minimap2 <- function(targetfasta, queryfasta, outpaf, minimap2loc = "/Users/
 #' @author Wolfram Höps
 #' @rdname alignment
 #' @export 
-awk_edit_paf <- function(inpaf, outpaf){
-  system(paste0("../scripts/awk_on_paf.sh ", inpaf, " ", outpaf))
+awk_edit_paf <- function(inpaf, outpaf,
+                         scriptlink = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/scripts/awk_on_paf.sh'){
+  print(inpaf)
+  print(outpaf)
+  system(paste0(scriptlink, " ", inpaf, " ", outpaf))
 }
 
 #' Helperfunction to save a fasta file. 

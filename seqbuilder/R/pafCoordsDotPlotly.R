@@ -34,7 +34,6 @@ dotplotly_dotplot <- function(opt){
   }
   #opt$output_filename = unlist(strsplit(opt$output_filename, "/"))[length(unlist(strsplit(opt$output_filename, "/")))]
   
-  print(opt)
   debug=F
   if (debug){
     opt=list()
@@ -192,24 +191,6 @@ dotplotly_dotplot <- function(opt){
           round(lenAln / 1000, 1)
         )
       )) +
-      # geom_rect(inherit.ggplot2::aes=FALSE, ggplot2::aes(xmin=200000, xmax=200000+(originv$end-originv$start), ymin=0,
-      #            ymax=max(refEnd2)), color="transparent", fill="orange", alpha=0.05) +
-      #geom_rect(inherit.ggplot2::aes=FALSE, ggplot2::aes(xmin=200000, xmax=200000+(originv$end-originv$start), ymin=0,
-      #             ymax=max(refEnd2)), color="transparent", fill="orange", alpha=0.002) +
-      #scale_x_continuous(breaks = cumsum(chromMax),
-      #                   labels = levels(alignments$refID)) +
-      #theme_bw() +
-      #theme(text = element_text(size = 8)) +
-      #theme(
-      #  panel.grid.major.y = element_blank(),
-      #  panel.grid.minor.y = element_blank(),
-    #  panel.grid.minor.x = element_blank(),
-    #  axis.text.y = element_text(size = 4, angle = 15)
-    #) +
-    #scale_y_continuous(breaks = yTickMarks, labels = substr(levels(alignments$queryID), start = 1, stop = 20)) +
-    #{ if(opt$h_lines){ geom_hline(yintercept = yTickMarks,
-    #                              color = "grey60",
-    #                              size = .1) }} +
     ggplot2::labs(color = "Percent ID", 
          title = opt$input_filename) +
       ggplot2::xlab(as.character(alignments$refID[1])) +
@@ -235,15 +216,21 @@ dotplotly_dotplot <- function(opt){
                               'chromEnd', 'uid', 'otherChrom',
                               'otherStart','otherEnd', 'strand', 'fracMatch')
     } else if (opt$hltype == 'sd'){
-      print(opt$hllink)
       print('Taking an sdfile as highlighting input')
       sd_simple = sd_to_bed(opt$hllink, outbedfile=NULL)
     } else if (opt$hltype == 'paf'){
       print('Taking a paffile as highlighting input')
+      print(opt$hltype)
       sd_simple = paf_write_bed(opt$hllink, outsdbed_link = NULL)
+      
+      # [W] playing around with colnames a bit here. We want to plot 
+      # target on X, and query on Y. The paf format has 
+      # first query, and then target. 
+      colnames(sd_simple) = c('otherName', 'otherStart', 'otherEnd', 
+                              'uid', 'chromName', 'chromStart', 'chromEnd',
+                              'strand','id')
     }
 
-        print(sd_simple)
     # Assumes sd_simple is in BED format - each SD only once. (?)
     gp = gp + ggplot2::geom_rect(data=sd_simple, ggplot2::aes(xmin=chromStart, xmax=chromEnd, 
                                             ymin=otherStart, ymax=otherEnd),
@@ -257,16 +244,22 @@ dotplotly_dotplot <- function(opt){
   }
   # gp
   #ggsave(filename = paste0(opt$output_filename, ".png"), width = opt$plot_size, height = opt$plot_size, units = "in", dpi = 300, limitsize = F)
-  print(paste0(opt$output_filename, ".pdf"))
-  ggplot2::ggsave(filename = paste0(opt$output_filename, ".pdf"), width = opt$plot_size, height = opt$plot_size, units = "in", device='pdf', limitsize = F)
-  print('png and pdf saved')
-  if(opt$interactive){
-    pdf(NULL)
-    print('ggplotlying')
-    gply = ggplotly(gp, tooltip = "text")
-    print('saving now')
-    htmlwidgets::saveWidget(as.widget(gply), file = paste0(opt$output_filename, ".html"), selfcontained=FALSE)
-    print('saved')
+  
+
+  if (opt$save == T){
+    ggplot2::ggsave(filename = paste0(opt$output_filename, ".pdf"), width = opt$plot_size, height = opt$plot_size, units = "in", device='pdf', limitsize = F)
+    print('png and pdf saved')
+    if(opt$interactive){
+      pdf(NULL)
+      print('ggplotlying')
+      gply = ggplotly(gp, tooltip = "text")
+      print('saving now')
+      htmlwidgets::saveWidget(as.widget(gply), file = paste0(opt$output_filename, ".html"), selfcontained=FALSE)
+      print('saved')
+    }
+  } else if (opt$save == F) {
+    
+    return(gp)
   }
   
   options(warn=0) # turn on warnings
@@ -299,9 +292,9 @@ dotplotly_dotplot <- function(opt){
 #' @export
 pafdotplot_make <- function(inpaf_link, outplot_link, min_align = 11, min_query_aln = 11,
                             keep_ref = 10000, similarity = T, h_lines = T, interactive = F,
-                            plot_size = 10, on_target = T, v = F, hllink = F, hltype = F){
+                            plot_size = 10, on_target = T, v = F, hllink = F, hltype = F,
+                            save=T){
   
-  print('sup')
   opt = list(input_filename=inpaf_link,
              output_filename=outplot_link,
              min_align = min_align,
@@ -314,12 +307,11 @@ pafdotplot_make <- function(inpaf_link, outplot_link, min_align = 11, min_query_
              on_target = on_target,
              v=v, 
              hllink=hllink, 
-             hltype=hltype)
+             hltype=hltype, 
+             save=save)
  
-  print('pre')
-  print(opt)
-  dotplotly_dotplot(opt)
-  print('hi')
+  plot = dotplotly_dotplot(opt)
+  return(plot)
 }
 
 
