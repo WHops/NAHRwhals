@@ -114,10 +114,10 @@ run_minimap2 <- function(targetfasta, queryfasta, outpaf, minimap2loc = "/Users/
   #system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
   
   # Some self-defined parameters
-  system(paste0(minimap2loc," -x asm20 -P -c -s 0 -M 0.2 ", targetfasta, " ", queryfasta, " > ", outpaf))
+  #system(paste0(minimap2loc," -x asm20 -P -c -s 0 -M 0.2 ", targetfasta, " ", queryfasta, " > ", outpaf))
   
   #pbmm2: CCS/HIFI
-  #system(paste0(minimap2loc," -k 19 -w 10 -u -o 5 -O 56 -e 4 -E 1 -A 2 -B 5 -z 400 -Z 50  -r 2000 -L 0.5 -g 5000", targetfasta, " ", queryfasta, " > ", outpaf))
+  system(paste0(minimap2loc," -k 19 -w 10 -u -o 5 -O 56 -e 4 -E 1 -A 2 -B 5 -z 400 -Z 50  -r 2000 -L 0.5 -g 5000", targetfasta, " ", queryfasta, " > ", outpaf))
   
   
 }

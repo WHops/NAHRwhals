@@ -69,6 +69,7 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link){
   if (debug){
   inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/teppich/res_500k/paf/run_1024_1024_0.90_+_chunked.paf.chunk"
   inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf.awked"
+  inpaf_link = 'blub.awked'
   } 
   
   # Read and col-annotate the input paf
@@ -85,13 +86,13 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link){
   # Identify alignments that border each other: same strand, and end of of is the start
   # of the other. With some tolerance
   tolerance_bp = 10
-  rowpairs = data.frame(which( ( abs(outer(inpaf$qend, inpaf$qstart, '-')) < tolerance_bp) & # Take only one half of the minus matrix so pairs dont appear twice. 
-                      (
-                        (abs(outer(inpaf$tend, inpaf$tstart, '-')) < tolerance_bp) |
-                        (abs(outer(inpaf$tstart, inpaf$tend, '-')) < tolerance_bp)
-                      ) &
-                      (outer(inpaf$strand, inpaf$strand, '==')),
-                    arr.ind = T))
+  rowpairs = data.frame(which( ( abs(outer(inpaf$qend, inpaf$qstart, '-')) < tolerance_bp) & # Take only one half of the minus matrix so pairs dont appear twice.
+                     (
+                       (abs(outer(inpaf$tend, inpaf$tstart, '-')) < tolerance_bp) |
+                       (abs(outer(inpaf$tstart, inpaf$tend, '-')) < tolerance_bp)
+                     ) &
+                     (outer(inpaf$strand, inpaf$strand, '==')),
+                   arr.ind = T))
 
   
   # Plot those pairs?
@@ -108,9 +109,11 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link){
   # Go through each pair, make the merge. We go through the lines backwards,
   # so that previous merges don't disturb later ones.
   # TODO: what if one alignment borders multiple others? 
-  for (nrow in dim(rowpairs)[1]:1){
-    inpaf = merge_rows(inpaf, rowpairs[nrow, 1], rowpairs[nrow, 2])
-  }  
+  if (dim(rowpairs)[1] > 0){
+    for (nrow in dim(rowpairs)[1]:1){
+      inpaf = merge_rows(inpaf, rowpairs[nrow, 1], rowpairs[nrow, 2])
+    }  
+  }
   # Save
   write.table(inpaf, file=outpaf_link, quote = F, col.names = F, row.names = F, sep='\t')
 }
