@@ -1,3 +1,27 @@
+
+#' Simple helperfunction to extract part of a fasta into a character. 
+#' 
+#' @description Simple helperfunction to extract part of a fasta into a character. 
+#' Can be useful e.g. to visualize part of a fasta with an exact dotplot. 
+#' 
+#' @param inputfasta [character/link] link to a single-sequence fasta 
+#' @param range [numeric 2x1 vctor] Sequence range to extract. E.g. range=c(10,100) extracts bases 10 to 100.
+#' @return A DNA sequence as a character 
+#' 
+#' @author Wolfram Höps
+#' @rdname get_subseq
+#' @export
+get_subseq <- function(input_fasta, range=NULL){
+  # Load 
+  seq1f = Biostrings::readDNAStringSet(input_fasta)
+  seq1seq = as.character(seq1f)
+  if (!is.null(range)){
+    seq1seq = substr(seq1seq,range[1],range[2])
+  }
+  return(seq1seq)
+}
+
+
 #' A testfunction to see if nahrtoolkit is loaded
 #' @author Wolfram Höps
 #' @rdname Package_test
@@ -32,7 +56,7 @@ confirm_loaded_nahr <- function(){
 #' @export
 make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplot, 
                                          chunklen = 1000, keep_ref = 10000, minsdlen = 2000,
-                                         plot_size = 10, saveplot=T, savepaf=T,
+                                         plot_size = 10, saveplot=T, savepaf=T, quadrantsize = 100000,
                                          hllink = F,
                                          hltype = F){
   
@@ -45,20 +69,26 @@ make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplo
   
   # Single-sequence query fasta gets chopped into pieces.
   shred_seq(queryfasta, queryfasta_chunk, chunklen)
-  
-
+  print('1')
+  print(targetfasta)
   # Self explanatory
   run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk)
+  print('2')
   # Awk is used to correct the seuqence names. This is because I know only there
   # how to use regex...
   awk_edit_paf(outpaf_chunk, outpaf_awk)
+  print('3')
   # paf of fragmented paf gets put back together. 
-  compress_paf_fnct(outpaf_awk, outpaf)
+  print(outpaf_awk)
+  print(outpaf)
+  #browser()
+  compress_paf_fnct(outpaf_awk, outpaf, quadrantsize)
   
+  print('4')
   # Make a dotplot of that final paf (and with sd highlighting). 
   miniplot = pafdotplot_make(outpaf, outplot, keep_ref=keep_ref, plot_size=plot_size,
                   hllink = outpaf, hltype = hltype, minsdlen = minsdlen, save=saveplot)
-  
+  print('5')
   if (saveplot == F){
     print('returning your plot')
     return(miniplot)
@@ -114,10 +144,14 @@ run_minimap2 <- function(targetfasta, queryfasta, outpaf, minimap2loc = "/Users/
   #system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
   
   # Some self-defined parameters
-  #system(paste0(minimap2loc," -x asm20 -P -c -s 0 -M 0.2 ", targetfasta, " ", queryfasta, " > ", outpaf))
+  system(paste0(minimap2loc," -x asm20 -P -c -s 0 -M 0.2 ", targetfasta, " ", queryfasta, " > ", outpaf))
   
   #pbmm2: CCS/HIFI
-  system(paste0(minimap2loc," -k 19 -w 10 -u -o 5 -O 56 -e 4 -E 1 -A 2 -B 5 -z 400 -Z 50  -r 2000 -L 0.5 -g 5000", targetfasta, " ", queryfasta, " > ", outpaf))
+  #system(paste0(minimap2loc," -k 19 -w 10 -u -o 5 -O 56 -e 4 -E 1 -A 2 -B 5 -z 400 -Z 50 -r 2000 -L 0.5 -g 5000", targetfasta, " ", queryfasta, " > ", outpaf))
+  
+  # W, 23rd Dec 2021. Since the dev of pbmm2, the minimap2 parameters have changed. I adapted everything to the new notation. 
+  # the -L paramter (formerly Long join flank ratio) is no longer existing, so I'm leaving it out. 
+  #system(paste0(minimap2loc," -k 19 -w 10 -O 5,56 -E 4,1 -A 2 -B 5 -z 400,50 -r 2000 -g 5000 ", targetfasta, " ", queryfasta, " > ", outpaf))
   
   
 }

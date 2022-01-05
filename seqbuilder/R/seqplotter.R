@@ -25,7 +25,7 @@ dotPlotr <- function(seq1, seq2, wsize = 5, wstep = 1, nmatch = -1){
   if (wstep < 1)
     stop("non allowed value for wstep")
   if (nmatch < 1)
-    nmatch = wsize * 0.5
+    nmatch = wsize# * 0.5
   if (nmatch > wsize)
     stop("nmatch > wsize is not allowed")
   
@@ -34,10 +34,12 @@ dotPlotr <- function(seq1, seq2, wsize = 5, wstep = 1, nmatch = -1){
   library(Rcpp)
   library(dotplot)
   
-  wsize = 15
-  nmatch = 15
-  wstep = 1
-
+  #wsize = 15
+  #nmatch = 15
+  #wstep = 1
+  print(wsize)
+  print(nmatch)
+  print(wstep)
   seq2r = as.character(Biostrings::reverseComplement(Biostrings::DNAString(seq2)))
 
   
@@ -72,7 +74,8 @@ dotPlotr <- function(seq1, seq2, wsize = 5, wstep = 1, nmatch = -1){
 #' @author Wolfram Höps
 #' @rdname plotting
 #' @export
-make_dotplot <- function(targetfa, queryfa, wsize, outfile, save=T, debugmode=F){
+make_dotplot <- function(targetfa, queryfa, wsize, outfile, save=T, debugmode=F,
+                         targetrange=NULL, queryrange=NULL){
   
   
   if (debugmode){
@@ -86,12 +89,18 @@ make_dotplot <- function(targetfa, queryfa, wsize, outfile, save=T, debugmode=F)
   seq1f = Biostrings::readDNAStringSet(targetfa)
   seq1name = names(seq1f)
   seq1seq = as.character(seq1f)
+  if (!is.null(targetrange)){
+    seq1seq = substr(seq1seq,targetrange[1],targetrange[2])
+  }
   
   # Load both
   seq2f = Biostrings::readDNAStringSet(queryfa)
   seq2name = names(seq2f)
   seq2seq = as.character(seq2f)
   
+  if (!is.null(targetrange)){
+    seq2seq = substr(seq2seq,queryrange[1],queryrange[2])
+  }
   
   print('sequences loaded')
   p = dotPlotr(seq1seq, seq2seq, wsize)

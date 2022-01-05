@@ -46,6 +46,48 @@ merge_rows <- function(paffile, nl1, nl2){
   
 }
 
+meanfun <- function(x,y){
+  return(mean(c(x,y)))
+}
+meanfun_v = Vectorize(meanfun)
+
+
+
+merge_paf_entries_intraloop <- function(inpaf){
+
+  inpaf_rownames = row.names(inpaf)
+  
+  # For safety: sort entries by qstart. Reset row names so they start at 1. 
+  inpaf = inpaf[order(inpaf$qstart),]
+  rownames(inpaf) <- NULL
+  
+  # We consider alignments as 'potential neighbours' if their distance in any direction 
+  # (+-x, +-y) is less than 5% of their alignment length. 
+  tolerance_bp = 10 #0.05 * (outer(inpaf$alen, inpaf$alen, '+') / 2)
+  
+  # Identify alignments that border each other: same strand, and end of of is the start
+  # of the other. With some tolerance
+  rowpairs = data.frame(which( ( abs(outer(inpaf$qend, inpaf$qstart, '-')) < tolerance_bp) & # Take only one half of the minus matrix so pairs dont appear twice.
+                                 (
+                                   (abs(outer(inpaf$tend, inpaf$tstart, '-')) < tolerance_bp) |
+                                     (abs(outer(inpaf$tstart, inpaf$tend, '-')) < tolerance_bp)
+                                 ) &
+                                 (
+                                   (abs(outer(inpaf$qend, inpaf$qstart, '-')) < tolerance_bp) |
+                                     (abs(outer(inpaf$qstart, inpaf$qend, '-')) < tolerance_bp)
+                                 ) &
+                                 (outer(inpaf$strand, inpaf$strand, '==')),
+                               arr.ind = T))
+  
+  rowpairs$row = as.numeric(inpaf_rownames[rowpairs$row])
+  rowpairs$col = as.numeric(inpaf_rownames[rowpairs$col])
+  
+  
+  return(rowpairs)
+}
+
+
+
 #' Melt the alignment pieces back together after chunkifying them earlier.   
 #' 
 #' @description This is a crucial module for finding the SDs later, and poses
@@ -60,60 +102,94 @@ merge_rows <- function(paffile, nl1, nl2){
 #' @export
 #' 
 #' 
-compress_paf_fnct <- function(inpaf_link, outpaf_link){
+compress_paf_fnct <- function(inpaf_link, outpaf_link, quadrantsize = 100000){
   
   
-
+  library(dplyr)
   
   debug = F
   if (debug){
   inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/teppich/res_500k/paf/run_1024_1024_0.90_+_chunked.paf.chunk"
   inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf.awked"
   inpaf_link = 'blub.awked'
+  inpaf_link = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf13.awked"
   } 
+  #inpaf_link = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf136.awked"
   
+  print("HAAAAALOOOOOOO")
   # Read and col-annotate the input paf
   inpaf = read.table(inpaf_link, sep='\t')
-  
   colnames_paf = c('qname','qlen','qstart','qend',
                    'strand','tname','tlen','tstart',
                    'tend','nmatch','alen','mapq')
   colnames(inpaf)[1:length(colnames_paf)] = colnames_paf
-  
-  # For safety: sort entries by qstart
-  inpaf = inpaf[order(inpaf$qstart),]
-  
-  # Identify alignments that border each other: same strand, and end of of is the start
-  # of the other. With some tolerance
-  tolerance_bp = 10
-  rowpairs = data.frame(which( ( abs(outer(inpaf$qend, inpaf$qstart, '-')) < tolerance_bp) & # Take only one half of the minus matrix so pairs dont appear twice.
-                     (
-                       (abs(outer(inpaf$tend, inpaf$tstart, '-')) < tolerance_bp) |
-                       (abs(outer(inpaf$tstart, inpaf$tend, '-')) < tolerance_bp)
-                     ) &
-                     (outer(inpaf$strand, inpaf$strand, '==')),
-                   arr.ind = T))
 
+  # For safety: sort entries by qstart. Reset row names so they start at 1. 
+  inpaf = inpaf[order(inpaf$qstart),]
+  rownames(inpaf) <- NULL
   
-  # Plot those pairs?
-  #ggplot2::ggplot(rowpairs) + ggplot2::geom_point(ggplot2::aes(x=row, y=col))
+
+  # We identify rowpairs now. 
+  # To speed this up, we cut the alignment into chunks, find 
+  # rowpairs within them and later merge back together. 
+  range = c(max(inpaf$tend), max(inpaf$qend))
+
+  tsteps = c(seq(1, range[1], quadrantsize), max(inpaf$tend))
+  qsteps = c(seq(1, range[2], quadrantsize), max(inpaf$qend))
+  rowpairs = data.frame()
+  count = 0
+  for (tstep in tsteps){
+    for (qstep in qsteps){
+      
+      # Input: we take any alignment that touches our box. 
+      inpaf_q = inpaf[(
+                      (inpaf$tstart >= tstep) & (inpaf$tstart <= tstep+quadrantsize) &
+                      (inpaf$qstart >= qstep) & (inpaf$qstart <= qstep+quadrantsize) ) |
+                        (
+                      (inpaf$tend >= tstep) & (inpaf$tend <= tstep+quadrantsize) &
+                      (inpaf$qend >= qstep) & (inpaf$qstart <= qstep+quadrantsize) )   ,]
+
+      rowpairs = rbind(rowpairs, merge_paf_entries_intraloop(inpaf_q))
+      count = count + 1
+      print(count)
+      }
+  }
+  #browser()
+  # Sort once again, by row.
   
-  # Resolve multi-pairs 
-  # By taking blobs of pairs and keeping only the top two
-  # TODO. 
-  #n_occur <- data.frame(table(rowpairs$row))
-  #n_occur[n_occur$Freq > 1,]
-  #rowpairs[rowpairs$row %in% n_occur$Var1[n_occur$Freq > 1],]
+  rowpairs = rowpairs[order(rowpairs$col),]
+  row.names(rowpairs) <- NULL
   
+  # Cleanup
+  rowpairs = unique(rowpairs)
+  print("HAAAAALOOOOOOO")
   
+  # Remove rows that want to pair with themselves (should only appear with a fixed tolerance bp, 
+  # not it the tolerance bp is a fraction of the alignment length)
+  rowpairs = rowpairs[rowpairs$row != rowpairs$col,]
+  
+  # For each pair, show the number of matched bases by the unity. 
+  # We will use this metric to decide a 'winning' pair if any vectors
+  # want to pair with multiple other vectors. 
+  rowpairs$combined_matchlen = inpaf$nmatch[rowpairs$row] + inpaf$nmatch[rowpairs$col]
+  hist(rowpairs$combined_matchlen)
+  # Cut down redundant pairs
+  rowpairs_singular = as.data.frame(
+    rowpairs %>% 
+      group_by(row) %>% top_n(1, combined_matchlen) %>%
+      group_by(col) %>% top_n(1, combined_matchlen)
+  )
+  
+  hist(rowpairs_singular$combined_matchlen)
   # Go through each pair, make the merge. We go through the lines backwards,
   # so that previous merges don't disturb later ones.
-  # TODO: what if one alignment borders multiple others? 
-  if (dim(rowpairs)[1] > 0){
-    for (nrow in dim(rowpairs)[1]:1){
-      inpaf = merge_rows(inpaf, rowpairs[nrow, 1], rowpairs[nrow, 2])
+  if (dim(rowpairs_singular)[1] > 0){
+    for (nrow in dim(rowpairs_singular)[1]:1){
+      inpaf = merge_rows(inpaf, rowpairs_singular[nrow, 1], rowpairs_singular[nrow, 2])
     }  
   }
+  
+  print("HAAAAALOOOOOOO")
   # Save
   write.table(inpaf, file=outpaf_link, quote = F, col.names = F, row.names = F, sep='\t')
 }
