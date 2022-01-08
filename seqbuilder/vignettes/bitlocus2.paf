@@ -1,0 +1,7 @@
+sim-sequence-mutated_0-1699	1000	0	1700	+	sim-sequence	10000	1000	2700	1690	1700	0
+sim-sequence-mutated_0-999	1000	0	1000	-	sim-sequence	10000	3999	4999	992	1000	0
+sim-sequence-mutated_1203-5999	1000	1203	6000	+	sim-sequence	10000	5203	10000	4784	4797	0
+sim-sequence-mutated_1000-1999	1000	1799	2000	+	sim-sequence	10000	9099	9300	192	201	0
+sim-sequence-mutated_2000-2999	1000	2003	2997	-	sim-sequence	10000	8002	8996	895	994	0
+sim-sequence-mutated_4000-4999	1000	4002	4996	-	sim-sequence	10000	6003	6997	895	994	0
+sim-sequence-mutated_5000-5999	1000	5099	5300	+	sim-sequence	10000	5799	6000	192	201	0

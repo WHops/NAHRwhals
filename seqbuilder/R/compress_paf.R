@@ -46,13 +46,12 @@ merge_rows <- function(paffile, nl1, nl2){
   
 }
 
-meanfun <- function(x,y){
-  return(mean(c(x,y)))
-}
-meanfun_v = Vectorize(meanfun)
 
 
-
+#' Tiny undocumented helperfunction.
+#' @author Wolfram Höps
+#' @rdname alignment
+#' @export
 merge_paf_entries_intraloop <- function(inpaf){
 
   inpaf_rownames = row.names(inpaf)
@@ -170,7 +169,7 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link, quadrantsize = 100000){
   # We will use this metric to decide a 'winning' pair if any vectors
   # want to pair with multiple other vectors. 
   rowpairs$combined_matchlen = inpaf$nmatch[rowpairs$row] + inpaf$nmatch[rowpairs$col]
-  hist(rowpairs$combined_matchlen)
+
   # Cut down redundant pairs
   rowpairs_singular = as.data.frame(
     rowpairs %>% 

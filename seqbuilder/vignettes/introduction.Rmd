@@ -200,7 +200,7 @@ outmutsd = './simulated_seq_twonest_inv.tsv'
 outmutfasta2 = './simulated_seq_twonest_inv_dup.fa'
 outmutsd2 = './simulated_seq_twonest_inv_dup.tsv'
 # Notice how a dup on SDB is not possible upfront:
-mutate_seq(outfasta, sdfile_tsv, svfile_dupB, outmutfasta, outmutsd)
+try(mutate_seq(outfasta, sdfile_tsv, svfile_dupB, outmutfasta, outmutsd))
 
 
 mutate_seq(outfasta, sdfile_tsv, svfile_invA, outmutfasta, outmutsd)

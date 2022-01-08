@@ -155,7 +155,9 @@ run_qc_bed_df <- function(sds_raw){
               unique((sds_raw$otherEnd - sds_raw$otherStart) > 0) == T)
 }
 
-
+#' Convert.
+#' @rdname convert_bed_to_tsv
+#' @export
 convert_bed_to_tsv <- function(inbed, outtsv){
 
   #inbed = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/data/sds10y.bed"

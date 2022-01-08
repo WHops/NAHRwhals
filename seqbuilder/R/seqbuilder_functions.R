@@ -30,6 +30,14 @@ confirm_loaded_nahr <- function(){
   print('The NAHRtoolkit is loaded and ready to go.')
 }
 
+#' Print version number.
+#' @author Wolfram Höps
+#' @rdname Package_test
+#' @export
+version_nahr <- function(){
+  print('This is version 0.9 from Sat 8th, 2022.')
+}
+
 #' A core wrapper function. Give me two fasta files and I'll give you
 #' an output paf and a dotplot pdf. 
 #' 

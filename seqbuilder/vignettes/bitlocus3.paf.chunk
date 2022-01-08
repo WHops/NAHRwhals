@@ -1,0 +1,13 @@
+sim-sequence-mutated_0-999	1000	0	1000	+	sim-sequence	10000	0	1000	1000	1000	0	NM:i:0	ms:i:1000	AS:i:1000	nn:i:0	tp:A:S	cm:i:180	s1:i:988	de:f:0	rl:i:0	cg:Z:1000M
+sim-sequence-mutated_1000-1999	1000	0	1000	+	sim-sequence	10000	1000	2000	1000	1000	0	NM:i:0	ms:i:1000	AS:i:1000	nn:i:0	tp:A:S	cm:i:178	s1:i:988	de:f:0	rl:i:0	cg:Z:1000M
+sim-sequence-mutated_1000-1999	1000	0	1000	-	sim-sequence	10000	3999	4999	992	1000	0	NM:i:8	ms:i:792	AS:i:960	nn:i:0	tp:A:S	cm:i:155	s1:i:904	de:f:0.0080	rl:i:0	cg:Z:1000M
+sim-sequence-mutated_2000-2999	1000	203	1000	+	sim-sequence	10000	5203	6000	784	797	0	NM:i:13	ms:i:732	AS:i:732	nn:i:0	tp:A:S	cm:i:104	s1:i:652	de:f:0.0163	rl:i:0	cg:Z:797M
+sim-sequence-mutated_2000-2999	1000	0	700	+	sim-sequence	10000	2000	2700	690	700	0	NM:i:10	ms:i:650	AS:i:650	nn:i:0	tp:A:S	cm:i:94	s1:i:579	de:f:0.0143	rl:i:0	cg:Z:700M
+sim-sequence-mutated_2000-2999	1000	799	1000	+	sim-sequence	10000	9099	9300	192	201	0	NM:i:9	ms:i:156	AS:i:156	nn:i:0	tp:A:S	cm:i:5	s1:i:63	de:f:0.0448	rl:i:0	cg:Z:201M
+sim-sequence-mutated_3000-3999	1000	0	1000	+	sim-sequence	10000	6000	7000	1000	1000	0	NM:i:0	ms:i:1000	AS:i:1000	nn:i:0	tp:A:S	cm:i:188	s1:i:993	de:f:0	rl:i:0	cg:Z:1000M
+sim-sequence-mutated_3000-3999	1000	3	997	-	sim-sequence	10000	8002	8996	895	994	0	NM:i:99	ms:i:499	AS:i:499	nn:i:0	tp:A:S	cm:i:13	s1:i:147	de:f:0.0996	rl:i:0	cg:Z:994M
+sim-sequence-mutated_4000-4999	1000	0	1000	+	sim-sequence	10000	7000	8000	1000	1000	0	NM:i:0	ms:i:1000	AS:i:1000	nn:i:0	tp:A:S	cm:i:188	s1:i:996	de:f:0	rl:i:0	cg:Z:1000M
+sim-sequence-mutated_5000-5999	1000	0	1000	+	sim-sequence	10000	8000	9000	1000	1000	0	NM:i:0	ms:i:1000	AS:i:1000	nn:i:0	tp:A:S	cm:i:178	s1:i:990	de:f:0	rl:i:0	cg:Z:1000M
+sim-sequence-mutated_5000-5999	1000	2	996	-	sim-sequence	10000	6003	6997	895	994	0	NM:i:99	ms:i:499	AS:i:499	nn:i:0	tp:A:S	cm:i:13	s1:i:147	de:f:0.0996	rl:i:0	cg:Z:994M
+sim-sequence-mutated_6000-6999	1000	0	1000	+	sim-sequence	10000	9000	10000	1000	1000	0	NM:i:0	ms:i:1000	AS:i:1000	nn:i:0	tp:A:S	cm:i:165	s1:i:988	de:f:0	rl:i:0	cg:Z:1000M
+sim-sequence-mutated_6000-6999	1000	99	300	+	sim-sequence	10000	5799	6000	192	201	0	NM:i:9	ms:i:156	AS:i:156	nn:i:0	tp:A:S	cm:i:10	s1:i:104	de:f:0.0448	rl:i:0	cg:Z:201M
