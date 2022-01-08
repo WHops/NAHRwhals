@@ -70,7 +70,6 @@ make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplo
   # Single-sequence query fasta gets chopped into pieces.
   shred_seq(queryfasta, queryfasta_chunk, chunklen)
   print('1')
-  print(targetfasta)
   # Self explanatory
   run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk)
   print('2')
@@ -79,8 +78,6 @@ make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplo
   awk_edit_paf(outpaf_chunk, outpaf_awk)
   print('3')
   # paf of fragmented paf gets put back together. 
-  print(outpaf_awk)
-  print(outpaf)
   #browser()
   compress_paf_fnct(outpaf_awk, outpaf, quadrantsize)
   

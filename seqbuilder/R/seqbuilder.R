@@ -76,6 +76,12 @@ add_snps <- function(seq, similarity, seed=1234){
 #' @export
 simulate_seq <- function(seqlen, sdfile, outfasta, debugmode=F){
   
+  # Input: is a tsv file? 
+  stopifnot("Error: Input to simulate_seq has to be a .tsv file (29 columns). 
+            If you have a .bed file as input, convert it to .tsv with 
+            nahrtoolkit::convert_bed_to_tsv inbed outtsv" = endsWith(sdfile, '.tsv'))
+  
+  
   if (debugmode){
     seqlen = 10000
     sdfile = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/data/sds10y.tsv'
@@ -93,6 +99,7 @@ simulate_seq <- function(seqlen, sdfile, outfasta, debugmode=F){
   )
   sds = read.table(sdfile); colnames(sds) = sds_colnames
 
+  
   stopifnot("Number of SDs is not a multiple of two" = dim(sds)[1] %% 2 == 0)
   stopifnot("SD coordinates exceed sequence length" = max(sds[,c('chromStart', 'chromEnd', 'otherStart', 'otherEnd')]) < seqlen)
   

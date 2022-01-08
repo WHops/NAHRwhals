@@ -156,12 +156,8 @@ run_qc_bed_df <- function(sds_raw){
 }
 
 
-# runs only when script is run by itself
-if (sys.nframe() == 0){
-  
-  # Define input
-  inbed = commandArgs(trailingOnly=TRUE)[1]
-  outtsv = commandArgs(trailingOnly=TRUE)[2]
+convert_bed_to_tsv <- function(inbed, outtsv){
+
   #inbed = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/data/sds10y.bed"
   
   sds_raw = read.table(inbed, sep='\t')
@@ -178,6 +174,16 @@ if (sys.nframe() == 0){
   
   # Save
   write.table(sds_save, file=outtsv, sep='\t', col.names = F, row.names = F, quote = F)
+}
+
+# runs only when script is run by itself
+if (sys.nframe() == 0){
+  
+  # Define input
+  inbed = commandArgs(trailingOnly=TRUE)[1]
+  outtsv = commandArgs(trailingOnly=TRUE)[2]
+  convert_bed_to_tsv(inbed, outtsv)
+ 
 }
 
 

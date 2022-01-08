@@ -179,6 +179,8 @@ sds_document_inversion <- function(sds, sv){
     
     sds$buried_in_inv = NULL
   }
+  
+  sds$sd_middle = NULL
   return(sds)
 }
 
@@ -504,7 +506,7 @@ sds_document_duplication <- function(sds,sv){
   
   # Add the duplication itself 
   
-  print(sds_specific)
+  # print(sds_specific)
   sds_dup = sds_specific
   sds_dup[1,] = transform(
     sds_dup[1,],
@@ -518,10 +520,10 @@ sds_document_duplication <- function(sds,sv){
   )
   sds_dup$uid = paste0(sds_dup$uid, 'dup')
   sds_dup$buried_in_dup = F
-  print('@@########################')
-  print(sds_dup)
-  print('@@########################')
-  print(sds_predup)
+  # print('@@########################')
+  # print(sds_dup)
+  # print('@@########################')
+  # print(sds_predup)
   # Re-merge
   sds_return = rbind(rbind(sds_predup, sds[!sds$uid %in% uid_orig,]), sds_dup)
   #sds_return = rbind(sds_predup, sds[!sds$uid %in% uid_orig,])

@@ -116,7 +116,6 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link, quadrantsize = 100000){
   } 
   #inpaf_link = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf136.awked"
   
-  print("HAAAAALOOOOOOO")
   # Read and col-annotate the input paf
   inpaf = read.table(inpaf_link, sep='\t')
   colnames_paf = c('qname','qlen','qstart','qend',
@@ -151,7 +150,7 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link, quadrantsize = 100000){
 
       rowpairs = rbind(rowpairs, merge_paf_entries_intraloop(inpaf_q))
       count = count + 1
-      print(count)
+      #print(count)
       }
   }
   #browser()
@@ -162,8 +161,7 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link, quadrantsize = 100000){
   
   # Cleanup
   rowpairs = unique(rowpairs)
-  print("HAAAAALOOOOOOO")
-  
+
   # Remove rows that want to pair with themselves (should only appear with a fixed tolerance bp, 
   # not it the tolerance bp is a fraction of the alignment length)
   rowpairs = rowpairs[rowpairs$row != rowpairs$col,]
@@ -180,7 +178,6 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link, quadrantsize = 100000){
       group_by(col) %>% top_n(1, combined_matchlen)
   )
   
-  hist(rowpairs_singular$combined_matchlen)
   # Go through each pair, make the merge. We go through the lines backwards,
   # so that previous merges don't disturb later ones.
   if (dim(rowpairs_singular)[1] > 0){
@@ -189,7 +186,6 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link, quadrantsize = 100000){
     }  
   }
   
-  print("HAAAAALOOOOOOO")
   # Save
   write.table(inpaf, file=outpaf_link, quote = F, col.names = F, row.names = F, sep='\t')
 }
