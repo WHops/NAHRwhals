@@ -102,23 +102,21 @@ for (i in 1:dim(paf)){
 }
 gridlines_y = sort(unique(gridlines_y))
 
-plot + ggplot2::xlim(c(0,10000)) + ggplot2::ylim(c(0,10000)) +
-  ggplot2::geom_hline(yintercept=gridlines_y) +
-  ggplot2::geom_vline(xintercept=gridlines_x)
-grid
 
+gridlines = sort(unique(c(gridlines_x, gridlines_y)))
 
-
-ggplot2::ggplot() + ggplot2::geom_segment(data = paf[paf$strand=='+',], ggplot2::aes(x=tstart, xend = tend, y=qstart, yend=qend)) + 
-  ggplot2::geom_segment(data = paf[paf$strand=='-',], ggplot2::aes(x=tstart, xend = tend, y=qend, yend=qstart)) + 
-  ggplot2::coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") 
-
-bitlocus = matrix(0, length(gridlines), length(gridlines))
-
+grid = matrix(0, length(gridlines), length(gridlines))
 # Fill the bitlocus. Naive approach.
-for (i in 1:length(gridlines)){
-  for j in 1:length(gridlines)){
-    
+for (x in 1:length(gridlines)){
+  for (y in 1:length(gridlines)){
+    #if((gridlines[x] %in% paf$tstart) & (gridlines[y] %in% paf$qstart)){
+    #print()
+    if (any(paf$tstart == gridlines[x] & paf$qstart == gridlines[y])){
+      grid[x, y] = 1
+    }
+    if (any(paf$tstart == gridlines[x+1] & paf$qstart == gridlines[y+1])){
+        grid[x, y] = -1  
+    }
   }
 }
 

@@ -65,13 +65,24 @@ version_nahr <- function(){
 make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplot, 
                                          chunklen = 1000, keep_ref = 10000, minsdlen = 2000,
                                          plot_size = 10, saveplot=T, savepaf=T, quadrantsize = 100000,
-                                         hllink = F,
-                                         hltype = F){
+                                         hllink = F, hltype = F, targetrange = NULL, queryrange = NULL){
   
+
   # Define intermediate files
   queryfasta_chunk = paste0(queryfasta, ".chunk.fa")
   outpaf_chunk = paste0(outpaf, '.chunk')
   outpaf_awk = paste0(outpaf, '.awked')
+  outplot = paste0(outpaf, '.pdf')
+  
+  # Only partial? Cut down input fastas to a .tmp file
+  if (!is.null(queryrange)){
+    shorten_fasta(targetfasta, paste0(targetfasta, '.short.fa'), targetrange)
+    shorten_fasta(queryfasta, paste0(queryfasta, '.short.fa'), queryrange)
+    
+    targetfasta = paste0(targetfasta, '.short.fa')
+    queryfasta =  paste0(queryfasta, '.short.fa')
+  }
+  
   
   # Run a series of chunking, aligning and merging functions/scripts
   
@@ -97,6 +108,10 @@ make_chunked_minimap_alnment <- function(targetfasta, queryfasta, outpaf, outplo
   if (saveplot == F){
     print('returning your plot')
     return(miniplot)
+  } else {
+    print('servus')
+    ggplot2::ggsave(filename = outplot, plot=miniplot, height = 10, width = 10, device = 'pdf')
+    print('Saving')
   }
   
 }
@@ -205,6 +220,21 @@ writeFasta<-function(data, filename){
   writeLines(fastaLines, fileConn)
   close(fileConn)
 }
+
+#' helperfunction to shorten a fasta file.
+#' @author Nicholas Hathaway
+#' @rdname alignment
+#' @export 
+shorten_fasta <- function(infasta, outfasta, range){
+  input = read.table(infasta)
+  seq = as.character(Biostrings::readDNAStringSet(infasta))
+  seq_shortened = substr(seq,range[1],range[2])
+  
+  writeFasta(data.frame(name='seq', seq=seq_shortened), filename=outfasta)
+  
+  print('Successfully written sub-fasta')
+}
+
 
 #' https://rdrr.io/cran/insect/src/R/complement.R
 #' Reverse complement DNA in character string format.
