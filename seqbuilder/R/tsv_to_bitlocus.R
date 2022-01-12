@@ -27,7 +27,7 @@ find_x_intersection <- function(vectors, point){
 
 find_y_intersection <- function(vectors, point){
 
-
+  # Find vectors that overlap with the point along y axis
   overlap_vecs = vectors[(vectors$tstart < point[1]) & (vectors$tend > point[1]),]
   if (dim(overlap_vecs)[1] == 0){
     # Early return if there is no overlap
@@ -82,9 +82,9 @@ get_gridlines_x <- function(paf, gp = 10){
     gridlines_x = c(gridlines_x, find_x_intersection(paf, as.numeric(paf[i,c('tend', 'qend')])))
   }
   gridlines_x = sort(unique(gridlines_x))
-  
   gridlines_x = gridlines_x[diff(gridlines_x) > gp]
-  return(as.integer(gridlines_x[gridlines_x > 0]))
+  
+  return(as.integer(gridlines_x))
 }
 
 get_gridlines_y <- function(paf, gp = 10){
@@ -94,9 +94,9 @@ get_gridlines_y <- function(paf, gp = 10){
     gridlines_y = c(gridlines_y, find_y_intersection(paf, as.numeric(paf[i,c('tend', 'qend')])))
   }
   gridlines_y = sort(unique(gridlines_y))
-  gridlines_y = gridlines_y[diff(gridlines_y) > gp]
+  gridlines_y = gridlines_y[c(T, diff(gridlines_y) > gp)]
   
-  return(as.integer(gridlines_y[gridlines_y > 0]))
+  return(as.integer(gridlines_y))
 }
 
 wrapper_paf_to_bitlocus <- function(inpaf, realplot = T, bitlocusplot = T, minlen=2000, gp=10){
@@ -121,29 +121,24 @@ wrapper_paf_to_bitlocus <- function(inpaf, realplot = T, bitlocusplot = T, minle
   
   paf = cbind(paf, add_slope_intercept_info(paf))
   
+  #gp = 1
   gridlines_x = get_gridlines_x(paf, gp = gp)
   gridlines_y = get_gridlines_y(paf, gp = gp)
   
-  # Grid fill machinery
-  grid = matrix(0, length(gridlines_x), length(gridlines_y))
-  # Fill the bitlocus. Naive approach.
-  for (x in 1:length(gridlines_x)-1){
-    x_mid = (gridlines_x[x] + gridlines_x[x+1]) / 2
-    
-    for (y in 1:length(gridlines_y)-1){
-      y_mid = (gridlines_y[y] + gridlines_y[y+1]) / 2
-      
-      grid[x, y] = get_aln_overlap_in_sector(paf, 
-                                             gridlines_x[x], 
-                                             gridlines_y[y], 
-                                             x_mid, 
-                                             y_mid, 
-                                             gridlines_x[x+1], 
-                                             gridlines_y[y+1], 
-                                             gp = gp)
-    }
+  paf = transform(paf, 
+                  tend = ifelse(strand == '-', tstart, tend),
+                  tstart = ifelse(strand == '-', tend, tstart))
+  paf = transform(paf, 
+                  qend = ifelse(strand == '-', qstart, qend),
+                  qstart = ifelse(strand == '-', qend, qstart))
+  df = data.frame()
+  for (i in 1:dim(paf)[1]){
+    print(i)
+  df = rbind(df, as.data.frame(bresenham(x = as.numeric(paf[i,c('tstart', 'tend')]), 
+                                y = as.numeric(paf[i,c('qstart','qend')]), 
+                                gridlines_x, gridlines_y, debug=F)))
   }
-  
+
   if (realplot){
     plot = ggplot2::ggplot() + ggplot2::geom_segment(data=paf, 
       ggplot2::aes(x=tstart, xend=tend, y=qstart, yend=qend)) +
@@ -154,10 +149,13 @@ wrapper_paf_to_bitlocus <- function(inpaf, realplot = T, bitlocusplot = T, minle
   }
   
   if (bitlocusplot){
-    image(log2(abs(grid)))
+    p = ggplot(df) + geom_tile(aes(x=x, y=y, fill=z)) +
+      coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+      theme_bw()
+    print(p)
   }
   
-  return(grid)
+  return(df)
 }
 
 get_aln_overlap_in_sector <- function(paf, x_start, y_start, x_mid, y_mid, x_end, y_end, gp = 10){
@@ -218,19 +216,19 @@ get_aln_overlap_in_sector <- function(paf, x_start, y_start, x_mid, y_mid, x_end
 
 
 
-# Turn tsv into bitlocus.
-origfa = '../vignettes/simulated_seq_10kb_4SDs.fa'
-mutfa = '../vignettes/simulated_seq_10kb_del_trim.fa'
-#mutfa = '../vignettes/mut.fa'
-outpaf = '../vignettes/bitlocus8.paf'
-#samplefasta_link = system.file('extdata', '10ktest.fa', package='nahrtoolkit')
-
-outpaf = '/Library/Frameworks/R.framework/Versions/4.1/Resources/library/nahrtoolkit/extdata/10ktest.fa62232.paf'
-outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf1d'
-outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpafsds13335'
-outpaf_link = paste0(samplefasta_link, '62232122.paf')
-inpaf = outpaf_link
-grid = wrapper_paf_to_bitlocus(outpaf_link)
+# # Turn tsv into bitlocus.
+# origfa = '../vignettes/simulated_seq_10kb_4SDs.fa'
+# mutfa = '../vignettes/simulated_seq_10kb_del_trim.fa'
+# #mutfa = '../vignettes/mut.fa'
+# outpaf = '../vignettes/bitlocus8.paf'
+# #samplefasta_link = system.file('extdata', '10ktest.fa', package='nahrtoolkit')
+# 
+# outpaf = '/Library/Frameworks/R.framework/Versions/4.1/Resources/library/nahrtoolkit/extdata/10ktest.fa62232.paf'
+# outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf1d'
+# outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpafsds13335'
+# outpaf_link = paste0(samplefasta_link, '62232122.paf')
+# inpaf = outpaf_link
+# grid = wrapper_paf_to_bitlocus(outpaf_link)
 
 # plot = make_chunked_minimap_alnment(origfa, mutfa, outpaf, 
 #                              outplot=NULL, chunklen = 1000, minsdlen = 10, saveplot=F, 
