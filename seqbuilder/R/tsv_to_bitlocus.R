@@ -127,10 +127,10 @@ wrapper_paf_to_bitlocus <- function(inpaf, realplot = T, bitlocusplot = T, minle
   
   paf = transform(paf, 
                   tend = ifelse(strand == '-', tstart, tend),
-                  tstart = ifelse(strand == '-', tend, tstart))
-  paf = transform(paf, 
+                  tstart = ifelse(strand == '-', tend, tstart),
                   qend = ifelse(strand == '-', qstart, qend),
                   qstart = ifelse(strand == '-', qend, qstart))
+
   df = data.frame()
   for (i in 1:dim(paf)[1]){
     print(i)
@@ -142,16 +142,19 @@ wrapper_paf_to_bitlocus <- function(inpaf, realplot = T, bitlocusplot = T, minle
   if (realplot){
     plot = ggplot2::ggplot() + ggplot2::geom_segment(data=paf, 
       ggplot2::aes(x=tstart, xend=tend, y=qstart, yend=qend)) +
-      ggplot2::geom_hline(ggplot2::aes(yintercept=gridlines_y)) +
-      ggplot2::geom_vline(ggplot2::aes(xintercept=gridlines_x))# +
+      ggplot2::geom_hline(ggplot2::aes(yintercept=gridlines_y), color='grey') +
+      ggplot2::geom_vline(ggplot2::aes(xintercept=gridlines_x), color='grey') +
+      ggplot2::coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+      ggplot2::theme_bw()
       #ggplot2::xlim(c(0,10000)) + ggplot2::ylim(c(0,10000))
     print(plot)
   }
   
   if (bitlocusplot){
-    p = ggplot(df) + geom_tile(aes(x=x, y=y, fill=z)) +
-      coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
-      theme_bw()
+    p = ggplot2::ggplot(df) + ggplot2::geom_tile(ggplot2::aes(x=x, y=y, fill=sign(z))) +
+      ggplot2::scale_fill_gradient(low='red', high='blue') + 
+      ggplot2::coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+      ggplot2::theme_bw()
     print(p)
   }
   
@@ -212,7 +215,7 @@ get_aln_overlap_in_sector <- function(paf, x_start, y_start, x_mid, y_mid, x_end
   }
 }
 
-
+grid = wrapper_paf_to_bitlocus(samplepaf_link, gp = 0)
 
 
 

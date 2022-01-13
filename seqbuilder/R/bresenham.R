@@ -95,74 +95,74 @@ bresenham <- function(x, y = NULL, gridpoints_x, gridpoints_y, close = TRUE, deb
   
   # process all vertices in pairs
   # Find points for the next x value. 
-  for (i in seq.int(nx - 1)) {
-    x <- v$x[i] # coordinates updated in x, y
-    y <- v$y[i]
-    x.end <- v$x[i + 1]
-    y.end <- v$y[i + 1]
-    
-    dx <- abs(x.end - x); dy <- -abs(y.end - y)
-    
-    err = dx + dy
-    
-    x_grididx = which(gridpoints_x == v$x[1])
-    y_grididx = which(gridpoints_y == v$y[1])
-    
-    # collect result in 'ans, staring with 1st point
-    
-    # v$x <- c(v$x, v$x[1])
-    # v$y <- c(v$y, v$y[1])
-    
-    # Hacky version to print the pixel below, for negative ranges. 
-    if (y > y.end){
-      ans <- data.frame(x=x_grididx, y=y_grididx - 1, z = -log10(griddiffs_x[x_grididx]))
-    } else {
-      ans <- data.frame(x=x_grididx, y=y_grididx, z = log10(griddiffs_x[x_grididx]))
-    }
-      # lapply(v[1:2], "[", 1)
-    # process one segment
-    while(!(isTRUE(all.equal(x, x.end)) && isTRUE(all.equal(y, y.end)))) {
-      
-      # Here is where the omnidirectionality is encoded. 
-      # s perhaps for 'step'?
-      
-      # We will have to initiate the stepcount at the right position in the future.
-      # Or +1 and 0.
-      sx <- ifelse(x < x.end, griddiffs_x[x_grididx], -griddiffs_x[x_grididx-1])
-      sy <- ifelse(y < y.end, griddiffs_y[y_grididx], -griddiffs_y[y_grididx-1])
-      
-      
-      e2 <- 2 * err
-
-      if (e2 >= dy) { # increment x
-        
-        # increment x
-        x <- x + sx
-        x_grididx <- x_grididx + sign(sx)
-        
-        
-        # recalc error
-        dx <- abs(x.end - x); dy <- -abs(y.end - y)
-        err <- dx + dy
-
-      }
-      if (e2 <= dx) { # increment y
-        y <- y + sy
-        y_grididx <- y_grididx + sign(sy)
-        
-        dx <- abs(x.end - x); dy <- -abs(y.end - y)
-        err <- dx + dy
-
-      }
-      if (y > y.end){
-        ans = rbind(ans, c(x_grididx, y_grididx-1, -log10(griddiffs_x[x_grididx])))
-        
-      } else {
-        ans = rbind(ans, c(x_grididx, y_grididx, log10(griddiffs_x[x_grididx])))
-      }
-      
-    }
+  i = 1
+  x <- v$x[i] # coordinates updated in x, y
+  y <- v$y[i]
+  x.end <- v$x[i + 1]
+  y.end <- v$y[i + 1]
+  
+  dx <- abs(x.end - x); dy <- -abs(y.end - y)
+  
+  err = dx + dy
+  
+  x_grididx = which(gridpoints_x == v$x[1])
+  y_grididx = which(gridpoints_y == v$y[1])
+  
+  # collect result in 'ans, staring with 1st point
+  
+  # v$x <- c(v$x, v$x[1])
+  # v$y <- c(v$y, v$y[1])
+  
+  # Hacky version to print the pixel below, for negative ranges. 
+  if (y > y.end){
+    ans <- data.frame(x=x_grididx, y=y_grididx - 1, z = -log10(griddiffs_x[x_grididx]))
+  } else {
+    ans <- data.frame(x=x_grididx, y=y_grididx, z = log10(griddiffs_x[x_grididx]))
   }
+    # lapply(v[1:2], "[", 1)
+  # process one segment
+  while(!(isTRUE(all.equal(x, x.end)) && isTRUE(all.equal(y, y.end)))) {
+    
+    # Here is where the omnidirectionality is encoded. 
+    # s perhaps for 'step'?
+    
+    # We will have to initiate the stepcount at the right position in the future.
+    # Or +1 and 0.
+    sx <- ifelse(x < x.end, griddiffs_x[x_grididx], -griddiffs_x[x_grididx-1])
+    sy <- ifelse(y < y.end, griddiffs_y[y_grididx], -griddiffs_y[y_grididx-1])
+    
+    
+    e2 <- 2 * err
+
+    if (e2 >= dy) { # increment x
+      
+      # increment x
+      x <- x + sx
+      x_grididx <- x_grididx + sign(sx)
+      
+      
+      # recalc error
+      dx <- abs(x.end - x); dy <- -abs(y.end - y)
+      err <- dx + dy
+
+    }
+    if (e2 <= dx) { # increment y
+      y <- y + sy
+      y_grididx <- y_grididx + sign(sy)
+      
+      dx <- abs(x.end - x); dy <- -abs(y.end - y)
+      err <- dx + dy
+
+    }
+    if (y > y.end){
+      ans = rbind(ans, c(x_grididx, y_grididx-1, -log10(griddiffs_x[x_grididx])))
+      
+    } else {
+      ans = rbind(ans, c(x_grididx, y_grididx, log10(griddiffs_x[x_grididx])))
+    }
+    
+  }
+  
   # remove duplicated points (typically 1st and last)
   dups <- duplicated(do.call(cbind, ans), MARGIN = 1) 
   
