@@ -191,6 +191,8 @@ dotplotly_dotplot <- function(opt){
           round(lenAln / 1000, 1)
         )
       )) +
+    ggplot2::scale_color_gradientn(colours = rainbow(5), limits=c(0.8,1)) + 
+    #ggplot2::scale_fill_viridis_c(option = 'magma') + 
     ggplot2::labs(color = "Percent ID", 
          title = opt$input_filename) +
       ggplot2::xlab(as.character(alignments$refID[1])) +

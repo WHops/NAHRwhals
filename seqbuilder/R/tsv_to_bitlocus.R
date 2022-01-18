@@ -77,23 +77,25 @@ get_gridlines_x <- function(paf, gp = 10){
   # Let's do it slow and bad for now. This doesn't seem to be very time critical anyway
   # because it only has to be run once per locus. 
   gridlines_x = c()
-  for (i in 1:dim(paf)){
+  for (i in 1:dim(paf)[1]){
     gridlines_x = c(gridlines_x, find_x_intersection(paf, as.numeric(paf[i,c('tstart', 'qstart')])))
     gridlines_x = c(gridlines_x, find_x_intersection(paf, as.numeric(paf[i,c('tend', 'qend')])))
   }
-  gridlines_x = sort(unique(gridlines_x))
+  gridlines_x = sort(unique(gridlines_x[gridlines_x>=0]))
   gridlines_x = gridlines_x[diff(gridlines_x) > gp]
   
   return(as.integer(gridlines_x))
 }
 
+
+
 get_gridlines_y <- function(paf, gp = 10){
   gridlines_y = c()
-  for (i in 1:dim(paf)){
+  for (i in 1:dim(paf)[1]){
     gridlines_y = c(gridlines_y, find_y_intersection(paf, as.numeric(paf[i,c('tstart', 'qstart')])))
     gridlines_y = c(gridlines_y, find_y_intersection(paf, as.numeric(paf[i,c('tend', 'qend')])))
   }
-  gridlines_y = sort(unique(gridlines_y))
+  gridlines_y = sort(unique(gridlines_y[gridlines_y>=0]))
   gridlines_y = gridlines_y[c(T, diff(gridlines_y) > gp)]
   
   return(as.integer(gridlines_y))
@@ -106,13 +108,15 @@ wrapper_paf_to_bitlocus <- function(inpaf, realplot = T, bitlocusplot = T, minle
   colnames(paf) = c('qname','qlen','qstart','qend',
                     'strand','tname','tlen','tstart',
                     'tend','nmatch','alen','mapq')
-  
+  #paf = paf[paf$tend > 5700,]
 
   if (dim(paf)[1] > 50){
     print(dim(paf))
     paf = paf[paf$alen > minlen,]
     print(dim(paf))
   }
+  
+  print(paf)
   # For negative alignments, interchange start and end. So that
   # 
   paf = transform(paf, 
@@ -125,6 +129,8 @@ wrapper_paf_to_bitlocus <- function(inpaf, realplot = T, bitlocusplot = T, minle
   gridlines_x = get_gridlines_x(paf, gp = gp)
   gridlines_y = get_gridlines_y(paf, gp = gp)
   
+  print(gridlines_x)
+  print(gridlines_y)
   paf = transform(paf, 
                   tend = ifelse(strand == '-', tstart, tend),
                   tstart = ifelse(strand == '-', tend, tstart),
@@ -151,8 +157,8 @@ wrapper_paf_to_bitlocus <- function(inpaf, realplot = T, bitlocusplot = T, minle
   }
   
   if (bitlocusplot){
-    p = ggplot2::ggplot(df) + ggplot2::geom_tile(ggplot2::aes(x=x, y=y, fill=sign(z))) +
-      ggplot2::scale_fill_gradient(low='red', high='blue') + 
+    p = ggplot2::ggplot(df) + ggplot2::geom_tile(ggplot2::aes(x=x, y=y, fill=sign(z) * log10(abs(z)))) +
+      ggplot2::scale_fill_gradient2(low='red', mid='white', high='blue') + 
       ggplot2::coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
       ggplot2::theme_bw()
     print(p)
@@ -226,12 +232,12 @@ grid = wrapper_paf_to_bitlocus(samplepaf_link, gp = 0)
 # outpaf = '../vignettes/bitlocus8.paf'
 # #samplefasta_link = system.file('extdata', '10ktest.fa', package='nahrtoolkit')
 # 
-# outpaf = '/Library/Frameworks/R.framework/Versions/4.1/Resources/library/nahrtoolkit/extdata/10ktest.fa62232.paf'
+# #outpaf_link = '/Library/Frameworks/R.framework/Versions/4.1/Resources/library/nahrtoolkit/extdata/10ktest.fa62232.paf'
 # outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf1d'
-# outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpafsds13335'
-# outpaf_link = paste0(samplefasta_link, '62232122.paf')
-# inpaf = outpaf_link
-# grid = wrapper_paf_to_bitlocus(outpaf_link)
+# # outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpafsds13335'
+# # outpaf_link = paste0(samplefasta_link, '62232122.paf')
+# # inpaf = outpaf_link
+# grid = wrapper_paf_to_bitlocus(outpaf_link, gp = 10000)
 
 # plot = make_chunked_minimap_alnment(origfa, mutfa, outpaf, 
 #                              outplot=NULL, chunklen = 1000, minsdlen = 10, saveplot=F, 

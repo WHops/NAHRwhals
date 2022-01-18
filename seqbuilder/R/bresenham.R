@@ -87,6 +87,7 @@ bresenham <- function(x, y = NULL, gridpoints_x, gridpoints_y, close = TRUE, deb
     stop("finite coordinates required")
   
   # These are coordinates.
+  # We adjust the ends to cling to the nearest corner. 
   v$x = c(gridpoints_x[abs(gridpoints_x - x[1]) == min(abs(gridpoints_x - x[1]))],
           gridpoints_x[abs(gridpoints_x - x[2]) == min(abs(gridpoints_x - x[2]))])
   v$y = c(gridpoints_y[abs(gridpoints_y - y[1]) == min(abs(gridpoints_y - y[1]))],
@@ -104,7 +105,6 @@ bresenham <- function(x, y = NULL, gridpoints_x, gridpoints_y, close = TRUE, deb
   dx <- abs(x.end - x); dy <- -abs(y.end - y)
   
   err = dx + dy
-  
   x_grididx = which(gridpoints_x == v$x[1])
   y_grididx = which(gridpoints_y == v$y[1])
   
@@ -120,9 +120,12 @@ bresenham <- function(x, y = NULL, gridpoints_x, gridpoints_y, close = TRUE, deb
     ans <- data.frame(x=x_grididx, y=y_grididx, z = log10(griddiffs_x[x_grididx]))
   }
     # lapply(v[1:2], "[", 1)
-  # process one segment
-  while(!(isTRUE(all.equal(x, x.end)) && isTRUE(all.equal(y, y.end)))) {
-    
+  # process one 
+  # We do this until we are EXACTLY at x.end and y.end
+  #while(!(isTRUE(all.equal(x, x.end)) && isTRUE(all.equal(y, y.end)))) {
+  
+  # What about stopping as soon as one of the contestants has reached their goal?
+  while(!(isTRUE(all.equal(x, x.end)) | isTRUE(all.equal(y, y.end)))) {
     # Here is where the omnidirectionality is encoded. 
     # s perhaps for 'step'?
     
@@ -130,12 +133,17 @@ bresenham <- function(x, y = NULL, gridpoints_x, gridpoints_y, close = TRUE, deb
     # Or +1 and 0.
     sx <- ifelse(x < x.end, griddiffs_x[x_grididx], -griddiffs_x[x_grididx-1])
     sy <- ifelse(y < y.end, griddiffs_y[y_grididx], -griddiffs_y[y_grididx-1])
-    
-    
+    # print(sx)
+    # print(dx)
+    # print(sy)
+    # print(dx)
+    # print(dy)
+    # browser()
     e2 <- 2 * err
-
-    if (e2 >= dy) { # increment x
+    #print(paste0('e2 >= dy: ', e2 >= dy))
+    if (e2 >= dy | e2 <= dx) { # increment x
       
+      # print('incrementing x')
       # increment x
       x <- x + sx
       x_grididx <- x_grididx + sign(sx)
@@ -145,14 +153,19 @@ bresenham <- function(x, y = NULL, gridpoints_x, gridpoints_y, close = TRUE, deb
       dx <- abs(x.end - x); dy <- -abs(y.end - y)
       err <- dx + dy
 
-    }
-    if (e2 <= dx) { # increment y
+    #}
+    #if (e2 <= dx) { # increment y
+      
+      # print('incrementing y')
       y <- y + sy
       y_grididx <- y_grididx + sign(sy)
       
       dx <- abs(x.end - x); dy <- -abs(y.end - y)
       err <- dx + dy
 
+    } else {
+      print('Algorithm is likely stuck')
+      
     }
     if (y > y.end){
       ans = rbind(ans, c(x_grididx, y_grididx-1, -log10(griddiffs_x[x_grididx])))
@@ -161,14 +174,14 @@ bresenham <- function(x, y = NULL, gridpoints_x, gridpoints_y, close = TRUE, deb
       ans = rbind(ans, c(x_grididx, y_grididx, log10(griddiffs_x[x_grididx])))
     }
     
-  }
+  } 
   
   # remove duplicated points (typically 1st and last)
   dups <- duplicated(do.call(cbind, ans), MARGIN = 1) 
   
   to_return_nodup = as.data.frame(lapply(ans, "[", !dups))
   to_return <- to_return_nodup[-nrow(to_return_nodup),] 
-    
+  #to_return = to_return_nodup
   return(to_return)
 }
 # 
@@ -177,12 +190,96 @@ bresenham <- function(x, y = NULL, gridpoints_x, gridpoints_y, close = TRUE, deb
 # 
 # 
 # # library(ggplot2)
-# gridpoints_x = c(0,2,3)
-# gridpoints_y = c(0,2,3)
-# df = as.data.frame(bresenham(x = c(0,4), y = c(0,4), gridpoints_x, gridpoints_y, debug=F))
+
+
+
 # 
-# ggplot(df) + geom_tile(aes(x=x, y=y)) + 
-#   coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") + 
+# 159921, 
+# 40802 , 
+# 39989 ,
+# 
+# gridlines_x = c( 40004 , 40855 , 82718, 116112, 160000,160804  )
+# gridlines_y = gridlines_x #c( 0,  21714  ,39989  ,40802,  82718, 116112 ,159921 ,160804 ,179018)
+# x = c(116112, 160804)
+# y = c(82718, 40004)
+# 
+# plot = ggplot2::ggplot() + 
+#   ggplot2::geom_hline(ggplot2::aes(yintercept=gridlines_y), color='grey') +
+#   ggplot2::geom_vline(ggplot2::aes(xintercept=gridlines_x), color='grey') +
+#   ggplot2::coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+#   ggplot2::theme_bw() + 
+#   geom_segment(aes(x=x[1], xend=x[2], y=y[1], yend=y[2])) + 
+#   xlim(c(110000,170000)) + ylim(c(35000, 85000))
+# plot
+# df = as.data.frame(bresenham(x = x, y = y, gridlines_x, gridlines_y, debug=F))
+# # 
+# ggplot(df) + geom_tile(aes(x=x, y=y)) +
+#   coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+#   theme_bw()
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# gridlines_x = c( 0,  21714 , 40004 , 40855 , 82718 ,116112 ,160000 ,160819, 179018 ,193610)
+# gridlines_y = c( 0,  21714  ,39989  ,40802,  82718, 116112 ,159921 ,160804 ,179018 ,193610)
+# x = c(116112, 160804)
+# y = c(82718, 40004)
+# 
+# plot = ggplot2::ggplot() + 
+#   ggplot2::geom_hline(ggplot2::aes(yintercept=gridlines_y), color='grey') +
+#   ggplot2::geom_vline(ggplot2::aes(xintercept=gridlines_x), color='grey') +
+#   ggplot2::coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+#   ggplot2::theme_bw() + 
+#   geom_segment(aes(x=x[1], xend=x[2], y=y[1], yend=y[2])) + 
+#   xlim(c(110000,170000)) + ylim(c(35000, 85000))
+# plot
+# df = as.data.frame(bresenham(x = x, y = y, gridlines_x, gridlines_y, debug=F))
+# # 
+# ggplot(df) + geom_tile(aes(x=x, y=y)) +
+#   coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+#   theme_bw()
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# gridlines_x = c(570 , 579 , 603 , 697,  802 , 896 , 909 , 930 ,1000)
+# gridlines_y =  gridlines_x
+# 
+# x = c(579, 600)
+# y = c(930, 909)
+# 
+# plot = ggplot2::ggplot() + 
+#   ggplot2::geom_hline(ggplot2::aes(yintercept=gridlines_y), color='grey') +
+#   ggplot2::geom_vline(ggplot2::aes(xintercept=gridlines_x), color='grey') +
+#   ggplot2::coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+#   ggplot2::theme_bw() + 
+#   geom_segment(aes(x=x[1], xend=x[2], y=y[1], yend=y[2]))
+# plot
+# df = as.data.frame(bresenham(x = x, y = y, gridlines_x, gridlines_y, debug=F))
+# # 
+# ggplot(df) + geom_tile(aes(x=x, y=y)) +
+#   coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+#   theme_bw()
+# # 
+# # library(ggplot2)
+# gridpoints_x = c(0,2,4)
+# gridpoints_y = c(0,2,4)
+# df = as.data.frame(bresenham(x = c(0,2), y = c(0,2), gridpoints_x, gridpoints_y, debug=F))
+# #
+# ggplot(df) + geom_tile(aes(x=x, y=y)) +
+#   #coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
 #   theme_bw()
 # 
 # gridpoints_x = c(0,1000,1500,2000,2500, 3100)
