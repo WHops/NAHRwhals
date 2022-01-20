@@ -116,7 +116,6 @@ make_chunked_minimap_alnment <-
     # how to use regex...
     awk_edit_paf(outpaf_chunk, outpaf_awk)
     print('3')
-    
     # If we operate on a large reference, cut down the paf. 
     if (wholegenome){
       filter_paf_to_main_region(outpaf_awk, outpaf_filter)
@@ -124,7 +123,6 @@ make_chunked_minimap_alnment <-
       outpaf_filter = outpaf_awk
     }
     # paf of fragmented paf gets put back together.
-    #browser()
     compress_paf_fnct(outpaf_filter, outpaf, quadrantsize)
     
     print('4')
