@@ -388,6 +388,18 @@ wrapper_dotplot_with_alignment <- function(seqname, start, end, genome_x_fa, gen
   
 }
 
+
+#' General purpose wrapper
+#'
+#' @description Simple function to create a random string of ACGT.
+#'
+#' @param n [numeric] length of desired sequence (bp)
+#' @param gcfreq [character/link] desired GC frequency.
+#' @return A character vector of a random DNA sequence.
+#'
+#' @author Wolfram Höps
+#' @rdname seq_modeling
+#' @export
 wrapper_dotplot_with_alignment_fast <- function(seqname, start, end, genome_x_fa, genome_y_fa, subseqfasta_x, 
                                            subseqfasta_y, conversionpaf_link, outpaf_link, 
                                            chunklen = 1000, factor = 0.5){
