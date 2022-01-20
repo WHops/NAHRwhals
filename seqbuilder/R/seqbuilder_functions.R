@@ -172,7 +172,7 @@ make_chunked_minimap_alnment <-
 shred_seq <- function(infasta,
                       outfasta_chunk,
                       chunklen,
-                      scriptloc = '/Users/hoeps/PhD/projects/nahrcall/bbmap/shred.sh') {
+                      scriptloc = '/g/korbel/hoeps/projects/nahr/nahrchainer/bbmap/shred.sh') {
   print(paste0(
     scriptloc,
     " in=",
@@ -221,7 +221,7 @@ run_minimap2 <-
   function(targetfasta,
            queryfasta,
            outpaf,
-           minimap2loc = "/Users/hoeps/opt/anaconda3/bin/minimap2",
+           minimap2loc = "minimap2",
            nthreads =4) {
     #system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
     
@@ -264,7 +264,7 @@ run_minimap2 <-
 #' @rdname alignment
 #' @export
 awk_edit_paf <- function(inpaf, outpaf,
-                         scriptlink = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/scripts/awk_on_paf.sh') {
+                         scriptlink = '/g/korbel/hoeps/projects/nahr/nahrchainer/seqbuilder/scripts/awk_on_paf.sh') {
   print(inpaf)
   print(outpaf)
   system(paste0(scriptlink, " ", inpaf, " ", outpaf))
