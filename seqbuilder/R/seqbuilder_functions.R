@@ -387,3 +387,25 @@ wrapper_dotplot_with_alignment <- function(seqname, start, end, genome_x_fa, gen
   return(plot)
   
 }
+
+wrapper_dotplot_with_alignment_fast <- function(seqname, start, end, genome_x_fa, genome_y_fa, subseqfasta_x, 
+                                           subseqfasta_y, conversionpaf_link, outpaf_link, 
+                                           chunklen = 1000, factor = 0.5){
+  
+ 
+  # Get coords in assembly
+  coords_liftover = liftover_coarse(seqname, start, end, conversionpaf_link, factor = 1)
+  
+  # Gimme fasta
+  extract_subseq_bedtools(genome_x_fa, seqname, start, end, subseqfasta_x)
+  extract_subseq_bedtools(genome_y_fa, coords_liftover$lift_contig, coords_liftover$lift_start, coords_liftover$lift_end, subseqfasta_y)
+  
+  #outpaf_link = as.character(runif(1,1e10, 1e11))
+  plot = make_chunked_minimap_alnment(subseqfasta_y, subseqfasta_x, outpaf_link, 
+                                      chunklen = 1000, minsdlen = 2000, saveplot=T, 
+                                      hllink = F, hltype = F, wholegenome = T)
+  return(plot)
+  
+}
+
+
