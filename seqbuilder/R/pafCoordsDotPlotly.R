@@ -222,7 +222,6 @@ dotplotly_dotplot <- function(opt) {
       #           size = 0.009) +
       #geom_point(mapping = ggplot2::aes(y = refEnd2, x = queryEnd2),
       #           size = 0.009) +
-      #browser()
       ggplot2::geom_segment(
         ggplot2::aes(
           y = queryStart,
@@ -305,7 +304,6 @@ dotplotly_dotplot <- function(opt) {
         'id'
       )
     }
-    
     sd_simple = sd_simple[(sd_simple$chromEnd - sd_simple$chromStart > opt$minsdlen),]
     # Assumes sd_simple is in BED format - each SD only once. (?)
     gp = gp + ggplot2::geom_rect(
