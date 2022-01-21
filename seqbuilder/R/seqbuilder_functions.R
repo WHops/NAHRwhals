@@ -85,6 +85,7 @@ make_chunked_minimap_alnment <-
     outpaf_chunk = paste0(outpaf, '.chunk')
     outpaf_awk = paste0(outpaf, '.awked')
     outpaf_filter = paste0(outpaf, '.filter')
+    outpaf_plot = paste0(outpaf, '.plot')
     outplot = paste0(outpaf, '.pdf')
     
     # Only partial? Cut down input fastas to a .tmp file
@@ -98,42 +99,45 @@ make_chunked_minimap_alnment <-
       queryfasta =  paste0(queryfasta, '.short.fa')
     }
     
-    if (targetfasta == 'hg38'){
-      # To write nicer in case the code will work. 
-      print('Taking hg38 as target.')
-      targetfasta = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/hg38.fa"
-    }
     # Run a series of chunking, aligning and merging functions/scripts
-    #browser()
     # Single-sequence query fasta gets chopped into pieces.
     shred_seq(queryfasta, queryfasta_chunk, chunklen)
     print('1')
     
     # Self explanatory
     run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk)
+
     print('2')
     # Awk is used to correct the sequence names. This is because I know only there
     # how to use regex...
     awk_edit_paf(outpaf_chunk, outpaf_awk)
-    print('3')
+    
+    
     # If we operate on a large reference, cut down the paf. 
     if (wholegenome){
       filter_paf_to_main_region(outpaf_awk, outpaf_filter)
     } else {
       outpaf_filter = outpaf_awk
     }
+    
     # paf of fragmented paf gets put back together.
     compress_paf_fnct(outpaf_filter, outpaf, quadrantsize)
+    
+    if (wholegenome){
+      flip_query_target(outpaf, outpaf_plot)
+    } else {
+      outpaf_plot = outpaf
+    }
     
     print('4')
     # Make a dotplot of that final paf (and with sd highlighting).
     miniplot = pafdotplot_make(
-      outpaf,
+      outpaf_plot,
       outplot,
       keep_ref = keep_ref,
       plot_size = plot_size,
-      hllink = F,
-      hltype = F,
+      hllink = hllink,
+      hltype = hltype,
       minsdlen = minsdlen,
       save = saveplot
     )
