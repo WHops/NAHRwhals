@@ -133,12 +133,12 @@ extract_subseq_bedtools <- function(infasta, seqname, start, end, outfasta){
   tmp_bedfile = paste0('region2_', random_tag, '.bed')
   region = paste0(seqname, "\t", start, "\t", end)
   system(paste0('echo "', region, '" > ', tmp_bedfile))
-  system(paste0("/usr/local/bin/bedtools getfasta -fi ",
+  system(paste0("/g/funcgen/bin/bedtools getfasta -fi ",
                 infasta,
                 " -bed ",
                 tmp_bedfile,
                 " > ", outfasta))
-  system(paste0('rm ', tmp_bedfile))
+  #system(paste0('rm ', tmp_bedfile))
 
   print(paste0('Subsequence extracted and saved to ', outfasta))
 

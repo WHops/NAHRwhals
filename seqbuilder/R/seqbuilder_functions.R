@@ -221,7 +221,7 @@ run_minimap2 <-
   function(targetfasta,
            queryfasta,
            outpaf,
-           minimap2loc = "minimap2",
+           minimap2loc = "/g/korbel/hoeps/programs/paftools/minimap2/minimap2",
            nthreads =4) {
     #system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
     
@@ -402,7 +402,7 @@ wrapper_dotplot_with_alignment <- function(seqname, start, end, genome_x_fa, gen
 #' @export
 wrapper_dotplot_with_alignment_fast <- function(seqname, start, end, genome_x_fa, genome_y_fa, subseqfasta_x, 
                                            subseqfasta_y, conversionpaf_link, outpaf_link, 
-                                           chunklen = 1000, factor = 0.5){
+                                           chunklen = 10000, factor = 0.5){
   
  
   # Get coords in assembly
@@ -411,11 +411,11 @@ wrapper_dotplot_with_alignment_fast <- function(seqname, start, end, genome_x_fa
   # Gimme fasta
   extract_subseq_bedtools(genome_x_fa, seqname, start, end, subseqfasta_x)
   extract_subseq_bedtools(genome_y_fa, coords_liftover$lift_contig, coords_liftover$lift_start, coords_liftover$lift_end, subseqfasta_y)
-  
+  print("##############################") 
   #outpaf_link = as.character(runif(1,1e10, 1e11))
-  plot = make_chunked_minimap_alnment(subseqfasta_y, subseqfasta_x, outpaf_link, 
-                                      chunklen = 1000, minsdlen = 2000, saveplot=T, 
-                                      hllink = F, hltype = F, wholegenome = T)
+  plot = make_chunked_minimap_alnment(subseqfasta_x, subseqfasta_y, outpaf_link, 
+                                      chunklen = chunklen, minsdlen = 2000, saveplot=T, 
+                                      hllink = F, hltype = F, wholegenome = F)
   return(plot)
   
 }
