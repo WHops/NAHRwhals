@@ -410,7 +410,7 @@ wrapper_dotplot_with_alignment_fast <- function(seqname, start, end, genome_x_fa
   
  
   # Get coords in assembly
-  coords_liftover = liftover_coarse(seqname, start, end, conversionpaf_link, factor = 1)
+  coords_liftover = liftover_coarse(seqname, start, end, conversionpaf_link, lenfactor = 1)
   
   # Gimme fasta
   extract_subseq_bedtools(genome_x_fa, seqname, start, end, subseqfasta_x)
