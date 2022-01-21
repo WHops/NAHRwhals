@@ -367,6 +367,7 @@ find_punctual_liftover <- function(cpaf, pointcoordinate) {
   return(data.frame(seqname = best_aln$tname, liftover_coord = coord))
 }
 
+#' @export 
 liftover_coarse <-
   function(seqname,
            start,
