@@ -98,12 +98,11 @@ make_chunked_minimap_alnment <-
       targetfasta = paste0(targetfasta, '.short.fa')
       queryfasta =  paste0(queryfasta, '.short.fa')
     }
-    
     # Run a series of chunking, aligning and merging functions/scripts
     # Single-sequence query fasta gets chopped into pieces.
     shred_seq(queryfasta, queryfasta_chunk, chunklen)
     print('1')
-    
+    print(queryfasta_chunk)
     # Self explanatory
     run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk)
 
@@ -176,7 +175,7 @@ make_chunked_minimap_alnment <-
 shred_seq <- function(infasta,
                       outfasta_chunk,
                       chunklen,
-                      scriptloc = '/g/korbel/hoeps/projects/nahr/nahrchainer/bbmap/shred.sh') {
+                      scriptloc = '/Users/hoeps/PhD/projects/nahrcall/bbmap/shred.sh') {
   print(paste0(
     scriptloc,
     " in=",
@@ -193,7 +192,8 @@ shred_seq <- function(infasta,
     " out=",
     outfasta_chunk,
     " length=",
-    chunklen
+    chunklen, 
+    " overwrite=true"
   ))
 }
 
@@ -225,7 +225,7 @@ run_minimap2 <-
   function(targetfasta,
            queryfasta,
            outpaf,
-           minimap2loc = "/g/korbel/hoeps/programs/paftools/minimap2/minimap2",
+           minimap2loc = "/Users/hoeps/opt/anaconda3/bin/minimap2",
            nthreads =4) {
     #system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
     
@@ -268,7 +268,7 @@ run_minimap2 <-
 #' @rdname alignment
 #' @export
 awk_edit_paf <- function(inpaf, outpaf,
-                         scriptlink = '/g/korbel/hoeps/projects/nahr/nahrchainer/seqbuilder/scripts/awk_on_paf.sh') {
+                         scriptlink = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/scripts/awk_on_paf.sh') {
   print(inpaf)
   print(outpaf)
   system(paste0(scriptlink, " ", inpaf, " ", outpaf))
@@ -304,6 +304,8 @@ writeFasta <- function(data, filename) {
 #' @rdname alignment
 #' @export
 shorten_fasta <- function(infasta, outfasta, range) {
+  
+  browser()
   input = read.table(infasta)
   seq_shortened = as.character(Biostrings::subseq(Biostrings::readDNAStringSet(infasta), start=range[1], stop=range[2]))
 

@@ -158,6 +158,8 @@ bresenham <-
     # What about stopping as soon as one of the contestants has reached their goal?
     while (!(isTRUE(all.equal(x, x.end)) |
              isTRUE(all.equal(y, y.end)))) {
+      # print(x)
+      # print(x.end)
       # Here is where the omnidirectionality is encoded.
       # s perhaps for 'step'?
       
@@ -235,24 +237,24 @@ bresenham <-
 # 40802 ,
 # 39989 ,
 #
-# gridlines_x = c( 40004 , 40855 , 82718, 116112, 160000,160804  )
-# gridlines_y = gridlines_x #c( 0,  21714  ,39989  ,40802,  82718, 116112 ,159921 ,160804 ,179018)
-# x = c(116112, 160804)
-# y = c(82718, 40004)
+gridlines_x = c( 40004 , 40855 , 82718, 116112, 160000,160804  )
+gridlines_y = gridlines_x #c( 0,  21714  ,39989  ,40802,  82718, 116112 ,159921 ,160804 ,179018)
+x = c(116112, 160804)
+y = c(82718, 40004)
+
+plot = ggplot2::ggplot() +
+  ggplot2::geom_hline(ggplot2::aes(yintercept=gridlines_y), color='grey') +
+  ggplot2::geom_vline(ggplot2::aes(xintercept=gridlines_x), color='grey') +
+  ggplot2::coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+  ggplot2::theme_bw() +
+  geom_segment(aes(x=x[1], xend=x[2], y=y[1], yend=y[2])) +
+  xlim(c(110000,170000)) + ylim(c(35000, 85000))
+plot
+df = as.data.frame(bresenham(x = x, y = y, gridlines_x, gridlines_y, debug=F))
 #
-# plot = ggplot2::ggplot() +
-#   ggplot2::geom_hline(ggplot2::aes(yintercept=gridlines_y), color='grey') +
-#   ggplot2::geom_vline(ggplot2::aes(xintercept=gridlines_x), color='grey') +
-#   ggplot2::coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
-#   ggplot2::theme_bw() +
-#   geom_segment(aes(x=x[1], xend=x[2], y=y[1], yend=y[2])) +
-#   xlim(c(110000,170000)) + ylim(c(35000, 85000))
-# plot
-# df = as.data.frame(bresenham(x = x, y = y, gridlines_x, gridlines_y, debug=F))
-# #
-# ggplot(df) + geom_tile(aes(x=x, y=y)) +
-#   coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
-#   theme_bw()
+ggplot(df) + geom_tile(aes(x=x, y=y)) +
+  coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+  theme_bw()
 #
 #
 #
@@ -332,12 +334,12 @@ bresenham <-
 #
 #
 #
-# df1 = as.data.frame(bresenham_orig(x = c(0,1500), y = c(1500,0)))
-# df2 = as.data.frame(bresenham_orig(x = c(2000,3000), y = c(2000,3000)))
-# df3 = as.data.frame(bresenham_orig(x = c(1000,1500), y = c(2500,2000)))
-# df = rbind(df1, rbind(df2,df3))
-# ggplot(df1) + geom_tile(aes(x=x, y=y)) +
-#   coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
-#   theme_bw()
+df1 = as.data.frame(bresenham_orig(x = c(0,1500), y = c(1500,0)))
+df2 = as.data.frame(bresenham_orig(x = c(2000,3000), y = c(2000,3000)))
+df3 = as.data.frame(bresenham_orig(x = c(1000,1500), y = c(2500,2000)))
+df = rbind(df1, rbind(df2,df3))
+ggplot(df1) + geom_tile(aes(x=x, y=y)) +
+  coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+  theme_bw()
 
 # Found example:

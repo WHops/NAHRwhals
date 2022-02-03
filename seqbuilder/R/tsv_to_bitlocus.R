@@ -28,15 +28,23 @@ find_x_intersection <- function(vectors, point) {
   return(x_overlap)
 }
 
+
+
+
+
 #' find_y_intersection
 
 #' @author Wolfram Hoeps
 #' @rdname alignment
 #' @export
 find_y_intersection <- function(vectors, point) {
+  
+  # DEBUG 
+  #vectors = paf
+  #point = paf[4, c('tstart', 'qstart')]
   # Find vectors that overlap with the point along y axis
-  overlap_vecs = vectors[(vectors$tstart < point[1]) &
-                           (vectors$tend > point[1]), ]
+  overlap_vecs = vectors[((vectors$tstart < as.numeric(point[1])) &
+                           (vectors$tend > as.numeric(point[1]))), ]
   if (dim(overlap_vecs)[1] == 0) {
     # Early return if there is no overlap
     return(point[2])
@@ -46,7 +54,8 @@ find_y_intersection <- function(vectors, point) {
   y_overlap = c(point[2])
   for (i in 1:dim(overlap_vecs)[1]) {
     vec = overlap_vecs[i, ]
-    y_i = (point[1] - vec$x_intercept) / vec$slope_inv
+    y_i = ((vec$slope) * as.numeric(point[1])) + vec$y_intercept
+    #y_i = (point[1] + vec$x_intercept) / vec$slope_inv
     y_overlap = c(y_overlap, y_i)
   }
   
@@ -84,41 +93,87 @@ add_slope_intercept_info <- function(vector_df,
   return(slope_df)
 }
 
-#' get_gridlines_x
+
+
+
+
+#' get_gridlines.x
 
 #' @author Wolfram Hoeps
 #' @rdname alignment
 #' @export
-get_gridlines_x <- function(paf, gp = 10) {
+get_gridlines.x <- function(paf, gp = 10) {
   # Let's do it slow and bad for now. This doesn't seem to be very time critical anyway
   # because it only has to be run once per locus.
-  gridlines_x = c()
+  gridlines.x = c()
   for (i in 1:dim(paf)[1]) {
-    gridlines_x = c(gridlines_x, find_x_intersection(paf, as.numeric(paf[i, c('tstart', 'qstart')])))
-    gridlines_x = c(gridlines_x, find_x_intersection(paf, as.numeric(paf[i, c('tend', 'qend')])))
+    gridlines.x = c(gridlines.x, find_x_intersection(paf, as.numeric(paf[i, c('tstart', 'qstart')])))
+    gridlines.x = c(gridlines.x, find_x_intersection(paf, as.numeric(paf[i, c('tend', 'qend')])))
   }
-  gridlines_x = sort(unique(gridlines_x[gridlines_x >= 0]))
-  gridlines_x = gridlines_x[diff(gridlines_x) > gp]
+  gridlines.x = sort(unique(gridlines.x[gridlines.x >= 0]))
+  gridlines.x = gridlines.x[diff(gridlines.x) > gp]
   
-  return(as.integer(gridlines_x))
+  return(as.integer(gridlines.x))
 }
 
 
-#' get_gridlines_y
+#' get_gridlines.y
 
 #' @author Wolfram Hoeps
 #' @rdname alignment
 #' @export
-get_gridlines_y <- function(paf, gp = 10) {
-  gridlines_y = c()
+get_gridlines.y <- function(paf, gp = 10) {
+  gridlines.y = c()
   for (i in 1:dim(paf)[1]) {
-    gridlines_y = c(gridlines_y, find_y_intersection(paf, as.numeric(paf[i, c('tstart', 'qstart')])))
-    gridlines_y = c(gridlines_y, find_y_intersection(paf, as.numeric(paf[i, c('tend', 'qend')])))
+    gridlines.y = c(gridlines.y, 
+                    find_y_intersection(paf, as.numeric(paf[i, c('tstart', 'qstart')])))
+    gridlines.y = c(gridlines.y, 
+                    find_y_intersection(paf, as.numeric(paf[i, c('tend', 'qend')])))
   }
-  gridlines_y = sort(unique(gridlines_y[gridlines_y >= 0]))
-  gridlines_y = gridlines_y[c(T, diff(gridlines_y) > gp)]
   
-  return(as.integer(gridlines_y))
+  gridlines.y = sort(unique(gridlines.y[gridlines.y >= 0]))
+  gridlines.y = gridlines.y[c(T, diff(gridlines.y) > gp)]
+  
+  return(as.integer(gridlines.y))
+}
+
+
+bounce_point <- function(vectors, point){
+  
+
+  newpoints = data.frame(matrix(ncol = 2, nrow = 0))
+  newpoints[1,] = point
+  colnames(newpoints) = c('x', 'y')
+  # vertical overlaps
+  y_overlap_vecs = vectors[((vectors$tstart < as.numeric(point[1])) &
+                              (vectors$tend > as.numeric(point[1]))), ]
+  
+  # horizontal overlaps
+
+  
+  x_overlap_vecs = vectors[((vectors$qlow < as.numeric(point[2])) &
+                              (vectors$qhigh > as.numeric(point[2]))), ]
+  
+  
+  
+  # If there is overlap, calculate overlap of point with every overlapper
+  if (dim(y_overlap_vecs)[1] > 0) {
+    for (i in 1:dim(y_overlap_vecs)[1]) {
+      vec = y_overlap_vecs[i, ]
+      newpoints = rbind(newpoints, c(point[1], ((vec$slope) * as.numeric(point[1])) + vec$y_intercept))
+      #y_i = (point[1] + vec$x_intercept) / vec$slope_inv
+    }
+  }
+  
+  if (dim(x_overlap_vecs)[1] > 0) {
+    for (i in 1:dim(x_overlap_vecs)[1]) {
+      vec = x_overlap_vecs[i, ]
+      newpoints = rbind(newpoints, 
+                        c( ((point[2] - vec$y_intercept) / vec$slope), point[2])
+      )
+    }
+  }
+  return(newpoints)  
 }
 
 #' wrapper_paf_to_bitlocus
@@ -150,51 +205,88 @@ wrapper_paf_to_bitlocus <-
     )
     #paf = paf[paf$tend > 5700,]
     
-    if (dim(paf)[1] > 50) {
-      print(dim(paf))
-      paf = paf[paf$alen > minlen, ]
-      print(dim(paf))
-    }
+    #if (dim(paf)[1] > 50) {
+    #  print(dim(paf))
+    paf = paf[paf$alen > minlen, ]
+    #  print(dim(paf))
+    #}
     
-    print(paf)
+
+    #paf = paf[c(1,2,6),]
+    #paf[2,'tstart'] = paf[2,'tstart'] - 10000
+    #paf[2,'qstart'] = paf[2,'qstart'] - 10000
+    
+    #paf = paf[c(1:3, 5),]
     # For negative alignments, interchange start and end. So that
     #
     paf = transform(
       paf,
-      tend = ifelse(strand == '-', tstart, tend),
-      tstart = ifelse(strand == '-', tend, tstart)
+      qend = ifelse(strand == '-', qstart, qend),
+      qstart = ifelse(strand == '-', qend, qstart)
     )
     
     paf = cbind(paf, add_slope_intercept_info(paf))
     
     #gp = 1
-    gridlines_x = get_gridlines_x(paf, gp = gp)
-    gridlines_y = get_gridlines_y(paf, gp = gp)
     
-    print(gridlines_x)
-    print(gridlines_y)
-    paf = transform(
-      paf,
-      tend = ifelse(strand == '-', tstart, tend),
-      tstart = ifelse(strand == '-', tend, tstart),
-      qend = ifelse(strand == '-', qstart, qend),
-      qstart = ifelse(strand == '-', qend, qstart)
-    )
+    paf$qlow = -(apply(-paf[,c('qstart','qend')], 1, function(x) max(x)))
+    paf$qhigh = apply(paf[,c('qstart','qend')], 1, function(x) max(x))
+    
+    points_overall = data.frame()
+    
+    for (i in 1:dim(paf)[1]){
+      p1_bounced = bounce_point(paf, c(paf[i,]$tstart, paf[i,]$qlow))
+      p2_bounced = bounce_point(paf, c(paf[i,]$tend, paf[i,]$qhigh))
+      points_overall = rbind(rbind(points_overall, p1_bounced), p2_bounced)
+
+        for (j in 1:dim(p1_bounced)[1]){
+          points_overall = rbind(points_overall, bounce_point(paf, as.numeric(p1_bounced[j,]))) 
+        }
+        for (k in 1:dim(p2_bounced)[1]){
+          points_overall = rbind(points_overall, bounce_point(paf, as.numeric(p2_bounced[k,]))) 
+        }
+      
+    }
+    points_overall = unique((points_overall))
+
+    
+    gridlines.y = unique(round(sort(c(0,points_overall$y))))
+    gridlines.x = unique(round(sort(c(0,points_overall$x))))
+
+    # paf = transform(
+    #   paf,
+    #   qend = ifelse(strand == '-', qstart, qend),
+    #   qstart = ifelse(strand == '-', qend, qstart)
+    # )
     
     df = data.frame()
     for (i in 1:dim(paf)[1]) {
-      print(i)
       df = rbind(df, as.data.frame(
         bresenham(
-          x = as.numeric(paf[i, c('tstart', 'tend')]),
-          y = as.numeric(paf[i, c('qstart', 'qend')]),
-          gridlines_x,
-          gridlines_y,
+          x = as.numeric(paf[i, c('tstart', 'tend')]) ,
+          y = as.numeric(paf[i, c('qstart', 'qend')]) ,
+          gridlines.x,
+          gridlines.y,
           debug = F
         )
       ))
     }
     
+    gp=100
+    # This here can come with loss of data. ..
+    df_mat = reshape2::dcast(df, y ~ x, fill=0); df_mat$y = NULL
+    df_mat2 = df_mat[(10**(apply(df_mat, 1, function(x) max(abs(x)))) > gp) |
+                     (10**(apply(df_mat, 1, function(x) max(abs(x)))) == 0),]
+    df_mat3 = df_mat2[,(10**(colMax(abs(df_mat2))) > gp) |
+                       (10**(colMax(abs(df_mat2))) == 0)]
+    
+    colnames(df_mat3) = as.character(1:dim(df_mat3)[2])
+    row.names(df_mat3) = as.character(1:dim(df_mat3)[1])
+    
+    df_back = reshape2::melt(as.matrix(df_mat3), value.name = 'value')
+    colnames(df_back) = c('y','x','z')
+    df_back = df_back[df_back$z != 0,]
+    factor = 0.0
     if (realplot) {
       plot = ggplot2::ggplot() + ggplot2::geom_segment(data = paf,
                                                        ggplot2::aes(
@@ -203,9 +295,11 @@ wrapper_paf_to_bitlocus <-
                                                          y = qstart,
                                                          yend = qend
                                                        )) +
-        ggplot2::geom_hline(ggplot2::aes(yintercept = gridlines_y), color =
+        ggplot2::geom_hline(ggplot2::aes(yintercept = gridlines.y + runif(length(gridlines.y),-4000*factor,4000*factor))
+                            , color =
                               'grey') +
-        ggplot2::geom_vline(ggplot2::aes(xintercept = gridlines_x), color =
+        ggplot2::geom_vline(ggplot2::aes(xintercept = gridlines.x + runif(length(gridlines.x),-4000*factor,4000*factor))
+                            , color =
                               'grey') +
         ggplot2::coord_fixed(
           ratio = 1,
@@ -215,18 +309,17 @@ wrapper_paf_to_bitlocus <-
           clip = "on"
         ) +
         ggplot2::theme_bw()
-      #ggplot2::xlim(c(0,10000)) + ggplot2::ylim(c(0,10000))
       print(plot)
     }
     
     if (bitlocusplot) {
-      p = ggplot2::ggplot(df) + ggplot2::geom_tile(ggplot2::aes(
+      p = ggplot2::ggplot(df_back) + ggplot2::geom_tile(ggplot2::aes(
         x = x,
         y = y,
         fill = sign(z) * log10(abs(z))
       )) +
         ggplot2::scale_fill_gradient2(low = 'red',
-                                      mid = 'white',
+                                      mid = 'black',
                                       high = 'blue') +
         ggplot2::coord_fixed(
           ratio = 1,
@@ -312,10 +405,11 @@ get_aln_overlap_in_sector <-
 
 
 # # Turn tsv into bitlocus.
-# origfa = '../vignettes/simulated_seq_10kb_4SDs.fa'
-# mutfa = '../vignettes/simulated_seq_10kb_del_trim.fa'
+origfa = '../vignettes/simulated_seq_10kb_4SDs.fa'
+mutfa = '../vignettes/simulated_seq_10kb_dup.fa'
 # #mutfa = '../vignettes/mut.fa'
-# outpaf = '../vignettes/bitlocus8.paf'
+outpaf = as.character(runif(1,1e10,1e11))#'../vignettes/bitlocus8.paf'
+
 # #samplefasta_link = system.file('extdata', '10ktest.fa', package='nahrtoolkit')
 #
 # #outpaf_link = '/Library/Frameworks/R.framework/Versions/4.1/Resources/library/nahrtoolkit/extdata/10ktest.fa62232.paf'
@@ -323,11 +417,13 @@ get_aln_overlap_in_sector <-
 # # outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpafsds13335'
 # # outpaf_link = paste0(samplefasta_link, '62232122.paf')
 # # inpaf = outpaf_link
-# grid = wrapper_paf_to_bitlocus(outpaf_link, gp = 10000)
 
-# plot = make_chunked_minimap_alnment(origfa, mutfa, outpaf,
-#                              outplot=NULL, chunklen = 1000, minsdlen = 10, saveplot=F,
-#                              hllink = outpaf, hltype = 'paf', quadrantsize = 1000)
+mutfa_end = '../vignettes/simulated_seq_10kb_dup_end.fa'
+
+make_chunked_minimap_alnment(origfa, mutfa, outpaf, 
+                              chunklen = 500, minsdlen = 500, saveplot=F,
+                              hllink = outpaf, hltype = 'paf', quadrantsize = 1000)
+grid = wrapper_paf_to_bitlocus(outpaf, minlen = 100, gp = 1)
 
 # Read paf
 
@@ -336,10 +432,13 @@ get_aln_overlap_in_sector <-
 
 
 
+paf_play = paf
 
+pp = paf_play[0:3,]
 
 
 
 
 
 #ggplot2::ggplot(as.data.frame(grid)) + ggplot2::geom_tile()
+
