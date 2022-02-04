@@ -185,8 +185,9 @@ wrapper_paf_to_bitlocus <-
   function(inpaf,
            realplot = T,
            bitlocusplot = T,
-           minlen = 2000,
-           gp = 10) {
+           minlen = 1000,
+           gp = 10,
+           compression = 1000) {
     # Read paf
     paf = read.table(inpaf)
     colnames(paf) = c(
@@ -203,22 +204,29 @@ wrapper_paf_to_bitlocus <-
       'alen',
       'mapq'
     )
-    #paf = paf[paf$tend > 5700,]
     
-    #if (dim(paf)[1] > 50) {
-    #  print(dim(paf))
+
     paf = paf[paf$alen > minlen, ]
+    
+    paf[,c('qstart','qend','tstart','tend')] = round(data.frame(paf[,c('qstart','qend','tstart','tend')] / compression),0) * compression
+    #paf = paf[paf$qend > 100000,]
     #  print(dim(paf))
     #}
     
-
-    #paf = paf[c(1,2,6),]
+    paf = enforce_slope_one(paf)
+    
+    
+    #paf[5,]$tstart = paf[5,]$tstart + 10000
+    #paf[5,]$tend = paf[5,]$tend + 10000
+    #paf = paf[c(1,2,5),]
     #paf[2,'tstart'] = paf[2,'tstart'] - 10000
     #paf[2,'qstart'] = paf[2,'qstart'] - 10000
     
     #paf = paf[c(1:3, 5),]
     # For negative alignments, interchange start and end. So that
     #
+    
+    
     paf = transform(
       paf,
       qend = ifelse(strand == '-', qstart, qend),
@@ -245,14 +253,35 @@ wrapper_paf_to_bitlocus <-
         for (k in 1:dim(p2_bounced)[1]){
           points_overall = rbind(points_overall, bounce_point(paf, as.numeric(p2_bounced[k,]))) 
         }
-      
-    }
-    points_overall = unique((points_overall))
 
-    
+    }
+
+    points_overall = unique((points_overall))
+     
+    # # bounce some more
+    # for (i in (1:10)){
+    #   
+    #   #print(gridlines.y)
+    #  # print(gridlines.x)
+    #   
+    #   points_overall = rbind(points_overall, bounce_point(paf, as.numeric(points_overall[i,]))) 
+    #   points_overall = unique((points_overall))
+    #   #print(points_overall)
+    #   #print(dim(points_overall))
+    #   
+    #   
+    #   gridlines.y = unique(round(sort(c(0,points_overall$y))))
+    #   gridlines.x = unique(round(sort(c(0,points_overall$x))))
+    #   
+    # 
+    # }
+    # 
     gridlines.y = unique(round(sort(c(0,points_overall$y))))
     gridlines.x = unique(round(sort(c(0,points_overall$x))))
 
+    print(gridlines.y)
+    print(gridlines.x)
+    #gridlines.y == gridlines.x
     # paf = transform(
     #   paf,
     #   qend = ifelse(strand == '-', qstart, qend),
@@ -272,13 +301,14 @@ wrapper_paf_to_bitlocus <-
       ))
     }
     
-    gp=100
+    #gp=100
     # This here can come with loss of data. ..
     df_mat = reshape2::dcast(df, y ~ x, fill=0); df_mat$y = NULL
     df_mat2 = df_mat[(10**(apply(df_mat, 1, function(x) max(abs(x)))) > gp) |
                      (10**(apply(df_mat, 1, function(x) max(abs(x)))) == 0),]
-    df_mat3 = df_mat2[,(10**(colMax(abs(df_mat2))) > gp) |
-                       (10**(colMax(abs(df_mat2))) == 0)]
+    
+    df_mat3 = df_mat2[,(10**(apply(df_mat2, 2, function(x) max(abs(x)))) > gp) |
+                       (10**(apply(df_mat2, 2, function(x) max(abs(x)))) == 0)]
     
     colnames(df_mat3) = as.character(1:dim(df_mat3)[2])
     row.names(df_mat3) = as.character(1:dim(df_mat3)[1])
@@ -286,7 +316,7 @@ wrapper_paf_to_bitlocus <-
     df_back = reshape2::melt(as.matrix(df_mat3), value.name = 'value')
     colnames(df_back) = c('y','x','z')
     df_back = df_back[df_back$z != 0,]
-    factor = 0.0
+    factor = 0
     if (realplot) {
       plot = ggplot2::ggplot() + ggplot2::geom_segment(data = paf,
                                                        ggplot2::aes(
@@ -332,7 +362,7 @@ wrapper_paf_to_bitlocus <-
       print(p)
     }
     
-    return(df)
+    return(df_back)
   }
 
 #' get_aln_overlap_in_sector
@@ -423,7 +453,7 @@ mutfa_end = '../vignettes/simulated_seq_10kb_dup_end.fa'
 make_chunked_minimap_alnment(origfa, mutfa, outpaf, 
                               chunklen = 500, minsdlen = 500, saveplot=F,
                               hllink = outpaf, hltype = 'paf', quadrantsize = 1000)
-grid = wrapper_paf_to_bitlocus(outpaf, minlen = 100, gp = 1)
+grid = wrapper_paf_to_bitlocus(outpaf, minlen = 100, gp = 10)
 
 # Read paf
 
@@ -431,10 +461,21 @@ grid = wrapper_paf_to_bitlocus(outpaf, minlen = 100, gp = 1)
 
 
 
-
-paf_play = paf
-
-pp = paf_play[0:3,]
+enforce_slope_one <- function(df){
+  
+  df$qlen_aln = abs(df$qend - df$qstart)
+  df$tlen_aln = abs(df$tend - df$tstart)
+  
+  df$squaresize = -(apply(-df[,c('qlen_aln','tlen_aln')], 1, function(x) max(x)))
+  
+  df$qend = df$qstart + df$squaresize
+  df$tend = df$tstart + df$squaresize
+  
+  df[,c('qlen_aln','tlen_aln','squaresize')] = NULL
+  
+  return(df)
+  
+}
 
 
 
