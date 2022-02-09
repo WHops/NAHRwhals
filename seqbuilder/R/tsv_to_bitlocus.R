@@ -259,23 +259,21 @@ wrapper_paf_to_bitlocus <-
     points_overall = unique((points_overall))
      
     # # bounce some more
-    # for (i in (1:10)){
-    #   
-    #   #print(gridlines.y)
-    #  # print(gridlines.x)
-    #   
-    #   points_overall = rbind(points_overall, bounce_point(paf, as.numeric(points_overall[i,]))) 
-    #   points_overall = unique((points_overall))
-    #   #print(points_overall)
-    #   #print(dim(points_overall))
-    #   
-    #   
-    #   gridlines.y = unique(round(sort(c(0,points_overall$y))))
-    #   gridlines.x = unique(round(sort(c(0,points_overall$x))))
-    #   
-    # 
-    # }
-    # 
+    for (i in (1:10)){
+
+      #print(gridlines.y)
+     # print(gridlines.x)
+
+      points_overall = rbind(points_overall, bounce_point(paf, as.numeric(points_overall[i,])))
+      points_overall = unique((points_overall))
+      #print(points_overall)
+      #print(dim(points_overall))
+
+
+
+
+    }
+
     gridlines.y = unique(round(sort(c(0,points_overall$y))))
     gridlines.x = unique(round(sort(c(0,points_overall$x))))
 
