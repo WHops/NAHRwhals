@@ -186,7 +186,6 @@ wrapper_paf_to_bitlocus <-
            realplot = T,
            bitlocusplot = T,
            minlen = 1000,
-           gp = 10,
            compression = 1000) {
     # Read paf
     paf = read.table(inpaf)
@@ -205,90 +204,45 @@ wrapper_paf_to_bitlocus <-
       'mapq'
     )
     
-
+    # A) PAF prep
+    
+    # Filter alignments by length
     paf = paf[paf$alen > minlen, ]
     
+    # Round start/end by compression factor
     paf[,c('qstart','qend','tstart','tend')] = round(data.frame(paf[,c('qstart','qend','tstart','tend')] / compression),0) * compression
-    #paf = paf[paf$qend > 100000,]
-    #  print(dim(paf))
-    #}
     
+    # If any entry is not slope 1 yet (which is unlikely after compression), then make it so. 
     paf = enforce_slope_one(paf)
     
-    
-    #paf[5,]$tstart = paf[5,]$tstart + 10000
-    #paf[5,]$tend = paf[5,]$tend + 10000
-    #paf = paf[c(1,2,5),]
-    #paf[2,'tstart'] = paf[2,'tstart'] - 10000
-    #paf[2,'qstart'] = paf[2,'qstart'] - 10000
-    
-    #paf = paf[c(1:3, 5),]
-    # For negative alignments, interchange start and end. So that
-    #
-    
-    
+    # In paf, start is always smaller than end. For our slope etc calculation, it will be easier
+    # to change the order of start and end, if the orientation of the alignment is negative. 
     paf = transform(
       paf,
       qend = ifelse(strand == '-', qstart, qend),
       qstart = ifelse(strand == '-', qend, qstart)
     )
     
+    # Add slope information to the paf. 
     paf = cbind(paf, add_slope_intercept_info(paf))
     
-    #gp = 1
-    
+    # The Transform from earlier shoots back at us here. We now have to 
+    # make a new columns for qlow and qhigh - basically what was start and
+    # end originally. 
     paf$qlow = -(apply(-paf[,c('qstart','qend')], 1, function(x) max(x)))
     paf$qhigh = apply(paf[,c('qstart','qend')], 1, function(x) max(x))
     
-    points_overall = data.frame()
+    # Make a grid, using the bounce algorithm. 
+    print('making grid')
+    gxy = make_xy_grid(paf, n_additional_bounces = 5)
+    print('grid made')
+    gridlines.x = gxy[[1]]
+    gridlines.y = gxy[[2]]
     
-    for (i in 1:dim(paf)[1]){
-      p1_bounced = bounce_point(paf, c(paf[i,]$tstart, paf[i,]$qlow))
-      p2_bounced = bounce_point(paf, c(paf[i,]$tend, paf[i,]$qhigh))
-      points_overall = rbind(rbind(points_overall, p1_bounced), p2_bounced)
-
-        for (j in 1:dim(p1_bounced)[1]){
-          points_overall = rbind(points_overall, bounce_point(paf, as.numeric(p1_bounced[j,]))) 
-        }
-        for (k in 1:dim(p2_bounced)[1]){
-          points_overall = rbind(points_overall, bounce_point(paf, as.numeric(p2_bounced[k,]))) 
-        }
-
-    }
-
-    points_overall = unique((points_overall))
-     
-    # # bounce some more
-    for (i in (1:10)){
-
-      #print(gridlines.y)
-     # print(gridlines.x)
-
-      points_overall = rbind(points_overall, bounce_point(paf, as.numeric(points_overall[i,])))
-      points_overall = unique((points_overall))
-      #print(points_overall)
-      #print(dim(points_overall))
-
-
-
-
-    }
-
-    gridlines.y = unique(round(sort(c(0,points_overall$y))))
-    gridlines.x = unique(round(sort(c(0,points_overall$x))))
-
-    print(gridlines.y)
-    print(gridlines.x)
-    #gridlines.y == gridlines.x
-    # paf = transform(
-    #   paf,
-    #   qend = ifelse(strand == '-', qstart, qend),
-    #   qstart = ifelse(strand == '-', qend, qstart)
-    # )
-    
-    df = data.frame()
+    # Run bressi to fill the grid
+    grid_list = data.frame()
     for (i in 1:dim(paf)[1]) {
-      df = rbind(df, as.data.frame(
+      grid_list = rbind(grid_list, as.data.frame(
         bresenham(
           x = as.numeric(paf[i, c('tstart', 'tend')]) ,
           y = as.numeric(paf[i, c('qstart', 'qend')]) ,
@@ -298,22 +252,25 @@ wrapper_paf_to_bitlocus <-
         )
       ))
     }
+    # Remove duplicates. This happens if SDs overlap (which can be a result
+    # of the compression step)
+    grid_list = unique(grid_list[order(grid_list$x),])
     
-    #gp=100
-    # This here can come with loss of data. ..
-    df_mat = reshape2::dcast(df, y ~ x, fill=0); df_mat$y = NULL
-    df_mat2 = df_mat[(10**(apply(df_mat, 1, function(x) max(abs(x)))) > gp) |
-                     (10**(apply(df_mat, 1, function(x) max(abs(x)))) == 0),]
+    # Convert the grid to a matrix. This is the data we will eventually
+    # be working with. 
+    # Previous comment: "This can come with data loss". This refers to empty
+    # gridlines/columns.
+    grid_matrix = reshape2::dcast(grid_list, y ~ x, fill=0); grid_matrix$y = NULL
     
-    df_mat3 = df_mat2[,(10**(apply(df_mat2, 2, function(x) max(abs(x)))) > gp) |
-                       (10**(apply(df_mat2, 2, function(x) max(abs(x)))) == 0)]
+    #df_mat2 = df_mat[(10**(apply(df_mat, 1, function(x) max(abs(x)))) == 0),]
+    #grid_matrix = df_mat2[, (10**(apply(df_mat2, 2, function(x) max(abs(x)))) == 0)]
     
-    colnames(df_mat3) = as.character(1:dim(df_mat3)[2])
-    row.names(df_mat3) = as.character(1:dim(df_mat3)[1])
+    colnames(grid_matrix)  = as.character(1:dim(grid_matrix)[2])
+    row.names(grid_matrix) = as.character(1:dim(grid_matrix)[1])
     
-    df_back = reshape2::melt(as.matrix(df_mat3), value.name = 'value')
-    colnames(df_back) = c('y','x','z')
-    df_back = df_back[df_back$z != 0,]
+    #grid_list = reshape2::melt(as.matrix(grid_matrix), value.name = 'value')
+    #colnames(grid_list) = c('y','x','z')
+    # grid_list = grid_list[grid_list$z != 0,]
     factor = 0
     if (realplot) {
       plot = ggplot2::ggplot() + ggplot2::geom_segment(data = paf,
@@ -341,7 +298,7 @@ wrapper_paf_to_bitlocus <-
     }
     
     if (bitlocusplot) {
-      p = ggplot2::ggplot(df_back) + ggplot2::geom_tile(ggplot2::aes(
+      p = ggplot2::ggplot(grid_list) + ggplot2::geom_tile(ggplot2::aes(
         x = x,
         y = y,
         fill = sign(z) * log10(abs(z))
@@ -360,7 +317,7 @@ wrapper_paf_to_bitlocus <-
       print(p)
     }
     
-    return(df_back)
+    return(grid_list)
   }
 
 #' get_aln_overlap_in_sector
@@ -476,6 +433,52 @@ enforce_slope_one <- function(df){
 }
 
 
+#' make_xy_grid
+#' @author Wolfram Hoeps
+#' @rdname alignment
+#' @export
+make_xy_grid <- function(paf, n_additional_bounces=10){
+  
+  # Points is 'gridpoints'
+  points_overall = data.frame()
+  
+  # Bounce points a couple of times. For the bouncing algorithm, 
+  # see separate description. 
+  for (i in 1:dim(paf)[1]){
+    
+    # Bounce start once
+    p1_bounced = bounce_point(paf, c(paf[i,]$tstart, paf[i,]$qlow))
+    # Bounce end once
+    p2_bounced = bounce_point(paf, c(paf[i,]$tend, paf[i,]$qhigh))
+    points_overall = rbind(rbind(points_overall, p1_bounced), p2_bounced)
+    
+    # Bounce bounced #1
+    for (j in 1:dim(p1_bounced)[1]){
+      points_overall = rbind(points_overall, bounce_point(paf, as.numeric(p1_bounced[j,]))) 
+    }
+    # Bounce bounced #2
+    for (k in 1:dim(p2_bounced)[1]){
+      points_overall = rbind(points_overall, bounce_point(paf, as.numeric(p2_bounced[k,]))) 
+    }
+    
+  }
+  
+  points_overall = unique((points_overall))
+  
+  # # bounce some more
+  for (i in (1:n_additional_bounces)){
+
+    
+    points_overall = rbind(points_overall, bounce_point(paf, as.numeric(points_overall[i,])))
+    points_overall = unique((points_overall))
+    
+  }
+  
+  gridlines.y = unique(round(sort(c(0,points_overall$y))))
+  gridlines.x = unique(round(sort(c(0,points_overall$x))))
+  
+  return(list(gridlines.x, gridlines.y))
+}
 
 
 

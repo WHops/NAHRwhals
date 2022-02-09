@@ -207,10 +207,10 @@ bresenham <-
         
       }
       if (y > y.end) {
-        ans = rbind(ans, c(x_grididx, y_grididx - 1,-log10(griddiffs_x[x_grididx])))
+        ans = rbind(ans, c(x_grididx, y_grididx - 1,-(griddiffs_x[x_grididx])))
         
       } else {
-        ans = rbind(ans, c(x_grididx, y_grididx, log10(griddiffs_x[x_grididx])))
+        ans = rbind(ans, c(x_grididx, y_grididx, (griddiffs_x[x_grididx])))
       }
       
     }
