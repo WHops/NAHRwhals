@@ -138,12 +138,18 @@ get_gridlines.y <- function(paf, gp = 10) {
 }
 
 
+#' bounce point. Algorithm for making the grid. 
+#' Description TBD. 
+#' @author Wolfram Hoeps
+#' @rdname alignment
+#' @export
 bounce_point <- function(vectors, point){
   
 
   newpoints = data.frame(matrix(ncol = 2, nrow = 0))
   newpoints[1,] = point
   colnames(newpoints) = c('x', 'y')
+  
   # vertical overlaps
   y_overlap_vecs = vectors[((vectors$tstart < as.numeric(point[1])) &
                               (vectors$tend > as.numeric(point[1]))), ]
@@ -415,7 +421,10 @@ get_aln_overlap_in_sector <-
 
 
 
-
+#' enforce_slope_one
+#' @author Wolfram Hoeps
+#' @rdname alignment
+#' @export
 enforce_slope_one <- function(df){
   
   df$qlen_aln = abs(df$qend - df$qstart)

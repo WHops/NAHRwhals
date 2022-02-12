@@ -40,6 +40,8 @@ To install NTK from Github, follow the steps below:
 
 Please refer to the vignette (/vignettes/) for example use cases of NTK. 
 
+More examples and unpolished pipelines can be found in construction_site.R. Consider running the first few lines there in Rstudio to get a feeling for the program. 
+
 ## Report Errors
 
 Nahrtoolkit is still in early stages of development, and errors in usage are to be expected. 

@@ -1,3 +1,27 @@
+#### RUN THE FOLLOWING CODE AS A MINIMAL WORKING EXAMPLE:
+
+# Load nahrtoolkit
+library(nahrtoolkit)
+
+# Take an example input fasta shipped with the package
+samplefasta_link = system.file('extdata', '10ktest.fa', package='nahrtoolkit')
+
+# Define an output alignment file
+samplepaf_link = paste0(samplefasta_link, 'sample.paf')
+
+# Make alignment & dotplot
+make_chunked_minimap_alnment(samplefasta_link, samplefasta_link, samplepaf_link, 
+                             chunklen = 10000, minsdlen = 100, saveplot=F, 
+                             hllink = samplepaf_link, hltype = 'paf', quadrantsize = 10000)
+
+# Make the condensed dotplot
+grid = wrapper_paf_to_bitlocus(samplepaf_link, minlen=0, compression = 1)
+
+### [OVER] ###
+
+
+
+
 
 
 # ref = '/Users/hoeps/PhD/projects/huminvs/revision/alu_analysis/data/seqs/chr12-12391906-INV-1713/chr12-12391906-INV-1713_hg38_pm200kb.fa'
