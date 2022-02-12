@@ -1,4 +1,4 @@
-![alt text]("https://github.com/WHops/nahrchainer/blob/main/ntk_logo-01.png?raw=true")
+<img src="https://github.com/WHops/nahrchainer/blob/main/ntk_logo-01.png?raw=true">
 
 =========================================================================
 
