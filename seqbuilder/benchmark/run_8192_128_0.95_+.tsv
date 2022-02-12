@@ -1,4 +1,0 @@
-simcontig	0	8192	simcontig:0	0	+	simcontig	8292	16484	0	SD1	0	N/A	N/A	N/A	N/A	N/A	8192	0	0	8192	7782.4	409.6	0	0	0.95	0.95	0	0
-simcontig	8292	16484	simcontig:8292	0	+	simcontig	0	8192	0	SD1	0	N/A	N/A	N/A	N/A	N/A	8192	0	0	8192	7782.4	409.6	0	0	0.95	0.95	0	0
-simcontig	24676	32868	simcontig:24676	0	+	simcontig	32968	41160	0	SD2	0	N/A	N/A	N/A	N/A	N/A	8192	0	0	8192	7782.4	409.6	0	0	0.95	0.95	0	0
-simcontig	32968	41160	simcontig:32968	0	+	simcontig	24676	32868	0	SD2	0	N/A	N/A	N/A	N/A	N/A	8192	0	0	8192	7782.4	409.6	0	0	0.95	0.95	0	0

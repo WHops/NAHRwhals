@@ -1,8 +1,0 @@
-simcontig	0	4096	simcontig:0	0	+	simcontig	4196	8292	0	SD1	0	N/A	N/A	N/A	N/A	N/A	4096	0	0	4096	3891.2	204.8	0	0	0.95	0.95	0	0
-simcontig	4196	8292	simcontig:4196	0	+	simcontig	0	4096	0	SD1	0	N/A	N/A	N/A	N/A	N/A	4096	0	0	4096	3891.2	204.8	0	0	0.95	0.95	0	0
-simcontig	12388	16484	simcontig:12388	0	+	simcontig	16584	20680	0	SD2	0	N/A	N/A	N/A	N/A	N/A	4096	0	0	4096	3891.2	204.8	0	0	0.95	0.95	0	0
-simcontig	16584	20680	simcontig:16584	0	+	simcontig	12388	16484	0	SD2	0	N/A	N/A	N/A	N/A	N/A	4096	0	0	4096	3891.2	204.8	0	0	0.95	0.95	0	0
-simcontig	24776	28872	simcontig:24776	0	+	simcontig	28972	33068	0	SD3	0	N/A	N/A	N/A	N/A	N/A	4096	0	0	4096	3891.2	204.8	0	0	0.95	0.95	0	0
-simcontig	28972	33068	simcontig:28972	0	+	simcontig	24776	28872	0	SD3	0	N/A	N/A	N/A	N/A	N/A	4096	0	0	4096	3891.2	204.8	0	0	0.95	0.95	0	0
-simcontig	37164	41260	simcontig:37164	0	+	simcontig	41360	45456	0	SD4	0	N/A	N/A	N/A	N/A	N/A	4096	0	0	4096	3891.2	204.8	0	0	0.95	0.95	0	0
-simcontig	41360	45456	simcontig:41360	0	+	simcontig	37164	41260	0	SD4	0	N/A	N/A	N/A	N/A	N/A	4096	0	0	4096	3891.2	204.8	0	0	0.95	0.95	0	0
