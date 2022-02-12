@@ -18,11 +18,18 @@ To install NTK from Github, follow the steps below:
 
 1. Clone the github repository
 
+2. Install required side-packages:
+	- minimap2
+
 3. run the installation
     `cd nahrchainer`
     `Rscript install_package.R`
+ 
+4. Change the paths in conf/config.yml to fit your system (... step will be abolished in future versions). 
+
+5. Edit the path in seqbuilder_functions.R / query_config function to point to your config.yml (... step will be abolished in future versions)
     
-4. Verify successful installation
+6. Verify successful installation
 `R`
 ` library(nahrtoolkit)`
 `confirm_loaded_nahr()`

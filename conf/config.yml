@@ -1,0 +1,4 @@
+default:
+	shred: "/Users/hoeps/PhD/projects/nahrcall/bbmap/shred.sh"
+	minimap2: "/Users/hoeps/opt/anaconda3/bin/minimap2"
+	awkscript: '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/scripts/awk_on_paf.sh'

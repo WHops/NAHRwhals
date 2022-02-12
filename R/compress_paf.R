@@ -95,6 +95,8 @@ merge_paf_entries_intraloop <- function(inpaf){
 #' 
 #' @param inpaf_link [character/link] link to the chunked paf
 #' @param outpaf_link [character/link] link to the molten output paf
+#' @param quadrantsize [numeric] size of alignments being merged in one piece. 
+#' Set to larger values (e.g. 250k) for very large alignments (>5Mb).
 #' 
 #' @author Wolfram Höps
 #' @rdname alignment
@@ -108,10 +110,10 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link, quadrantsize = 100000){
   
   debug = F
   if (debug){
-  inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/teppich/res_500k/paf/run_1024_1024_0.90_+_chunked.paf.chunk"
-  inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf.awked"
-  inpaf_link = 'blub.awked'
-  inpaf_link = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf13.awked"
+    inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/teppich/res_500k/paf/run_1024_1024_0.90_+_chunked.paf.chunk"
+    inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf.awked"
+    inpaf_link = 'blub.awked'
+    inpaf_link = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf13.awked"
   } 
   #inpaf_link = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf136.awked"
   

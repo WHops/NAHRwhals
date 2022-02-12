@@ -1,4 +1,12 @@
 
+#' A wrapper for extracting values from the config.
+#' @author Wolfram Höps
+#' @rdname get_subseq
+#' @export
+query_config <- function(param){
+  configfile = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/conf/config.yml"
+  return(config::get(param, file = configfile))
+}
 
 #' Simple helperfunction to extract part of a fasta into a character.
 #'
@@ -174,8 +182,9 @@ make_chunked_minimap_alnment <-
 #' @export
 shred_seq <- function(infasta,
                       outfasta_chunk,
-                      chunklen,
-                      scriptloc = '/Users/hoeps/PhD/projects/nahrcall/bbmap/shred.sh') {
+                      chunklen) {
+  
+  scriptloc = query_config("shred")
   print(paste0(
     scriptloc,
     " in=",
@@ -225,9 +234,10 @@ run_minimap2 <-
   function(targetfasta,
            queryfasta,
            outpaf,
-           minimap2loc = "/Users/hoeps/opt/anaconda3/bin/minimap2",
            nthreads =4) {
     #system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
+    
+    minimap2loc = query_config("minimap2")
     
     # Some self-defined parameters
     system(
@@ -267,10 +277,13 @@ run_minimap2 <-
 #' @author Wolfram Höps
 #' @rdname alignment
 #' @export
-awk_edit_paf <- function(inpaf, outpaf,
-                         scriptlink = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/scripts/awk_on_paf.sh') {
+awk_edit_paf <- function(inpaf, outpaf) {
+  
   print(inpaf)
   print(outpaf)
+  
+  scriptlink = query_config("awkscript")
+  
   system(paste0(scriptlink, " ", inpaf, " ", outpaf))
 }
 
