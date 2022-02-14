@@ -23,7 +23,7 @@ find_sv_opportunities <- function(sample) {
   for (nrow in 1:dim(sample)[1]) {
     if (nrow %in% double_SD_rows) {
       # ... If if does, now find the colnames of all those.
-      identical_columns = as.numeric(which(sample[nrow, ] != 0))
+      identical_columns = as.numeric(which(sample[nrow,] != 0))
       
       # make a matrix containing every combination of identical columns.
       # Imagine we have one segment repeated in columns 4, 5 and 9.
@@ -51,14 +51,14 @@ find_sv_opportunities <- function(sample) {
   
   ## INV or DEL/DUP pair? ##
   # If at least one of the pair is negative, it's an 'inv'.
-  if (dim(all_opportunities[all_opportunities$sv == -1, ])[1] > 0) {
-    all_opportunities[all_opportunities$sv == -1 , ]$sv = 'inv'
+  if (dim(all_opportunities[all_opportunities$sv == -1,])[1] > 0) {
+    all_opportunities[all_opportunities$sv == -1 ,]$sv = 'inv'
   }
   # If at least one of the pair is positive, it's a 'del+dup' (???)
-  if (dim(all_opportunities[all_opportunities$sv == 1, ])[1] > 0) {
-    all_opportunities[all_opportunities$sv == 1 , ]$sv = 'del'
+  if (dim(all_opportunities[all_opportunities$sv == 1,])[1] > 0) {
+    all_opportunities[all_opportunities$sv == 1 ,]$sv = 'del'
     # Duplicate plus pairs for dup and del.
-    pluspairs = all_opportunities[all_opportunities$sv == 'del', ]
+    pluspairs = all_opportunities[all_opportunities$sv == 'del',]
     pluspairs$sv = 'dup'
     all_opportunities = rbind(all_opportunities, pluspairs)
   }
@@ -198,13 +198,13 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
   
   # Modify the matrix accordingly
   if (action == 'del') {
-    bitl_mut = bitl[, -c(as.numeric(pair[1]):(as.numeric(pair[2]) - 1))]
+    bitl_mut = bitl[,-c(as.numeric(pair[1]):(as.numeric(pair[2]) - 1))]
   } else if (action == 'dup') {
     bitl_mut = cbind(bitl[, 1:as.numeric(pair[2])],
                      bitl[, as.numeric(pair[1] + 1):dim(bitl)[2]])
   } else if (action == 'inv') {
-    bitl_mut = cbind(cbind(bitl[, 1:as.numeric(pair[1])],-bitl[, (as.numeric(pair[2]) -
-                                                                    1):(as.numeric(pair[1]) + 1)]),
+    bitl_mut = cbind(cbind(bitl[, 1:as.numeric(pair[1])], -bitl[, (as.numeric(pair[2]) -
+                                                                     1):(as.numeric(pair[1]) + 1)]),
                      bitl[, as.numeric(pair[2]):dim(bitl)[2]])
   }
   
@@ -261,8 +261,10 @@ eval_mutated_seq <- function(bitlocus) {
 gimme_sample_matrix <- function(mode = 'diff') {
   #samplefasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/vignettes/simulated_seq_10kb_4SDs.fa'
   #samplemutfasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/vignettes/simulated_seq_10kb_del_trim.fa'
-  samplefasta_link = system.file('extdata', 'simulated_seq_10kb_4SDs.fa', package='nahrtoolkit')
-  samplemutfasta_link = system.file('extdata', 'simulated_seq_10kb_dup.fa', package='nahrtoolkit')
+  samplefasta_link = system.file('extdata', 'simulated_seq_10kb_4SDs.fa', package =
+                                   'nahrtoolkit')
+  samplemutfasta_link = system.file('extdata', 'simulated_seq_10kb_dup.fa', package =
+                                      'nahrtoolkit')
   
   #samplemutfasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/vignettes/simulated_seq_10kb_del.fa'
   
@@ -310,9 +312,9 @@ gimme_sample_matrix <- function(mode = 'diff') {
 #' ### UNDER ACTIVE DEVELOPMENT ###
 #' explore_mutation_space
 #'
-#' @description Main workhorse, tying together the pieces. 
+#' @description Main workhorse, tying together the pieces.
 #' @param bitlocus matrix, nxm
-#' @param depth How many SVs in sequence should be simulated? 
+#' @param depth How many SVs in sequence should be simulated?
 #' @return evaluation matrix
 #'
 #' @author Wolfram Höps
@@ -324,53 +326,115 @@ explore_mutation_space <- function(bitlocus, depth) {
   pairs = find_sv_opportunities(sample)
   
   count = 1
+  depth = 3
   
-  res = data.frame(matrix(ncol = 4, nrow = 0))
-  res = rbind(res, unlist(c(0, 0, 'ref', eval_mutated_seq(bitlocus))))
-  colnames(res) = c('SD1', 'SD2', 'mutation', 'eval')
+  res = data.frame(matrix(ncol = depth + 1, nrow = 0))
+  res = rbind(res, unlist(c(
+    eval_mutated_seq(bitlocus), 'ref', rep('NA', depth - 1)
+  )))
+  colnames(res) = c('eval', paste0('mut', 1:depth))
   
-  for (npair in 1:dim(pairs)[1]) {
-    pair = pairs[npair, ]
-    bitl_mut = carry_out_compressed_sv(sample, pair)
-    newpairs = find_sv_opportunities(bitl_mut)
-    res = rbind(res, unlist(c(pair, eval_mutated_seq(bitl_mut))))
+  
+  
+  for (npair_level1 in 1:dim(pairs)[1]) {
+    print(npair_level1)
+    pair_level1 = pairs[npair_level1,]
+    bitl_mut = carry_out_compressed_sv(sample, pair_level1)
+    
+    # add
+    res_add = unlist(c(
+      eval_mutated_seq(bitl_mut),
+      paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_')
+    ))
+    names(res_add) = c('eval', 'mut1')
+    res = dplyr::bind_rows(res, res_add)
+    if (depth > 1) {
+      newpairs = find_sv_opportunities(bitl_mut)
+      for (npair_level2 in 1:dim(newpairs)[1]) {
+        pair_level2 = newpairs[npair_level2,]
+        bitl_mut2 = carry_out_compressed_sv(bitl_mut, pair_level2)
+        
+        # add
+        res_add = unlist(c(
+          eval_mutated_seq(bitl_mut2),
+          paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_'),
+          paste(pair_level2$p1, pair_level2$p2, pair_level2$sv, sep =
+                  '_')
+        ))
+        names(res_add) = c('eval', 'mut1', 'mut2')
+        res = dplyr::bind_rows(res, res_add)
+        
+      }
+      
+      if (depth > 2) {
+        newpairs3 = find_sv_opportunities(bitl_mut2)
+        for (npair_level3 in 1:dim(newpairs3)[1]) {
+          pair_level3 = newpairs3[npair_level3,]
+          bitl_mut3 = carry_out_compressed_sv(bitl_mut2, pair_level3)
+          
+          # add
+          res_add = unlist(c(
+            eval_mutated_seq(bitl_mut3),
+            paste(
+              pair_level1$p1,
+              pair_level1$p2,
+              pair_level1$sv,
+              sep = '_'
+            ),
+            paste(
+              pair_level2$p1,
+              pair_level2$p2,
+              pair_level2$sv,
+              sep = '_'
+            ),
+            paste(
+              pair_level3$p1,
+              pair_level3$p2,
+              pair_level3$sv,
+              sep = '_'
+            )
+          ))
+          names(res_add) = c('eval', 'mut1', 'mut2', 'mut3')
+          res = dplyr::bind_rows(res, res_add)
+        }
+      }
+    }
   }
-  
   return(res)
 }
 
 
 # Sample case
-# 
-# C = gimme_sample_matrix(mode = 'diff')
-# a = explore_mutation_space(C)
+#
+C = gimme_sample_matrix(mode = 'diff')
+a = explore_mutation_space(C)
 # eval_mutated_seq(C)
-# 
+#
 # samplei = ginv(sample)
-# 
+#
 # sample %*% samplei
-# 
+#
 # myImagePlot(sample)
 # myImagePlot(bitl_mut)
-# 
+#
 # myImagePlot(sample %*% t(sample))
 # library(MASS)
-# 
+#
 # s2 = sample
 # s3 = cbind(cbind(s2[, 1:4], s2[, 4]), s2[, 5:14])
 # colnames(s3) = 1:dim(s3)[2]
 # myImagePlot(s3)
-# 
+#
 # find_sv_opportunities(s2)
-# 
-# 
-# 
-# 
-# 
+#
+#
+#
+#
+#
 # A = rbind(c(2, 3), c(4, 5))
 # inv(A)
 # solve(A)
-# 
+#
 # Ai = MASS::ginv(A)
-# 
+#
 # A %*% Ai
