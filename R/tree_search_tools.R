@@ -406,8 +406,8 @@ explore_mutation_space <- function(bitlocus, depth) {
 
 # Sample case
 #
-C = gimme_sample_matrix(mode = 'diff')
-a = explore_mutation_space(C)
+#C = gimme_sample_matrix(mode = 'diff')
+#a = explore_mutation_space(C)
 # eval_mutated_seq(C)
 #
 # samplei = ginv(sample)
