@@ -260,8 +260,10 @@ eval_mutated_seq <- function(bitlocus) {
 #' @export
 #' @export
 gimme_sample_matrix <- function(mode = 'diff') {
-  samplefasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/vignettes/simulated_seq_10kb_4SDs.fa'
-  samplemutfasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/vignettes/simulated_seq_10kb_del_trim.fa'
+  #samplefasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/vignettes/simulated_seq_10kb_4SDs.fa'
+  #samplemutfasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/vignettes/simulated_seq_10kb_del_trim.fa'
+  samplefasta_link = system.file('extdata', '10ktest.fa', package='nahrtoolkit')
+  samplemutfasta_link = system.file('extdata', '10ktest.fa', package='nahrtoolkit')
   
   #samplemutfasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/vignettes/simulated_seq_10kb_del.fa'
   
@@ -281,7 +283,7 @@ gimme_sample_matrix <- function(mode = 'diff') {
     hltype = F,
     quadrantsize = 10000
   )
-  grid = wrapper_paf_to_bitlocus(samplepaf_link, gp = 10, minlen = 0)
+  grid = wrapper_paf_to_bitlocus(samplepaf_link, compression = 100, minlen = 0)[[3]]
   
   
   x_missing = which(min(grid$x):max(grid$x) %in% grid$x == F)
@@ -343,8 +345,8 @@ explore_mutation_space <- function(bitlocus, depth) {
 
 # Sample case
 # 
-# C = gimme_sample_matrix(mode = 'same')
-# a = explore_mutation_space(C)
+C = gimme_sample_matrix(mode = 'same')
+a = explore_mutation_space(C)
 # eval_mutated_seq(C)
 # 
 # samplei = ginv(sample)

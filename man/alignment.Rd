@@ -6,7 +6,6 @@
 \alias{merge_paf_entries_intraloop}
 \alias{compress_paf_fnct}
 \alias{extract_subseq}
-\alias{filter_paf_to_main_region}
 \alias{extract_subseq_bedtools}
 \alias{make_chunked_minimap_alnment}
 \alias{shred_seq}
@@ -17,10 +16,13 @@
 \alias{find_x_intersection}
 \alias{find_y_intersection}
 \alias{add_slope_intercept_info}
-\alias{get_gridlines_x}
-\alias{get_gridlines_y}
+\alias{get_gridlines.x}
+\alias{get_gridlines.y}
+\alias{bounce_point}
 \alias{wrapper_paf_to_bitlocus}
 \alias{get_aln_overlap_in_sector}
+\alias{enforce_slope_one}
+\alias{make_xy_grid}
 \title{Helperfunction (1/1) of compress_paf_fnct}
 \usage{
 merge_rows(paffile, nl1, nl2)
@@ -30,8 +32,6 @@ merge_paf_entries_intraloop(inpaf)
 compress_paf_fnct(inpaf_link, outpaf_link, quadrantsize = 1e+05)
 
 extract_subseq(infasta, seqname, start, end, outfasta)
-
-filter_paf_to_main_region(paflink, outpaflink)
 
 extract_subseq_bedtools(infasta, seqname, start, end, outfasta)
 
@@ -53,27 +53,11 @@ make_chunked_minimap_alnment(
   wholegenome = F
 )
 
-shred_seq(
-  infasta,
-  outfasta_chunk,
-  chunklen,
-  scriptloc = "/Users/hoeps/PhD/projects/nahrcall/bbmap/shred.sh"
-)
+shred_seq(infasta, outfasta_chunk, chunklen)
 
-run_minimap2(
-  targetfasta,
-  queryfasta,
-  outpaf,
-  minimap2loc = "/Users/hoeps/opt/anaconda3/bin/minimap2",
-  nthreads = 4
-)
+run_minimap2(targetfasta, queryfasta, outpaf, nthreads = 4)
 
-awk_edit_paf(
-  inpaf,
-  outpaf,
- 
-    scriptlink = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/scripts/awk_on_paf.sh"
-)
+awk_edit_paf(inpaf, outpaf)
 
 writeFasta(data, filename)
 
@@ -91,16 +75,18 @@ add_slope_intercept_info(
   yend = "qend"
 )
 
-get_gridlines_x(paf, gp = 10)
+get_gridlines.x(paf, gp = 10)
 
-get_gridlines_y(paf, gp = 10)
+get_gridlines.y(paf, gp = 10)
+
+bounce_point(vectors, point)
 
 wrapper_paf_to_bitlocus(
   inpaf,
   realplot = T,
   bitlocusplot = T,
-  minlen = 2000,
-  gp = 10
+  minlen = 1000,
+  compression = 1000
 )
 
 get_aln_overlap_in_sector(
@@ -113,6 +99,10 @@ get_aln_overlap_in_sector(
   y_end,
   gp = 10
 )
+
+enforce_slope_one(df)
+
+make_xy_grid(paf, n_additional_bounces = 10)
 }
 \arguments{
 \item{paffile}{\link{data frame} loaded paffile with colnames}
@@ -126,6 +116,9 @@ get_aln_overlap_in_sector(
 \item{inpaf_link}{\link{character/link} link to the chunked paf}
 
 \item{outpaf_link}{\link{character/link} link to the molten output paf}
+
+\item{quadrantsize}{\link{numeric} size of alignments being merged in one piece.
+Set to larger values (e.g. 250k) for very large alignments (>5Mb).}
 
 \item{infasta}{\link{character/link} single-seq fasta to be chopped}
 
@@ -148,10 +141,6 @@ highlights in the plot.}
 
 \item{outfasta_chunk}{\link{character/link} output chopped multi-seq fasta.}
 
-\item{scriptloc}{\link{character/link} link to shred.ss from bbmap.}
-
-\item{minimap2loc}{\link{character/link} link to minimap2 binary.}
-
 \item{data}{\link{character/link} data frame with column 'name' and 'seq'}
 
 \item{filename}{\link{character/link} output filename.}
@@ -159,11 +148,13 @@ highlights in the plot.}
 \item{outplot}{\link{character/link} Path to the output plot to be written.}
 
 \item{outsd}{\link{character/link} Outputfile for the modified SD tsv file.}
+
+\item{scriptloc}{\link{character/link} link to shred.ss from bbmap.}
+
+\item{minimap2loc}{\link{character/link} link to minimap2 binary.}
 }
 \value{
 paffile with one row less (bc a pair has been merged)
-
-nothing. But output files written.
 
 nothing. But output files written.
 
@@ -184,10 +175,6 @@ work in the future, because melting is not so straight forward.
 
 Is awfully slow unfortunately. We should find a way to only read
 the chromosome of interest.
-
-A core function. Give me a fasta with a sequence of interest (e.g. from hg38),
-and give me an assembly fasta, and I will return the fasta of a corresponding
-sequence in the assembly. sas
 
 This is sitting at the core of the nahrchainer module. It ties
 together core modules, such as query-sequence chunking, minimap2 alignment,
@@ -224,10 +211,6 @@ Wolfram Höps
 
 Wolfram Hoeps
 
-Wolfram Höps
-
-Wolfram Hoeps
-
 Wolfram Hoeps
 
 Wolfram Höps
@@ -241,6 +224,12 @@ Wolfram Höps
 Nicholas Hathaway
 
 Nicholas Hathaway
+
+Wolfram Hoeps
+
+Wolfram Hoeps
+
+Wolfram Hoeps
 
 Wolfram Hoeps
 

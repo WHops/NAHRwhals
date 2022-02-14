@@ -65,7 +65,7 @@ Alternatively, if the sequences are very long, we can also use Minimap2 to gener
 
 minimap2_inferred_plot = 
   make_chunked_minimap_alnment(samplefasta_link, samplefasta_link, samplepaf_link, 
-                               outplot=NULL, chunklen = 500, saveplot=F, 
+                               chunklen = 500, saveplot=F, 
                                hllink = samplepaf_link, hltype = 'paf')
 
 
@@ -81,8 +81,8 @@ NAHRtoolkit can also simulate a new sequence. What we need for this is a .tsv fi
 ```{r, warning = FALSE, message = FALSE}
 
 seqlen = 10000
-#sdfile_bed = system.file('extdata', 'sds10.bed', package='nahrtoolkit')
-sdfile_bed = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/sds10.bed'
+sdfile_bed = system.file('extdata', 'sds10.bed', package='nahrtoolkit')
+#sdfile_bed = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/sds10.bed'
 outfasta = './simulated_seq_10kb.fa'
 
 sdfile_tsv = './sds10.tsv'
@@ -105,7 +105,9 @@ We can use a simple text file with two columns [SDname, Operation] to specify mu
 
 ```{r, warning = FALSE, message = FALSE}
 
-svfile_invA = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDa_inv.txt'
+#svfile_invA = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDa_inv.txt'
+svfile_invA = system.file('extdata', 'SDa_inv.txt', package='nahrtoolkit')
+
 outmutfasta = './simulated_seq_10kb_inv.fa'
 outmutsd = './simulated_seq_10kb_inv.tsv'
 mutate_seq(outfasta, sdfile_tsv, svfile_invA, outmutfasta, outmutsd)
@@ -122,7 +124,7 @@ We can also make the same dotplot with alignments from minimap2:
 samplepaf_link ='./simulated_seq_10kb_mm2.paf'
 
 make_chunked_minimap_alnment(outfasta, outmutfasta, samplepaf_link, 
-                             outplot=NULL, chunklen = 5000, minsdlen = 0, saveplot=F, 
+                             chunklen = 5000, minsdlen = 0, saveplot=F, 
                              hllink = samplepaf_link, hltype = 'paf', quadrantsize = 500000)
 ```
 
@@ -131,8 +133,8 @@ Next, we initiate a more complex sequence with four SD pairs, and introduce vari
 ```{r, warning = FALSE, message = FALSE}
 
 seqlen = 10000
-#sdfile_bed = system.file('extdata', 'sds10.bed', package='nahrtoolkit')
-sdfile_tsv = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/sds10_4SDs.tsv'
+sdfile_tsv = system.file('extdata', 'sds10_4SDs.tsv', package='nahrtoolkit')
+#sdfile_tsv = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/sds10_4SDs.tsv'
 outfasta = './simulated_seq_10kb_4SDs.fa'
 
 
@@ -146,7 +148,9 @@ if (seqlen <= 25000){
 }
 
 # First: A deletion on SDC
-svfile_delC = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDc_del.txt'
+#svfile_delC = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDc_del.txt'
+svfile_delC = system.file('extdata', 'SDc_del.txt', package='nahrtoolkit')
+
 outmutfasta = './simulated_seq_10kb_del.fa'
 outmutsd = './simulated_seq_10kb_del.tsv'
 mutate_seq(outfasta, sdfile_tsv, svfile_delC, outmutfasta, outmutsd)
@@ -157,7 +161,9 @@ if (seqlen <= 25000){
 }
 
 # Next, let's duplicate on that same SD pair. 
-svfile_dupC = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDc_dup.txt'
+#svfile_dupC = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDc_dup.txt'
+svfile_dupC = system.file('extdata', 'SDc_dup.txt', package='nahrtoolkit')
+
 outmutfasta = './simulated_seq_10kb_dup.fa'
 outmutsd = './simulated_seq_10kb_dup.tsv'
 mutate_seq(outfasta, sdfile_tsv, svfile_dupC, outmutfasta, outmutsd)
@@ -172,8 +178,9 @@ As a last example, let's create at a sequence with two nested SD pairs:
 ```{r, warning = FALSE, message = FALSE}
 
 seqlen = 10000
-#sdfile_bed = system.file('extdata', 'sds10.bed', package='nahrtoolkit')
-sdfile_bed = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/sds_twonest.bed'
+#sdfile_bed = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/sds_twonest.bed'
+sdfile_bed = system.file('extdata', 'sds_twonest.bed', package='nahrtoolkit')
+
 outfasta = './simulated_seq_twonest.fa'
 
 sdfile_tsv = './sds_twonest.tsv'
@@ -193,8 +200,12 @@ if (seqlen <= 25000){
 There are no SDs in direct orientation, hence no CNVs are possible right now. However, we could invert on one SD first, and then duplicate on the other. Let's try: 
 
 ```{r, warning = FALSE, message = FALSE}
-svfile_invA = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDa_inv.txt'
-svfile_dupB = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDb_dup.txt'
+#svfile_invA = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDa_inv.txt'
+#svfile_dupB = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDb_dup.txt'
+
+svfile_invA = system.file('extdata', 'SDa_inv.txt', package='nahrtoolkit')
+svfile_dupB = system.file('extdata', 'SDb_dup.txt', package='nahrtoolkit')
+
 outmutfasta = './simulated_seq_twonest_inv.fa'
 outmutsd = './simulated_seq_twonest_inv.tsv'
 outmutfasta2 = './simulated_seq_twonest_inv_dup.fa'
@@ -209,8 +220,8 @@ mutate_seq(outmutfasta, outmutsd, svfile_dupB, outmutfasta2, outmutsd2)
 # Let's have a look at the resulting sequence. We plot it against the orig seq. 
 
 if (seqlen <= 25000){
-  exact_plot = make_dotplot(outfasta, outmutfasta2, 15, save=F)
-  print(exact_plot  + ggplot2::labs(title='Simulated Sequence #3. Double mutation: INV + DUP'))
+  exact_plot = make_dotplot(outfasta, outmutfasta2, 15, save=F) + ggplot2::labs(title='Simulated Sequence #3. Double mutation: INV + DUP')
+  print(exact_plot)
 }
 ```
 
