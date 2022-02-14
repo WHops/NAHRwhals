@@ -24,41 +24,8 @@ extract_subseq <- function(infasta, seqname, start, end, outfasta) {
 }
 
 
-#' @description A core function. Give me a fasta with a sequence of interest (e.g. from hg38),
-#' and give me an assembly fasta, and I will return the fasta of a corresponding
-#' sequence in the assembly. sas
-#'
-#' @param targetfasta [character/link] link to the 'target' single-sequence fasta (sometimes reference, e.g. chm13.)
-#' @param queryfasta [character/link] link to the 'query' single-sequence fasta.
-#' @return nothing. But output files written.
-#'
-#' @author Wolfram Höps
-#' @rdname alignment
-#' @export
-# liftover_segment_direct <- function(targetfasta, queryfasta){
-#
-#   # Queryfasta: e.g. a piece of hg38 sequence.
-#   # Targetfasta: typically a de-novo alignment.
-#
-#   queryfasta = outfasta
-#   targetfasta = "/Users/hoeps/PhD/projects/huminvs/genomes/hifi-asm/HG00512_hgsvc_pbsq2-ccs_1000-hifiasm.h1-un.fasta"
-#   outpaf_tmp = "./tpm_out.paf"
-#   # Make an alignment with mmap2.
-#   # We align the sequence we want to find to the assembly (targetfasta)
-#   run_minimap2(queryfasta, targetfasta, outpaf_tmp)
-#
-#
-# }
-
-# outpaf_tmp = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/oa1.chunk'
-# outpaf_tmp2 = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/oa1.chunk.filter'
-#
-# filter_paf_to_main_region(outpaf_tmp, outpaf_tmp2, inlen = 200000)
 
 # To document
-
-
-
 #' filter_paf_to_main_region
 #' Script to filter down a whole-genome paf to the 'best matching' region.
 #' query should be short sequence fragments (1kb, 10kb, ...) of the roi.
@@ -183,14 +150,6 @@ flip_query_target <- function(inpaf, outpaf) {
   
 }
 
-# hg38fa = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/hg38.fa"
-# outfasta = "~/Desktop/trash.fa"
-# seqname = 'chr11'
-# start = 13104252
-# end = 13122521
-#
-# extract_subseq_bedtools(hg38fa, seqname, start, end, outfasta)
-#
 
 
 # TRASH #
@@ -224,121 +183,7 @@ extract_subseq_bedtools <-
     
   }
 
-# determine_case <- function(cpaf_intersect, aln_containing){
-#
-#   # Case A: at least 1 unbroken alignment
-#   if (dim(aln_containing)[1] >= 1){
-#     return("A")
-#   }
-#
-#
-#   else if ()
-# }
 
-#' liftover_coarse
-
-
-#' liftover_coarse <-
-#'   function(seqname,
-#'            start,
-#'            end,
-#'            conversionpaf_link,
-#'            factor = 0.5) {
-#'     start = 74769950
-#'     end = 76058098
-#'     
-#'     start = 75000001
-#'     end = 75010001
-#'     cpaf = read.table(
-#'       conversionpaf_link,
-#'       sep = '\t',
-#'       fill = T,
-#'       row.names = NULL
-#'     )
-#'     
-#'     colnames_paf = c(
-#'       'qname',
-#'       'qlen',
-#'       'qstart',
-#'       'qend',
-#'       'strand',
-#'       'tname',
-#'       'tlen',
-#'       'tstart',
-#'       'tend',
-#'       'nmatch',
-#'       'alen',
-#'       'mapq'
-#'     )
-#'     colnames(cpaf)[1:length(colnames_paf)] = colnames_paf
-#'     
-#'     # Query: from (..hg38..)
-#'     # Target: to ( ..assembly.. )
-#'     
-#'     cpaf_i = cpaf[(cpaf$qname == seqname), ]
-#'     
-#'     
-#'     # Get alignments that
-#'     cpaf_intersect = cpaf_i[(cpaf_i$qend >= start) &
-#'                               (cpaf_i$qstart <= end), ]
-#'     
-#'     aln_containing = cpaf_i[(cpaf_i$qstart <= start) &
-#'                               (cpaf_i$qend >= end), ]
-#'     
-#'     # determine case
-#'     case = determine_case(cpaf_intersect, aln_containing)
-#'     
-#'     
-#'     # Start coord
-#'     alns_containing_my_start = cpaf_i[(cpaf_i$qend >= start) &
-#'                                         (cpaf_i$qstart <= start), ]
-#'     longest_alns_containing_my_start = alns_containing_my_start[order(alns_containing_my_start$nmatch, decreasing =
-#'                                                                         F), ][1, ]
-#'     
-#'     # End coord
-#'     alns_containing_my_end = cpaf_i[(cpaf_i$qend >= end) &
-#'                                       (cpaf_i$qstart <= end), ]
-#'     longest_aln_containing_my_end = alns_containing_my_end[order(alns_containing_my_end$nmatch, decreasing =
-#'                                                                    F), ][1, ]
-#'     
-#'     if (longest_alns_containing_my_start$qname != longest_aln_containing_my_end$qname) {
-#'       if (longest_alns_containing_my_start$nmatch > longest_aln_containing_my_end$nmatch) {
-#'         longest_aln_containing_my_end = longest_alns_containing_my_start
-#'       } else {
-#'         longest_aln_containing_my_start = longest_alns_containing_my_end
-#'       }
-#'     }
-#'     
-#'     
-#'     if (longest_alns_containing_my_start$strand == '+') {
-#'       liftover_start = longest_alns_containing_my_start$tstart + (start - longest_alns_containing_my_start$qstart)
-#'     } else {
-#'       liftover_start = longest_alns_containing_my_start$tend - (start - longest_alns_containing_my_start$qstart)
-#'     }
-#'     
-#'     
-#'     
-#'     if (longest_aln_containing_my_end$strand == '+') {
-#'       liftover_end = longest_aln_containing_my_end$tend - (longest_aln_containing_my_end$qend - end)
-#'     } else {
-#'       liftover_end = longest_aln_containing_my_end$tstart + (longest_aln_containing_my_end$qend - end)
-#'     }
-#'     
-#'     
-#'     liftover_start_real = as.integer(min(liftover_start, liftover_end) - ((end -
-#'                                                                              start) * factor))
-#'     liftover_end_real = as.integer(max(liftover_start, liftover_end) + ((end -
-#'                                                                            start) * factor))
-#'     
-#'     
-#'     to_return = list(
-#'       lift_contig = alns_containing_my_start$tname,
-#'       lift_start = max(liftover_start_real, 0),
-#'       lift_end = min(liftover_end_real, alns_containing_my_start$tlen)
-#'     )
-#'     
-#'     return(to_return)
-#'   }
 
 #' @export
 find_punctual_liftover <- function(cpaf, pointcoordinate) {
@@ -442,10 +287,3 @@ liftover_coarse <-
     )
     
   }
-# infasta = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/hg38.fa"
-# outfasta = "~/Desktop/trash.fa"
-# seqname = 'chr11'
-# start = 13104252
-# end = 13122521
-#
-# extract_subseq(infasta, seqname, start, end, outfasta)

@@ -183,7 +183,6 @@ bounce_point <- function(vectors, point){
 }
 
 #' wrapper_paf_to_bitlocus
-
 #' @author Wolfram Hoeps
 #' @rdname alignment
 #' @export
@@ -323,7 +322,7 @@ wrapper_paf_to_bitlocus <-
       print(p)
     }
     
-    return(grid_list)
+    return(list(gridlines.x, gridlines.y, grid_list))
   }
 
 #' get_aln_overlap_in_sector

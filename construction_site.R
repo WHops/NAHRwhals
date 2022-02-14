@@ -15,7 +15,7 @@ make_chunked_minimap_alnment(samplefasta_link, samplefasta_link, samplepaf_link,
                              hllink = samplepaf_link, hltype = 'paf', quadrantsize = 10000)
 
 # Make the condensed dotplot
-grid = wrapper_paf_to_bitlocus(samplepaf_link, minlen=0, compression = 1)
+grid = wrapper_paf_to_bitlocus(samplepaf_link, minlen=0, compression = 1)[[3]]
 
 ### [OVER] ###
 
@@ -186,17 +186,17 @@ hg38fa = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/hg38.fa"
 chm13fa = '/Users/hoeps/PhD/projects/huminvs/genomes/CHM13_T2T/fasta/chm13.draft_v1.1.fasta'
 aln_fa = '/Users/hoeps/PhD/projects/huminvs/genomes/hifi-asm/HG00512_hgsvc_pbsq2-ccs_1000-hifiasm.h1-un.fasta'
 
-outfasta_hg38 = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/hg38_sub.fa"
-outfasta_aln = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/aln_sub.fa"
+outfasta_hg38 = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/hg38_sub.fa"
+outfasta_aln = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/aln_sub.fa"
 
-outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/1223456.paf'
+outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/1223456.paf'
 
-conversionpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/liftover_custom/HG00512_hgsvc_pbsq2-ccs_1000-hifiasm.h1-un_hg38.paf"
+conversionpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/liftover_custom/HG00512_hgsvc_pbsq2-ccs_1000-hifiasm.h1-un_hg38.paf"
 
 #hg38
-seqname = 'chr2'
-start = 138245978
-end =   138252843
+seqname = 'chr6'
+start = 166155642
+end =   166170655
 outpaf_link = as.character(runif(1,1e10,1e11))
 
 coords_liftover = liftover_coarse(seqname, start, end, conversionpaf_link, lenfactor = 1)
@@ -207,13 +207,16 @@ extract_subseq_bedtools(hg38fa, seqname, start, end, outfasta_hg38)
 extract_subseq_bedtools(aln_fa, coords_liftover$lift_contig, coords_liftover$lift_start, coords_liftover$lift_end, outfasta_aln)
 
 make_chunked_minimap_alnment(outfasta_hg38, outfasta_aln, outpaf_link,
-                             chunklen = 500, minsdlen = 2000, saveplot=F,
+                             chunklen = 250, minsdlen = 2000, saveplot=F,
                              hllink = F, hltype = F)#, wholegenome = F)
 
-#make_chunked_minimap_alnment(outfasta_hg38, outfasta_hg38, outpaf_link,
-#                             chunklen = 1000, minsdlen = 2000, saveplot=F,
-#                             hllink = F, hltype = F)#, wholegenome = F)
-grid = wrapper_paf_to_bitlocus(outpaf_link, minlen = 100, compression = 1)
+outpaf_link = as.character(runif(1, 1e10,1e11))
+make_chunked_minimap_alnment(outfasta_hg38, outfasta_hg38, outpaf_link,
+                            chunklen = 50, minsdlen = 100, saveplot=F,
+                            hllink = F, hltype = F, quadrantsize = 100)#, wholegenome = F)
+grid = wrapper_paf_to_bitlocus(outpaf_link, minlen = 10, compression = 1000)
+
+make_dotplot(outfasta_hg38, outfasta_hg38, 15, save=F)
 
 seqname = 'chr7'
 start = 74869950

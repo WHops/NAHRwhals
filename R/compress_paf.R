@@ -101,8 +101,6 @@ merge_paf_entries_intraloop <- function(inpaf){
 #' @author Wolfram Höps
 #' @rdname alignment
 #' @export
-#' 
-#' 
 compress_paf_fnct <- function(inpaf_link, outpaf_link, quadrantsize = 100000){
   
   

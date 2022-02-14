@@ -1,9 +1,10 @@
 
+
 #' A wrapper for extracting values from the config.
 #' @author Wolfram Höps
 #' @rdname get_subseq
 #' @export
-query_config <- function(param){
+query_config <- function(param) {
   configfile = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/conf/config.yml"
   return(config::get(param, file = configfile))
 }
@@ -44,7 +45,7 @@ confirm_loaded_nahr <- function() {
 #' @rdname Package_test
 #' @export
 version_nahr <- function() {
-  print('This is version 0.9 from Sat 8th, 2022.')
+  print('This is version 0.95 from Feb 14th, 2022.')
 }
 
 #' A core wrapper function. Give me two fasta files and I'll give you
@@ -113,15 +114,15 @@ make_chunked_minimap_alnment <-
     print(queryfasta_chunk)
     # Self explanatory
     run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk)
-
+    
     print('2')
     # Awk is used to correct the sequence names. This is because I know only there
     # how to use regex...
     awk_edit_paf(outpaf_chunk, outpaf_awk)
     
     
-    # If we operate on a large reference, cut down the paf. 
-    if (wholegenome){
+    # If we operate on a large reference, cut down the paf.
+    if (wholegenome) {
       filter_paf_to_main_region(outpaf_awk, outpaf_filter)
     } else {
       outpaf_filter = outpaf_awk
@@ -130,7 +131,7 @@ make_chunked_minimap_alnment <-
     # paf of fragmented paf gets put back together.
     compress_paf_fnct(outpaf_filter, outpaf, quadrantsize)
     
-    if (wholegenome){
+    if (wholegenome) {
       flip_query_target(outpaf, outpaf_plot)
     } else {
       outpaf_plot = outpaf
@@ -183,7 +184,6 @@ make_chunked_minimap_alnment <-
 shred_seq <- function(infasta,
                       outfasta_chunk,
                       chunklen) {
-  
   scriptloc = query_config("shred")
   print(paste0(
     scriptloc,
@@ -194,16 +194,18 @@ shred_seq <- function(infasta,
     " length=",
     chunklen
   ))
-  system(paste0(
-    scriptloc,
-    " in=",
-    infasta,
-    " out=",
-    outfasta_chunk,
-    " length=",
-    chunklen, 
-    " overwrite=true"
-  ))
+  system(
+    paste0(
+      scriptloc,
+      " in=",
+      infasta,
+      " out=",
+      outfasta_chunk,
+      " length=",
+      chunklen,
+      " overwrite=true"
+    )
+  )
 }
 
 #' Submit a system command to run minimap2
@@ -234,7 +236,7 @@ run_minimap2 <-
   function(targetfasta,
            queryfasta,
            outpaf,
-           nthreads =4) {
+           nthreads = 4) {
     #system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
     
     minimap2loc = query_config("minimap2")
@@ -278,12 +280,11 @@ run_minimap2 <-
 #' @rdname alignment
 #' @export
 awk_edit_paf <- function(inpaf, outpaf) {
-  
   print(inpaf)
   print(outpaf)
   
   scriptlink = query_config("awkscript")
-  
+  print(scriptlink)
   system(paste0(scriptlink, " ", inpaf, " ", outpaf))
 }
 
@@ -317,11 +318,14 @@ writeFasta <- function(data, filename) {
 #' @rdname alignment
 #' @export
 shorten_fasta <- function(infasta, outfasta, range) {
-  
   browser()
   input = read.table(infasta)
-  seq_shortened = as.character(Biostrings::subseq(Biostrings::readDNAStringSet(infasta), start=range[1], stop=range[2]))
-
+  seq_shortened = as.character(Biostrings::subseq(
+    Biostrings::readDNAStringSet(infasta),
+    start = range[1],
+    stop = range[2]
+  ))
+  
   writeFasta(data.frame(name = 'seq', seq = seq_shortened), filename = outfasta)
   
   print('Successfully written sub-fasta')
@@ -395,17 +399,31 @@ randDNASeq <- function(n, gcfreq, seed = 1234) {
 
 
 
-wrapper_dotplot_with_alignment <- function(seqname, start, end, genome_x_fa, genome_y_fa, limitfasta_x, limitfasta_y, outpaf_link,
-                                           chunklen = 1000){
-  
-  
-  extract_subseq(genome_x_fa, seqname, start, end, limitfasta_x)
-  plot = make_chunked_minimap_alnment(genome_y_fa, limitfasta_x, outpaf_link, 
-                                      chunklen = 1000, minsdlen = 2000, saveplot=F, 
-                                      hllink = F, hltype = F, wholegenome = T)
-  return(plot)
-  
-}
+wrapper_dotplot_with_alignment <-
+  function(seqname,
+           start,
+           end,
+           genome_x_fa,
+           genome_y_fa,
+           limitfasta_x,
+           limitfasta_y,
+           outpaf_link,
+           chunklen = 1000) {
+    extract_subseq(genome_x_fa, seqname, start, end, limitfasta_x)
+    plot = make_chunked_minimap_alnment(
+      genome_y_fa,
+      limitfasta_x,
+      outpaf_link,
+      chunklen = 1000,
+      minsdlen = 2000,
+      saveplot = F,
+      hllink = F,
+      hltype = F,
+      wholegenome = T
+    )
+    return(plot)
+    
+  }
 
 
 #' General purpose wrapper
@@ -419,24 +437,43 @@ wrapper_dotplot_with_alignment <- function(seqname, start, end, genome_x_fa, gen
 #' @author Wolfram Höps
 #' @rdname seq_modeling
 #' @export
-wrapper_dotplot_with_alignment_fast <- function(seqname, start, end, genome_x_fa, genome_y_fa, subseqfasta_x, 
-                                           subseqfasta_y, conversionpaf_link, outpaf_link, 
-                                           chunklen = 10000, factor = 0.5){
-  
- 
-  # Get coords in assembly
-  coords_liftover = liftover_coarse(seqname, start, end, conversionpaf_link, lenfactor = 1)
-  
-  # Gimme fasta
-  extract_subseq_bedtools(genome_x_fa, seqname, start, end, subseqfasta_x)
-  extract_subseq_bedtools(genome_y_fa, coords_liftover$lift_contig, coords_liftover$lift_start, coords_liftover$lift_end, subseqfasta_y)
-  print("##############################") 
-  #outpaf_link = as.character(runif(1,1e10, 1e11))
-  plot = make_chunked_minimap_alnment(subseqfasta_x, subseqfasta_y, outpaf_link, 
-                                      chunklen = chunklen, minsdlen = 2000, saveplot=T, 
-                                      hllink = F, hltype = F, wholegenome = F)
-  return(plot)
-  
-}
-
-
+wrapper_dotplot_with_alignment_fast <-
+  function(seqname,
+           start,
+           end,
+           genome_x_fa,
+           genome_y_fa,
+           subseqfasta_x,
+           subseqfasta_y,
+           conversionpaf_link,
+           outpaf_link,
+           chunklen = 10000,
+           factor = 0.5) {
+    # Get coords in assembly
+    coords_liftover = liftover_coarse(seqname, start, end, conversionpaf_link, lenfactor = 1)
+    
+    # Gimme fasta
+    extract_subseq_bedtools(genome_x_fa, seqname, start, end, subseqfasta_x)
+    extract_subseq_bedtools(
+      genome_y_fa,
+      coords_liftover$lift_contig,
+      coords_liftover$lift_start,
+      coords_liftover$lift_end,
+      subseqfasta_y
+    )
+    print("##############################")
+    #outpaf_link = as.character(runif(1,1e10, 1e11))
+    plot = make_chunked_minimap_alnment(
+      subseqfasta_x,
+      subseqfasta_y,
+      outpaf_link,
+      chunklen = chunklen,
+      minsdlen = 2000,
+      saveplot = T,
+      hllink = F,
+      hltype = F,
+      wholegenome = F
+    )
+    return(plot)
+    
+  }
