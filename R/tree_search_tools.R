@@ -258,12 +258,11 @@ eval_mutated_seq <- function(bitlocus) {
 #' @author Wolfram Höps
 #' @rdname gimme_sample_matrix
 #' @export
-#' @export
 gimme_sample_matrix <- function(mode = 'diff') {
-  #samplefasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/vignettes/simulated_seq_10kb_4SDs.fa'
-  #samplemutfasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/vignettes/simulated_seq_10kb_del_trim.fa'
-  samplefasta_link = system.file('extdata', '10ktest.fa', package='nahrtoolkit')
-  samplemutfasta_link = system.file('extdata', '10ktest.fa', package='nahrtoolkit')
+  #samplefasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/vignettes/simulated_seq_10kb_4SDs.fa'
+  #samplemutfasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/vignettes/simulated_seq_10kb_del_trim.fa'
+  samplefasta_link = system.file('extdata', 'simulated_seq_10kb_4SDs.fa', package='nahrtoolkit')
+  samplemutfasta_link = system.file('extdata', 'simulated_seq_10kb_dup.fa', package='nahrtoolkit')
   
   #samplemutfasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/vignettes/simulated_seq_10kb_del.fa'
   
@@ -335,8 +334,6 @@ explore_mutation_space <- function(bitlocus, depth) {
     bitl_mut = carry_out_compressed_sv(sample, pair)
     newpairs = find_sv_opportunities(bitl_mut)
     res = rbind(res, unlist(c(pair, eval_mutated_seq(bitl_mut))))
-
-    print(count)
   }
   
   return(res)
@@ -345,8 +342,8 @@ explore_mutation_space <- function(bitlocus, depth) {
 
 # Sample case
 # 
-C = gimme_sample_matrix(mode = 'same')
-a = explore_mutation_space(C)
+# C = gimme_sample_matrix(mode = 'diff')
+# a = explore_mutation_space(C)
 # eval_mutated_seq(C)
 # 
 # samplei = ginv(sample)

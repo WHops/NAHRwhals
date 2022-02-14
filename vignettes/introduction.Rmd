@@ -82,7 +82,6 @@ NAHRtoolkit can also simulate a new sequence. What we need for this is a .tsv fi
 
 seqlen = 10000
 sdfile_bed = system.file('extdata', 'sds10.bed', package='nahrtoolkit')
-#sdfile_bed = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/sds10.bed'
 outfasta = './simulated_seq_10kb.fa'
 
 sdfile_tsv = './sds10.tsv'
@@ -105,7 +104,6 @@ We can use a simple text file with two columns [SDname, Operation] to specify mu
 
 ```{r, warning = FALSE, message = FALSE}
 
-#svfile_invA = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDa_inv.txt'
 svfile_invA = system.file('extdata', 'SDa_inv.txt', package='nahrtoolkit')
 
 outmutfasta = './simulated_seq_10kb_inv.fa'
@@ -134,7 +132,6 @@ Next, we initiate a more complex sequence with four SD pairs, and introduce vari
 
 seqlen = 10000
 sdfile_tsv = system.file('extdata', 'sds10_4SDs.tsv', package='nahrtoolkit')
-#sdfile_tsv = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/sds10_4SDs.tsv'
 outfasta = './simulated_seq_10kb_4SDs.fa'
 
 
@@ -148,7 +145,6 @@ if (seqlen <= 25000){
 }
 
 # First: A deletion on SDC
-#svfile_delC = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDc_del.txt'
 svfile_delC = system.file('extdata', 'SDc_del.txt', package='nahrtoolkit')
 
 outmutfasta = './simulated_seq_10kb_del.fa'
@@ -161,7 +157,6 @@ if (seqlen <= 25000){
 }
 
 # Next, let's duplicate on that same SD pair. 
-#svfile_dupC = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDc_dup.txt'
 svfile_dupC = system.file('extdata', 'SDc_dup.txt', package='nahrtoolkit')
 
 outmutfasta = './simulated_seq_10kb_dup.fa'
@@ -178,7 +173,6 @@ As a last example, let's create at a sequence with two nested SD pairs:
 ```{r, warning = FALSE, message = FALSE}
 
 seqlen = 10000
-#sdfile_bed = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/sds_twonest.bed'
 sdfile_bed = system.file('extdata', 'sds_twonest.bed', package='nahrtoolkit')
 
 outfasta = './simulated_seq_twonest.fa'
@@ -200,9 +194,6 @@ if (seqlen <= 25000){
 There are no SDs in direct orientation, hence no CNVs are possible right now. However, we could invert on one SD first, and then duplicate on the other. Let's try: 
 
 ```{r, warning = FALSE, message = FALSE}
-#svfile_invA = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDa_inv.txt'
-#svfile_dupB = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/inst/extdata/SDb_dup.txt'
-
 svfile_invA = system.file('extdata', 'SDa_inv.txt', package='nahrtoolkit')
 svfile_dupB = system.file('extdata', 'SDb_dup.txt', package='nahrtoolkit')
 

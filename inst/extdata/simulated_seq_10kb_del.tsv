@@ -1,0 +1,4 @@
+simcontig	3000	4000	simcontig:6000	0	-	simcontig	5000	6000	0	SDB	0	N/A	N/A	N/A	N/A	N/A	1000	0	0	1000	900	100	0	0	0.9	0.9	0	0	6500	FALSE
+simcontig	5000	6000	simcontig:8000	0	-	simcontig	3000	4000	0	SDB	0	N/A	N/A	N/A	N/A	N/A	1000	0	0	1000	900	100	0	0	0.9	0.9	0	0	8500	FALSE
+simcontig	2800	3000	simcontig:5800	0	+	simcontig	6100	6300	0	SDD	0	N/A	N/A	N/A	N/A	N/A	200	0	0	200	190	10	0	0	0.95	0.95	0	0	5900	FALSE
+simcontig	6100	6300	simcontig:9100	0	+	simcontig	2800	3000	0	SDD	0	N/A	N/A	N/A	N/A	N/A	200	0	0	200	190	10	0	0	0.95	0.95	0	0	9200	FALSE
