@@ -10,10 +10,12 @@ find_maxdiag <- function(m){
     for (j in 1:(dim(m)[2] + 1)) {
       # Iterate y points
       k = 0 # k = current diag size
-
+      
       while ((i + k < dim(m)[1]) & # make sure i+k is not out of bounds
              (j + k < dim(m)[2])){ # make sure j+k is not out of bonds
-        if (m[i + k,j + k] != 0) { # that next point is not zero
+        direction = sign(m[i,j])
+        
+        if ((direction != 0) & (sign(m[i + k,j + k]) == direction)) { # that next point is not zero
           k = k + 1 # Diag has become longer
           if (k > maxdiag) {
             maxdiag = k
@@ -110,7 +112,7 @@ find_sv_opportunities <- function(sample) {
 #' @author unknown (http://www.phaget4.org/R/image_matrix.html)
 #' @rdname myImagePlot
 #' @export
-myImagePlot <- function(x, ...) {
+plot_matrix <- function(x, ...) {
   min <- min(x)
   max <- max(x)
   yLabels <- rownames(x)
@@ -278,7 +280,8 @@ eval_mutated_seq <- function(bitlocus) {
   
   maxdiag = max(find_maxdiag(apply(bitlocus, 2, rev)), find_maxdiag(bitlocus))
   
-  return(round(maxdiag * symmetry, 3))
+  return(maxdiag)
+  #return(round(maxdiag * symmetry, 3))
   #  return(round(maxdiag/dim(bitlocus)[2], 3))
 }
 
@@ -324,33 +327,42 @@ gimme_sample_matrix <- function(mode = 'diff') {
   )
   grid = wrapper_paf_to_bitlocus(samplepaf_link, compression = 100, minlen = 0)[[3]]
   
-  
-  x_missing = which(min(grid$x):max(grid$x) %in% grid$x == F)
-  y_missing = which(min(grid$y):max(grid$y) %in% grid$y == F)
-  
-  for (xm in x_missing) {
-    grid = rbind(grid, c(xm, xm, 0))
-  }
-  for (ym in y_missing) {
-    grid = rbind(grid, c(ym, ym, 0))
-  }
-  
-  
-  sample = reshape2::dcast(grid, y ~ x, fill = 0)
-  sample$x = NULL
-  sample$y = NULL
-  sample = as.matrix(sample)
-  
-  colnames(sample) = 1:dim(sample)[2]
-  rownames(sample) = 1:dim(sample)[1]
+  gridmatrix = gridlist_to_gridmatrix(grid)
   
   return(sample)
+}
+
+#' gridlist_to_gridmatrix
+#' @export
+gridlist_to_gridmatrix <- function(grid_list){
+  
+  
+  x_missing = which(min(grid_list$x):max(grid_list$x) %in% grid_list$x == F)
+  y_missing = which(min(grid_list$y):max(grid_list$y) %in% grid_list$y == F)
+  
+  for (xm in x_missing) {
+    grid_list = rbind(grid_list, c(xm, xm, 0))
+  }
+  for (ym in y_missing) {
+    grid_list = rbind(grid_list, c(ym, ym, 0))
+  }
+  
+  
+  gridmatrix = reshape2::dcast(grid_list, y ~ x, fill = 0)
+  gridmatrix$x = NULL
+  gridmatrix$y = NULL
+  gridmatrix = as.matrix(gridmatrix)
+  
+  colnames(gridmatrix) = 1:dim(gridmatrix)[2]
+  rownames(gridmatrix) = 1:dim(gridmatrix)[1]
+  
+  return(gridmatrix)
 }
 
 
 
 #' add_eval
-#' CRITICAL: NEEDS IMPROVEMENts
+#' CRITICAL: NEEDS IMPROVEMENTS
 #' @description A helperfunction, wrapping the evaluation function. 
 #' @param bitlocus matrix, nxm
 #' @param depth How many SVs in sequence should be simulated?
@@ -365,7 +377,7 @@ add_eval <- function(res, m, layer, pair_level1, pair_level2, pair_level3){
 
   if (layer == 1){
     res_add = unlist(c(
-      eval_mutated_seq(bitl_mut),
+      eval_mutated_seq(m),
       paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_')))
     names(res_add) = c('eval', 'mut1')
     
@@ -374,7 +386,7 @@ add_eval <- function(res, m, layer, pair_level1, pair_level2, pair_level3){
     
   } else if (layer == 2){
     res_add = unlist(c(
-      eval_mutated_seq(bitl_mut2),
+      eval_mutated_seq(m),
       paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_'),
       paste(pair_level2$p1, pair_level2$p2, pair_level2$sv, sep =
               '_')
@@ -384,7 +396,7 @@ add_eval <- function(res, m, layer, pair_level1, pair_level2, pair_level3){
   } else if (layer == 3){
     # add
     res_add = unlist(c(
-      eval_mutated_seq(bitl_mut3),
+      eval_mutated_seq(m),
       paste(
         pair_level1$p1,
         pair_level1$p2,
@@ -411,6 +423,7 @@ add_eval <- function(res, m, layer, pair_level1, pair_level2, pair_level3){
 }
 
 
+
 #' explore_mutation_space
 #'
 #' @description Main workhorse, tying together the pieces.
@@ -422,13 +435,12 @@ add_eval <- function(res, m, layer, pair_level1, pair_level2, pair_level3){
 #' @rdname explore_mutation_space
 #' @export
 explore_mutation_space <- function(bitlocus, depth) {
-  #sample = gimme_sample_matrix()
+
   sample = bitlocus
   pairs = find_sv_opportunities(sample)
-  
-  count = 1
-  
   res = data.frame(matrix(ncol = depth + 1, nrow = 0))
+  
+  # Init res with the reference result.
   res = rbind(res, unlist(c(
     eval_mutated_seq(bitlocus), 'ref', rep('NA', depth - 1)
   )))
@@ -477,12 +489,13 @@ explore_mutation_space <- function(bitlocus, depth) {
   return(res)
 } 
 
+explore_mutation_space(bitlocus, depth = 1)
 
 
 # Sample case
 # #
 # C = gimme_sample_matrix(mode = 'diff')
-# a = explore_mutation_space_v2(C, depth = 3)
+# a = explore_mutation_space_(C, depth = 3)
 
 # g2 = grid
 # grid = g2[[3]]

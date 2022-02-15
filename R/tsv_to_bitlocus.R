@@ -257,21 +257,41 @@ wrapper_paf_to_bitlocus <-
         )
       ))
     }
+    
+    # Sort by x
+    grid_list = grid_list[order(grid_list$x),]
+    
+    # EXPERIMENTAL PART #
+    # Remove duplicates TRIPLE. First, remove obvious duplicates (all 3 same)
+    # Then, identify those with same x/y but different z. The get 0.
+    # Finally, the second step has produced new duplicates, so be mean again. 
+    
     # Remove duplicates. This happens if SDs overlap (which can be a result
     # of the compression step)
-    grid_list = unique(grid_list[order(grid_list$x),])
+    grid_list = grid_list[!duplicated(grid_list),]
+    
+    # If a value appears both positive and negative, we have to set it to 0, 
+    # rather than keeping randomly one of the two.
+    grid_list[duplicated(grid_list[,c('x','y')]),'z'] = 0
+    
+    # Remove duplicates again. 
+    grid_list = grid_list[!duplicated(grid_list[,c('x','y')], fromLast=T),]
+    
+    # EXPERIMENTAL PART OVER
     
     # Convert the grid to a matrix. This is the data we will eventually
     # be working with. 
     # Previous comment: "This can come with data loss". This refers to empty
     # gridlines/columns.
-    grid_matrix = reshape2::dcast(grid_list, y ~ x, fill=0); grid_matrix$y = NULL
+    ## [Feb 15, commenting this out because unused.]
+    ##grid_matrix = reshape2::dcast(grid_list, y ~ x, fill=0); grid_matrix$y = NULL
     
     #df_mat2 = df_mat[(10**(apply(df_mat, 1, function(x) max(abs(x)))) == 0),]
     #grid_matrix = df_mat2[, (10**(apply(df_mat2, 2, function(x) max(abs(x)))) == 0)]
     
-    colnames(grid_matrix)  = as.character(1:dim(grid_matrix)[2])
-    row.names(grid_matrix) = as.character(1:dim(grid_matrix)[1])
+    # [Feb 15, commenting this out because unused.]
+    ##colnames(grid_matrix)  = as.character(1:dim(grid_matrix)[2])
+    ##row.names(grid_matrix) = as.character(1:dim(grid_matrix)[1])
     
     #grid_list = reshape2::melt(as.matrix(grid_matrix), value.name = 'value')
     #colnames(grid_list) = c('y','x','z')
@@ -324,6 +344,8 @@ wrapper_paf_to_bitlocus <-
     
     return(list(gridlines.x, gridlines.y, grid_list))
   }
+
+
 
 #' get_aln_overlap_in_sector
 
