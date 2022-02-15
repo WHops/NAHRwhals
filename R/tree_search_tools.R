@@ -1,3 +1,4 @@
+#' Find SV opportunities
 #' @rdname find_maxdiag
 #' @author Unknown (https://stackoverflow.com/questions/47330812/find-the-longest-diagonal-of-an-element-in-a-matrix-python)
 #' @export
@@ -346,7 +347,70 @@ gimme_sample_matrix <- function(mode = 'diff') {
   return(sample)
 }
 
-#' ### UNDER ACTIVE DEVELOPMENT ###
+
+
+#' add_eval
+#' CRITICAL: NEEDS IMPROVEMENts
+#' @description A helperfunction, wrapping the evaluation function. 
+#' @param bitlocus matrix, nxm
+#' @param depth How many SVs in sequence should be simulated?
+#' @return evaluation matrix
+#'
+#' @author Wolfram Höps
+#' @rdname explore_mutation_space
+#' @export
+add_eval <- function(res, m, layer, pair_level1, pair_level2, pair_level3){
+  
+  # Ich kotz. 
+
+  if (layer == 1){
+    res_add = unlist(c(
+      eval_mutated_seq(bitl_mut),
+      paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_')))
+    names(res_add) = c('eval', 'mut1')
+    
+    res = dplyr::bind_rows(res, res_add)
+    
+    
+  } else if (layer == 2){
+    res_add = unlist(c(
+      eval_mutated_seq(bitl_mut2),
+      paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_'),
+      paste(pair_level2$p1, pair_level2$p2, pair_level2$sv, sep =
+              '_')
+    ))
+    names(res_add) = c('eval', 'mut1', 'mut2')
+    res = dplyr::bind_rows(res, res_add)
+  } else if (layer == 3){
+    # add
+    res_add = unlist(c(
+      eval_mutated_seq(bitl_mut3),
+      paste(
+        pair_level1$p1,
+        pair_level1$p2,
+        pair_level1$sv,
+        sep = '_'
+      ),
+      paste(
+        pair_level2$p1,
+        pair_level2$p2,
+        pair_level2$sv,
+        sep = '_'
+      ),
+      paste(
+        pair_level3$p1,
+        pair_level3$p2,
+        pair_level3$sv,
+        sep = '_'
+      )
+    ))
+    names(res_add) = c('eval', 'mut1', 'mut2', 'mut3')
+    res = dplyr::bind_rows(res, res_add)
+  }
+  return(res)
+}
+
+
 #' explore_mutation_space
 #'
 #' @description Main workhorse, tying together the pieces.
@@ -355,7 +419,7 @@ gimme_sample_matrix <- function(mode = 'diff') {
 #' @return evaluation matrix
 #'
 #' @author Wolfram Höps
-#' @rdname gimme_sample_matrix
+#' @rdname explore_mutation_space
 #' @export
 explore_mutation_space <- function(bitlocus, depth) {
   #sample = gimme_sample_matrix()
@@ -373,171 +437,36 @@ explore_mutation_space <- function(bitlocus, depth) {
   
   
   for (npair_level1 in 1:dim(pairs)[1]) {
-    print(npair_level1)
+    print(paste0('Entering front layer ', npair_level1, ' of ', dim(pairs)[1]))
+    
     pair_level1 = pairs[npair_level1,]
+    
+    # Trio of function: Mutate, Evaluate, Observate
     bitl_mut = carry_out_compressed_sv(sample, pair_level1)
-    
-    # add
-    res_add = unlist(c(
-      eval_mutated_seq(bitl_mut),
-      paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_')
-    ))
-    names(res_add) = c('eval', 'mut1')
-    
-    res = dplyr::bind_rows(res, res_add)
-    
+    res = add_eval(res, m = bitl_mut, layer=1, 
+                   pair_level1, NULL, NULL)
     newpairs = find_sv_opportunities(bitl_mut)
+    
     if ((depth > 1) & (dim(newpairs)[1] > 0)) {
       for (npair_level2 in 1:dim(newpairs)[1]) {
         pair_level2 = newpairs[npair_level2,]
+        
+        # Trio of function: Mutate, Evaluate, Observate
         bitl_mut2 = carry_out_compressed_sv(bitl_mut, pair_level2)
-        
-        # add
-        res_add = unlist(c(
-          eval_mutated_seq(bitl_mut2),
-          paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_'),
-          paste(pair_level2$p1, pair_level2$p2, pair_level2$sv, sep =
-                  '_')
-        ))
-        names(res_add) = c('eval', 'mut1', 'mut2')
-        res = dplyr::bind_rows(res, res_add)
-        
-        
+        res = add_eval(res, m = bitl_mut2, layer=2, 
+                       pair_level1, pair_level2, NULL)
         newpairs3 = find_sv_opportunities(bitl_mut2)
+        
         if ((depth > 2) & (dim(newpairs3)[1] > 0)) {
-          print('Going into 2nd depth')
-          
-          
           for (npair_level3 in 1:dim(newpairs3)[1]) {
-            pair_level3 = newpairs3[npair_level3,]
-            bitl_mut3 = carry_out_compressed_sv(bitl_mut2, pair_level3)
             
-            # add
-            res_add = unlist(c(
-              eval_mutated_seq(bitl_mut3),
-              paste(
-                pair_level1$p1,
-                pair_level1$p2,
-                pair_level1$sv,
-                sep = '_'
-              ),
-              paste(
-                pair_level2$p1,
-                pair_level2$p2,
-                pair_level2$sv,
-                sep = '_'
-              ),
-              paste(
-                pair_level3$p1,
-                pair_level3$p2,
-                pair_level3$sv,
-                sep = '_'
-              )
-            ))
-            names(res_add) = c('eval', 'mut1', 'mut2', 'mut3')
-            res = dplyr::bind_rows(res, res_add)
-          } #loop 3 end
-        } #if depth > 1 end
-      } # loop 2 end
-    } # if depth > 1 end
-  } # loop 1 end
-  
-  res$eval = as.numeric(res$eval)
-  return(res)
-} # function end
-
-
-
-#' ### UNDER ACTIVE DEVELOPMENT ###
-#' explore_mutation_space
-#'
-#' @description Main workhorse, tying together the pieces.
-#' @param bitlocus matrix, nxm
-#' @param depth How many SVs in sequence should be simulated?
-#' @return evaluation matrix
-#'
-#' @author Wolfram Höps
-#' @rdname gimme_sample_matrix
-#' @export
-explore_mutation_space_v2 <- function(bitlocus, depth) {
-  #sample = gimme_sample_matrix()
-  sample = bitlocus
-  pairs = find_sv_opportunities(sample)
-  
-  count = 1
-  
-  res = data.frame(matrix(ncol = depth + 1, nrow = 0))
-  res = rbind(res, unlist(c(
-    eval_mutated_seq(bitlocus), 'ref', rep('NA', depth - 1)
-  )))
-  colnames(res) = c('eval', paste0('mut', 1:depth))
-  
-  
-  
-  for (npair_level1 in 1:dim(pairs)[1]) {
-    print(npair_level1)
-    pair_level1 = pairs[npair_level1,]
-    bitl_mut = carry_out_compressed_sv(sample, pair_level1)
-    
-    # add
-    res_add = unlist(c(
-      eval_mutated_seq(bitl_mut),
-      paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_')
-    ))
-    names(res_add) = c('eval', 'mut1')
-    
-    res = dplyr::bind_rows(res, res_add)
-    
-    newpairs = find_sv_opportunities(bitl_mut)
-    if ((depth > 1) & (dim(newpairs)[1] > 0)) {
-      for (npair_level2 in 1:dim(newpairs)[1]) {
-        pair_level2 = newpairs[npair_level2,]
-        bitl_mut2 = carry_out_compressed_sv(bitl_mut, pair_level2)
-        
-        # add
-        res_add = unlist(c(
-          eval_mutated_seq(bitl_mut2),
-          paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_'),
-          paste(pair_level2$p1, pair_level2$p2, pair_level2$sv, sep =
-                  '_')
-        ))
-        names(res_add) = c('eval', 'mut1', 'mut2')
-        res = dplyr::bind_rows(res, res_add)
-        
-        
-        newpairs3 = find_sv_opportunities(bitl_mut2)
-        if ((depth > 2) & (dim(newpairs3)[1] > 0)) {
-          print('Going into 2nd depth')
-          
-          
-          for (npair_level3 in 1:dim(newpairs3)[1]) {
             pair_level3 = newpairs3[npair_level3,]
-            bitl_mut3 = carry_out_compressed_sv(bitl_mut2, pair_level3)
             
-            # add
-            res_add = unlist(c(
-              eval_mutated_seq(bitl_mut3),
-              paste(
-                pair_level1$p1,
-                pair_level1$p2,
-                pair_level1$sv,
-                sep = '_'
-              ),
-              paste(
-                pair_level2$p1,
-                pair_level2$p2,
-                pair_level2$sv,
-                sep = '_'
-              ),
-              paste(
-                pair_level3$p1,
-                pair_level3$p2,
-                pair_level3$sv,
-                sep = '_'
-              )
-            ))
-            names(res_add) = c('eval', 'mut1', 'mut2', 'mut3')
-            res = dplyr::bind_rows(res, res_add)
+            # Duo of function: Mutate, Evaluate
+            bitl_mut3 = carry_out_compressed_sv(bitl_mut2, pair_level3)
+            res = add_eval(res, m = bitl_mut3, layer=3, 
+                           pair_level1, pair_level2, pair_level3)
+
           } #loop 3 end
         } #if depth > 1 end
       } # loop 2 end
@@ -551,9 +480,9 @@ explore_mutation_space_v2 <- function(bitlocus, depth) {
 
 
 # Sample case
-#
-C = gimme_sample_matrix(mode = 'diff')
-a = explore_mutation_space(C, depth = 3)
+# #
+# C = gimme_sample_matrix(mode = 'diff')
+# a = explore_mutation_space_v2(C, depth = 3)
 
 # g2 = grid
 # grid = g2[[3]]
