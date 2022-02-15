@@ -19,7 +19,8 @@ Imports:
 	ggpubr,
 	dotplot,
 	dplyr,
-	Biostrings
+	Biostrings,
+	config
 Suggests: 
     rmarkdown,
     knitr,

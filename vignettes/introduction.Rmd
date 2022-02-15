@@ -216,7 +216,27 @@ if (seqlen <= 25000){
 }
 ```
 
+### 3: Compress dotplots
 
+Next, we will look at compressed dotplots. We take the previous example, and turn it into a condensed dotplot. 
+
+```{r, warning = FALSE, message = FALSE}
+
+
+outpaf_link ='./4SDs_inv_dup.paf'
+
+make_chunked_minimap_alnment(outfasta, outmutfasta2, outpaf_link, 
+                             chunklen = 1000, minsdlen = 0, saveplot=F, 
+                             hllink = F, hltype = F, quadrantsize = 500000)
+# Make the condensed dotplot
+grid = wrapper_paf_to_bitlocus(outpaf_link, minlen=100, compression = 100)[[3]]
+gridmatrix = gridlist_to_gridmatrix(grid)
+
+# Run a mutation search
+res = explore_mutation_space(gridmatrix, depth = 2)
+
+res[res$eval == max(res$eval),]
+```
 
 
 

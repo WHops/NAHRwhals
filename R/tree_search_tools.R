@@ -280,8 +280,8 @@ eval_mutated_seq <- function(bitlocus) {
   
   maxdiag = max(find_maxdiag(apply(bitlocus, 2, rev)), find_maxdiag(bitlocus))
   
-  return(maxdiag)
-  #return(round(maxdiag * symmetry, 3))
+  #return(maxdiag)
+  return(round(maxdiag * symmetry, 3))
   #  return(round(maxdiag/dim(bitlocus)[2], 3))
 }
 
@@ -489,7 +489,6 @@ explore_mutation_space <- function(bitlocus, depth) {
   return(res)
 } 
 
-explore_mutation_space(bitlocus, depth = 1)
 
 
 # Sample case
