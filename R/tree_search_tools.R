@@ -1,3 +1,32 @@
+#' @rdname find_maxdiag
+#' @author Unknown (https://stackoverflow.com/questions/47330812/find-the-longest-diagonal-of-an-element-in-a-matrix-python)
+#' @export
+find_maxdiag <- function(m){
+  
+  maxdiag = 0
+  for (i in 1:(dim(m)[1] + 1)) {
+    # Iterate x points
+    for (j in 1:(dim(m)[2] + 1)) {
+      # Iterate y points
+      k = 0 # k = current diag size
+
+      while ((i + k < dim(m)[1]) & # make sure i+k is not out of bounds
+             (j + k < dim(m)[2])){ # make sure j+k is not out of bonds
+        if (m[i + k,j + k] != 0) { # that next point is not zero
+          k = k + 1 # Diag has become longer
+          if (k > maxdiag) {
+            maxdiag = k
+          }} else {
+            k = k + 1e10
+          }
+        
+      }
+    }
+  }
+  return(maxdiag + 1)
+}
+
+
 #' Find SV opportunities
 #'
 #' @description Building block: Take in a 'bitlocus',
@@ -243,9 +272,13 @@ eval_mutated_seq <- function(bitlocus) {
   
   # Symmetry needs some work. It's not reciprocal (2-1 != 1-2).
   symmetry = -(abs((dim(bitlocus)[2] / dim(bitlocus)[1]) - 1)) + 1
-  diag_filled = sum(diag(bitlocus) > 0) / min(dim(bitlocus))
+  # diag_filled = sum(diag(bitlocus) > 0) / min(dim(bitlocus))
+  # minusdiag_filled =
   
-  return(round(symmetry * diag_filled, 3))
+  maxdiag = max(find_maxdiag(apply(bitlocus, 2, rev)), find_maxdiag(bitlocus))
+  
+  return(round(maxdiag * symmetry, 3))
+  #  return(round(maxdiag/dim(bitlocus)[2], 3))
 }
 
 
@@ -261,11 +294,15 @@ eval_mutated_seq <- function(bitlocus) {
 gimme_sample_matrix <- function(mode = 'diff') {
   #samplefasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/vignettes/simulated_seq_10kb_4SDs.fa'
   #samplemutfasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/vignettes/simulated_seq_10kb_del_trim.fa'
-  samplefasta_link = system.file('extdata', 'simulated_seq_10kb_4SDs.fa', package =
+  # samplefasta_link = system.file('extdata', 'simulated_seq_10kb_4SDs.fa', package =
+  #                                  'nahrtoolkit')
+  # samplemutfasta_link = system.file('extdata', 'simulated_seq_10kb_dup.fa', package =
+  #                                     'nahrtoolkit')
+  # outmutfasta2 = './'
+  samplefasta_link = system.file('extdata', 'simulated_seq_twonest.fa', package =
                                    'nahrtoolkit')
-  samplemutfasta_link = system.file('extdata', 'simulated_seq_10kb_dup.fa', package =
+  samplemutfasta_link = system.file('extdata', 'simulated_seq_twonest_inv_dup.fa', package =
                                       'nahrtoolkit')
-  
   #samplemutfasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/vignettes/simulated_seq_10kb_del.fa'
   
   if (mode == 'same') {
@@ -326,7 +363,6 @@ explore_mutation_space <- function(bitlocus, depth) {
   pairs = find_sv_opportunities(sample)
   
   count = 1
-  depth = 3
   
   res = data.frame(matrix(ncol = depth + 1, nrow = 0))
   res = rbind(res, unlist(c(
@@ -347,9 +383,11 @@ explore_mutation_space <- function(bitlocus, depth) {
       paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_')
     ))
     names(res_add) = c('eval', 'mut1')
+    
     res = dplyr::bind_rows(res, res_add)
-    if (depth > 1) {
-      newpairs = find_sv_opportunities(bitl_mut)
+    
+    newpairs = find_sv_opportunities(bitl_mut)
+    if ((depth > 1) & (dim(newpairs)[1] > 0)) {
       for (npair_level2 in 1:dim(newpairs)[1]) {
         pair_level2 = newpairs[npair_level2,]
         bitl_mut2 = carry_out_compressed_sv(bitl_mut, pair_level2)
@@ -364,67 +402,201 @@ explore_mutation_space <- function(bitlocus, depth) {
         names(res_add) = c('eval', 'mut1', 'mut2')
         res = dplyr::bind_rows(res, res_add)
         
-      }
-      
-      if (depth > 2) {
+        
         newpairs3 = find_sv_opportunities(bitl_mut2)
-        for (npair_level3 in 1:dim(newpairs3)[1]) {
-          pair_level3 = newpairs3[npair_level3,]
-          bitl_mut3 = carry_out_compressed_sv(bitl_mut2, pair_level3)
+        if ((depth > 2) & (dim(newpairs3)[1] > 0)) {
+          print('Going into 2nd depth')
           
-          # add
-          res_add = unlist(c(
-            eval_mutated_seq(bitl_mut3),
-            paste(
-              pair_level1$p1,
-              pair_level1$p2,
-              pair_level1$sv,
-              sep = '_'
-            ),
-            paste(
-              pair_level2$p1,
-              pair_level2$p2,
-              pair_level2$sv,
-              sep = '_'
-            ),
-            paste(
-              pair_level3$p1,
-              pair_level3$p2,
-              pair_level3$sv,
-              sep = '_'
-            )
-          ))
-          names(res_add) = c('eval', 'mut1', 'mut2', 'mut3')
-          res = dplyr::bind_rows(res, res_add)
-        }
-      }
-    }
-  }
+          
+          for (npair_level3 in 1:dim(newpairs3)[1]) {
+            pair_level3 = newpairs3[npair_level3,]
+            bitl_mut3 = carry_out_compressed_sv(bitl_mut2, pair_level3)
+            
+            # add
+            res_add = unlist(c(
+              eval_mutated_seq(bitl_mut3),
+              paste(
+                pair_level1$p1,
+                pair_level1$p2,
+                pair_level1$sv,
+                sep = '_'
+              ),
+              paste(
+                pair_level2$p1,
+                pair_level2$p2,
+                pair_level2$sv,
+                sep = '_'
+              ),
+              paste(
+                pair_level3$p1,
+                pair_level3$p2,
+                pair_level3$sv,
+                sep = '_'
+              )
+            ))
+            names(res_add) = c('eval', 'mut1', 'mut2', 'mut3')
+            res = dplyr::bind_rows(res, res_add)
+          } #loop 3 end
+        } #if depth > 1 end
+      } # loop 2 end
+    } # if depth > 1 end
+  } # loop 1 end
+  
+  res$eval = as.numeric(res$eval)
   return(res)
-}
+} # function end
+
+
+
+#' ### UNDER ACTIVE DEVELOPMENT ###
+#' explore_mutation_space
+#'
+#' @description Main workhorse, tying together the pieces.
+#' @param bitlocus matrix, nxm
+#' @param depth How many SVs in sequence should be simulated?
+#' @return evaluation matrix
+#'
+#' @author Wolfram Höps
+#' @rdname gimme_sample_matrix
+#' @export
+explore_mutation_space_v2 <- function(bitlocus, depth) {
+  #sample = gimme_sample_matrix()
+  sample = bitlocus
+  pairs = find_sv_opportunities(sample)
+  
+  count = 1
+  
+  res = data.frame(matrix(ncol = depth + 1, nrow = 0))
+  res = rbind(res, unlist(c(
+    eval_mutated_seq(bitlocus), 'ref', rep('NA', depth - 1)
+  )))
+  colnames(res) = c('eval', paste0('mut', 1:depth))
+  
+  
+  
+  for (npair_level1 in 1:dim(pairs)[1]) {
+    print(npair_level1)
+    pair_level1 = pairs[npair_level1,]
+    bitl_mut = carry_out_compressed_sv(sample, pair_level1)
+    
+    # add
+    res_add = unlist(c(
+      eval_mutated_seq(bitl_mut),
+      paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_')
+    ))
+    names(res_add) = c('eval', 'mut1')
+    
+    res = dplyr::bind_rows(res, res_add)
+    
+    newpairs = find_sv_opportunities(bitl_mut)
+    if ((depth > 1) & (dim(newpairs)[1] > 0)) {
+      for (npair_level2 in 1:dim(newpairs)[1]) {
+        pair_level2 = newpairs[npair_level2,]
+        bitl_mut2 = carry_out_compressed_sv(bitl_mut, pair_level2)
+        
+        # add
+        res_add = unlist(c(
+          eval_mutated_seq(bitl_mut2),
+          paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_'),
+          paste(pair_level2$p1, pair_level2$p2, pair_level2$sv, sep =
+                  '_')
+        ))
+        names(res_add) = c('eval', 'mut1', 'mut2')
+        res = dplyr::bind_rows(res, res_add)
+        
+        
+        newpairs3 = find_sv_opportunities(bitl_mut2)
+        if ((depth > 2) & (dim(newpairs3)[1] > 0)) {
+          print('Going into 2nd depth')
+          
+          
+          for (npair_level3 in 1:dim(newpairs3)[1]) {
+            pair_level3 = newpairs3[npair_level3,]
+            bitl_mut3 = carry_out_compressed_sv(bitl_mut2, pair_level3)
+            
+            # add
+            res_add = unlist(c(
+              eval_mutated_seq(bitl_mut3),
+              paste(
+                pair_level1$p1,
+                pair_level1$p2,
+                pair_level1$sv,
+                sep = '_'
+              ),
+              paste(
+                pair_level2$p1,
+                pair_level2$p2,
+                pair_level2$sv,
+                sep = '_'
+              ),
+              paste(
+                pair_level3$p1,
+                pair_level3$p2,
+                pair_level3$sv,
+                sep = '_'
+              )
+            ))
+            names(res_add) = c('eval', 'mut1', 'mut2', 'mut3')
+            res = dplyr::bind_rows(res, res_add)
+          } #loop 3 end
+        } #if depth > 1 end
+      } # loop 2 end
+    } # if depth > 1 end
+  } # loop 1 end
+  
+  res$eval = as.numeric(res$eval)
+  return(res)
+} 
+
 
 
 # Sample case
 #
-#C = gimme_sample_matrix(mode = 'diff')
-#a = explore_mutation_space(C)
-# eval_mutated_seq(C)
-#
+C = gimme_sample_matrix(mode = 'diff')
+a = explore_mutation_space(C, depth = 3)
+
+# g2 = grid
+# grid = g2[[3]]
+# 
+# 
+# x_missing = which(min(grid$x):max(grid$x) %in% grid$x == F)
+# y_missing = which(min(grid$y):max(grid$y) %in% grid$y == F)
+# 
+# for (xm in x_missing) {
+#   grid = rbind(grid, c(xm, xm, 0))
+# }
+# for (ym in y_missing) {
+#   grid = rbind(grid, c(ym, ym, 0))
+# }
+# 
+# 
+# sample = reshape2::dcast(grid, y ~ x, fill = 0)
+# sample$x = NULL
+# sample$y = NULL
+# sample = as.matrix(sample)
+# 
+# colnames(sample) = 1:dim(sample)[2]
+# rownames(sample) = 1:dim(sample)[1]
+# 
+# 
+# aa = explore_mutation_space(sample, 3)
+# # eval_mutated_seq(C)
+# 
 # samplei = ginv(sample)
-#
+# 
 # sample %*% samplei
-#
+# 
 # myImagePlot(sample)
 # myImagePlot(bitl_mut)
-#
+# 
 # myImagePlot(sample %*% t(sample))
 # library(MASS)
-#
+# 
 # s2 = sample
 # s3 = cbind(cbind(s2[, 1:4], s2[, 4]), s2[, 5:14])
 # colnames(s3) = 1:dim(s3)[2]
 # myImagePlot(s3)
-#
+# 
 # find_sv_opportunities(s2)
 #
 #
@@ -438,3 +610,4 @@ explore_mutation_space <- function(bitlocus, depth) {
 # Ai = MASS::ginv(A)
 #
 # A %*% Ai
+

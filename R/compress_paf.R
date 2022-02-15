@@ -59,6 +59,7 @@ merge_paf_entries_intraloop <- function(inpaf){
   # For safety: sort entries by qstart. Reset row names so they start at 1. 
   inpaf = inpaf[order(inpaf$qstart),]
   rownames(inpaf) <- NULL
+
   
   # We consider alignments as 'potential neighbours' if their distance in any direction 
   # (+-x, +-y) is less than 5% of their alignment length. 
@@ -126,7 +127,12 @@ compress_paf_fnct <- function(inpaf_link, outpaf_link, quadrantsize = 100000){
   inpaf = inpaf[order(inpaf$qstart),]
   rownames(inpaf) <- NULL
   
-
+  # Compression here? 
+  # compression = 1000
+  # inpaf[,c('qstart','qend','tstart','tend')] = round(data.frame(inpaf[,c('qstart','qend','tstart','tend')] / compression),0) * compression
+  # inpaf = inpaf[(inpaf$qend != inpaf$qstart) & (inpaf$tend != inpaf$tstart) ,]
+  
+  
   # We identify rowpairs now. 
   # To speed this up, we cut the alignment into chunks, find 
   # rowpairs within them and later merge back together. 

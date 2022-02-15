@@ -1,0 +1,4 @@
+default:
+  shred: "/your/path/to/bbmap/shred.sh"
+  minimap2: "/your/path/to/minimap2"
+  awkscript: '/your/path/to/nahrchainer/scripts/awk_on_paf.sh'
