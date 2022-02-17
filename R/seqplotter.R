@@ -12,7 +12,6 @@
 #' 
 #' 
 #' @author Wolfram Höps
-#' @rdname plotting
 #' @export
 dotPlotr <- function(seq1, seq2, wsize = 5, wstep = 1, nmatch = -1){
 
@@ -72,7 +71,6 @@ dotPlotr <- function(seq1, seq2, wsize = 5, wstep = 1, nmatch = -1){
 #' 
 #' 
 #' @author Wolfram Höps
-#' @rdname plotting
 #' @export
 make_dotplot <- function(targetfa, queryfa, wsize, outfile, save=T, debugmode=F,
                          targetrange=NULL, queryrange=NULL){

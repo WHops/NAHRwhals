@@ -10,7 +10,6 @@
 #' @return a bed-file style dataframe if outbedfile == NULL
 #' 
 #' @author Wolfram Höps
-#' @rdname format_sd_to_bed
 #' @export
 sd_to_bed <- function(sdlink, outbedfile=NULL){
   

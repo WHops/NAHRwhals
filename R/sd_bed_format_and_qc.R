@@ -8,7 +8,6 @@
 #' @return a tsv dataframe
 #'
 #' @author Wolfram Höps
-#' @rdname format_bed_to_tsv
 #' @export
 add_and_fix_columns <- function(sds) {
   colnames_final = c(
@@ -83,7 +82,6 @@ add_and_fix_columns <- function(sds) {
 #'
 #'
 #' @author Wolfram Höps
-#' @rdname format_bed_to_tsv
 #' @export
 make_sd_partners <- function(sds_raw) {
   # Create the partners
@@ -115,7 +113,6 @@ make_sd_partners <- function(sds_raw) {
 #'
 #'
 #' @author Unk - someone from the internet.
-#' @rdname format_bed_to_tsv
 #' @export
 zipFastener <- function(df1, df2, along = 2)
 {
@@ -173,7 +170,6 @@ zipFastener <- function(df1, df2, along = 2)
 #' is schnell aufgmacht :P)
 #'
 #' @author Wolfram Höps
-#' @rdname format_bed_to_tsv
 #' @export
 run_qc_bed_df <- function(sds_raw) {
   stopifnot("Number of fields !=  9. Check fields (tab separation)" =
@@ -190,7 +186,6 @@ run_qc_bed_df <- function(sds_raw) {
 }
 
 #' Convert.
-#' @rdname convert_bed_to_tsv
 #' @export
 convert_bed_to_tsv <- function(inbed, outtsv) {
   #inbed = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/data/sds10y.bed"

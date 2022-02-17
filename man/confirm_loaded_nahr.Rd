@@ -2,20 +2,13 @@
 % Please edit documentation in R/seqbuilder_functions.R
 \name{confirm_loaded_nahr}
 \alias{confirm_loaded_nahr}
-\alias{version_nahr}
 \title{A testfunction to see if nahrtoolkit is loaded}
 \usage{
 confirm_loaded_nahr()
-
-version_nahr()
 }
 \description{
 A testfunction to see if nahrtoolkit is loaded
-
-Print version number.
 }
 \author{
-Wolfram Höps
-
 Wolfram Höps
 }

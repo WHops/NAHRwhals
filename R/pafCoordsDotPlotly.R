@@ -14,7 +14,6 @@
 #' @return Nothing, but writes a pdf with a dotplot.
 #'
 #' @author Tom Poorten, edited by Wolfram Höps
-#' @rdname plotting
 #' @export
 dotplotly_dotplot <- function(opt) {
   if (opt$v) {
@@ -386,7 +385,6 @@ dotplotly_dotplot <- function(opt) {
 #' @return Nothing, but writes a pdf with a dotplot.
 #'
 #' @author Wolfram Höps
-#' @rdname plotting
 #' @export
 pafdotplot_make <-
   function(inpaf_link,

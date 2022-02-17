@@ -16,7 +16,6 @@
 #' Some example function call or so.
 #' 
 #' @author Wolfram Höps
-#' @rdname seq_modeling
 #' @export
 model_sds <- function(seq_base, sds, uid){
   
@@ -44,7 +43,6 @@ model_sds <- function(seq_base, sds, uid){
 #' @param similarity How similar should the result be to the input (fraction of bases, [0-1])
 #' 
 #' @author Wolfram Höps
-#' @rdname seq_modeling
 #' @export
 add_snps <- function(seq, similarity, seed=1234){
   
@@ -72,7 +70,6 @@ add_snps <- function(seq, similarity, seed=1234){
 #' @param outfasta [character] a link to the outputfasta that will be saved
 #' 
 #' @author Wolfram Höps
-#' @rdname seq_modeling
 #' @export
 simulate_seq <- function(seqlen, sdfile, outfasta, debugmode=F){
   

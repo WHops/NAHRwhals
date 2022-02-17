@@ -6,7 +6,6 @@
 #' Is awfully slow unfortunately. We should find a way to only read
 #' the chromosome of interest.
 #' @author Wolfram Hoeps
-#' @rdname alignment
 #' @export
 extract_subseq <- function(infasta, seqname, start, end, outfasta) {
   # Read the whole infasta
@@ -31,7 +30,6 @@ extract_subseq <- function(infasta, seqname, start, end, outfasta) {
 #' query should be short sequence fragments (1kb, 10kb, ...) of the roi.
 
 #' @author Wolfram Hoeps
-#' @rdname paf_filter
 #' @export
 filter_paf_to_main_region <- function(paflink, outpaflink) {
   # Read in paf
@@ -157,7 +155,6 @@ flip_query_target <- function(inpaf, outpaf) {
 #' extract_subseq_bedtools
 
 #' @author Wolfram Hoeps
-#' @rdname alignment
 #' @export
 extract_subseq_bedtools <-
   function(infasta, seqname, start, end, outfasta) {

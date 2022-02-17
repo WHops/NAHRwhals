@@ -10,7 +10,6 @@
 #' @return paffile with one row less (bc a pair has been merged)
 #' 
 #' @author Wolfram Höps
-#' @rdname alignment
 #' @export
 merge_rows <- function(paffile, nl1, nl2){
   
@@ -50,7 +49,6 @@ merge_rows <- function(paffile, nl1, nl2){
 
 #' Tiny undocumented helperfunction.
 #' @author Wolfram Höps
-#' @rdname alignment
 #' @export
 merge_paf_entries_intraloop <- function(inpaf){
 
@@ -100,7 +98,6 @@ merge_paf_entries_intraloop <- function(inpaf){
 #' Set to larger values (e.g. 250k) for very large alignments (>5Mb).
 #' 
 #' @author Wolfram Höps
-#' @rdname alignment
 #' @export
 compress_paf_fnct <- function(inpaf_link, outpaf_link, quadrantsize = 100000){
   

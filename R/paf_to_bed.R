@@ -11,7 +11,6 @@
 #' @return a bed dataframe if outsdbed_link is NULL.
 #' 
 #' @author Wolfram Höps
-#' @rdname format_paf_to_bed
 #' @export
 paf_write_bed <- function(inpaf_link, outsdbed_link){
   
@@ -35,7 +34,6 @@ paf_write_bed <- function(inpaf_link, outsdbed_link){
 #' @return a filtered pseudo-paf file. Gotta double-check this. 
 #' 
 #' @author Wolfram Höps
-#' @rdname format_paf_to_bed
 #' @export
 paf_to_sd_paf <- function(inpaf_link){
   
@@ -67,7 +65,6 @@ paf_to_sd_paf <- function(inpaf_link){
 #' @return a bed-file style dataframe.
 #' 
 #' @author Wolfram Höps
-#' @rdname format_paf_to_bed
 #' @export
 paf_to_bed <- function(inpaf){
   

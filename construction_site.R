@@ -202,21 +202,24 @@ grid = wrapper_paf_to_bitlocus(samplepaf_link3, minlen=0, compression = 10)
 hg38fa = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/hg38.fa"
 chm13fa = '/Users/hoeps/PhD/projects/huminvs/genomes/CHM13_T2T/fasta/chm13.draft_v1.1.fasta'
 aln_fa = '/Users/hoeps/PhD/projects/huminvs/genomes/hifi-asm/HG00512_hgsvc_pbsq2-ccs_1000-hifiasm.h1-un.fasta'
+conversionpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/liftover_custom/HG00512_hgsvc_pbsq2-ccs_1000-hifiasm.h1-un_hg38.paf"
+
+aln_fa = '~/Desktop/NA12878_giab_pbsq2-ccs_1000-hifiasm.h2-un.fasta'
+conversionpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/liftover_custom/NA12878_giab_pbsq2-ccs_1000-hifiasm.h2-un_hg38.paf"
 
 outfasta_hg38 = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/hg38_sub.fa"
 outfasta_aln = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/aln_sub.fa"
 
 outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/1223456.paf'
 
-conversionpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/liftover_custom/HG00512_hgsvc_pbsq2-ccs_1000-hifiasm.h1-un_hg38.paf"
 
 #hg38
-seqname = 'chr16'
-start = 1218091
-end =   1277082
-# seqname = 'chr1'
-# start = 16400000
-# end =   17200000
+seqname = 'chr15'
+start = 29314547
+end =   33776660
+#seqname = 'chr2'
+#start = 109503627
+#end =   110903627
 outpaf_link = as.character(runif(1,1e10,1e11))
 
 coords_liftover = liftover_coarse(seqname, start, end, conversionpaf_link, lenfactor = 1)
@@ -226,19 +229,19 @@ print(coords_liftover$lift_end - coords_liftover$lift_start)
 extract_subseq_bedtools(hg38fa, seqname, start, end, outfasta_hg38)
 extract_subseq_bedtools(aln_fa, coords_liftover$lift_contig, coords_liftover$lift_start, coords_liftover$lift_end, outfasta_aln)
 
-make_chunked_minimap_alnment(outfasta_hg38, outfasta_hg38, outpaf_link,
-                             chunklen = 1000, minsdlen = 2000, saveplot=F,
+make_chunked_minimap_alnment(outfasta_hg38, outfasta_aln, outpaf_link,
+                             chunklen = 10000, minsdlen = 2000, saveplot=F,
                              hllink = F, hltype = F)#, wholegenome = F)
-grid = wrapper_paf_to_bitlocus(outpaf_link, minlen = 1000, compression = 1000)#[[3]]
+grid = wrapper_paf_to_bitlocus(outpaf_link, minlen = 20000, compression = 100000)#[[3]]
 gridmatrix = gridlist_to_gridmatrix(grid[[3]])
 
-gm1 = carry_out_compressed_sv(gridmatrix, c('3', '8', 'inv'))
-gm2 = carry_out_compressed_sv(gm1, c('9', '12', 'del'))
-plot_matrix(sign(gridmatrix))
-plot_matrix(sign(gm1))
-plot_matrix(sign(gm2))
+#gm1 = carry_out_compressed_sv(gridmatrix, c('3', '8', 'inv'))
+#gm2 = carry_out_compressed_sv(gm1, c('9', '12', 'del'))
+#plot_matrix(sign(gridmatrix))
+#plot_matrix(sign(gm1))
+#plot_matrix(sign(gm2))
 # Run a mutation search
-res = explore_mutation_space(gridmatrix, depth = 1)
+res = explore_mutation_space(gridmatrix, depth = 2)
 ### [OVER] ###
 
 

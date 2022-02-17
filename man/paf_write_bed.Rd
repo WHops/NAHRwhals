@@ -2,43 +2,24 @@
 % Please edit documentation in R/paf_to_bed.R
 \name{paf_write_bed}
 \alias{paf_write_bed}
-\alias{paf_to_sd_paf}
-\alias{paf_to_bed}
 \title{Wrapperfunction to go from a paf file (fresh out of minimap2) to a
 filtered paf file (only nondiagonal) and then
 to a bedfile.}
 \usage{
 paf_write_bed(inpaf_link, outsdbed_link)
-
-paf_to_sd_paf(inpaf_link)
-
-paf_to_bed(inpaf)
 }
 \arguments{
 \item{inpaf_link}{\link{character/link} a link to the inpaf to be converted to bed.}
 
 \item{outsdbed_link}{\link{character/link} a link to the output bedfile. Can be NULL, then
 the output will be returned}
-
-\item{inpaf}{\link{data frame} a link to the inpaf to be converted to bed.}
 }
 \value{
 a bed dataframe if outsdbed_link is NULL.
-
-a filtered pseudo-paf file. Gotta double-check this.
-
-a bed-file style dataframe.
 }
 \description{
 The Bedfile will have the wrong colnames
-
-Cuts down a paf to entries where query > target. Not 100\% sure
-what is going on here.
 }
 \author{
-Wolfram Höps
-
-Wolfram Höps
-
 Wolfram Höps
 }

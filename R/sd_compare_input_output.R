@@ -12,7 +12,6 @@
 #' @return a vector of length maxlen, with 0/1 depending on coverage of intervals.
 #' 
 #' @author Wolfram Höps
-#' @rdname evaluation
 #' @export
 turn_intervals_to_vector_0_1 <- function(intervals, maxlen){
   
@@ -38,7 +37,6 @@ turn_intervals_to_vector_0_1 <- function(intervals, maxlen){
 #' @return nope
 #' 
 #' @author Wolfram Höps
-#' @rdname evaluation
 #' @export
 compare_sd_paf_input_output <- function(preslink, ptruelink, chunklen, runname, strand, outfile){
   

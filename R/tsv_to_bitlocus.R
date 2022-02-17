@@ -6,7 +6,6 @@
 #' find_x_intersection
 
 #' @author Wolfram Hoeps
-#' @rdname alignment
 #' @export
 find_x_intersection <- function(vectors, point) {
   # Find vectors that overlap with the point along y axis
@@ -35,7 +34,6 @@ find_x_intersection <- function(vectors, point) {
 #' find_y_intersection
 
 #' @author Wolfram Hoeps
-#' @rdname alignment
 #' @export
 find_y_intersection <- function(vectors, point) {
   
@@ -65,7 +63,6 @@ find_y_intersection <- function(vectors, point) {
 #' add_slope_intercept_info
 
 #' @author Wolfram Hoeps
-#' @rdname alignment
 #' @export
 add_slope_intercept_info <- function(vector_df,
                                      xstart = 'tstart',
@@ -100,7 +97,6 @@ add_slope_intercept_info <- function(vector_df,
 #' get_gridlines.x
 
 #' @author Wolfram Hoeps
-#' @rdname alignment
 #' @export
 get_gridlines.x <- function(paf, gp = 10) {
   # Let's do it slow and bad for now. This doesn't seem to be very time critical anyway
@@ -120,7 +116,6 @@ get_gridlines.x <- function(paf, gp = 10) {
 #' get_gridlines.y
 
 #' @author Wolfram Hoeps
-#' @rdname alignment
 #' @export
 get_gridlines.y <- function(paf, gp = 10) {
   gridlines.y = c()
@@ -141,7 +136,6 @@ get_gridlines.y <- function(paf, gp = 10) {
 #' bounce point. Algorithm for making the grid. 
 #' Description TBD. 
 #' @author Wolfram Hoeps
-#' @rdname alignment
 #' @export
 bounce_point <- function(vectors, point){
   
@@ -184,12 +178,12 @@ bounce_point <- function(vectors, point){
 
 #' wrapper_paf_to_bitlocus
 #' @author Wolfram Hoeps
-#' @rdname alignment
 #' @export
 wrapper_paf_to_bitlocus <-
   function(inpaf,
            realplot = T,
            bitlocusplot = T,
+           saveplot = F,
            minlen = 1000,
            compression = 1000) {
     # Read paf
@@ -323,7 +317,7 @@ wrapper_paf_to_bitlocus <-
     }
     
     if (bitlocusplot) {
-      p = ggplot2::ggplot(grid_list) + ggplot2::geom_tile(ggplot2::aes(
+      p = ggplot2::ggplot(bm2) + ggplot2::geom_tile(ggplot2::aes(
         x = x,
         y = y,
         fill = sign(z) * log10(abs(z))
@@ -339,7 +333,11 @@ wrapper_paf_to_bitlocus <-
           clip = "on"
         ) +
         ggplot2::theme_bw()
-      print(p)
+      if (saveplot == F){
+        print(p)
+      } else {
+        ggplot2::ggsave(p, file=saveplot, height = 20, width = 20, units = 'cm', device='pdf')
+      }
     }
     
     return(list(gridlines.x, gridlines.y, grid_list))
@@ -350,7 +348,6 @@ wrapper_paf_to_bitlocus <-
 #' get_aln_overlap_in_sector
 
 #' @author Wolfram Hoeps
-#' @rdname alignment
 #' @export
 get_aln_overlap_in_sector <-
   function(paf,
@@ -444,7 +441,6 @@ get_aln_overlap_in_sector <-
 
 #' enforce_slope_one
 #' @author Wolfram Hoeps
-#' @rdname alignment
 #' @export
 enforce_slope_one <- function(df){
   
@@ -465,7 +461,6 @@ enforce_slope_one <- function(df){
 
 #' make_xy_grid
 #' @author Wolfram Hoeps
-#' @rdname alignment
 #' @export
 make_xy_grid <- function(paf, n_additional_bounces=10){
   

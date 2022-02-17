@@ -1,5 +1,8 @@
-#' Find SV opportunities
-#' @rdname find_maxdiag
+#' find_maxdiag
+#'
+#' Scan a matrix for the length of the longest (positive) diagonal. This is part
+#' of the 'eval' method. 
+#' @param m A matrix
 #' @author Unknown (https://stackoverflow.com/questions/47330812/find-the-longest-diagonal-of-an-element-in-a-matrix-python)
 #' @export
 find_maxdiag <- function(m){
@@ -40,7 +43,6 @@ find_maxdiag <- function(m){
 #' @return A dataframe with columns 'p1', 'p2', 'sv'
 #'
 #' @author Wolfram Höps
-#' @rdname find_sv_opportunities
 #' @export
 find_sv_opportunities <- function(sample) {
   double_SD_rows = which(rowSums(sample != 0) >= 2)
@@ -101,16 +103,15 @@ find_sv_opportunities <- function(sample) {
 }
 
 
-# ----- Define a function for plotting a matrix ----- #
-#' myImagePlot
-#'
-#' @description Found on stackexchange
+#' A function for plotting a matrix 
+#' 
+#' @description Found on stackexchange. Low-yield matrix plot. For quick/dirty
+#' visualizations. 
 #'
 #' @param x a matrix
 #' @return none, but image is plotted
 #'
 #' @author unknown (http://www.phaget4.org/R/image_matrix.html)
-#' @rdname myImagePlot
 #' @export
 plot_matrix <- function(x, ...) {
   min <- min(x)
@@ -211,7 +212,6 @@ plot_matrix <- function(x, ...) {
   
   layout(1)
 }
-# ----- END plot function ----- #
 
 
 #' Find SV carry_out_compressed_sv
@@ -222,7 +222,6 @@ plot_matrix <- function(x, ...) {
 #' @param input_ins a vector with instruction: p1, p2, sv.
 #'
 #' @author Wolfram Höps
-#' @rdname find_sv_opportunities
 #' @export
 carry_out_compressed_sv <- function(bitl, input_ins) {
   pair = input_ins[1:2]
@@ -245,8 +244,9 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
 }
 
 
-
-#' From Stackoverflow
+#' ColMax function
+#' 
+#' From Stackoverflow. Does what you expect it to do. 
 #' @export
 colMax <- function(data)
   sapply(data, max, na.rm = TRUE)
@@ -261,8 +261,6 @@ colMax <- function(data)
 #' @return numeric [0-1] with evaluation score.
 #'
 #' @author Wolfram Höps
-#' @rdname eval_mutated_seq
-#' @export
 #' @export
 eval_mutated_seq <- function(bitlocus) {
   # Old stuff here:
@@ -293,7 +291,6 @@ eval_mutated_seq <- function(bitlocus) {
 #' @return matrix (bitlocus)
 #'
 #' @author Wolfram Höps
-#' @rdname gimme_sample_matrix
 #' @export
 gimme_sample_matrix <- function(mode = 'diff') {
   #samplefasta_link = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/vignettes/simulated_seq_10kb_4SDs.fa'
@@ -333,6 +330,11 @@ gimme_sample_matrix <- function(mode = 'diff') {
 }
 
 #' gridlist_to_gridmatrix
+#' 
+#' Convert gridlist to grimatrix
+#' @param grid_list a dataframe, columns (x,y,z).
+#' @return A matrix of the bitplot
+#' @author Wolfram Höps
 #' @export
 gridlist_to_gridmatrix <- function(grid_list){
   
@@ -369,7 +371,6 @@ gridlist_to_gridmatrix <- function(grid_list){
 #' @return evaluation matrix
 #'
 #' @author Wolfram Höps
-#' @rdname explore_mutation_space
 #' @export
 add_eval <- function(res, m, layer, pair_level1, pair_level2, pair_level3){
   
@@ -432,7 +433,6 @@ add_eval <- function(res, m, layer, pair_level1, pair_level2, pair_level3){
 #' @return evaluation matrix
 #'
 #' @author Wolfram Höps
-#' @rdname explore_mutation_space
 #' @export
 explore_mutation_space <- function(bitlocus, depth) {
 
@@ -496,59 +496,4 @@ explore_mutation_space <- function(bitlocus, depth) {
 # C = gimme_sample_matrix(mode = 'diff')
 # a = explore_mutation_space_(C, depth = 3)
 
-# g2 = grid
-# grid = g2[[3]]
-# 
-# 
-# x_missing = which(min(grid$x):max(grid$x) %in% grid$x == F)
-# y_missing = which(min(grid$y):max(grid$y) %in% grid$y == F)
-# 
-# for (xm in x_missing) {
-#   grid = rbind(grid, c(xm, xm, 0))
-# }
-# for (ym in y_missing) {
-#   grid = rbind(grid, c(ym, ym, 0))
-# }
-# 
-# 
-# sample = reshape2::dcast(grid, y ~ x, fill = 0)
-# sample$x = NULL
-# sample$y = NULL
-# sample = as.matrix(sample)
-# 
-# colnames(sample) = 1:dim(sample)[2]
-# rownames(sample) = 1:dim(sample)[1]
-# 
-# 
-# aa = explore_mutation_space(sample, 3)
-# # eval_mutated_seq(C)
-# 
-# samplei = ginv(sample)
-# 
-# sample %*% samplei
-# 
-# myImagePlot(sample)
-# myImagePlot(bitl_mut)
-# 
-# myImagePlot(sample %*% t(sample))
-# library(MASS)
-# 
-# s2 = sample
-# s3 = cbind(cbind(s2[, 1:4], s2[, 4]), s2[, 5:14])
-# colnames(s3) = 1:dim(s3)[2]
-# myImagePlot(s3)
-# 
-# find_sv_opportunities(s2)
-#
-#
-#
-#
-#
-# A = rbind(c(2, 3), c(4, 5))
-# inv(A)
-# solve(A)
-#
-# Ai = MASS::ginv(A)
-#
-# A %*% Ai
 

@@ -6,7 +6,6 @@
 #' 
 #' 
 #' @author Wolfram Höps
-#' @rdname evaluation
 #' @export
 benchmark_vis <- function(){
   benchmarkfile = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/resfile3.txt"

@@ -2,7 +2,6 @@
 
 #' A wrapper for extracting values from the config.
 #' @author Wolfram Höps
-#' @rdname get_subseq
 #' @export
 query_config <- function(param) {
   configfile = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/conf/config.yml"
@@ -19,7 +18,6 @@ query_config <- function(param) {
 #' @return A DNA sequence as a character
 #'
 #' @author Wolfram Höps
-#' @rdname get_subseq
 #' @export
 get_subseq <- function(input_fasta, range = NULL) {
   # Load
@@ -34,7 +32,6 @@ get_subseq <- function(input_fasta, range = NULL) {
 
 #' A testfunction to see if nahrtoolkit is loaded
 #' @author Wolfram Höps
-#' @rdname Package_test
 #' @export
 confirm_loaded_nahr <- function() {
   print('The NAHRtoolkit is loaded and ready to go.')
@@ -42,7 +39,6 @@ confirm_loaded_nahr <- function() {
 
 #' Print version number.
 #' @author Wolfram Höps
-#' @rdname Package_test
 #' @export
 version_nahr <- function() {
   print('This is version 0.95 from Feb 14th, 2022.')
@@ -70,7 +66,6 @@ version_nahr <- function() {
 #' @return nothing. But output files written.
 #'
 #' @author Wolfram Höps
-#' @rdname alignment
 #' @export
 make_chunked_minimap_alnment <-
   function(targetfasta,
@@ -179,7 +174,6 @@ make_chunked_minimap_alnment <-
 #' @return nothing. Only output files written.
 #'
 #' @author Wolfram Höps
-#' @rdname alignment
 #' @export
 shred_seq <- function(infasta,
                       outfasta_chunk,
@@ -230,7 +224,6 @@ shred_seq <- function(infasta,
 #' @return nothing. Only output files written.
 #'
 #' @author Wolfram Höps
-#' @rdname alignment
 #' @export
 run_minimap2 <-
   function(targetfasta,
@@ -277,7 +270,6 @@ run_minimap2 <-
 #' @return nothing. Only output files written.
 #'
 #' @author Wolfram Höps
-#' @rdname alignment
 #' @export
 awk_edit_paf <- function(inpaf, outpaf) {
   print(inpaf)
@@ -300,7 +292,6 @@ awk_edit_paf <- function(inpaf, outpaf) {
 #' @return nothing. Only output files written.
 #'
 #' @author Nicholas Hathaway
-#' @rdname alignment
 #' @export
 writeFasta <- function(data, filename) {
   fastaLines = c()
@@ -315,7 +306,6 @@ writeFasta <- function(data, filename) {
 
 #' helperfunction to shorten a fasta file.
 #' @author Nicholas Hathaway
-#' @rdname alignment
 #' @export
 shorten_fasta <- function(infasta, outfasta, range) {
   browser()
@@ -383,7 +373,6 @@ rc <- function(z) {
 #' @return A character vector of a random DNA sequence.
 #'
 #' @author Wolfram Höps
-#' @rdname seq_modeling
 #' @export
 randDNASeq <- function(n, gcfreq, seed = 1234) {
   bases = c('A', 'C', 'G', 'T')
@@ -435,7 +424,6 @@ wrapper_dotplot_with_alignment <-
 #' @return A character vector of a random DNA sequence.
 #'
 #' @author Wolfram Höps
-#' @rdname seq_modeling
 #' @export
 wrapper_dotplot_with_alignment_fast <-
   function(seqname,

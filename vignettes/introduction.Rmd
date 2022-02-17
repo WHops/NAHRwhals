@@ -55,7 +55,7 @@ If the sequence is not too long, we can use an exact dotplot to visualize the gr
 
 ```{r}
 
-exact_plot = make_dotplot(samplefasta_link, samplefasta_link, 15, save=F)
+exact_plot = make_dotplot(samplefasta_link, samplefasta_link, 10, save=F)
 print(exact_plot)
 ```
 
@@ -222,20 +222,20 @@ Next, we will look at compressed dotplots. We take the previous example, and tur
 
 ```{r, warning = FALSE, message = FALSE}
 
-
-outpaf_link ='./4SDs_inv_dup.paf'
-
-make_chunked_minimap_alnment(outfasta, outmutfasta2, outpaf_link, 
-                             chunklen = 1000, minsdlen = 0, saveplot=F, 
-                             hllink = F, hltype = F, quadrantsize = 500000)
-# Make the condensed dotplot
-grid = wrapper_paf_to_bitlocus(outpaf_link, minlen=100, compression = 100)[[3]]
-gridmatrix = gridlist_to_gridmatrix(grid)
-
-# Run a mutation search
-res = explore_mutation_space(gridmatrix, depth = 2)
-
-res[res$eval == max(res$eval),]
+# 
+# outpaf_link ='./4SDs_inv_dup.paf'
+# 
+# make_chunked_minimap_alnment(outfasta, outmutfasta2, outpaf_link, 
+#                              chunklen = 1000, minsdlen = 0, saveplot=F, 
+#                              hllink = F, hltype = F, quadrantsize = 500000)
+# # Make the condensed dotplot
+# grid = wrapper_paf_to_bitlocus(outpaf_link, minlen=100, compression = 100)[[3]]
+# gridmatrix = gridlist_to_gridmatrix(grid)
+# 
+# # Run a mutation search
+# res = explore_mutation_space(gridmatrix, depth = 2)
+# 
+# res[res$eval == max(res$eval),]
 ```
 
 
