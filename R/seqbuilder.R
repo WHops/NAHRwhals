@@ -76,7 +76,7 @@ simulate_seq <- function(seqlen, sdfile, outfasta, debugmode=F){
   # Input: is a tsv file? 
   stopifnot("Error: Input to simulate_seq has to be a .tsv file (29 columns). 
             If you have a .bed file as input, convert it to .tsv with 
-            nahrtoolkit::convert_bed_to_tsv inbed outtsv" = endsWith(sdfile, '.tsv'))
+            convert_bed_to_tsv inbed outtsv" = endsWith(sdfile, '.tsv'))
   
   
   if (debugmode){
