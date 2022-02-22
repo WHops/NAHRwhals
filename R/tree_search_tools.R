@@ -202,7 +202,7 @@ explore_mutation_space <- function(bitlocus, depth) {
   
   
   for (npair_level1 in 1:dim(pairs)[1]) {
-    print(paste0('Entering front layer ', npair_level1, ' of ', dim(pairs)[1]))
+    #print(paste0('Entering front layer ', npair_level1, ' of ', dim(pairs)[1]))
     
     pair_level1 = pairs[npair_level1, ]
     
@@ -276,7 +276,7 @@ explore_mutation_space <- function(bitlocus, depth) {
     } # if depth > 1 end
   } # loop 1 end
   
-  print('hi')
+  #print('hi')
   res_df = as.data.frame(res)
   res_df$eval = as.numeric(res_df$eval)
   

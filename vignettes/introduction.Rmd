@@ -222,29 +222,118 @@ Next, we will look at compressed dotplots. We take the previous example, and tur
 
 ```{r, warning = FALSE, message = FALSE}
 
-# 
-# outpaf_link ='./4SDs_inv_dup.paf'
-# 
-# make_chunked_minimap_alnment(outfasta, outmutfasta2, outpaf_link, 
-#                              chunklen = 1000, minsdlen = 0, saveplot=F, 
-#                              hllink = F, hltype = F, quadrantsize = 500000)
-# # Make the condensed dotplot
-# grid = wrapper_paf_to_bitlocus(outpaf_link, minlen=100, compression = 100)[[3]]
-# gridmatrix = gridlist_to_gridmatrix(grid)
-# 
-# # Run a mutation search
-# res = explore_mutation_space(gridmatrix, depth = 2)
-# 
-# res[res$eval == max(res$eval),]
+
+
+outpaf_link ='./4SDs_inv_dup.paf'
+
+make_chunked_minimap_alnment(outfasta, outmutfasta2, outpaf_link,
+                             chunklen = 1000, minsdlen = 0, saveplot=F,
+                             hllink = F, hltype = F, quadrantsize = 500000)
+# Make the condensed dotplot
+grid = wrapper_paf_to_bitlocus(outpaf_link, minlen=100, compression = 100)
+
+```
+
+From this compressed dotplot, we can now explore the mutation space, to find chains of rearrangements (acted on the x-axis, typically REF) which can explain the picture. In our case, we know we have simulated an inversion, followed by a duplication. Let's try to recapitulate that with explore_mutation_space:
+
+```{r, warning = FALSE, message = FALSE}
+
+# This is a data transformation part: we want to go from a 'gridlist' with x,y,z
+# coordinates to a matrix. 
+gridmatrix = gridlist_to_gridmatrix(grid[[3]])
+
+# Run a mutation search on the matrix
+res = explore_mutation_space(gridmatrix, depth = 2)
+
+# Print the results with the highest evaluation score
+print(res[res$eval == max(res$eval),])
+
 ```
 
 
 
+### 4: Working with assemblies / large sequences
+
+
+Up to this point, we have assumed that we have always two input fasta files containing only the region of interest. In a real-world scenario, however, it is more likely that you are dealing with a genome assembly, and are interested in a certain sequence from the reference genome. To accomodate these needs, we will make use of the two 'liftover'-esque functions:
+
+"liftover_coarse" and "extract_subseq_bedtools"
+
+liftover_coarse takes as input a reference coordinate interval (e.g. from hg38), and a PRECOMPUTED alignment between an assembly and the reference. 
+The precomputed alignment (ca 10Mb for a whole genome) is too coarse to do variant calling from it, but we use it to find which part of the assembly
+matches best to our input region. 
+
+The following piece of code: 
+1) Sets the paths to an assembly fasta, and an assembly-hg38-alignment.paf
+2) Uses coords_assembly to find a sequence from hg38 on the assembly.
+3) Uses extract_subseq_bedtools to make a new fasta, from the assembly, containing the sequence of interest. 
 
 
 
 
 
+```{r, warning = FALSE, message = FALSE}
+# In the example files shipped with nahrtoolkit, we find a fasta file containing two contigs from a real assembly. 
+# We have previously mapped this partial assembly to an hg38 reference genome with minimap: 
+# minimap2 -t 8 -cx asm20 assembly.fa hg38.fa > alignment_assembly_hg38.paf
+
+# Define path to assembly fasta and alignment paf
+assembly_fa = system.file('extdata', 'asm_2contigs_HG00512.fa', package='nahrtoolkit')
+hg38_fa = system.file('extdata', 'hg38_chr11_120m_124m.fa', package='nahrtoolkit')
+
+alignment_asm_hg38_paf = system.file('extdata', 'asm_2contigs_HG00512_hg38.paf', package='nahrtoolkit')
+
+
+# Define output files
+outpaf_link = './deleteme.tmp'
+assembly_outfasta_region = './assembly_outfasta_region.fa'
+hg38_outfasta_region = './hg38_region_extract.fa'
+
+# Input coordinates on hg38
+seqname = 'chr11'
+start   = 120010000
+end     = 120100000
+
+# Run the liftover. (lenfactor > 1: extract more surrounding. E.g. 1.5 for 50% on both sides)
+coords_assembly = liftover_coarse(seqname, 
+                                  start, 
+                                  end, 
+                                  alignment_asm_hg38_paf, 
+                                  lenfactor = 1)
+
+# Extract a fasta file from the assembly, which contains only the segment of interest:
+extract_subseq_bedtools(assembly_fa, 
+                        coords_assembly$lift_contig, 
+                        coords_assembly$lift_start, 
+                        coords_assembly$lift_end, 
+                        assembly_outfasta_region)
+
+
+```
+
+We have now created a new fasta file (assembly_outfasta_region; aka './assembly_outfasta_region.fa') which contains the sequence from the assembly that most closely matches hg38:chr11:12001000-120100000.
+Let us plot the sequence against itself to see if we find any repeat patterns: 
+
+```{r, warning = FALSE, message = FALSE}
+
+# assembly alignment against self
+asm_asm_plot = make_chunked_minimap_alnment(assembly_outfasta_region, assembly_outfasta_region, outpaf_link,
+                             chunklen = 1000, minsdlen = 2000, saveplot=F,
+                             hllink = F, hltype = F)#, wholegenome = F)
+
+print(asm_asm_plot)
+
+# Condensed plots if you are interested...
+# grid = wrapper_paf_to_bitlocus(outpaf_link, minlen = 100, compression = 1000)#[[3]] -->
+# gridmatrix = gridlist_to_gridmatrix(grid[[3]]) -->
+# res = explore_mutation_space(gridmatrix, depth = 2) -->
+# print(res[res$eval == max(res$eval),]) -->
+
+```
+
+
+Indeed! We see a highly repetitive blob of sequence in the middle of the plot. 
+We could now follow this up by comparing the sequence to other sequences, e.g. hg38. 
 
 
 
