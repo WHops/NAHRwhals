@@ -1,3 +1,74 @@
+rep.row<-function(x,n){
+  matrix(rep(x,each=n),nrow=n)
+}
+rep.col<-function(x,n){
+  matrix(rep(x,each=n), ncol=n, byrow=TRUE)
+}
+
+
+
+
+
+unmatching_bases <- function(mat, verbose = F){
+  
+  dim_ = dim(mat)
+  row = dim_[1]
+  col = dim_[2]
+  
+  symmetry = min(dim_) / max(dim_)
+  
+  if (symmetry < 0.9){
+    return(Inf)
+  }
+  
+  climb_up_cost = colMax(as.data.frame(t(abs(mat))))
+  cost_u = rep.col(climb_up_cost, dim(mat)[2])
+
+  walk_right_cost = colMax(as.data.frame(abs(mat)))
+  cost_r = rep.row(walk_right_cost, dim(mat)[1])
+
+  
+  cost_d = -mat
+  cost_d[cost_d >= 0] = 1e5
+  cost_d[cost_d < 0] = 0
+  #+ mat
+  
+  cost_res = cost_u - cost_u
+
+
+  
+  # For 1st column
+  for (i in 2:row){
+    cost_res[i,1] = cost_u[i,1] + cost_res[i - 1,1]
+  }
+  # For 1st row
+  for (j in 2:col){
+    cost_res[1,j] = cost_r[1,j] + cost_res[1,j - 1]
+  }
+  # For rest of the 2d matrix
+  for (i in 2:row){
+    for (j in 2:col){
+      cost_res[i,j] =  (min(cost_d[i - 1,j - 1] + cost_res[i-1,j-1],
+                              cost_res[i-1,j] + cost_u[i - 1,j],
+                              cost_res[i,j-1] + cost_r[i,j - 1]))
+    }
+  }
+  # Returning the value in
+  # last cell
+    
+  if (verbose){
+    print(cost_res)
+    print(paste0('Unmatching: ca ', cost_res[row,col], ' out of ', sum(climb_up_cost, walk_right_cost), ' (', round((100*cost_res[row,col])/sum(climb_up_cost, walk_right_cost), 2), '%)'))
+    
+  }
+  
+  return((cost_res[row,col]*100)/sum(climb_up_cost, walk_right_cost))
+}
+
+
+
+
+
 #' find_maxdiag
 #'
 #' Scan a matrix for the length of the longest (positive) diagonal. This is part
@@ -97,13 +168,13 @@ add_eval <- function(res, m, layer, pair_level1, pair_level2, pair_level3){
   
   if (layer == 1){
     res_add = unlist(c(
-      eval_mutated_seq(m),
+      unmatching_bases(m),
       paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_')))
 
     
   } else if (layer == 2){
     res_add = unlist(c(
-      eval_mutated_seq(m),
+      unmatching_bases(m),
       paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_'),
       paste(pair_level2$p1, pair_level2$p2, pair_level2$sv, sep =
               '_')
@@ -112,7 +183,7 @@ add_eval <- function(res, m, layer, pair_level1, pair_level2, pair_level3){
   } else if (layer == 3){
     # add
     res_add = unlist(c(
-      eval_mutated_seq(m),
+      unmatching_bases(m),
       paste(
         pair_level1$p1,
         pair_level1$p2,
