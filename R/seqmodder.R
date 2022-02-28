@@ -563,7 +563,7 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
 #' @export
 modify_gridmatrix <- function(gmx, r1){
   
-  if (res[1,'mut1'] == 'ref'){
+  if (r1[1,'mut1'] == 'ref'){
     return(gmx)
   }
   

@@ -114,7 +114,7 @@ explore_mutation_space <- function(bitlocus, depth) {
   res_df = res_df[rowSums(is.na(res_df)) != ncol(res_df),]
   
   # Remove entries without evals
-  res_df = res_df[!is.na(res_df$eval),]
+  #res_df = res_df[!is.na(res_df$eval),]
   
   
   print(paste0(

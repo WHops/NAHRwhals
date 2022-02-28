@@ -183,10 +183,9 @@ extract_subseq_bedtools <-
 
 
 #' @export
-find_punctual_liftover <- function(cpaf, pointcoordinate) {
-  
+find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
   # Find all alignments overlapping with the pointcoordinate
-  overlappers = cpaf[((cpaf$qname == seqname) &
+  overlappers = cpaf[((cpaf$qname == chrom) &
                         (cpaf$qstart <= pointcoordinate) &
                         (cpaf$qend >= pointcoordinate)
   ), ]
@@ -248,13 +247,13 @@ liftover_coarse <-
     # Define a vector of probe positions (equally spaced between start and end)
     pos_probes = as.integer(start + (((end - start) / (n_probes - 1)) * (0:(n_probes -
                                                                               1))))
-    
+
     # Liftover every probe
     liftover_coords <- data.frame(matrix(ncol = 2, nrow = 0))
     colnames(liftover_coords) <- c('seqname', 'liftover_coord')
     for (pointcoord in pos_probes) {
       liftover_coords = rbind(liftover_coords,
-                              find_punctual_liftover(cpaf, pointcoord))
+                              find_punctual_liftover(cpaf, pointcoord, seqname))
     }
     
     # What is the majority vote for the target chromosome?

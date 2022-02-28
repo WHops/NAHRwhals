@@ -14,8 +14,8 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                     compression = 1000,
                                     runname = 'test'
                                     ){
+  
   sequence_name_output = paste(paste0('res/',seqname_x), start_x, end_x, sep='-')
-
   dir.create('res')
   dir.create(sequence_name_output)
   dir.create(paste0(sequence_name_output, '/self'))
@@ -43,10 +43,9 @@ wrapper_aln_and_analyse <- function(seqname_x,
   
   genome_x_fa_subseq = paste0(sequence_name_output, '/fasta/', runname, '_x.fa')
   genome_y_fa_subseq = paste0(sequence_name_output, '/fasta/', runname, '_y.fa')
-  
+
   # Get coordinates in y
   coords_liftover = liftover_coarse(seqname_x, start_x, end_x, conversionpaf_link, lenfactor = factor)
-  
   # Get subseq-fastas in x and y
   extract_subseq_bedtools(genome_x_fa, seqname_x, start_x, end_x, genome_x_fa_subseq)
   extract_subseq_bedtools(genome_y_fa, coords_liftover$lift_contig, coords_liftover$lift_start, coords_liftover$lift_end, genome_y_fa_subseq)
@@ -69,12 +68,13 @@ wrapper_aln_and_analyse <- function(seqname_x,
   grid_xy = wrapper_paf_to_bitlocus(outpaf_link_x_y, minlen = sd_minlen, compression = compression,
                                     gridplot_save = outfile_plot_grid, pregridplot_save = outfile_plot_pre_grid )
   gridmatrix = gridlist_to_gridmatrix(grid_xy[[3]])
-
   res = explore_mutation_space(gridmatrix, depth = 2)
   res = res[order(res$eval),]
   # Make a grid after applying the top res
-  # grid_modified = modify_gridmatrix(gridmatrix, res[1,])
-  # grid_mut_plot = plot_matrix(log2(abs(grid_modified+1)))
+  grid_modified = modify_gridmatrix(gridmatrix, res[1,])
+  gm2 = reshape2::melt(grid_modified)
+  colnames(gm2) = c('x','y','z')
+  grid_mut_plot = plot_matrix_ggplot(gm2[gm2$z != 0,])
   
 
   # Save orig alignments
@@ -96,12 +96,12 @@ wrapper_aln_and_analyse <- function(seqname_x,
                   height = 10, 
                   units = 'cm',
                   dpi = 300)
-  # ggplot2::ggsave(filename = outfile_plot_grid_mut,
-  #                 plot = grid_mut_plot, 
-  #                 width = 10, 
-  #                 height = 10, 
-  #                 units = 'cm',
-  #                 dpi = 300)
+  ggplot2::ggsave(filename = outfile_plot_grid_mut,
+                  plot = grid_mut_plot,
+                  width = 10,
+                  height = 10,
+                  units = 'cm',
+                  dpi = 300)
 
   # Save res table
   write.table(res, file = res_table_xy,
