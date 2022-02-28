@@ -527,4 +527,38 @@ sds_document_duplication <- function(sds,sv){
 }
 
 
+#' carry_out_compressed_sv
+#'
+#' @description Carry out an SV IN GRIDSPACE
+#'
+#' @param bitl  an nxm matrix (n=gridpoints_x, m=gridpoints_y)
+#' @param input_ins a vector with instruction: p1, p2, sv.
+#'
+#' @author Wolfram Höps
+#' @export
+carry_out_compressed_sv <- function(bitl, input_ins) {
+  
+  pair = input_ins[1:2]
+  action = input_ins[3]
+  
+  
+  # Modify the matrix accordingly
+  if (action == 'del') {
+    bitl_mut = bitl[, -c(as.numeric(pair[1]):(as.numeric(pair[2]) - 1))]
+  } else if (action == 'dup') {
+    bitl_mut = cbind(bitl[, 1:as.numeric(pair[2])],
+                     bitl[, as.numeric(pair[1] + 1):dim(bitl)[2]])
+  } else if (action == 'inv') {
+    bitl_mut = cbind(cbind(bitl[, 1:as.numeric(pair[1])],-bitl[, (as.numeric(pair[2]) -
+                                                                    1):(as.numeric(pair[1]) + 1)]),
+                     bitl[, as.numeric(pair[2]):dim(bitl)[2]])
+  }
+  
+  colnames(bitl_mut) = 1:dim(bitl_mut)[2]
+  
+  return(bitl_mut)
+  
+}
+
+
 

@@ -192,3 +192,67 @@ get_aln_overlap_in_sector <-
     }
   }
 
+
+#' This function used to try to condense neighbours in a gridlocus, so we
+#' Do not run every redundant SV. 
+#' We have found a more efficient implementation, now called
+#' find_nb_alt
+find_neighbours <- function(pairs, mode){
+  
+  svs_all = data_frame('p1' = NA, 'p2' = NA, 'sv' = NA)
+  
+  if (dim(pairs)[1] == 0){
+    return(data.frame())
+  }
+  for (i in 1:dim(pairs)[1]){
+    sv = data_frame()
+    if(dim(dplyr::inner_join(pairs[i,],svs_all[,c('p1','p2','sv')]))[1] == 0){
+      # Ugly code but let us go with it.
+      # For sv
+      head_of_snake = pairs[i,]
+      # go positive first
+      
+      # Find neighbours and attach them to the 'sv' dataframe.
+      if (mode == 'inv'){
+        has_pos_nb = sign(dim(pairs[(pairs$p1 == sv$p1+1) & (pairs$p2 == sv$p2-1),])[1])
+      } else if (mode == 'deldup'){
+        has_pos_nb = sign(dim(pairs[(pairs$p1 == sv$p1+1) & (pairs$p2 == sv$p2+1),])[1])
+      }
+      while (has_pos_nb){
+        if (mode == 'inv'){
+          head_of_snake = pairs[(pairs$p1 == head_of_snake$p1+1) & (pairs$p2 == head_of_snake$p2-1),]
+        } else if (mode == 'deldup'){ 
+          head_of_snake = pairs[(pairs$p1 == head_of_snake$p1+1) & (pairs$p2 == head_of_snake$p2+1),]
+        }
+        if (dim(head_of_snake)[1] > 0){
+          if (dim(sv)[1] > 0){
+            sv = rbind(sv, head_of_snake)
+          } else {
+            sv = head_of_snake
+          }
+        } else {
+          has_pos_nb = F
+        }
+      }
+      
+      if (dim(sv)[1] == 0){
+        sv = head_of_snake
+      }
+      sv$cluster = i
+      
+      if (dim(svs_all)[2] == 3){
+        svs_all = sv
+      } else {
+        svs_all = rbind(svs_all, sv)
+        
+      }
+      
+    }
+  }
+  
+  svs_all = as.data.frame(dplyr::slice(dplyr::group_by(svs_all, cluster),1))[,c('p1','p2','sv')]
+  
+  
+  
+  return(svs_all)
+}

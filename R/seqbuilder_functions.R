@@ -465,3 +465,12 @@ wrapper_dotplot_with_alignment_fast <-
     return(plot)
     
   }
+
+
+
+#' ColMax function
+#'
+#' From Stackoverflow. Does what you expect it to do.
+#' @export
+colMax <- function(data)
+  sapply(data, max, na.rm = TRUE)
