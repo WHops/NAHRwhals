@@ -46,8 +46,8 @@ bounce_point <- function(vectors, point){
 #' @export
 wrapper_paf_to_bitlocus <-
   function(inpaf,
-           realplot = T,
-           bitlocusplot = T,
+           gridplot_save = F,
+           pregridplot_save = F,
            saveplot = F,
            minlen = 1000,
            compression = 1000) {
@@ -156,45 +156,47 @@ wrapper_paf_to_bitlocus <-
     #colnames(grid_list) = c('y','x','z')
     # grid_list = grid_list[grid_list$z != 0,]
     factor = 0
-    if (realplot) {
-      plot = ggplot2::ggplot() + ggplot2::geom_segment(data = paf,
-                                                       ggplot2::aes(
-                                                         x = tstart,
-                                                         xend = tend,
-                                                         y = qstart,
-                                                         yend = qend
-                                                       )) +
-        ggplot2::geom_hline(ggplot2::aes(yintercept = gridlines.y + runif(length(gridlines.y),-4000*factor,4000*factor))
-                            , color =
-                              'grey') +
-        ggplot2::geom_vline(ggplot2::aes(xintercept = gridlines.x + runif(length(gridlines.x),-4000*factor,4000*factor))
-                            , color =
-                              'grey') +
-        ggplot2::coord_fixed(
-          ratio = 1,
-          xlim = NULL,
-          ylim = NULL,
-          expand = TRUE,
-          clip = "on"
-        ) +
-        ggplot2::theme_bw()
+
+    plot = ggplot2::ggplot() + ggplot2::geom_segment(data = paf,
+                                                     ggplot2::aes(
+                                                       x = tstart,
+                                                       xend = tend,
+                                                       y = qstart,
+                                                       yend = qend
+                                                     )) +
+      ggplot2::geom_hline(ggplot2::aes(yintercept = gridlines.y + runif(length(gridlines.y),-4000*factor,4000*factor))
+                          , color =
+                            'grey') +
+      ggplot2::geom_vline(ggplot2::aes(xintercept = gridlines.x + runif(length(gridlines.x),-4000*factor,4000*factor))
+                          , color =
+                            'grey') +
+      ggplot2::coord_fixed(
+        ratio = 1,
+        xlim = NULL,
+        ylim = NULL,
+        expand = TRUE,
+        clip = "on"
+      ) +
+      ggplot2::theme_bw()
+
+    if (pregridplot_save == F){
       print(plot)
+    } else {
+      ggplot2::ggsave(plot, file=pregridplot_save, height = 10, width = 10, units = 'cm', device='pdf')
+    }
+
+
+    p = plot_matrix_ggplot(grid_list)
+    
+    if (gridplot_save == F){
+      print(p)
+    } else {
+      ggplot2::ggsave(p, file=gridplot_save, height = 10, width = 10, units = 'cm', device='pdf')
     }
     
-    if (bitlocusplot) {
-      
-      p = plot_matrix_ggplot(grid_list)
-      
-      if (saveplot == F){
-        print(p)
-      } else {
-        ggplot2::ggsave(p, file=saveplot, height = 20, width = 20, units = 'cm', device='pdf')
-      }
-    }
     
     return(list(gridlines.x, gridlines.y, grid_list))
-  }
-
+}
 
 
 #' enforce_slope_one

@@ -474,3 +474,6 @@ wrapper_dotplot_with_alignment_fast <-
 #' @export
 colMax <- function(data)
   sapply(data, max, na.rm = TRUE)
+
+
+

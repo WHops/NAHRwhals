@@ -560,5 +560,25 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
   
 }
 
+#' @export
+modify_gridmatrix <- function(gmx, r1){
+  
+  if (res[1,'mut1'] == 'ref'){
+    return(gmx)
+  }
+  
+  nmut = length(r1[, colSums(is.na(r1)) == 0]) - 1
+  
+  for (i in 1:nmut){
+    instr = r1[,i+1]
+    start = as.numeric(strsplit(instr, '_')[[1]][1])
+    end = as.numeric(strsplit(instr, '_')[[1]][2])
+    action = strsplit(instr, '_')[[1]][3]
+    
+    gmx = carry_out_compressed_sv(gmx, c(start, end, action))
+  }
+  
+  return(gmx)
+}
 
 

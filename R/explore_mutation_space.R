@@ -24,9 +24,8 @@ explore_mutation_space <- function(bitlocus, depth) {
   res = (matrix(ncol = depth + 1, nrow = (dim(pairs)[1] ** depth) * 5))
   
   colnames(res) = c('eval', paste0('mut', 1:depth))
-  res[1, ] = unlist(c(unmatching_bases(bitlocus), 'ref', rep('NA', depth - 1)))
+  res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus), 'ref', rep('NA', depth - 1)))
 
-  
   rescount = 2
   
   for (npair_level1 in 1:dim(pairs)[1]) {
@@ -113,6 +112,10 @@ explore_mutation_space <- function(bitlocus, depth) {
   
   # Remove NA rows
   res_df = res_df[rowSums(is.na(res_df)) != ncol(res_df),]
+  
+  # Remove entries without evals
+  res_df = res_df[!is.na(res_df$eval),]
+  
   
   print(paste0(
     'Finished ',

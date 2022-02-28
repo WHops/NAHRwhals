@@ -31,7 +31,7 @@ calc_coarse_grained_aln_score <- function(mat, verbose = F) {
   symmetry = min(dim_) / max(dim_)
   
   if (symmetry < 0.9) {
-    return(Inf)
+    return(NA)
   }
   
   # Construct our three cost matrices:
