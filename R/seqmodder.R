@@ -538,7 +538,7 @@ sds_document_duplication <- function(sds,sv){
 #' @export
 carry_out_compressed_sv <- function(bitl, input_ins) {
   
-  pair = input_ins[1:2]
+  pair = as.numeric(input_ins[1:2])
   action = input_ins[3]
   
   

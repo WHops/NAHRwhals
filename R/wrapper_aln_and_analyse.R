@@ -68,6 +68,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
   grid_xy = wrapper_paf_to_bitlocus(outpaf_link_x_y, minlen = sd_minlen, compression = compression,
                                     gridplot_save = outfile_plot_grid, pregridplot_save = outfile_plot_pre_grid )
   gridmatrix = gridlist_to_gridmatrix(grid_xy[[3]])
+  
   res = explore_mutation_space(gridmatrix, depth = 2)
   res = res[order(res$eval),]
   # Make a grid after applying the top res
