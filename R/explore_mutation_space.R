@@ -1,8 +1,10 @@
 #' explore_mutation_space
 #'
 #' @description Main workhorse, tying together the pieces.
+#' Hopefully we can replace this whole function with something nicer
+#' one day. It is very s***y :P
 #' @param bitlocus matrix, nxm
-#' @param depth How many SVs in sequence should be simulated?
+#' @param depth How many consecutive SVs should be simulated?
 #' @return evaluation matrix
 #'
 #' @author Wolfram Höps
@@ -23,11 +25,9 @@ explore_mutation_space <- function(bitlocus, depth) {
   
   colnames(res) = c('eval', paste0('mut', 1:depth))
   res[1, ] = unlist(c(unmatching_bases(bitlocus), 'ref', rep('NA', depth - 1)))
-  # Init res with the reference result.
+
   
   rescount = 2
-  
-  
   
   for (npair_level1 in 1:dim(pairs)[1]) {
     print(paste0('Entering front layer ', npair_level1, ' of ', dim(pairs)[1]))
