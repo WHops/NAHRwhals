@@ -24,6 +24,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
   dir.create(paste0(sequence_name_output, '/self/paf'))
   dir.create(paste0(sequence_name_output, '/diff'))
   dir.create(paste0(sequence_name_output, '/diff/pdf'))
+  dir.create(paste0(sequence_name_output, '/diff/pdf/grid'))
   dir.create(paste0(sequence_name_output, '/diff/paf'))
   dir.create(paste0(sequence_name_output, '/fasta'))
   # Define output files
@@ -37,9 +38,9 @@ wrapper_aln_and_analyse <- function(seqname_x,
   outfile_plot_self_y = paste0(sequence_name_output, '/self/pdf/', runname, '_y.pdf')
   outfile_plot_x_y =    paste0(sequence_name_output, '/diff/pdf/', runname, '_x_y.pdf')
   
-  outfile_plot_pre_grid = paste0(sequence_name_output, '/diff/pdf/', runname, '_x_y_grid_pre.pdf')
-  outfile_plot_grid =   paste0(sequence_name_output, '/diff/pdf/', runname, '_x_y_grid.pdf')
-  outfile_plot_grid_mut =   paste0(sequence_name_output, '/diff/pdf/', runname, '_x_y_grid_mut.pdf')
+  outfile_plot_pre_grid = paste0(sequence_name_output, '/diff/pdf/grid/', runname, '_x_y_grid_pre.pdf')
+  outfile_plot_grid =   paste0(sequence_name_output, '/diff/pdf/grid/', runname, '_x_y_grid.pdf')
+  outfile_plot_grid_mut =   paste0(sequence_name_output, '/diff/pdf/grid/', runname, '_x_y_grid_mut.pdf')
   
   genome_x_fa_subseq = paste0(sequence_name_output, '/fasta/', runname, '_x.fa')
   genome_y_fa_subseq = paste0(sequence_name_output, '/fasta/', runname, '_y.fa')
