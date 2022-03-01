@@ -1,6 +1,7 @@
 
 
 #' wrapper_aln_and_analyse
+#' Description ... 
 #' @export
 wrapper_aln_and_analyse <- function(seqname_x,
                                     start_x,
@@ -15,7 +16,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                     runname = 'test'
                                     ){
   
-  sequence_name_output = paste(paste0('res/',seqname_x), start_x, end_x, sep='-')
+  sequence_name_output = paste(paste0('res/',seqname_x), format(start_x, scientific = F),  format(end_x, scientific = F), sep='-')
   dir.create('res')
   dir.create(sequence_name_output)
   dir.create(paste0(sequence_name_output, '/self'))
@@ -25,7 +26,6 @@ wrapper_aln_and_analyse <- function(seqname_x,
   dir.create(paste0(sequence_name_output, '/diff/pdf'))
   dir.create(paste0(sequence_name_output, '/diff/paf'))
   dir.create(paste0(sequence_name_output, '/fasta'))
-  
   # Define output files
   outpaf_link_self_x =  paste0(sequence_name_output, '/self/paf/', runname, '_x.paf')
   outpaf_link_self_y =  paste0(sequence_name_output, '/self/paf/', runname, '_y.paf')
@@ -43,7 +43,6 @@ wrapper_aln_and_analyse <- function(seqname_x,
   
   genome_x_fa_subseq = paste0(sequence_name_output, '/fasta/', runname, '_x.fa')
   genome_y_fa_subseq = paste0(sequence_name_output, '/fasta/', runname, '_y.fa')
-
   # Get coordinates in y
   coords_liftover = liftover_coarse(seqname_x, start_x, end_x, conversionpaf_link, lenfactor = factor)
   # Get subseq-fastas in x and y
@@ -68,7 +67,6 @@ wrapper_aln_and_analyse <- function(seqname_x,
   grid_xy = wrapper_paf_to_bitlocus(outpaf_link_x_y, minlen = sd_minlen, compression = compression,
                                     gridplot_save = outfile_plot_grid, pregridplot_save = outfile_plot_pre_grid )
   gridmatrix = gridlist_to_gridmatrix(grid_xy[[3]])
-  
   res = explore_mutation_space(gridmatrix, depth = 2)
   res = res[order(res$eval),]
   # Make a grid after applying the top res

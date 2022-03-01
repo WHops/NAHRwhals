@@ -69,8 +69,8 @@ filter_paf_to_main_region <- function(paflink, outpaflink) {
   ))), 1)
   # And those snipplets matching to the winner chromosome - where do they fall (median)?
   middle_median = median(((
-    paf_winners[paf_winners$tname == chr_winners, ]$tend +
-      paf_winners[paf_winners$tname == chr_winners, ]$tstart
+    paf_winners[paf_winners$tname == chr_winners,]$tend +
+      paf_winners[paf_winners$tname == chr_winners,]$tstart
   ) / 2))
   
   # Now simply extend from median towards front and back.
@@ -80,11 +80,11 @@ filter_paf_to_main_region <- function(paflink, outpaflink) {
   # Here we cut, but I am not sure if this is really the way to go?
   paf_cut = paf[((paf$tname == chr_winners) &
                    (paf$tstart >= start_winners) &
-                   (paf$tend <= end_winners)), ]
+                   (paf$tend <= end_winners)),]
   
   
   aln_containing = cpaf_i[(cpaf_i$qstart <= start) &
-                            (cpaf_i$qend >= end), ]
+                            (cpaf_i$qend >= end),]
   
   
   
@@ -162,7 +162,11 @@ extract_subseq_bedtools <-
     
     random_tag = as.character(runif(1, 1e10, 1e11))
     tmp_bedfile = paste0('region2_', random_tag, '.bed')
-    region = paste0(seqname, "\t", start, "\t", end)
+    region = paste0(seqname,
+                    "\t",
+                    format(start, scientific = F),
+                    "\t",
+                    format(end, scientific = F))
     system(paste0('echo "', region, '" > ', tmp_bedfile))
     system(
       paste0(
@@ -188,15 +192,15 @@ find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
   overlappers = cpaf[((cpaf$qname == chrom) &
                         (cpaf$qstart <= pointcoordinate) &
                         (cpaf$qend >= pointcoordinate)
-  ), ]
+  ),]
   
-  # If no alignment overlaps, we return an empty value. 
-  if (dim(overlappers)[1] == 0){
+  # If no alignment overlaps, we return an empty value.
+  if (dim(overlappers)[1] == 0) {
     return(NULL)
   }
   
-  # Find the alignment with the hightest nmatch value. 
-  best_aln = overlappers[overlappers$nmatch == max(overlappers$nmatch), ]
+  # Find the alignment with the hightest nmatch value.
+  best_aln = overlappers[overlappers$nmatch == max(overlappers$nmatch),]
   
   # Liftover the point with that highest alignment.
   if (best_aln$strand == '+') {
@@ -209,7 +213,7 @@ find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
 }
 
 
-#' @export 
+#' @export
 liftover_coarse <-
   function(seqname,
            start,
@@ -247,7 +251,7 @@ liftover_coarse <-
     # Define a vector of probe positions (equally spaced between start and end)
     pos_probes = as.integer(start + (((end - start) / (n_probes - 1)) * (0:(n_probes -
                                                                               1))))
-
+    
     # Liftover every probe
     liftover_coords <- data.frame(matrix(ncol = 2, nrow = 0))
     colnames(liftover_coords) <- c('seqname', 'liftover_coord')
@@ -260,7 +264,7 @@ liftover_coarse <-
     winner_chr = names(sort(table(liftover_coords$seqname), decreasing = TRUE)[1])
     
     # And those snipplets matching to the winner chromosome - where do they fall (median)?
-    middle_median = median(liftover_coords[liftover_coords$seqname == winner_chr, ]$liftover_coord)
+    middle_median = median(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord)
     
     # Now  extend from median towards front and back.
     insequence_len = end - start
@@ -269,9 +273,10 @@ liftover_coarse <-
     
     # Make sure we don't exceed chromosome boundaries
     start_winners_cutoff = as.integer(max(0, start_winners))
-    end_winners_cutoff =   as.integer(min(cpaf[cpaf$tname == winner_chr, ][1, 'tlen'], end_winners))
+    end_winners_cutoff =   as.integer(min(cpaf[cpaf$tname == winner_chr,][1, 'tlen'], end_winners))
     
-    if( (start_winners < 0) | (end_winners > cpaf[cpaf$tname == winner_chr, ][1, 'tlen'])){
+    if ((start_winners < 0) |
+        (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
       print('Warning! Reaching the end of alignment!')
     }
     

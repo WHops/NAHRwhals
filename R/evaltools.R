@@ -20,7 +20,7 @@ rep.col <- function(x, n) {
 #' @param mat matrix. Bitlocus / Gridmatrix.
 #' @author  geeksforgeeks.org
 #' @export
-calc_coarse_grained_aln_score <- function(mat, verbose = F) {
+calc_coarse_grained_aln_score <- function(mat, verbose = F, forcecalc = F) {
   # Save matrix dimensions.
   dim_ = dim(mat)
   row = dim_[1]
@@ -30,7 +30,7 @@ calc_coarse_grained_aln_score <- function(mat, verbose = F) {
   # clear that this result will not be good.
   symmetry = min(dim_) / max(dim_)
   
-  if (symmetry < 0.9) {
+  if ((symmetry < 0.9) & (forcecalc == F)) {
     return(NA)
   }
   

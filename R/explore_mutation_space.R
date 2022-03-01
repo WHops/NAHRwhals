@@ -14,6 +14,12 @@ explore_mutation_space <- function(bitlocus, depth) {
   sample = bitlocus
   pairs = find_sv_opportunities(sample)
   
+  if (dim(pairs)[1] == 0){
+    res = (matrix(ncol = depth + 1, nrow = 1))
+    colnames(res) = c('eval', paste0('mut', 1:depth))
+    res[1, ] = unlist(c(calc_coarse_grained_aln_score(sample, forcecalc=T), 'ref', rep('NA', depth - 1)))
+    return(as.data.frame(res))
+  }
   # Del-dup-direction: do we need to delete or duplicate overall? 
   del_dup_direction = ((dim(bitlocus)[1] / dim(bitlocus)[2]) - 1)
   if (abs(del_dup_direction) < 0.1){ del_dup_direction == 0}
@@ -22,7 +28,6 @@ explore_mutation_space <- function(bitlocus, depth) {
   pairs = remove_equivalent_pairs(pairs)
   
   res = (matrix(ncol = depth + 1, nrow = (dim(pairs)[1] ** depth) * 5))
-  
   colnames(res) = c('eval', paste0('mut', 1:depth))
   res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus), 'ref', rep('NA', depth - 1)))
 
