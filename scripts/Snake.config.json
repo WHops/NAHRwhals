@@ -1,0 +1,7 @@
+{
+    "sample_fasta_dir" : "/Users/hoeps/Desktop/alns",
+    "paflibrary_dir" : "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/liftover_custom",
+    "intervals_list_bedfile" : "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/scripts/intervals.bed",
+
+    "hg38_fa" : "~/PhD/projects/huminvs/genomes/hg38/hg38.fa"
+}

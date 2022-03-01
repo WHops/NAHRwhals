@@ -1,0 +1,55 @@
+configfile: "Snake.config.json"
+
+sample_fasta_dir = config['sample_fasta_dir']
+paflibrary_dir = config['paflibrary_dir']
+intervals_list_bedfile = config['intervals_list_bedfile']
+
+print(sample_fasta_dir)
+print(paflibrary_dir)
+print(intervals_list_bedfile)
+
+# Samples
+SAMPLES = list(glob_wildcards("{}/{{sample}}.fasta".format(sample_fasta_dir)))[0]
+
+# Intervals
+f = open(intervals_list_bedfile)
+INTERVALS = f.read().split("\n")[:-1]
+f.close()
+
+print(INTERVALS)
+
+
+rule all: 
+    input:
+        plots = expand('res/{interval}/diff/{sample}_hg38_res.tsv', 
+        interval = INTERVALS, sample = SAMPLES)
+
+
+rule run_ntk:
+    input:
+    output:
+        plot = touch('res/{interval}/diff/{sample}_hg38_res.tsv')
+    params:
+        hg38_fa = config["hg38_fa"],
+        samplelink = "{}/{{sample}}.fasta".format(sample_fasta_dir),
+        paflink = "{}/{{sample}}_hg38.paf".format(paflibrary_dir),
+        runname = "{sample}_hg38"
+
+    shell:
+        """
+        Rscript ntk_wrapper_for_snakemake.R \
+            -f {params.hg38_fa} \
+            -g {params.samplelink} \
+            -p {params.paflink} \
+            -i {wildcards.interval} \
+            -o {params.runname}
+        """
+
+# rule make_hello:
+#     input:
+#     output:
+#         "hello.txt"
+#     shell:
+#         """
+#         echo "hi" > {output}
+#         """
