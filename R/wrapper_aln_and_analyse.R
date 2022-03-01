@@ -83,6 +83,14 @@ wrapper_aln_and_analyse <- function(seqname_x,
                     height = 10,
                     units = 'cm',
                     dpi = 300)
+    
+    # Save res table
+    write.table(res, file = res_table_xy,
+                col.names = T,
+                row.names = F,
+                quote = F,
+                sep='\t'
+    )
   }
   # Save orig alignments
   ggplot2::ggsave(filename = outfile_plot_self_x,
@@ -105,13 +113,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                   dpi = 300)
 
 
-  # Save res table
-  write.table(res, file = res_table_xy,
-              col.names = T,
-              row.names = F,
-              quote = F,
-              sep='\t'
-              )
+
   
   
 }
