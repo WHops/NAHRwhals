@@ -160,6 +160,7 @@ extract_subseq_bedtools <-
   function(infasta, seqname, start, end, outfasta) {
     # Needed for parallel runs
     
+    bedtoolsloc = query_config("bedtools")
     random_tag = as.character(runif(1, 1e10, 1e11))
     tmp_bedfile = paste0('region2_', random_tag, '.bed')
     region = paste0(seqname,
@@ -170,7 +171,8 @@ extract_subseq_bedtools <-
     system(paste0('echo "', region, '" > ', tmp_bedfile))
     system(
       paste0(
-        "/usr/local/bin/bedtools getfasta -fi ",
+        bedtoolsloc, 
+        "getfasta -fi ",
         infasta,
         " -bed ",
         tmp_bedfile,
