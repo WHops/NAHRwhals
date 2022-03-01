@@ -171,8 +171,8 @@ extract_subseq_bedtools <-
     system(paste0('echo "', region, '" > ', tmp_bedfile))
     system(
       paste0(
-        bedtoolsloc, 
-        "getfasta -fi ",
+        bedtoolsloc,
+        " getfasta -fi ",
         infasta,
         " -bed ",
         tmp_bedfile,
