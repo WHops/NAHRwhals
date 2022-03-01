@@ -13,7 +13,8 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                     factor = 1,
                                     sd_minlen = 1000,
                                     compression = 1000,
-                                    runname = 'test'
+                                    runname = 'test',
+                                    include_grid = T
                                     ){
   
   sequence_name_output = paste(paste0('res/',seqname_x), format(start_x, scientific = F),  format(end_x, scientific = F), sep='-')
@@ -64,19 +65,25 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                              hllink = F, hltype = F)
   
 
-  # Make an xy grid
-  grid_xy = wrapper_paf_to_bitlocus(outpaf_link_x_y, minlen = sd_minlen, compression = compression,
-                                    gridplot_save = outfile_plot_grid, pregridplot_save = outfile_plot_pre_grid )
-  gridmatrix = gridlist_to_gridmatrix(grid_xy[[3]])
-  res = explore_mutation_space(gridmatrix, depth = 1)
-  res = res[order(res$eval),]
-  # Make a grid after applying the top res
-  grid_modified = modify_gridmatrix(gridmatrix, res[1,])
-  gm2 = reshape2::melt(grid_modified)
-  colnames(gm2) = c('x','y','z')
-  grid_mut_plot = plot_matrix_ggplot(gm2[gm2$z != 0,])
-  
-
+  if (include_grid){
+    # Make an xy grid
+    grid_xy = wrapper_paf_to_bitlocus(outpaf_link_x_y, minlen = sd_minlen, compression = compression,
+                                      gridplot_save = outfile_plot_grid, pregridplot_save = outfile_plot_pre_grid )
+    gridmatrix = gridlist_to_gridmatrix(grid_xy[[3]])
+    res = explore_mutation_space(gridmatrix, depth = 1)
+    res = res[order(res$eval),]
+    # Make a grid after applying the top res
+    grid_modified = modify_gridmatrix(gridmatrix, res[1,])
+    gm2 = reshape2::melt(grid_modified)
+    colnames(gm2) = c('x','y','z')
+    grid_mut_plot = plot_matrix_ggplot(gm2[gm2$z != 0,])
+    ggplot2::ggsave(filename = outfile_plot_grid_mut,
+                    plot = grid_mut_plot,
+                    width = 10,
+                    height = 10,
+                    units = 'cm',
+                    dpi = 300)
+  }
   # Save orig alignments
   ggplot2::ggsave(filename = outfile_plot_self_x,
                   plot = plot_self_x, 
@@ -96,12 +103,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                   height = 20, 
                   units = 'cm',
                   dpi = 300)
-  ggplot2::ggsave(filename = outfile_plot_grid_mut,
-                  plot = grid_mut_plot,
-                  width = 10,
-                  height = 10,
-                  units = 'cm',
-                  dpi = 300)
+
 
   # Save res table
   write.table(res, file = res_table_xy,
