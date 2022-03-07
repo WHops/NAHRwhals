@@ -5,9 +5,13 @@
 #' @return A matrix of the bitplot
 #' @author Wolfram Höps
 #' @export
-gridlist_to_gridmatrix <- function(grid_list){
+gridlist_to_gridmatrix <- function(grid){
   
   # Sort by x
+  
+  grid_list = grid[[3]]
+  dim_x = length(grid[[1]]) - 1
+  dim_y = length(grid[[2]]) - 1
   
   grid_list = grid_list[order(grid_list$x),]
   
@@ -29,14 +33,18 @@ gridlist_to_gridmatrix <- function(grid_list){
 
 
   
-  x_missing = which(1:max(grid_list$x) %in% grid_list$x == F)
-  y_missing = which(1:max(grid_list$y) %in% grid_list$y == F)
+  x_missing = which(1:dim_x %in% grid_list$x == F)
+  y_missing = which(1:dim_y %in% grid_list$y == F)
   
+  # W, 7th March 2022. 
+  # Fixed a bug here, where previously points might be appended
+  # to the grid_list that were inappropriate if the grid was not
+  # symmetrical. 
   for (xm in x_missing) {
-    grid_list = rbind(grid_list, c(xm, xm, 0))
+    grid_list = rbind(grid_list, c(xm, 1, 0))
   }
   for (ym in y_missing) {
-    grid_list = rbind(grid_list, c(ym, ym, 0))
+    grid_list = rbind(grid_list, c(1, ym, 0))
   }
   
   
@@ -45,8 +53,8 @@ gridlist_to_gridmatrix <- function(grid_list){
   gridmatrix$y = NULL
   gridmatrix = as.matrix(gridmatrix)
   
-  colnames(gridmatrix) = 1:dim(gridmatrix)[2]
-  rownames(gridmatrix) = 1:dim(gridmatrix)[1]
+  colnames(gridmatrix) = diff(grid[[1]])
+  row.names(gridmatrix) = diff(grid[[2]])
   
   return(gridmatrix)
 }

@@ -549,12 +549,15 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
     bitl_mut = cbind(bitl[, 1:as.numeric(pair[2])],
                      bitl[, as.numeric(pair[1] + 1):dim(bitl)[2]])
   } else if (action == 'inv') {
-    bitl_mut = cbind(cbind(bitl[, 1:as.numeric(pair[1])],-bitl[, (as.numeric(pair[2]) -
-                                                                    1):(as.numeric(pair[1]) + 1)]),
+    bitl_mut = cbind(cbind(bitl[, 1:as.numeric(pair[1])],
+                           -bitl[, (as.numeric(pair[2]) - 1):(as.numeric(pair[1]) + 1)]),
                      bitl[, as.numeric(pair[2]):dim(bitl)[2]])
   }
   
-  colnames(bitl_mut) = 1:dim(bitl_mut)[2]
+  
+  # W, 7th March 2022. Excluding this line since bitl now has 
+  # meaningful rownames and colnames. 
+  #colnames(bitl_mut) = 1:dim(bitl_mut)[2]
   
   return(bitl_mut)
   

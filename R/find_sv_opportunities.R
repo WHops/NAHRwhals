@@ -45,10 +45,7 @@ find_sv_opportunities <- function(sample) {
         all_opportunities[n_opportunity, ] = result_pair
         
         n_opportunity = n_opportunity + 1
-        if (all(result_pair == c(2,33,1))){
-          print(result_pair)
-          browser()
-        }
+        
       }
     }
   }

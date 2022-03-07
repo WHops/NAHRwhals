@@ -124,7 +124,7 @@ make_chunked_minimap_alnment <-
     }
     
     # paf of fragmented paf gets put back together.
-    compress_paf_fnct(outpaf_filter, outpaf, quadrantsize)
+    compress_paf_fnct(inpaf_link = outpaf_filter, outpaf_link = outpaf, quadrantsize = quadrantsize)
     
     if (wholegenome) {
       flip_query_target(outpaf, outpaf_plot)

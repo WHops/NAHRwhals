@@ -13,6 +13,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                     factor = 1,
                                     sd_minlen = 1000,
                                     compression = 1000,
+                                    depth = 2,
                                     runname = 'test',
                                     include_grid = T
                                     ){
@@ -63,14 +64,13 @@ wrapper_aln_and_analyse <- function(seqname_x,
   plot_x_y = make_chunked_minimap_alnment(genome_x_fa_subseq, genome_y_fa_subseq, outpaf_link_x_y,
                                              chunklen = chunklen, minsdlen = 2000, saveplot=F,
                                              hllink = F, hltype = F)
-  
-
   if (include_grid){
     # Make an xy grid
     grid_xy = wrapper_paf_to_bitlocus(outpaf_link_x_y, minlen = sd_minlen, compression = compression,
                                       gridplot_save = outfile_plot_grid, pregridplot_save = outfile_plot_pre_grid )
-    gridmatrix = gridlist_to_gridmatrix(grid_xy[[3]])
-    res = explore_mutation_space(gridmatrix, depth = 1)
+    gridmatrix = gridlist_to_gridmatrix(grid_xy)
+    
+    res = explore_mutation_space(gridmatrix, depth = depth)
     res = res[order(res$eval),]
     # Make a grid after applying the top res
     grid_modified = modify_gridmatrix(gridmatrix, res[1,])
@@ -112,7 +112,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                   units = 'cm',
                   dpi = 300)
 
-
+  system(paste0('rm ', genome_y_fa_subseq))
 
   
   

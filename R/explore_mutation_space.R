@@ -11,13 +11,16 @@
 #' @export
 explore_mutation_space <- function(bitlocus, depth) {
   
-  sample = bitlocus
-  pairs = find_sv_opportunities(sample)
+
+  # Consider to flip y axis. 
+  bitlocus = flip_bitl_y_if_needed(bitlocus)
+
+  pairs = find_sv_opportunities(bitlocus)
   
   if (dim(pairs)[1] == 0){
     res = (matrix(ncol = depth + 1, nrow = 1))
     colnames(res) = c('eval', paste0('mut', 1:depth))
-    res[1, ] = unlist(c(calc_coarse_grained_aln_score(sample, forcecalc=T), 'ref', rep('NA', depth - 1)))
+    res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus, forcecalc=T), 'ref', rep('NA', depth - 1)))
     return(as.data.frame(res))
   }
   # Del-dup-direction: do we need to delete or duplicate overall? 
@@ -29,7 +32,7 @@ explore_mutation_space <- function(bitlocus, depth) {
   
   res = (matrix(ncol = depth + 1, nrow = (dim(pairs)[1] ** depth) * 5))
   colnames(res) = c('eval', paste0('mut', 1:depth))
-  res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus), 'ref', rep('NA', depth - 1)))
+  res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus, forcecalc=T), 'ref', rep('NA', depth - 1)))
 
   rescount = 2
   
@@ -39,7 +42,7 @@ explore_mutation_space <- function(bitlocus, depth) {
     pair_level1 = pairs[npair_level1, ]
     
     # Trio of function: Mutate, Evaluate, Observate
-    bitl_mut = carry_out_compressed_sv(sample, pair_level1)
+    bitl_mut = carry_out_compressed_sv(bitlocus, pair_level1)
     
     res[rescount, 1:2] = add_eval(res,
                                   m = bitl_mut,
@@ -126,7 +129,7 @@ explore_mutation_space <- function(bitlocus, depth) {
     'Finished ',
     dim(res_df)[1],
     ' mutation simulations (',
-    dim(res_df[res_df$eval != Inf, ])[1],
+    dim(res_df[!is.na(res_df$eval), ])[1],
     ' with eval calculated)'
   ))
   

@@ -20,7 +20,7 @@ rep.col <- function(x, n) {
 #' @param mat matrix. Bitlocus / Gridmatrix.
 #' @author  geeksforgeeks.org
 #' @export
-calc_coarse_grained_aln_score <- function(mat, verbose = F, forcecalc = F) {
+calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F, forcecalc = F) {
   # Save matrix dimensions.
   dim_ = dim(mat)
   row = dim_[1]
@@ -38,8 +38,13 @@ calc_coarse_grained_aln_score <- function(mat, verbose = F, forcecalc = F) {
   # cost_u, if you want to go 'up'
   # cost_r, if you want to go 'right'
   # cord_d, if you want to go 'diagonal'
-  climb_up_cost = colMax(as.data.frame(t(abs(mat))))
-  walk_right_cost = colMax(as.data.frame(abs(mat)))
+  if (old_way_of_calc){
+    climb_up_cost = colMax(as.data.frame(t(abs(mat))))
+    walk_right_cost = colMax(as.data.frame(abs(mat)))
+  } else {
+    climb_up_cost = as.numeric(row.names(mat))
+    walk_right_cost = as.numeric(colnames(mat))
+  }
   cost_u = rep.col(climb_up_cost, dim(mat)[2])
   cost_r = rep.row(walk_right_cost, dim(mat)[1])
   
@@ -90,7 +95,7 @@ calc_coarse_grained_aln_score <- function(mat, verbose = F, forcecalc = F) {
   }
   
   # Return value: percentage of basepairs not crossed along alignments. 
-  return((cost_res[row, col] * 100) / sum(climb_up_cost, walk_right_cost))
+  return(round((1-(cost_res[row, col]) / sum(climb_up_cost, walk_right_cost)) * 100, 3))
 }
 
 
