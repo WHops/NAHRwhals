@@ -4,6 +4,7 @@
 library(devtools)
 devtools::load_all()
 
+
 # Take an example input fasta shipped with the package
 samplefasta_link = system.file('extdata', '10ktest.fa', package='nahrtoolkit')
 
@@ -20,6 +21,7 @@ grid = wrapper_paf_to_bitlocus(samplepaf_link, minlen=0, compression = 1)
 
 # Run a mutation search
 gridmatrix = gridlist_to_gridmatrix(grid[[3]])
+
 res = explore_mutation_space(gridmatrix, depth = 3)
 
 
@@ -39,10 +41,12 @@ make_chunked_minimap_alnment(samplefasta_link, samplefasta_inv_link, samplepaf_l
                              hllink = samplepaf_link, hltype = 'paf', quadrantsize = 10000)
 
 # Make the condensed dotplot
-grid_inv = wrapper_paf_to_bitlocus(samplepaf_link, minlen=0, compression = 100)
+grid_inv = wrapper_paf_to_bitlocus(samplepaf_link, minlen=0, compression = 10)
 
 # Run a mutation search
 gridmatrix = gridlist_to_gridmatrix(grid_inv[[3]])
+unmatching_bases(gridmatrix, verbose=T)
+
 res = explore_mutation_space(gridmatrix, depth = 3)
 
 # Define an output alignment file
@@ -53,29 +57,16 @@ make_chunked_minimap_alnment(samplefasta_link, samplefasta_link, samplepaf_link,
                              chunklen = 1000, minsdlen = 100, saveplot=F, 
                              hllink = samplepaf_link, hltype = 'paf', quadrantsize = 10000)
 
+
 # Make the condensed dotplot
 grid = wrapper_paf_to_bitlocus(samplepaf_link, minlen=0, compression = 100)
 # Run a mutation search
+unmatching_bases(gridmatrix, verbose=T)
+
 gridmatrix = gridlist_to_gridmatrix(grid[[3]])
 res = explore_mutation_space(gridmatrix, depth = 3)
 
 
-# M * R = I
-# M = I * pinv(R)
-
-r_inv = ginv(r)
-m1 = (i %*% r_inv)
-
-# Orig
-plot_matrix(r)
-plot_matrix(i)
-
-# Inverse and transformation
-plot_matrix(r_inv)
-plot_matrix(m1)
-
-# Creation of i through transformation of r
-plot_matrix(m1 %*% r)
 
 
 
@@ -150,6 +141,8 @@ make_chunked_minimap_alnment(samplefasta_link, samplemutfasta_link, samplepaf_li
 grid = wrapper_paf_to_bitlocus(samplepaf_link, minlen = 10, compression = 1)
 # Run a mutation search
 gridmatrix = gridlist_to_gridmatrix(grid[[3]])
+unmatching_bases(gridmatrix, verbose=T)
+
 res = explore_mutation_space(gridmatrix, depth = 3)
 
 
@@ -168,6 +161,7 @@ make_chunked_minimap_alnment(samplefasta_link, samplefasta_link, samplepaf_link,
 
 grid = wrapper_paf_to_bitlocus(samplepaf_link, minlen=0, compression = 1)[[3]]
 gridmatrix = gridlist_to_gridmatrix(grid)
+unmatching_bases(gridmatrix, verbose=T)
 
 # Run a mutation search
 res = explore_mutation_space(gridmatrix, depth = 3)
@@ -200,11 +194,11 @@ make_chunked_minimap_alnment(samplefasta_link, samplefasta_link, outpaf_link,
                              hllink = F, hltype = F)
 
 
-grid = wrapper_paf_to_bitlocus(outpaf_link, minlen=1000, compression = 10000)[[3]]
+grid = wrapper_paf_to_bitlocus(outpaf_link, minlen=1000, compression = 1000)[[3]]
 gridmatrix = gridlist_to_gridmatrix(grid)
 
 # Run a mutation search
-res = explore_mutation_space(gridmatrix, depth = 2)
+res = explore_mutation_space(gridmatrix, depth = 3)
 res[res$eval == max(res$eval),]
   #'/Users/hoeps/PhD/projects/huminvs/genomes/hifi-asm/HG00512_hgsvc_pbsq2-ccs_1000-hifiasm.h1-un.fasta'
 # Problems/Errors spotted: 
@@ -229,7 +223,7 @@ outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/outpafsds13233
 make_chunked_minimap_alnment(samplefasta_link, samplefasta_link, outpaf_link, 
                              chunklen = 1000, minsdlen = 10000, saveplot=F, 
                              hllink = outpaf_link, hltype = 'paf', quadrantsize = 200000)
-grid = wrapper_paf_to_bitlocus(outpaf_link, minlen = 5000, compression = 10000)
+grid = wrapper_paf_to_bitlocus(outpaf_link, minlen = 5000, compression = 5000)
 gridmatrix = gridlist_to_gridmatrix(grid[[3]])
 
 res = explore_mutation_space(gridmatrix, depth = 2)
@@ -266,51 +260,117 @@ grid = wrapper_paf_to_bitlocus(samplepaf_link3, minlen=0, compression = 10)
 # a) implement a tree search
 # b) implement a quality metric simple alignment test
 # c) implement a 'region search': region in, and need to find correct region on chr. 
-
-hg38fa = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/hg38.fa"
+library(devtools)
+devtools::load_all()
+ref_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/hg38.fa"
+hg38_fa = ref_fa
+hg38fa = hg38_fa
 chm13fa = '/Users/hoeps/PhD/projects/huminvs/genomes/CHM13_T2T/fasta/chm13.draft_v1.1.fasta'
 aln_fa = '/Users/hoeps/PhD/projects/huminvs/genomes/hifi-asm/HG00512_hgsvc_pbsq2-ccs_1000-hifiasm.h1-un.fasta'
 conversionpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/liftover_custom/HG00512_hgsvc_pbsq2-ccs_1000-hifiasm.h1-un_hg38.paf"
 
-aln_fa = '~/Desktop/NA12878_giab_pbsq2-ccs_1000-hifiasm.h2-un.fasta'
+aln_fa = '~/Desktop/alns/NA12878_giab_pbsq2-ccs_1000-hifiasm.h2-un.fasta'
 conversionpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/liftover_custom/NA12878_giab_pbsq2-ccs_1000-hifiasm.h2-un_hg38.paf"
+
+aln_fa = '~/Desktop/alns/HG00731_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un.fasta'
+conversionpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/liftover_custom/HG00731_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un_hg38.paf"
+
+
+aln_fa = '~/Desktop/alns/NA19240_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un.fasta'
+conversionpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/liftover_custom/NA19240_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un_hg38.paf"
+
 
 outfasta_hg38 = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/hg38_sub.fa"
 outfasta_aln = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/aln_sub.fa"
 
-outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/1223456.paf'
+outpaf_link = '/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/122342526.paf'
+
+  
+
+rhemac10_fa = '/Users/hoeps/PhD/projects/huminvs/genomes/rheMac10/rheMac10.fa'
+conversionpaf_link = '/Users/hoeps/PhD/projects/huminvs/genomes/rheMac10/rheMac10_hg38.paf'
+
+wrapper_aln_and_analyse('chr1',
+                        108348182 - 00000,
+                        108546190 + 00000,
+                        hg38_fa,
+                        hg38_fa,
+                        conversionpaf_link,
+                        runname = 'hg38-rhesus-5',
+                        sd_minlen = 100, 
+                        compression = 100,
+                        depth = 1)
+
+seqname = 'chr7'
+start = 142532924
+end = 144507494
+
+
+
+
+
+
 
 
 #hg38
-# seqname = 'chr15'
-# start = 29314547
-# end =   33776660
-seqname = 'chr7'
-start = 65219157 - 500000
-end =   65531823 + 500000
+seqname = 'chr1'
+start = 5000000
+end =   5500000
+
+
+library(devtools)
+devtools::load_all()
+
+seqname = 'chr1'
+start = 108348182
+end = 108546191
+
+# seqname = 'chrX'
+# 
+# 
+# start = 136505547 
+# end =   137131190 
 outpaf_link = as.character(runif(1,1e10,1e11))
 
 coords_liftover = liftover_coarse(seqname, start, end, conversionpaf_link, lenfactor = 1)
 print(end - start)
 print(coords_liftover$lift_end - coords_liftover$lift_start)
-
 extract_subseq_bedtools(hg38fa, seqname, start, end, outfasta_hg38)
 extract_subseq_bedtools(aln_fa, coords_liftover$lift_contig, coords_liftover$lift_start, coords_liftover$lift_end, outfasta_aln)
 
 make_chunked_minimap_alnment(outfasta_hg38, outfasta_aln, outpaf_link,
-                             chunklen = 10000, minsdlen = 2000, saveplot=F,
-                             hllink = F, hltype = F)#, wholegenome = F)
-grid = wrapper_paf_to_bitlocus(outpaf_link, minlen = 10000, compression = 10000)#[[3]]
-gridmatrix = gridlist_to_gridmatrix(grid[[3]])
-res = explore_mutation_space(gridmatrix, depth = 2)
+                             chunklen = 1000, minsdlen = 2000, saveplot=F,
+                             hllink = outpaf_link, hltype = 'paf')#, wholegenome = F)
 
-gm2 = carry_out_compressed_sv(gridmatrix, c(20,28,'inv'))
+make_chunked_minimap_alnment(outfasta_hg38, outfasta_hg38, outpaf_link,
+                             chunklen = 1000, minsdlen = 2000, saveplot=F,
+                             hllink = F, hltype = F, quadrantsize = 250000)#, wholegenome = F)
+make_chunked_minimap_alnment(outfasta_aln, outfasta_aln, outpaf_link,
+                             chunklen = 1000, minsdlen = 2000, saveplot=F,
+                             hllink = F, hltype = F)#, wholegenome = F)
+
+
+grid = wrapper_paf_to_bitlocus(outpaf_link, minlen = 1000, compression = 1000)#[[3]]
+gridmatrix = gridlist_to_gridmatrix(grid)
+
+
+
+res = explore_mutation_space(gridmatrix, depth = 1)
+
+res[res$eval == max(res$eval),][1,]
+
+gm2 = carry_out_compressed_sv(carry_out_compressed_sv(gridmatrix, c(3,33,'inv')), c(31,55,'del'))
+plot_matrix(log(abs(gm2)+1)+1)
+calc_coarse_grained_aln_score(gm2, verbose=T)
+
 #gm1 = carry_out_compressed_sv(gridmatrix, c('3', '8', 'inv'))
 #gm2 = carry_out_compressed_sv(gm1, c('9', '12', 'del'))
 #plot_matrix(sign(gridmatrix))
 #plot_matrix(sign(gm1))
 #plot_matrix(sign(gm2))
 # Run a mutation search
+res = explore_mutation_space(gridmatrix, depth = 1)
+
 
 profvis(explore_mutation_space(gridmatrix, depth = 2))
 plot_matrix(gm2)
