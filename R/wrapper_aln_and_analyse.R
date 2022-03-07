@@ -71,7 +71,8 @@ wrapper_aln_and_analyse <- function(seqname_x,
     gridmatrix = gridlist_to_gridmatrix(grid_xy)
     
     res = explore_mutation_space(gridmatrix, depth = depth)
-    res = res[order(res$eval),]
+    res = res[!is.na(res$eval),]
+    res = res[order(res$eval, decreasing=T),]
     # Make a grid after applying the top res
     grid_modified = modify_gridmatrix(gridmatrix, res[1,])
     gm2 = reshape2::melt(grid_modified)

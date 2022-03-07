@@ -581,6 +581,8 @@ modify_gridmatrix <- function(gmx, r1){
     gmx = carry_out_compressed_sv(gmx, c(start, end, action))
   }
   
+  colnames(gmx) = ncol(gmx) - 1:ncol(gmx)
+  row.names(gmx) = nrow(gmx) - 1:nrow(gmx)
   return(gmx)
 }
 

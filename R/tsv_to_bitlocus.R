@@ -68,7 +68,7 @@ wrapper_paf_to_bitlocus <-
     )
     
     # A) PAF prep
-    
+
     # Filter alignments by length
     paf = paf[paf$alen > minlen, ]
     
@@ -198,6 +198,8 @@ wrapper_paf_to_bitlocus <-
       df$tend = df$tstart + df$squaresize
       
       df[, c('qlen_aln', 'tlen_aln', 'squaresize')] = NULL
+      
+      df = df[(df$qstart != df$qend) & (df$tstart != df$tend),]
       
       return(df)
       

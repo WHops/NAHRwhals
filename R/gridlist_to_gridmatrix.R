@@ -47,6 +47,16 @@ gridlist_to_gridmatrix <- function(grid){
     grid_list = rbind(grid_list, c(1, ym, 0))
   }
   
+  # Remove duplicates. This happens if SDs overlap (which can be a result
+  # of the compression step)
+  grid_list = grid_list[!duplicated(grid_list),]
+  
+  # If a value appears both positive and negative, we have to set it to 0, 
+  # rather than keeping randomly one of the two.
+  grid_list[duplicated(grid_list[,c('x','y')]),'z'] = 0
+  
+  # Remove duplicates again. 
+  grid_list = grid_list[!duplicated(grid_list[,c('x','y')], fromLast=T),]
   
   gridmatrix = reshape2::dcast(grid_list, y ~ x, fill = 0)
   gridmatrix$x = NULL

@@ -13,6 +13,7 @@ explore_mutation_space <- function(bitlocus, depth) {
   
 
   # Consider to flip y axis. 
+  
   bitlocus = flip_bitl_y_if_needed(bitlocus)
 
   pairs = find_sv_opportunities(bitlocus)
@@ -23,6 +24,8 @@ explore_mutation_space <- function(bitlocus, depth) {
     res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus, forcecalc=T), 'ref', rep('NA', depth - 1)))
     return(as.data.frame(res))
   }
+  
+
   # Del-dup-direction: do we need to delete or duplicate overall? 
   del_dup_direction = ((dim(bitlocus)[1] / dim(bitlocus)[2]) - 1)
   if (abs(del_dup_direction) < 0.1){ del_dup_direction == 0}
@@ -34,6 +37,12 @@ explore_mutation_space <- function(bitlocus, depth) {
   colnames(res) = c('eval', paste0('mut', 1:depth))
   res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus, forcecalc=T), 'ref', rep('NA', depth - 1)))
 
+  if (as.numeric(res[1,'eval'] > 95)){
+    print('Initial alignment is better than 95%. Not attempting to find SV.')
+    res[2,] = res[1,]
+    return(as.data.frame(res[1:2,]))
+  }
+  
   rescount = 2
   
   for (npair_level1 in 1:dim(pairs)[1]) {

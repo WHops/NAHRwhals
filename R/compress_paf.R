@@ -44,54 +44,6 @@ merge_rows <- function(paffile, nl1, nl2) {
 
 
 
-#' Tiny undocumented helperfunction.
-#' @author Wolfram Höps
-#' @export
-merge_paf_entries_intraloop <- function(inpaf) {
-  inpaf_rownames = row.names(inpaf)
-  
-  # For safety: sort entries by qstart. Reset row names so they start at 1.
-  inpaf = inpaf[order(inpaf$qstart),]
-  rownames(inpaf) <- NULL
-  
-  
-  # We consider alignments as 'potential neighbours' if their distance in any direction
-  # (+-x, +-y) is less than 5% of their alignment length.
-  tolerance_bp = 10 #0.05 * (outer(inpaf$alen, inpaf$alen, '+') / 2)
-  
-  # Identify alignments that border each other: same strand, and end of of is the start
-  # of the other. With some tolerance
-  rowpairs = data.frame(which((abs(
-    outer(inpaf$qend, inpaf$qstart, '-')
-  ) < tolerance_bp) &
-    # Take only one half of the minus matrix so pairs dont appear twice.
-    (
-      (abs(outer(
-        inpaf$tend, inpaf$tstart, '-'
-      )) < tolerance_bp) |
-        (abs(outer(
-          inpaf$tstart, inpaf$tend, '-'
-        )) < tolerance_bp)
-    ) &
-    (
-      (abs(outer(
-        inpaf$qend, inpaf$qstart, '-'
-      )) < tolerance_bp) |
-        (abs(outer(
-          inpaf$qstart, inpaf$qend, '-'
-        )) < tolerance_bp)
-    ) &
-    (
-      outer(inpaf$strand, inpaf$strand, '==')
-    ),
-  arr.ind = T))
-  
-  rowpairs$row = as.numeric(inpaf_rownames[rowpairs$row])
-  rowpairs$col = as.numeric(inpaf_rownames[rowpairs$col])
-  
-  
-  return(rowpairs)
-}
 
 
 
@@ -168,8 +120,9 @@ compress_paf_fnct <-
     qsteps = c(seq(1, range[2], quadrantsize), max(inpaf$qend))
     rowpairs = data.frame()
     count = 0
-    for (tstep in tsteps) {
-      for (qstep in qsteps) {
+    #browser()
+    for (tstep in tsteps[1:length(tsteps)-1]) {
+      for (qstep in qsteps[1:length(qsteps)-1]) {
         # Input: we take any alignment that touches our box.
         inpaf_q = inpaf[(
           (inpaf$tstart >= tstep) & (inpaf$tstart <= tstep + quadrantsize) &
@@ -219,6 +172,8 @@ compress_paf_fnct <-
         inpaf = merge_rows(inpaf, rowpairs_singular[nrow, 1], rowpairs_singular[nrow, 2])
       }
     }
+    
+    print(paste0('PAF compressed to ', dim(inpaf)[1], ' alignments.'))
     # Save
     if (save_outpaf) {
       write.table(
@@ -236,11 +191,11 @@ compress_paf_fnct <-
   }
 
 
-# runs only when script is run by itself
-if (sys.nframe() == 0) {
-  # Define input
-  inpaf_link = commandArgs(trailingOnly = TRUE)[1]
-  outpaf_link = commandArgs(trailingOnly = TRUE)[2]
-  
-  compress_paf_fnct(inpaf_link, outpaf_link)
-}
+# # runs only when script is run by itself
+# if (sys.nframe() == 0) {
+#   # Define input
+#   inpaf_link = commandArgs(trailingOnly = TRUE)[1]
+#   outpaf_link = commandArgs(trailingOnly = TRUE)[2]
+#   
+#   compress_paf_fnct(inpaf_link, outpaf_link)
+# }
