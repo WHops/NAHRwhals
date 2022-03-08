@@ -70,6 +70,11 @@ find_sv_opportunities <- function(sample) {
     all_opportunities = rbind(all_opportunities, pluspairs)
   }
   
+  # No length-1-inversions
+  all_opportunities = all_opportunities[!(
+      ((all_opportunities$p2 - all_opportunities$p1) == 1) & 
+      (all_opportunities$sv == 'inv')
+    ),]
   
   return(all_opportunities)
   

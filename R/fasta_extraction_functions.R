@@ -249,7 +249,7 @@ liftover_coarse <-
     
     # We take n_probes single points from the alignment, see where they fall, and take their median
     # as the median of our alignment.
-    
+
     # Define a vector of probe positions (equally spaced between start and end)
     pos_probes = as.integer(start + (((end - start) / (n_probes - 1)) * (0:(n_probes -
                                                                               1))))
@@ -261,6 +261,10 @@ liftover_coarse <-
       liftover_coords = rbind(liftover_coords,
                               find_punctual_liftover(cpaf, pointcoord, seqname))
     }
+    
+    # Make sure we got any results.
+    stopifnot("Error: Unsuccessful liftover of the input sequence: Sequence not found on query" = 
+                dim(liftover_coords)[1] > 0)
     
     # What is the majority vote for the target chromosome?
     winner_chr = names(sort(table(liftover_coords$seqname), decreasing = TRUE)[1])
@@ -277,9 +281,12 @@ liftover_coarse <-
     start_winners_cutoff = as.integer(max(0, start_winners))
     end_winners_cutoff =   as.integer(min(cpaf[cpaf$tname == winner_chr,][1, 'tlen'], end_winners))
     
+    
     if ((start_winners < 0) |
         (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
-      print('Warning! Reaching the end of alignment!')
+      #print('Warning! Reaching the end of alignment!')
+      stopifnot("Error: Input sequence out of bounds!" = 
+                  (end_winners <= cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) 
     }
     
     return(

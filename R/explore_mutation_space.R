@@ -36,11 +36,16 @@ explore_mutation_space <- function(bitlocus, depth) {
   res = (matrix(ncol = depth + 1, nrow = (dim(pairs)[1] ** depth) * 5))
   colnames(res) = c('eval', paste0('mut', 1:depth))
   res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus, forcecalc=T), 'ref', rep('NA', depth - 1)))
-
-  if (as.numeric(res[1,'eval'] > 95)){
-    print('Initial alignment is better than 95%. Not attempting to find SV.')
+  if (is.na(res[1,'eval'])){
+    res[1,'eval'] = 0
+  }
+  # Early stopping if ref is already near-perfect. 
+  if (as.numeric(res[1,'eval']) > 99){
+    print('Initial alignment is better than 99%. Not attempting to find SV.')
+    
+    # Excuse this terrible code. It's turning the res thing into a dataframe. 
     res[2,] = res[1,]
-    return(as.data.frame(res[1:2,]))
+    return(as.data.frame(res[1:2,])[1,])
   }
   
   rescount = 2
@@ -52,7 +57,6 @@ explore_mutation_space <- function(bitlocus, depth) {
     
     # Trio of function: Mutate, Evaluate, Observate
     bitl_mut = carry_out_compressed_sv(bitlocus, pair_level1)
-    
     res[rescount, 1:2] = add_eval(res,
                                   m = bitl_mut,
                                   layer = 1,
@@ -128,8 +132,8 @@ explore_mutation_space <- function(bitlocus, depth) {
   res_df$eval = as.numeric(res_df$eval)
   
   # Remove NA rows
-  res_df = res_df[rowSums(is.na(res_df)) != ncol(res_df),]
-  
+  #res_df = res_df[rowSums(is.na(res_df)) != ncol(res_df),]
+  res_df = res_df[!is.na(res_df$eval),]
   # Remove entries without evals
   #res_df = res_df[!is.na(res_df$eval),]
   

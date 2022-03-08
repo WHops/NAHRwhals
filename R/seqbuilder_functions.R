@@ -104,13 +104,16 @@ make_chunked_minimap_alnment <-
     }
     # Run a series of chunking, aligning and merging functions/scripts
     # Single-sequence query fasta gets chopped into pieces.
+
+    
     shred_seq(queryfasta, queryfasta_chunk, chunklen)
     print('1')
     print(queryfasta_chunk)
     # Self explanatory
     run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk)
     
-    print('2')
+
+    
     # Awk is used to correct the sequence names. This is because I know only there
     # how to use regex...
     awk_edit_paf(outpaf_chunk, outpaf_awk)
@@ -249,6 +252,11 @@ run_minimap2 <-
       )
     )
     
+    # Check if that was successful. 
+    stopifnot("Alignment error: Minimap2 has not reported any significant alignment. 
+              Check if your input sequence is sufficiently long." = 
+                file.size(outpaf) != 0)
+    
     #pbmm2: CCS/HIFI
     #system(paste0(minimap2loc," -k 19 -w 10 -u -o 5 -O 56 -e 4 -E 1 -A 2 -B 5 -z 400 -Z 50 -r 2000 -L 0.5 -g 5000", targetfasta, " ", queryfasta, " > ", outpaf))
     
@@ -308,7 +316,6 @@ writeFasta <- function(data, filename) {
 #' @author Nicholas Hathaway
 #' @export
 shorten_fasta <- function(infasta, outfasta, range) {
-  browser()
   input = read.table(infasta)
   seq_shortened = as.character(Biostrings::subseq(
     Biostrings::readDNAStringSet(infasta),

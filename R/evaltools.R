@@ -25,12 +25,13 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
   dim_ = dim(mat)
   row = dim_[1]
   col = dim_[2]
-  
   # Decide if it is 'worth' to calculate an aln score, of if it's
   # clear that this result will not be good.
-  symmetry = min(dim_) / max(dim_)
-  
-  if ((symmetry < 0.9) & (forcecalc == F)) {
+  climb_up_cost = as.numeric(row.names(mat))
+  walk_right_cost = as.numeric(colnames(mat))
+  symmetry = min(sum(climb_up_cost), sum(walk_right_cost)) / max(sum(climb_up_cost), sum(walk_right_cost))
+
+  if ((symmetry < 0.95) & (forcecalc == F)) {
     return(NA)
   }
   
@@ -60,26 +61,61 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
   
   
   ### Fill the cost matrix ###
-  
+  if (dim_[1] < 10){
+    uncalc_border_frac = 1
+  } else if (dim_[1] < 30){
+    uncalc_border_frac = 0.3
+  } else {
+    uncalc_border_frac = 0.1
+  }
+
   # For 1st column
   for (i in 2:row) {
+    if (i/row > uncalc_border_frac){
+      cost_res[i, 1] = Inf
+    } else {
     cost_res[i, 1] = cost_u[i, 1] + cost_res[i - 1, 1]
+    }
   }
   # For 1st row
   for (j in 2:col) {
+    if (j/col > uncalc_border_frac){
+      cost_res[1,j] = Inf
+    } else {
     cost_res[1, j] = cost_r[1, j] + cost_res[1, j - 1]
+    }
   }
-  # For rest of the 2d matrix
+
   for (i in 2:row) {
     for (j in 2:col) {
+      i_pct = i/row
+      j_pct = j/row
+      if (((i_pct - uncalc_border_frac) > j_pct) | ((j_pct - uncalc_border_frac) > i_pct)){
+        cost_res[i,j] = Inf
+      } else {
       cost_res[i, j] =  (min(
         cost_d[i - 1, j - 1] + cost_res[i - 1, j - 1],
         cost_res[i - 1, j] + cost_u[i - 1, j],
         cost_res[i, j - 1] + cost_r[i, j - 1]
       ))
+      }
     }
   }
 
+  if(cost_res[row, col] == Inf){
+    return(NA)
+  }
+  # For rest of the 2d matrix
+  # for (i in 2:row) {
+  #   for (j in 2:col) {
+  #     cost_res[i, j] =  (min(
+  #       cost_d[i - 1, j - 1] + cost_res[i - 1, j - 1],
+  #       cost_res[i - 1, j] + cost_u[i - 1, j],
+  #       cost_res[i, j - 1] + cost_r[i, j - 1]
+  #     ))
+  #   }
+  # }
+  
   if (verbose) {
     print(cost_res)
     print(paste0(

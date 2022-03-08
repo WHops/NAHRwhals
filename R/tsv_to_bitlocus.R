@@ -125,11 +125,11 @@ wrapper_paf_to_bitlocus <-
     n_aln_acceptable = F
     while(!n_aln_acceptable){
       paf = load_and_prep_paf_for_gridplot_transform(inpaf, minlen, compression)
-      if (dim(paf)[1] < 200){
+      if (dim(paf)[1] < 50){
         n_aln_acceptable = T
       } else {
-        minlen = minlen * 5
-        compression = compression * 5
+        minlen = minlen + 1000
+        compression = compression + 1000
       }
     }
     
