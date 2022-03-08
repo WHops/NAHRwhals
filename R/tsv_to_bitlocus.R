@@ -1,3 +1,71 @@
+#' load_and_prep_paf_for_gridplot_transform
+#' Called (exclusively) by wrapper_paf_to_bitlocus
+#' Loads and prepares the input paf. Preparations:
+#' Length filter
+#' Start/Endpoint rounding ('compression')
+#' Slope = 1
+#' Transform start / end in negative alignments
+#' Append qmin qmax columns.
+#' @author Wolfram Hoeps
+#' @export
+load_and_prep_paf_for_gridplot_transform <- function(inpaf, minlen, compression){
+  paf = read.table(inpaf)
+  colnames(paf) = c(
+    'qname',
+    'qlen',
+    'qstart',
+    'qend',
+    'strand',
+    'tname',
+    'tlen',
+    'tstart',
+    'tend',
+    'nmatch',
+    'alen',
+    'mapq'
+  )
+  
+  ### PAF prep ###
+  
+  # Filter alignments by length
+  paf = paf[paf$alen > minlen, ]
+  
+  # (Error out if no paf survives initial filtering)
+  stopifnot("Error: no alignment longer than minlen" = dim(paf)[1] > 0)
+  
+  # Round start/end by compression factor
+  paf[, c('qstart', 'qend', 'tstart', 'tend')] = round(data.frame(paf[, c('qstart', 'qend', 'tstart', 'tend')] / compression), 0) * compression
+  
+  # If any entry is not slope 1 yet (which is unlikely after compression), then make it so.
+  paf = enforce_slope_one(paf)
+  
+  # Now, in case any two ends have come close together, re-merge them. 
+  paf = compress_paf_fnct(inpaf_df = paf, save_outpaf=F)
+  
+  # In paf, start is always smaller than end. For our slope etc calculation, it will be easier
+  # to change the order of start and end, if the orientation of the alignment is negative.
+  paf = transform(
+    paf,
+    qend = ifelse(strand == '-', qstart, qend),
+    qstart = ifelse(strand == '-', qend, qstart)
+  )
+  
+  # Add slope information to the paf.
+  paf = cbind(paf, add_slope_intercept_info(paf))
+  
+  # The Transform from earlier shoots back at us here. We now have to
+  # make a new columns for qlow and qhigh - basically what was start and
+  # end originally.
+  paf$qlow = -(apply(-paf[, c('qstart', 'qend')], 1, function(x)
+    max(x)))
+  paf$qhigh = apply(paf[, c('qstart', 'qend')], 1, function(x)
+    max(x))
+  
+  ### PAF prep over ###
+  return(paf)
+}
+
+
 #' bounce point. Algorithm for making the grid.
 #' Description TBD.
 #' @author Wolfram Hoeps
@@ -50,67 +118,30 @@ wrapper_paf_to_bitlocus <-
            saveplot = F,
            minlen = 1000,
            compression = 1000) {
-    # Read paf
-    paf = read.table(inpaf)
-    colnames(paf) = c(
-      'qname',
-      'qlen',
-      'qstart',
-      'qend',
-      'strand',
-      'tname',
-      'tlen',
-      'tstart',
-      'tend',
-      'nmatch',
-      'alen',
-      'mapq'
-    )
     
-    # A) PAF prep
-
-    # Filter alignments by length
-    paf = paf[paf$alen > minlen, ]
     
-    # Error out if no paf survives this. 
-    stopifnot("Error: no alignment longer than minlen" = dim(paf)[1] > 0)
-    
-    # Round start/end by compression factor
-    paf[, c('qstart', 'qend', 'tstart', 'tend')] = round(data.frame(paf[, c('qstart', 'qend', 'tstart', 'tend')] / compression), 0) * compression
-    
-    # If any entry is not slope 1 yet (which is unlikely after compression), then make it so.
-    paf = enforce_slope_one(paf)
-    
-    # Now, in case any two ends have come close together, re-merge them. 
-    paf = compress_paf_fnct(inpaf_df = paf, save_outpaf=F)
-    
-    # In paf, start is always smaller than end. For our slope etc calculation, it will be easier
-    # to change the order of start and end, if the orientation of the alignment is negative.
-    paf = transform(
-      paf,
-      qend = ifelse(strand == '-', qstart, qend),
-      qstart = ifelse(strand == '-', qend, qstart)
-    )
-    
-    # Add slope information to the paf.
-    paf = cbind(paf, add_slope_intercept_info(paf))
-    
-    # The Transform from earlier shoots back at us here. We now have to
-    # make a new columns for qlow and qhigh - basically what was start and
-    # end originally.
-    paf$qlow = -(apply(-paf[, c('qstart', 'qend')], 1, function(x)
-      max(x)))
-    paf$qhigh = apply(paf[, c('qstart', 'qend')], 1, function(x)
-      max(x))
+    # Load paf. If compression is too low, 
+    # change it automatically. 
+    n_aln_acceptable = F
+    while(!n_aln_acceptable){
+      paf = load_and_prep_paf_for_gridplot_transform(inpaf, minlen, compression)
+      if (dim(paf)[1] < 200){
+        n_aln_acceptable = T
+      } else {
+        minlen = minlen * 5
+        compression = compression * 5
+      }
+    }
     
     # Make a grid, using the bounce algorithm.
-    print('making grid')
     gxy = make_xy_grid(paf, n_additional_bounces = 1)
-    print('grid made')
     gridlines.x = gxy[[1]]
     gridlines.y = gxy[[2]]
     
     # Run bressi to fill the grid
+    # 'bressi' is the bresenham algorithm. It can also handle vectors
+    # with slope != 1. This used to be common in a previous version of ntk. 
+    # Right now, bressi is a bit overkill but we keep it in anyway. 
     grid_list = data.frame()
     for (i in 1:dim(paf)[1]) {
       grid_list = rbind(grid_list, as.data.frame(
@@ -127,24 +158,9 @@ wrapper_paf_to_bitlocus <-
     # Sort by x
     grid_list = grid_list[order(grid_list$x),]
     
-    # EXPERIMENTAL PART #
-    # Remove duplicates TRIPLE. First, remove obvious duplicates (all 3 same)
-    # Then, identify those with same x/y but different z. The get 0.
-    # Finally, the second step has produced new duplicates, so be mean again.
+
     
-    # Remove duplicates. This happens if SDs overlap (which can be a result
-    # of the compression step)
-    grid_list = grid_list[!duplicated(grid_list),]
-    
-    # If a value appears both positive and negative, we have to set it to 0,
-    # rather than keeping randomly one of the two.
-    grid_list[duplicated(grid_list[, c('x', 'y')]), 'z'] = 0
-    
-    # Remove duplicates again.
-    grid_list = grid_list[!duplicated(grid_list[, c('x', 'y')], fromLast =
-                                        T),]
-    # EXPERIMENTAL PART OVER
-    
+    grid_list = remove_duplicates_triple(grid_list)
     
     ### MAKE AND SAVE PLOTS
     pregridplot_paf = plot_paf(paf, gridlines.x, gridlines.y, linewidth = 0.1)

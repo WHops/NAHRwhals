@@ -15,22 +15,8 @@ gridlist_to_gridmatrix <- function(grid){
   
   grid_list = grid_list[order(grid_list$x),]
   
-  # EXPERIMENTAL PART #
-  # Remove duplicates TRIPLE. First, remove obvious duplicates (all 3 same)
-  # Then, identify those with same x/y but different z. The get 0.
-  # Finally, the second step has produced new duplicates, so be mean again. 
-  
-  # Remove duplicates. This happens if SDs overlap (which can be a result
-  # of the compression step)
-  grid_list = grid_list[!duplicated(grid_list),]
-  
-  # If a value appears both positive and negative, we have to set it to 0, 
-  # rather than keeping randomly one of the two.
-  grid_list[duplicated(grid_list[,c('x','y')]),'z'] = 0
-  
-  # Remove duplicates again. 
-  grid_list = grid_list[!duplicated(grid_list[,c('x','y')], fromLast=T),]
-
+  # Remove duplicates if there are any (there shouldn't be...)
+  grid_list = remove_duplicates_triple(grid_list)
 
   
   x_missing = which(1:dim_x %in% grid_list$x == F)
@@ -47,22 +33,18 @@ gridlist_to_gridmatrix <- function(grid){
     grid_list = rbind(grid_list, c(1, ym, 0))
   }
   
-  # Remove duplicates. This happens if SDs overlap (which can be a result
-  # of the compression step)
-  grid_list = grid_list[!duplicated(grid_list),]
+  # Remove duplicates AGAIN.
+  # afaik, the only possible duplicates is if '1,1' was appended 
+  # twice. 
+  grid_list = remove_duplicates_triple(grid_list)
   
-  # If a value appears both positive and negative, we have to set it to 0, 
-  # rather than keeping randomly one of the two.
-  grid_list[duplicated(grid_list[,c('x','y')]),'z'] = 0
-  
-  # Remove duplicates again. 
-  grid_list = grid_list[!duplicated(grid_list[,c('x','y')], fromLast=T),]
-  
+  # list to matrix
   gridmatrix = reshape2::dcast(grid_list, y ~ x, fill = 0)
   gridmatrix$x = NULL
   gridmatrix$y = NULL
   gridmatrix = as.matrix(gridmatrix)
   
+  # Columns and rownames show the size of the grid. 
   colnames(gridmatrix) = diff(grid[[1]])
   row.names(gridmatrix) = diff(grid[[2]])
   
