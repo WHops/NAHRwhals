@@ -81,9 +81,12 @@ make_chunked_minimap_alnment <-
            quadrantsize = 100000,
            hllink = F,
            hltype = F,
+           hlstart = NULL,
+           hlend = NULL,
            targetrange = NULL,
            queryrange = NULL,
-           wholegenome = F) {
+           wholegenome = F)
+ {
     # Define intermediate files
     queryfasta_chunk = paste0(queryfasta, ".chunk.fa")
     outpaf_chunk = paste0(outpaf, '.chunk')
@@ -144,6 +147,8 @@ make_chunked_minimap_alnment <-
       plot_size = plot_size,
       hllink = hllink,
       hltype = hltype,
+      hlstart = hlstart, 
+      hlend = hlend,
       minsdlen = minsdlen,
       save = saveplot
     )

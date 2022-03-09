@@ -257,7 +257,7 @@ grid = wrapper_paf_to_bitlocus(samplepaf_link3, minlen=0, compression = 10)
 # Future: 
 
 # a) implement a tree search
-# b) implement a quality metric simple alignment test
+# b) implement a q`uality metric simple alignment test
 # c) implement a 'region search': region in, and need to find correct region on chr. 
 library(devtools)
 devtools::load_all()
@@ -291,9 +291,24 @@ conversionpaf_link = '/Users/hoeps/PhD/projects/huminvs/genomes/rheMac10/rheMac1
 
 
 # Run intervals of 1Mb.
+#chr8    6297862 6299768
+chr='chr8'
+start = 6297862
+end =   6299768
+chunklen = 1000
+wrapper_aln_and_analyse(chr,
+                        start,
+                        end,
+                        hg38_fa,
+                        aln_fa,
+                        conversionpaf_link,
+                        runname = 'testrun',
+                        chunklen = chunklen,
+                        sd_minlen = 100,
+                        compression = 100,
+                        depth = 2,
+                        xpad = 2)
 
-start = 142532924
-end = 142533024
 
 cao_f = "/Users/hoeps/Desktop/chr3_cao_flt.bed"
 cao = read.table(cao_f, sep='\t')
@@ -328,8 +343,8 @@ for (i in 6:dim(cao)[1]){
 }
 
 seqname = 'chr7'
-start = 65219157 - 200000
-end = 65531823 + 100000
+start = 65219157
+end = 65531823
 
 outfasta_hg38 = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/hg38_sub.fa"
 outfasta_aln = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/aln_sub.fa"
@@ -363,54 +378,53 @@ grid_mut_plot
 
 
 #hg38
-seqname = 'chr1'
-start = 16500000
-end =   17200000
-
 
 library(devtools)
 devtools::load_all()
 
-seqname = 'chr1'
-start = start
-end = end
+seqname=         'chr11'
+start_orig =     738460    
+end_orig =       738460+2260        
 
-# seqname = 'chrX'
-# 
-# 
-# start = 136505547 
-# end =   137131190 
+start_end_pad = enlarge_interval_by_factor(start_orig, end_orig, factor = 2.5, seqname_f = seqname, conversionpaf_f = conversionpaf_link)
+start = start_end_pad[1]
+end =   start_end_pad[2]
+
+
+outfasta_hg38 = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/hg38_sub.fa"
+outfasta_aln = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/aln_sub.fa"
 outpaf_link = as.character(runif(1,1e10,1e11))
 
-coords_liftover = liftover_coarse(seqname, start, end, conversionpaf_link, lenfactor = 1)
+coords_liftover = liftover_coarse(seqname, start, end, conversionpaf_link, lenfactor = 1.2)
 print(end - start)
 print(coords_liftover$lift_end - coords_liftover$lift_start)
 extract_subseq_bedtools(hg38fa, seqname, start, end, outfasta_hg38)
-extract_subseq_bedtools(aln_fa, coords_liftover$lift_contig, coords_liftover$lift_start, coords_liftover$lift_end, outfasta_aln)
+extract_subseq_bedtools(aln_fa, coords_liftover$lift_contig, coords_liftover$lift_start, coords_liftover$lift_end-2000, outfasta_aln)
 
 make_chunked_minimap_alnment(outfasta_hg38, outfasta_aln, outpaf_link,
-                             chunklen = 10000, minsdlen = 2000, saveplot=F,
-                             hllink = outpaf_link, hltype = 'paf')#, wholegenome = F)
+                             chunklen = 1000, minsdlen = 2000, saveplot=F,
+                             hllink = F, hltype = F, hlstart = start_orig-start, hlend = end_orig - start) #, wholegenome = F)
 
 make_chunked_minimap_alnment(outfasta_hg38, outfasta_hg38, outpaf_link,
-                             chunklen = 1000, minsdlen = 2000, saveplot=F,
-                             hllink = F, hltype = F, quadrantsize = 100000000)#, wholegenome = F)
+                             chunklen = 50000, minsdlen = 2000, saveplot=F,
+                             hllink = F, hltype = F, quadrantsize = 100000)#, wholegenome = F)
 make_chunked_minimap_alnment(outfasta_aln, outfasta_aln, outpaf_link,
                              chunklen = 1000, minsdlen = 2000, saveplot=F,
                              hllink = F, hltype = F)#, wholegenome = F)
 
 
-grid = wrapper_paf_to_bitlocus(outpaf_link, minlen = 1000, compression = 1000)#[[3]]
+
+grid = wrapper_paf_to_bitlocus(outpaf_link, minlen = 300, compression = 1)#[[3]]
 gridmatrix = gridlist_to_gridmatrix(grid)
 
+#plot_matrix_ggplot_named(grid[[3]], grid[[1]], grid[[2]])
 library(devtools)
 devtools::load_all()
 library(profvis)
 
-profvis(explore_mutation_space(gridmatrix, depth = 3))
+#profvis(explore_mutation_space(gridmatrix, depth = 3))
 
-res2 = explore_mutation_space(gridmatrix, depth = 3)
-res = res[order(res$eval, decreasing=T ),]
+res = explore_mutation_space(gridmatrix, depth = 3)
 
 res = res[!is.na(res$eval),]
 res[res$eval == max(res$eval),][1,]
@@ -659,3 +673,5 @@ make_dotplot(HG00732sd2, HG00731sd2, 100, save=F,
 #   minsdlen = 2000,
 #   save = F
 # )
+
+

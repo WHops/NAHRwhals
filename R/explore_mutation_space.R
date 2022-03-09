@@ -1,8 +1,8 @@
 #' explore_mutation_space
 #'
-#' @description Main workhorse, tying together the pieces.
+#' @description Main workhorse, tying together the pieces of SV calling.
 #' Hopefully we can replace this whole function with something nicer
-#' one day. It is very s***y :P
+#' one day. It is rather s***y :P
 #' @param bitlocus matrix, nxm
 #' @param depth How many consecutive SVs should be simulated? (Typically 2 or 3.)
 #' @return evaluation matrix
@@ -10,10 +10,11 @@
 #' @author Wolfram Höps
 #' @export
 explore_mutation_space <- function(bitlocus, depth) {
+
   
+  stopifnot("Error: Only depth <= 3 is implemented." = depth <= 3)
 
   # Consider to flip y axis. 
-  
   bitlocus = flip_bitl_y_if_needed(bitlocus)
 
   pairs = find_sv_opportunities(bitlocus)
@@ -50,6 +51,8 @@ explore_mutation_space <- function(bitlocus, depth) {
   
   rescount = 2
   
+  
+  # From here on: Tree exploration. First step, 2nd step, 3rd step. 
   for (npair_level1 in 1:dim(pairs)[1]) {
     print(paste0('Attempting to resolve SV. Processing mutation branch ', npair_level1, ' of ', dim(pairs)[1]))
     
@@ -127,17 +130,14 @@ explore_mutation_space <- function(bitlocus, depth) {
     } # if depth > 1 end
   } # loop 1 end
   
-  #print('hi')
   res_df = as.data.frame(res)
   res_df$eval = as.numeric(res_df$eval)
   
-  # Remove NA rows
-  #res_df = res_df[rowSums(is.na(res_df)) != ncol(res_df),]
+  # Remove NA rows, sort output
   res_df_no_na = res_df[!is.na(res_df$eval),]
-  # Remove entries without evals
-  #res_df = res_df[!is.na(res_df$eval),]
+  res_df_no_na = res_df_no_na[order(res_df_no_na$eval, decreasing=T ),]
   
-  
+  # Report
   print(paste0(
     'Finished ',
     dim(res_df)[1],
@@ -146,7 +146,7 @@ explore_mutation_space <- function(bitlocus, depth) {
     ' with eval calculated)'
   ))
   
-  return(res_df)
+  return(res_df_no_na)
 }
 
 

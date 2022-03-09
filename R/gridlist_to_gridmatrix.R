@@ -8,7 +8,6 @@
 gridlist_to_gridmatrix <- function(grid){
   
   # Sort by x
-  
   grid_list = grid[[3]]
   dim_x = length(grid[[1]]) - 1
   dim_y = length(grid[[2]]) - 1
@@ -18,7 +17,6 @@ gridlist_to_gridmatrix <- function(grid){
   # Remove duplicates if there are any (there shouldn't be...)
   grid_list = remove_duplicates_triple(grid_list)
 
-  
   x_missing = which(1:dim_x %in% grid_list$x == F)
   y_missing = which(1:dim_y %in% grid_list$y == F)
   

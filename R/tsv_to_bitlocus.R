@@ -26,7 +26,6 @@ load_and_prep_paf_for_gridplot_transform <- function(inpaf, minlen, compression)
   )
   
   ### PAF prep ###
-  
   # Filter alignments by length
   paf = paf[paf$alen > minlen, ]
   
@@ -134,7 +133,7 @@ wrapper_paf_to_bitlocus <-
     }
     
     # Make a grid, using the bounce algorithm.
-    gxy = make_xy_grid(paf, n_additional_bounces = 1)
+    gxy = make_xy_grid(paf, n_additional_bounces = 2)
     gridlines.x = gxy[[1]]
     gridlines.y = gxy[[2]]
     
@@ -180,7 +179,7 @@ wrapper_paf_to_bitlocus <-
       }
       
       
-      p = plot_matrix_ggplot(grid_list)
+      p = plot_matrix_ggplot_named(grid_list, gridlines.x, gridlines.y)
       
       if (gridplot_save == F) {
         print(p)
@@ -261,8 +260,21 @@ wrapper_paf_to_bitlocus <-
       for (j in (1:n_additional_bounces)) {
         for (i in 1:dim(points_overall)[1]){
           points_overall = rbind(points_overall, bounce_point(paf, as.numeric(points_overall[i,])))
+
           points_overall = unique((points_overall))
         }
+        
+        # Here we check if the grid is still changing after the first 'bounce'. 
+        # If it is, this means that the grid is not converging due to incongruencies
+        # in the alignment. Not much we can do about it, but we write a warning. 
+        if (j == 1){
+          points_overall_1st_bounce = points_overall
+        } else if ((j == 2) & (!all(points_overall %in% points_overall_1st_bounce))){
+          print("WARNING. Grid has not converged. Small alignment incongruencies are likely, results may not be reliable. Consider re-running with larger conversion-factor (typically >100)")
+        } else if ((j == 2) & (all(points_overall %in% points_overall_1st_bounce))){
+          print('Grid has converged. All fine.')
+        }
+        
       }
       
       gridlines.y = unique(round(sort(c(

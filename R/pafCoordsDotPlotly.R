@@ -261,6 +261,25 @@ dotplotly_dotplot <- function(opt) {
     
   }
   
+  if (any(!is.null(opt$hlstart), !is.null(opt$hlend))){
+    
+    # Some border cases.
+    stopifnot("Error: Highlighting needs start and stop option. Only one of the two is set."
+              = (!is.null(opt$hlstart) & !is.null(opt$hlend)))
+    stopifnot("Error: End must be larger than Start." = (opt$hlend > opt$hlstart))
+    gp = gp + ggplot2::geom_rect(
+      ggplot2::aes(
+        xmin = opt$hlstart,
+        xmax = opt$hlend,
+        ymin = -0.5,
+        ymax = Inf
+      ),
+      alpha = 0.005,
+      fill = 'orange'
+    )
+    
+  }
+  
   if (opt$hllink != F) {
     # if sdlink links to sd file (e.g. because it is a groundtruth):
     # Format to bed (... why exactly?)
@@ -401,6 +420,8 @@ pafdotplot_make <-
            v = F,
            hllink = F,
            hltype = F,
+           hlstart = NULL,
+           hlend = NULL,
            save = T,
            minsdlen = 5000) {
     opt = list(
@@ -417,6 +438,8 @@ pafdotplot_make <-
       v = v,
       hllink = hllink,
       hltype = hltype,
+      hlstart = hlstart,
+      hlend = hlend,
       save = save,
       minsdlen = minsdlen
     )
