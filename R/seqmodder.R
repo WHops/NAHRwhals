@@ -598,29 +598,43 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
   
 }
 
+#' modify_gridmatrix
+#' 
+#' Introduce a chain of mutations to gridmatrix. 
+#' Is used after mutation simulation to verify/visualize
+#' the result. 
+#' @param gmx  GridMatriX. Row/Colnames don't matter. 
+#' @param r1 mutation instruction. Not sure about format right now. TODO. 
 #' @export
 modify_gridmatrix <- function(gmx, r1){
   
+  # If there is no mutation to be done, return matrix as it is. 
   if (r1[1,'mut1'] == 'ref'){
     return(gmx)
   }
   
+  # How many mutations do we have to run?
   nmut = length(r1[, colSums(is.na(r1)) == 0]) - 1
   
+  # Run each mutation. 
   for (i in 1:nmut){
     instr = r1[,i+1]
     start = as.numeric(strsplit(instr, '_')[[1]][1])
     end = as.numeric(strsplit(instr, '_')[[1]][2])
     action = strsplit(instr, '_')[[1]][3]
     
+    # Run ONE mutation
     gmx = carry_out_compressed_sv(gmx, c(start, end, action))
   }
   
+  # Not ENTIRELY sure, but for some reason we have to transpose here to get the 
+  # correct result back apparently? Might be wrong. Keep an eye on it. 
   gmx = t(gmx)
-  #colnames(gmx) = ncol(gmx) - 1:ncol(gmx)
-  #row.names(gmx) = nrow(gmx) - 1:nrow(gmx)
+  
+  # Simple row and colnames for easy plotting. 
   colnames(gmx) = 1:ncol(gmx)
   row.names(gmx) = 1:nrow(gmx)
+  
   return(gmx)
 }
 

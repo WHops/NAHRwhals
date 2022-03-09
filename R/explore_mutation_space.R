@@ -4,7 +4,7 @@
 #' Hopefully we can replace this whole function with something nicer
 #' one day. It is very s***y :P
 #' @param bitlocus matrix, nxm
-#' @param depth How many consecutive SVs should be simulated?
+#' @param depth How many consecutive SVs should be simulated? (Typically 2 or 3.)
 #' @return evaluation matrix
 #'
 #' @author Wolfram Höps
@@ -51,7 +51,7 @@ explore_mutation_space <- function(bitlocus, depth) {
   rescount = 2
   
   for (npair_level1 in 1:dim(pairs)[1]) {
-    print(paste0('Entering front layer ', npair_level1, ' of ', dim(pairs)[1]))
+    print(paste0('Attempting to resolve SV. Processing mutation branch ', npair_level1, ' of ', dim(pairs)[1]))
     
     pair_level1 = pairs[npair_level1, ]
     
@@ -133,7 +133,7 @@ explore_mutation_space <- function(bitlocus, depth) {
   
   # Remove NA rows
   #res_df = res_df[rowSums(is.na(res_df)) != ncol(res_df),]
-  res_df = res_df[!is.na(res_df$eval),]
+  res_df_no_na = res_df[!is.na(res_df$eval),]
   # Remove entries without evals
   #res_df = res_df[!is.na(res_df$eval),]
   
@@ -142,7 +142,7 @@ explore_mutation_space <- function(bitlocus, depth) {
     'Finished ',
     dim(res_df)[1],
     ' mutation simulations (',
-    dim(res_df[!is.na(res_df$eval), ])[1],
+    dim(res_df_no_na)[1],
     ' with eval calculated)'
   ))
   

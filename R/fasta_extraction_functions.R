@@ -1,30 +1,3 @@
-# Fasta extraction and asssembly tools
-
-#' extract_subseq
-#' helperfunction to extract a subfasta by coordinates
-#'
-#' Is awfully slow unfortunately. We should find a way to only read
-#' the chromosome of interest.
-#' @author Wolfram Hoeps
-#' @export
-extract_subseq <- function(infasta, seqname, start, end, outfasta) {
-  # Read the whole infasta
-  seq = Biostrings::readDNAStringSet(infasta)
-  
-  # Subset it to the sequence name of interest
-  if (!is.null(seqname)) {
-    subseq = Biostrings::subseq(seq[[seqname]], start = start, end = end)
-  } else {
-    subseq = Biostrings::subseq(seq, start = start, end = end)
-  }
-  # Write fasta. Imported function from seqbilder_functions.R
-  writeFasta(data.frame(name = 'seq', seq = as.character(subseq)), outfasta)
-  
-}
-
-
-
-# To document
 #' filter_paf_to_main_region
 #' Script to filter down a whole-genome paf to the 'best matching' region.
 #' query should be short sequence fragments (1kb, 10kb, ...) of the roi.
@@ -69,8 +42,8 @@ filter_paf_to_main_region <- function(paflink, outpaflink) {
   ))), 1)
   # And those snipplets matching to the winner chromosome - where do they fall (median)?
   middle_median = median(((
-    paf_winners[paf_winners$tname == chr_winners,]$tend +
-      paf_winners[paf_winners$tname == chr_winners,]$tstart
+    paf_winners[paf_winners$tname == chr_winners, ]$tend +
+      paf_winners[paf_winners$tname == chr_winners, ]$tstart
   ) / 2))
   
   # Now simply extend from median towards front and back.
@@ -80,11 +53,11 @@ filter_paf_to_main_region <- function(paflink, outpaflink) {
   # Here we cut, but I am not sure if this is really the way to go?
   paf_cut = paf[((paf$tname == chr_winners) &
                    (paf$tstart >= start_winners) &
-                   (paf$tend <= end_winners)),]
+                   (paf$tend <= end_winners)), ]
   
   
   aln_containing = cpaf_i[(cpaf_i$qstart <= start) &
-                            (cpaf_i$qend >= end),]
+                            (cpaf_i$qend >= end), ]
   
   
   
@@ -100,6 +73,10 @@ filter_paf_to_main_region <- function(paflink, outpaflink) {
   
 }
 
+#' flip_query_target
+#' 
+#' Not entirely sure this is still in use. Might be obsolete. 
+#' @author Wolfram Höps
 #' @export
 flip_query_target <- function(inpaf, outpaf) {
   # Read in paf
@@ -150,51 +127,68 @@ flip_query_target <- function(inpaf, outpaf) {
 
 
 
-# TRASH #
-
 #' extract_subseq_bedtools
-
+#' Give me an input fasta link, chromosome coordinates and an 
+#' output destionation file. I will extract the sequence of that
+#' coordinates from the fasta, and output it into the outfasta. 
 #' @author Wolfram Hoeps
 #' @export
 extract_subseq_bedtools <-
   function(infasta, seqname, start, end, outfasta) {
-    # Needed for parallel runs
     
+    # Where is bedtools? 
     bedtoolsloc = query_config("bedtools")
+    
+    # we need to create a temporary bedfile that will be deleted in a few lines. 
     random_tag = as.character(runif(1, 1e10, 1e11))
     tmp_bedfile = paste0('region2_', random_tag, '.bed')
+    
+    # Write coordinates into temporary bedfile
     region = paste0(seqname,
                     "\t",
                     format(start, scientific = F),
                     "\t",
                     format(end, scientific = F))
     system(paste0('echo "', region, '" > ', tmp_bedfile))
-    system(
-      paste0(
-        bedtoolsloc,
-        " getfasta -fi ",
-        infasta,
-        " -bed ",
-        tmp_bedfile,
-        " > ",
-        outfasta
-      )
-    )
+    
+    # Run bedtools
+    system(paste0(
+      bedtoolsloc,
+      " getfasta -fi ",
+      infasta,
+      " -bed ",
+      tmp_bedfile,
+      " > ",
+      outfasta
+    ))
+    
+    # Delete tmp file
     system(paste0('rm ', tmp_bedfile))
     
+    # Check if run was successful.
+    stopifnot(
+      "Error: Bedtools was unable to extract sequence. Please make sure a) target 
+       and queryfasta are different and b) your input fastas and the conversionpaf
+       are matching." =
+       file.size(outfasta) > 0
+    )
+    
+    # Report your success :)
     print(paste0('Subsequence extracted and saved to ', outfasta))
     
   }
 
 
-
+#' find_punctual_liftover
+#' Translates a single point from one assembly to another. 
+#' Uses the pre-computed conversion-paf. 
 #' @export
 find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
   # Find all alignments overlapping with the pointcoordinate
   overlappers = cpaf[((cpaf$qname == chrom) &
                         (cpaf$qstart <= pointcoordinate) &
                         (cpaf$qend >= pointcoordinate)
-  ),]
+  ), ]
   
   # If no alignment overlaps, we return an empty value.
   if (dim(overlappers)[1] == 0) {
@@ -202,7 +196,7 @@ find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
   }
   
   # Find the alignment with the hightest nmatch value.
-  best_aln = overlappers[overlappers$nmatch == max(overlappers$nmatch),]
+  best_aln = overlappers[overlappers$nmatch == max(overlappers$nmatch), ]
   
   # Liftover the point with that highest alignment.
   if (best_aln$strand == '+') {
@@ -214,7 +208,12 @@ find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
   return(data.frame(seqname = best_aln$tname, liftover_coord = coord))
 }
 
-
+#' liftover_coarse
+#' 
+#' Wrapperfunction to find a liftover sequence from one assembly to the other. 
+#' Better description TBD. 
+#' 
+#' @author Wolfram Höps
 #' @export
 liftover_coarse <-
   function(seqname,
@@ -247,9 +246,15 @@ liftover_coarse <-
     )
     colnames(cpaf)[1:length(colnames_paf)] = colnames_paf
     
+    # Assert that the input coordinates are within chromosome boundaries
+    stopifnot("Error: Input coordinates exceed input chromosome length." =
+                ((end <= cpaf[cpaf == seqname, ][1, 'qlen']) &
+                   (start >= 0)))
+    
+    
     # We take n_probes single points from the alignment, see where they fall, and take their median
     # as the median of our alignment.
-
+    
     # Define a vector of probe positions (equally spaced between start and end)
     pos_probes = as.integer(start + (((end - start) / (n_probes - 1)) * (0:(n_probes -
                                                                               1))))
@@ -263,31 +268,34 @@ liftover_coarse <-
     }
     
     # Make sure we got any results.
-    stopifnot("Error: Unsuccessful liftover of the input sequence: Sequence not found on query" = 
-                dim(liftover_coords)[1] > 0)
+    stopifnot(
+      "Error: Unsuccessful liftover of the input sequence: Sequence not found on query" =
+        dim(liftover_coords)[1] > 0
+    )
+    
     
     # What is the majority vote for the target chromosome?
     winner_chr = names(sort(table(liftover_coords$seqname), decreasing = TRUE)[1])
     
     # And those snipplets matching to the winner chromosome - where do they fall (median)?
-    middle_median = median(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord)
+    middle_median = median(liftover_coords[liftover_coords$seqname == winner_chr, ]$liftover_coord)
     
     # Now  extend from median towards front and back.
     insequence_len = end - start
     start_winners = middle_median - (lenfactor * (insequence_len / 2))
     end_winners =   middle_median +   (lenfactor * (insequence_len / 2))
     
-    # Make sure we don't exceed chromosome boundaries
-    start_winners_cutoff = as.integer(max(0, start_winners))
-    end_winners_cutoff =   as.integer(min(cpaf[cpaf$tname == winner_chr,][1, 'tlen'], end_winners))
-    
-    
+    # Warn if we are exceeding chromosome boundaries in the query.
     if ((start_winners < 0) |
-        (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
-      #print('Warning! Reaching the end of alignment!')
-      stopifnot("Error: Input sequence out of bounds!" = 
-                  (end_winners <= cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) 
+        (end_winners > cpaf[cpaf$tname == winner_chr, ][1, 'tlen'])) {
+      print('Warning! Reaching the end of alignment!')
     }
+    
+    # Make sure we don't exceed chromosome boundaries in the query.
+    start_winners_cutoff = as.integer(max(0, start_winners))
+    end_winners_cutoff =   as.integer(min(cpaf[cpaf$tname == winner_chr, ][1, 'tlen'], end_winners))
+    
+    
     
     return(
       list(

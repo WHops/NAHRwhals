@@ -46,10 +46,13 @@ wrapper_aln_and_analyse <- function(seqname_x,
   
   genome_x_fa_subseq = paste0(sequence_name_output, '/fasta/', runname, '_x.fa')
   genome_y_fa_subseq = paste0(sequence_name_output, '/fasta/', runname, '_y.fa')
+  
   # Get coordinates in y
   coords_liftover = liftover_coarse(seqname_x, start_x, end_x, conversionpaf_link, lenfactor = factor)
+  
   # Get subseq-fastas in x and y
   extract_subseq_bedtools(genome_x_fa, seqname_x, start_x, end_x, genome_x_fa_subseq)
+  
   extract_subseq_bedtools(genome_y_fa, coords_liftover$lift_contig, coords_liftover$lift_start, coords_liftover$lift_end, genome_y_fa_subseq)
   
   # Run alignments. 
@@ -64,6 +67,27 @@ wrapper_aln_and_analyse <- function(seqname_x,
   plot_x_y = make_chunked_minimap_alnment(genome_x_fa_subseq, genome_y_fa_subseq, outpaf_link_x_y,
                                              chunklen = chunklen, minsdlen = 2000, saveplot=F,
                                              hllink = F, hltype = F)
+  
+  # Save orig alignments
+  ggplot2::ggsave(filename = outfile_plot_self_x,
+                  plot = plot_self_x, 
+                  width = 20, 
+                  height = 20, 
+                  units = 'cm',
+                  dpi = 300)
+  ggplot2::ggsave(filename = outfile_plot_self_y,
+                  plot = plot_self_y, 
+                  width = 20, 
+                  height = 20, 
+                  units = 'cm',
+                  dpi = 300)
+  ggplot2::ggsave(filename = outfile_plot_x_y,
+                  plot = plot_x_y, 
+                  width = 20, 
+                  height = 20, 
+                  units = 'cm',
+                  dpi = 300)
+  
   if (include_grid){
     # Make an xy grid
     grid_xy = wrapper_paf_to_bitlocus(outpaf_link_x_y, minlen = sd_minlen, compression = compression,
@@ -93,25 +117,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                 sep='\t'
     )
   }
-  # Save orig alignments
-  ggplot2::ggsave(filename = outfile_plot_self_x,
-                  plot = plot_self_x, 
-                  width = 20, 
-                  height = 20, 
-                  units = 'cm',
-                  dpi = 300)
-  ggplot2::ggsave(filename = outfile_plot_self_y,
-                  plot = plot_self_y, 
-                  width = 20, 
-                  height = 20, 
-                  units = 'cm',
-                  dpi = 300)
-  ggplot2::ggsave(filename = outfile_plot_x_y,
-                  plot = plot_x_y, 
-                  width = 20, 
-                  height = 20, 
-                  units = 'cm',
-                  dpi = 300)
+
 
   system(paste0('rm ', genome_y_fa_subseq))
 

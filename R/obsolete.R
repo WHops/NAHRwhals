@@ -1,5 +1,32 @@
 # Collection of obsolete functions probably no longer needed #
 
+
+
+# Fasta extraction and asssembly tools
+
+#' extract_subseq
+#' helperfunction to extract a subfasta by coordinates
+#'
+#' Is awfully slow unfortunately. We should find a way to only read
+#' the chromosome of interest.
+#' @author Wolfram Hoeps
+#' @export
+extract_subseq <- function(infasta, seqname, start, end, outfasta) {
+  # Read the whole infasta
+  seq = Biostrings::readDNAStringSet(infasta)
+  # Subset it to the sequence name of interest
+  if (!is.null(seqname)) {
+    subseq = Biostrings::subseq(seq[[seqname]], start = start, end = end)
+  } else {
+    subseq = Biostrings::subseq(seq, start = start, end = end)
+  }
+  # Write fasta. Imported function from seqbilder_functions.R
+  writeFasta(data.frame(name = 'seq', seq = as.character(subseq)), outfasta)
+  
+}
+
+
+
 #' find_x_intersection
 
 #' @author Wolfram Hoeps
