@@ -10,7 +10,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                     genome_y_fa,
                                     conversionpaf_link,
                                     chunklen = 1000,
-                                    aln_pad_factor = 1,
+                                    aln_pad_factor = 1.5,
                                     sd_minlen = 1000,
                                     compression = 1000,
                                     depth = 2,
@@ -53,7 +53,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
   start_end_pad = enlarge_interval_by_factor(start_x, end_x, xpad, seqname_f = seqname_x, conversionpaf_f = conversionpaf_link) 
   start_x_pad = start_end_pad[1]
   end_x_pad = start_end_pad[2]
-  browser()
+
   # Get coordinates in y
   coords_liftover = liftover_coarse(seqname_x, start_x_pad, end_x_pad, conversionpaf_link, lenfactor = aln_pad_factor)
   
@@ -98,6 +98,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
     # Make an xy grid
     grid_xy = wrapper_paf_to_bitlocus(outpaf_link_x_y, minlen = sd_minlen, compression = compression,
                                       gridplot_save = outfile_plot_grid, pregridplot_save = outfile_plot_pre_grid )
+    browser()
     gridmatrix = gridlist_to_gridmatrix(grid_xy)
     
     res = explore_mutation_space(gridmatrix, depth = depth)

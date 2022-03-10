@@ -335,7 +335,7 @@ enlarge_interval_by_factor <-
     
     # If 1, don't do anything.
     if (factor == 1) {
-      return(interval)
+      return(c(start, end))
     }
     
     # How long is interval
@@ -360,7 +360,7 @@ enlarge_interval_by_factor <-
       
       paf = read_and_prep_paf(conversionpaf_f)
       
-      chrlen = paf[paf$qname == seqname, ][1, 'qlen']
+      chrlen = paf[paf$qname == seqname_f, ][1, 'qlen']
       if (end_pad > chrlen) {
         print(
           paste0(

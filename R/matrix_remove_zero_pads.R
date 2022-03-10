@@ -5,8 +5,8 @@
 matrix_remove_zero_pads <- function(bitl_f, iterations = 100){
   
   # Make sure everything is good. 
-  stopifnot("Error: Removing of zero pads only on matrix class." = class(gridmatrix) == c('matrix', 'array'))
-  stopifnot("Error: Removing of zero pads only on matrices with dim > 1" = all(dim(gridmatrix)[1] > 1))
+  stopifnot("Error: Removing of zero pads only on matrix class." = class(bitl_f) == c('matrix', 'array'))
+  stopifnot("Error: Removing of zero pads only on matrices with dim > 1" = all(dim(bitl_f)[1] > 1))
   
   # Attempt to remove first and last cols and rows, if they are 0-only. 
   # stop that process once the matrix does not change anymore. 
