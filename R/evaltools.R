@@ -35,6 +35,7 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
   walk_right_cost = as.numeric(colnames(mat))
   symmetry = min(sum(climb_up_cost), sum(walk_right_cost)) / max(sum(climb_up_cost), sum(walk_right_cost))
 
+  
   # Run away if there are at least 5 columns, and we have less than 95% similarity
   if ((symmetry < 0.95 & row > 5) & (forcecalc == F)) {
     return(NA)

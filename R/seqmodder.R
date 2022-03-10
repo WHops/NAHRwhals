@@ -551,7 +551,9 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
     
     if (pair[2] - pair[1] == 1){
       if (pair[1] == 1){
-        colnames(bitl_mut)[1] = colnames(bitl_mut)[1] 
+        # W, 10th March 2022, Changed this a bit to account for cases
+        # with only 2 columns. 
+        colnames(bitl_mut)[dim(bitl_mut)[2]] = colnames(bitl_mut)[2] 
       } else if (pair[2] == dim(bitl)[2]){
         colnames(bitl_mut)[dim(bitl_mut)[2]] = colnames(bitl_mut)[dim(bitl_mut)[2]-1]
       }
@@ -589,11 +591,18 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
     }
   }
   
-
+  # It can happen that only one column is left. In that case...
+  
+  if (class(bitl_mut) != c('matrix', 'array')){
+    bitl_mut = as.matrix(bitl_mut)
+    row.names(bitl_mut) = row.names(bitl)
+    colnames(bitl_mut) = colnames(bitl)[1]
+  }
+  
   # W, 7th March 2022. Excluding this line since bitl now has 
   # meaningful rownames and colnames. 
   #colnames(bitl_mut) = 1:dim(bitl_mut)[2]
-  
+
   return(bitl_mut)
   
 }

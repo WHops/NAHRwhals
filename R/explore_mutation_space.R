@@ -33,6 +33,11 @@ explore_mutation_space <- function(bitlocus, depth) {
   del_dup_direction = sign(del_dup_direction)
   
   pairs = remove_equivalent_pairs(pairs)
+  if (dim(pairs)[1] > 100){
+    depth = depth - 1
+    print('Reducing depth by 1.')
+  }
+  
   
   res = (matrix(ncol = depth + 1, nrow = (dim(pairs)[1] ** depth) * 5))
   colnames(res) = c('eval', paste0('mut', 1:depth))
@@ -60,6 +65,7 @@ explore_mutation_space <- function(bitlocus, depth) {
     
     # Trio of function: Mutate, Evaluate, Observate
     bitl_mut = carry_out_compressed_sv(bitlocus, pair_level1)
+    
     res[rescount, 1:2] = add_eval(res,
                                   m = bitl_mut,
                                   layer = 1,
