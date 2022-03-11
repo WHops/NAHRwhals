@@ -1,6 +1,0 @@
-Hello what is up?
-hello
-I am line 2
-This is line 2
-
-And here is the end.
