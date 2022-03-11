@@ -2,6 +2,7 @@
 
 #' wrapper_aln_and_analyse
 #' Description ... 
+#' @param samplename should be a string of length 1
 #' @export
 wrapper_aln_and_analyse <- function(seqname_x,
                                     start_x,
@@ -15,7 +16,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                     sd_minlen = 1000,
                                     compression = 1000,
                                     depth = 2,
-                                    runname = 'test',
+                                    samplename = 'test',
                                     include_grid = T,
                                     xpad = 1,
                                     debug = F){
@@ -49,22 +50,22 @@ wrapper_aln_and_analyse <- function(seqname_x,
   dir.create(paste0(sequence_name_output, '/fasta'))
   
   # Define output files
-  outpaf_link_self_x =  paste0(sequence_name_output, '/self/paf/', runname, '_x.paf')
-  outpaf_link_self_y =  paste0(sequence_name_output, '/self/paf/', runname, '_y.paf')
-  outpaf_link_x_y =     paste0(sequence_name_output, '/diff/paf/', runname, '_xy.paf')
+  outpaf_link_self_x =  paste0(sequence_name_output, '/self/paf/', samplename, '_x.paf')
+  outpaf_link_self_y =  paste0(sequence_name_output, '/self/paf/', samplename, '_y.paf')
+  outpaf_link_x_y =     paste0(sequence_name_output, '/diff/paf/', samplename, '_xy.paf')
   
-  res_table_xy =        paste0(sequence_name_output, '/diff/', runname, '_res.tsv')
+  res_table_xy =        paste0(sequence_name_output, '/diff/', samplename, '_res.tsv')
   
-  outfile_plot_self_x = paste0(sequence_name_output, '/self/pdf/', runname, '_x.pdf')
-  outfile_plot_self_y = paste0(sequence_name_output, '/self/pdf/', runname, '_y.pdf')
-  outfile_plot_x_y =    paste0(sequence_name_output, '/diff/pdf/', runname, '_x_y.pdf')
+  outfile_plot_self_x = paste0(sequence_name_output, '/self/pdf/', samplename, '_x.pdf')
+  outfile_plot_self_y = paste0(sequence_name_output, '/self/pdf/', samplename, '_y.pdf')
+  outfile_plot_x_y =    paste0(sequence_name_output, '/diff/pdf/', samplename, '_x_y.pdf')
   
-  outfile_plot_pre_grid = paste0(sequence_name_output, '/diff/pdf/grid/', runname, '_x_y_grid_pre.pdf')
-  outfile_plot_grid =     paste0(sequence_name_output, '/diff/pdf/grid/', runname, '_x_y_grid.pdf')
-  outfile_plot_grid_mut = paste0(sequence_name_output, '/diff/pdf/grid/', runname, '_x_y_grid_mut.pdf')
+  outfile_plot_pre_grid = paste0(sequence_name_output, '/diff/pdf/grid/', samplename, '_x_y_grid_pre.pdf')
+  outfile_plot_grid =     paste0(sequence_name_output, '/diff/pdf/grid/', samplename, '_x_y_grid.pdf')
+  outfile_plot_grid_mut = paste0(sequence_name_output, '/diff/pdf/grid/', samplename, '_x_y_grid_mut.pdf')
   
-  genome_x_fa_subseq = paste0(sequence_name_output, '/fasta/', runname, '_x.fa')
-  genome_y_fa_subseq = paste0(sequence_name_output, '/fasta/', runname, '_y.fa')
+  genome_x_fa_subseq = paste0(sequence_name_output, '/fasta/', samplename, '_x.fa')
+  genome_y_fa_subseq = paste0(sequence_name_output, '/fasta/', samplename, '_y.fa')
   
   # Pad-sequence
   start_end_pad = enlarge_interval_by_factor(start_x, end_x, xpad, seqname_f = seqname_x, conversionpaf_f = conversionpaf_link) 
