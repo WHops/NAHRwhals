@@ -9,15 +9,32 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                     genome_x_fa,
                                     genome_y_fa,
                                     conversionpaf_link,
+                                    logfile,
                                     chunklen = 1000,
-                                    aln_pad_factor = 1.5,
+                                    aln_pad_factor = 1.1,
                                     sd_minlen = 1000,
                                     compression = 1000,
                                     depth = 2,
                                     runname = 'test',
                                     include_grid = T,
-                                    xpad = 1){
+                                    xpad = 1,
+                                    debug = F){
   
+  if (debug){
+    print('Debug mode!')
+    browser()
+  }
+  log_collection <<- init_log_with_def_values()
+  log_collection[c('chr', 'start', 'end', 'xpad', 'chunklen', 'runname', 'depth')] <<-
+    c(seqname_x, start_x, end_x, xpad, chunklen, runname, depth)
+  
+  
+
+  # Log file entry done #
+  
+  # if (exists('log_collection')){
+  #   log_collection$x <<- variable
+  # }
   
   sequence_name_output = paste(paste0('res/',seqname_x), format(start_x, scientific = F),  format(end_x, scientific = F), sep='-')
   dir.create('res')
@@ -99,7 +116,6 @@ wrapper_aln_and_analyse <- function(seqname_x,
     grid_xy = wrapper_paf_to_bitlocus(outpaf_link_x_y, minlen = sd_minlen, compression = compression,
                                       gridplot_save = outfile_plot_grid, pregridplot_save = outfile_plot_pre_grid )
     gridmatrix = gridlist_to_gridmatrix(grid_xy)
-    
     res = explore_mutation_space(gridmatrix, depth = depth)
 
     # Make a grid after applying the top res
@@ -123,9 +139,12 @@ wrapper_aln_and_analyse <- function(seqname_x,
     )
   }
 
-
+  save_to_logfile(get('log_collection', envir=globalenv()), res, logfile)
   system(paste0('rm ', genome_y_fa_subseq))
 
   
   
 }
+
+
+
