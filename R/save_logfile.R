@@ -19,7 +19,7 @@ save_to_logfile <- function(log, res, logfile){
     log$chr,
     log$start,
     log$end,
-    log$runname,
+    log$samplename,
     as.numeric(log$end) - as.numeric(log$start),
     log$xpad,
     res_ref,

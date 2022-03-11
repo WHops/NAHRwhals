@@ -26,8 +26,8 @@ wrapper_aln_and_analyse <- function(seqname_x,
     browser()
   }
   log_collection <<- init_log_with_def_values()
-  log_collection[c('chr', 'start', 'end', 'xpad', 'chunklen', 'runname', 'depth')] <<-
-    c(seqname_x, start_x, end_x, xpad, chunklen, runname, depth)
+  log_collection[c('chr', 'start', 'end', 'xpad', 'chunklen', 'samplename', 'depth')] <<-
+    c(seqname_x, start_x, end_x, xpad, chunklen, samplename, depth)
   
   
 
