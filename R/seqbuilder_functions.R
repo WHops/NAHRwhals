@@ -138,6 +138,7 @@ make_chunked_minimap_alnment <-
       outpaf_plot = outpaf
     }
     
+    
     print('4')
     # Make a dotplot of that final paf (and with sd highlighting).
     miniplot = pafdotplot_make(

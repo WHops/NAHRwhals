@@ -12,14 +12,15 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                     conversionpaf_link,
                                     logfile,
                                     chunklen = 1000,
-                                    aln_pad_factor = 1.1,
+                                    aln_pad_factor = 1.0,
                                     sd_minlen = 1000,
                                     compression = 1000,
                                     depth = 2,
                                     samplename = 'test',
                                     include_grid = T,
                                     xpad = 1,
-                                    debug = F){
+                                    debug = F,
+                                    use_paf_library = T){
   
   if (debug){
     print('Debug mode!')
@@ -72,13 +73,18 @@ wrapper_aln_and_analyse <- function(seqname_x,
   start_x_pad = start_end_pad[1]
   end_x_pad = start_end_pad[2]
 
-  # Get coordinates in y
-  coords_liftover = liftover_coarse(seqname_x, start_x_pad, end_x_pad, conversionpaf_link, lenfactor = aln_pad_factor)
+  if (use_paf_library){
+    # Get coordinates in y
+    coords_liftover = liftover_coarse(seqname_x, start_x_pad, end_x_pad, conversionpaf_link, lenfactor = aln_pad_factor)
   
-  # Get subseq-fastas in x and y
-  extract_subseq_bedtools(genome_x_fa, seqname_x, start_x_pad, end_x_pad, genome_x_fa_subseq)
-  extract_subseq_bedtools(genome_y_fa, coords_liftover$lift_contig, coords_liftover$lift_start, coords_liftover$lift_end, genome_y_fa_subseq)
-  
+    # Get subseq-fastas in x and y
+    extract_subseq_bedtools(genome_x_fa, seqname_x, start_x_pad, end_x_pad, genome_x_fa_subseq)
+    extract_subseq_bedtools(genome_y_fa, coords_liftover$lift_contig, coords_liftover$lift_start, coords_liftover$lift_end, genome_y_fa_subseq)
+  } else {
+    system(paste0('cp ', genome_x_fa, ' ', genome_x_fa_subseq))
+    system(paste0('cp ', genome_y_fa, ' ', genome_y_fa_subseq))
+    
+  }
   # Run alignments. 
   plot_self_x = make_chunked_minimap_alnment(genome_x_fa_subseq, genome_x_fa_subseq, outpaf_link_self_x,
                                              chunklen = chunklen, minsdlen = 2000, saveplot=F,

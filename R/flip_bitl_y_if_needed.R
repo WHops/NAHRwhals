@@ -23,16 +23,31 @@ flip_bitl_y_if_needed <- function(bitl){
   x_min = round(dim(bitl_f)[2] * (1/4))
   x_max = round(dim(bitl_f)[2] * (3/4))
   
-  # Set all other values to zero. We don't care about them. 
-  bitl_f[y_min:y_max, x_min:x_max] = 0
+  # # Set all inner values to zero. We don't care about them. 
+  # bitl_f[y_min:y_max, x_min:x_max] = 0
+  
+  # W, 14th March 2022. Changing that part a bit. 
+  # Alternatively: set the non-corners of the frame to 0.
+  bitl_f[y_min:y_max,] = 0
+  bitl_f[,x_min:x_max] = 0
   
   # Count positive and negative alignments in the frame. 
   pos_aln_sum = sum(bitl_f[bitl_f > 0] )
   neg_aln_sum = abs(sum(bitl_f[bitl_f < 0] ))
   
+  # Emergency outclause. If all is zero, do not flip. 
+  if (pos_aln_sum + neg_aln_sum == 0){
+    pos_aln_sum = 1
+  }
+  
   # If one is not at least double the other, we are unsure about the outcome. 
   if ((max(pos_aln_sum, neg_aln_sum) / min(pos_aln_sum, neg_aln_sum)) < 2){
     print("Warning. Frame-flipping determination potentially unsure. Consider using a wider interval. ")
+    # Make an entry to the output logfile #
+    if (exists('log_collection')){
+      log_collection$flip_unsure <<- T
+    }
+    # Log file entry done #
   }
   
   # Flip if needed (but on the bitl, not on the messed bitl_f.)

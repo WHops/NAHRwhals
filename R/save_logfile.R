@@ -5,15 +5,21 @@
 #' 
 #' @export
 save_to_logfile <- function(log, res, logfile){
-  
   res_ref = res[res$mut1=='ref','eval']
   res_max = res[1,'eval']
   n_res_max = dim(res[res$eval == max(res$eval),])[1]
 
-  # Terrible line here. Terrible...
-  mut_max = paste0(res[1,2:ncol(res)][,((res[1,2:ncol(res)] != "NA") & (!is.na((res[1,2:ncol(res)]))))], collapse='+')
+  maxres =  res[which.max(rowSums(is.na(res[res$eval==max(res$eval),]))),]
   
+  stopifnot(ncol(maxres) >= 2)
+  
+  if (ncol(maxres)>2){
+    mut_max = paste0(res[1,2:ncol(maxres)][,((maxres[1,2:ncol(maxres)] != "NA") & (!is.na((maxres[1,2:ncol(maxres)]))))], collapse='+')
+  } else if (ncol(maxres) == 2){
+    mut_max = paste0(maxres[1,2])
+  }
   print('updated')
+  
   ###### TBD ###########
   to_append = data.frame(
     log$chr,
@@ -26,6 +32,8 @@ save_to_logfile <- function(log, res, logfile){
     res_max,
     n_res_max,
     mut_max,
+    log$mut_simulated,
+    log$mut_tested,
     log$depth,
     log$compression,
     log$exceeds_x,
@@ -45,6 +53,8 @@ save_to_logfile <- function(log, res, logfile){
     'res_max',
     'n_res_max',
     'mut_max',
+    'mut_simulated',
+    'mut_tested',
     'search_depth',
     'grid_compression',
     'exceeds_x',

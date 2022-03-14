@@ -166,9 +166,7 @@ extract_subseq_bedtools <-
     
     # Check if run was successful.
     stopifnot(
-      "Error: Bedtools was unable to extract sequence. Please make sure a) target
-       and queryfasta are different and b) your input fastas and the conversionpaf
-       are matching." =
+      "Error: Bedtools was unable to extract sequence. Please make sure a) Your input fasta paths are correct, b) target and queryfasta are different and c) your input fastas and the conversionpaf are matching." =
         file.size(outfasta) > 0
     )
     
@@ -288,6 +286,13 @@ liftover_coarse <-
     if ((start_winners < 0) |
         (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
       print('Warning! Reaching the end of alignment!')
+      
+      # Make an entry to the output logfile #
+      if (exists('log_collection')){
+        log_collection$exceeds_y <<- T
+      }
+      # Log file entry done #
+      
     }
     
     # Make sure we don't exceed chromosome boundaries in the query.
@@ -316,7 +321,8 @@ enlarge_interval_by_factor <-
            end,
            factor,
            seqname_f = NULL,
-           conversionpaf_f = NULL) {
+           conversionpaf_f = NULL,
+           log_collection = NULL) {
     
     # Some border cases #
     
@@ -351,6 +357,11 @@ enlarge_interval_by_factor <-
     if (start_pad < 0) {
       print('Warning: Start coordinate after padding exceeds chromosome boundary. Setting start to 0')
       start_pad = 0
+      
+      if (exists('log_collection')){
+        log_collection$exceeds_x <<- T
+      }
+      
     }
     
     # IF conversionpaf is given (recommended), it is used to check how long
@@ -372,9 +383,20 @@ enlarge_interval_by_factor <-
           )
         )
         end_pad = chrlen
+        
+        # Make an entry to the output logfile
+        if (exists('log_collection')){
+          log_collection$exceeds_x <<- T
+        }
+        
       }
     }
     
+    # Make an entry to the output logfile #
+    if (exists('log_collection')){
+      log_collection[c('start_pad', 'end_pad')] <<- c(start_pad, end_pad)
+    }
+    # Log file entry done #
     
     return(c(start_pad, end_pad))
   }

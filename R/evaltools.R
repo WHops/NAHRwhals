@@ -21,7 +21,6 @@ rep.col <- function(x, n) {
 #' @author  geeksforgeeks.org
 #' @export
 calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F, forcecalc = F) {
-  
   # Remove zero-pads. 
   mat = matrix_remove_zero_pads(mat)
   
@@ -36,8 +35,11 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
   symmetry = min(sum(climb_up_cost), sum(walk_right_cost)) / max(sum(climb_up_cost), sum(walk_right_cost))
 
   
+  # if (is.na(symmetry)){
+  #   browser()
+  # }
   # Run away if there are at least 5 columns, and we have less than 95% similarity
-  if ((symmetry < 0.95 & row > 5) & (forcecalc == F)) {
+  if ((symmetry < 0.75 & row > 5) & (forcecalc == F)) {
     return(NA)
   }
   
@@ -72,7 +74,7 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
   } else if (dim_[1] < 30){
     uncalc_border_frac = 0.3
   } else {
-    uncalc_border_frac = 0.1
+    uncalc_border_frac = 0.2
   }
 
   # For 1st column

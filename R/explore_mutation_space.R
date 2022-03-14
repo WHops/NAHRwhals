@@ -11,7 +11,6 @@
 #' @export
 explore_mutation_space <- function(bitlocus, depth) {
 
-  
   stopifnot("Error: Only depth <= 3 is implemented." = depth <= 3)
 
   # Consider to flip y axis. 
@@ -42,9 +41,11 @@ explore_mutation_space <- function(bitlocus, depth) {
   res = (matrix(ncol = depth + 1, nrow = (dim(pairs)[1] ** depth) * 5))
   colnames(res) = c('eval', paste0('mut', 1:depth))
   res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus, forcecalc=T), 'ref', rep('NA', depth - 1)))
+  
   if (is.na(res[1,'eval'])){
     res[1,'eval'] = 0
   }
+  
   # Early stopping if ref is already near-perfect. 
   if (as.numeric(res[1,'eval']) > 99){
     print('Initial alignment is better than 99%. Not attempting to find SV.')
@@ -151,6 +152,15 @@ explore_mutation_space <- function(bitlocus, depth) {
     dim(res_df_no_na)[1],
     ' with eval calculated)'
   ))
+
+  # Make an entry to the output logfile #
+  if (exists('log_collection')){
+    log_collection$depth <<- depth
+    log_collection$mut_simulated <<- dim(res_df)[1]
+    log_collection$mut_tested <<- dim(res_df_no_na)[1]
+  }
+  # Log file entry done #
+  
   
   return(res_df_no_na)
 }

@@ -79,7 +79,8 @@ plot_matrix_ggplot_named <- function(data_frame_xyz, colnames_f, rownames_f) {
      ggplot2::theme(
        panel.grid.major = ggplot2::element_blank(),
        panel.grid.minor = ggplot2::element_blank(),
-       axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust=1)
+       axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust=1, size=3),
+       axis.text.y = ggplot2::element_text(size=3)
      )
   
   # ... and sort the x and y axes

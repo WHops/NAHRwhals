@@ -112,6 +112,13 @@ carry_out_inv <- function(seq, sds, sv){
   #### B) Update SDs table information
   sds_revisited = sds_document_inversion(sds, sv)
   
+  # W, 14th March 2022. We need to sort here. 
+  # So that '1,end' and '2,start' are what they
+  # are supposed to be. 
+  sds_revisited = sds_revisited[
+    order(sds_revisited$uid, sds_revisited$chromStart),
+  ]
+  
   return(list(seq, sds_revisited))
 }
 
@@ -131,8 +138,17 @@ carry_out_inv <- function(seq, sds, sv){
 #' @export
 sds_document_inversion <- function(sds, sv){
   
+  # W, 14th March 2022. We need to sort here. 
+  # So that '1,end' and '2,start' are what they
+  # are supposed to be. 
+  sds = sds[
+    order(sds$uid, sds$chromStart),
+  ]
+  
   # Calculating again here. 
   sds_specific = sds[sds$uid == sv$SD,]
+  
+
   
   # Which SDs are buried inside the inversion of interest?
   sds$buried_in_inv = (  
@@ -149,11 +165,13 @@ sds_document_inversion <- function(sds, sv){
       chromEnd = sds_specific[2,'chromStart'] - (chromStart - sds_specific[1,'chromEnd']),
       chromStart = sds_specific[2,'chromStart'] - (chromEnd - sds_specific[1,'chromEnd'])
     )
-    
     # A.2) Everyone whose partner has moved. This is not well written...
-    for (transformed_uid in unique(sds[sds$buried_in_inv==T,])){
+    for (transformed_uid in unique(sds[sds$buried_in_inv==T,'uid'])){
+      
+      
       sds_ui = sds[sds$uid == transformed_uid,]
       flipped_id = which(sds_ui$buried_in_inv)
+      if (length(flipped_id) == 1){
       partner_of_flipped_id = 3 - flipped_id # this transforms 2 -> 1 and 1 -> 2
       
       sds[sds$uid == transformed_uid,][partner_of_flipped_id,] = 
@@ -162,6 +180,7 @@ sds_document_inversion <- function(sds, sv){
           otherStart = sds[sds$uid == transformed_uid,][flipped_id,'chromStart'],
           otherEnd = sds[sds$uid == transformed_uid,][flipped_id,'chromEnd']
         )
+      }
       
     }
     
@@ -219,6 +238,13 @@ carry_out_del <- function(seq, sds, sv){
   #### B) Update SDs table information
   
   sds_revisited = sds_document_deletion(sds, sv)
+  
+  # W, 14th March 2022. We need to sort here. 
+  # So that '1,end' and '2,start' are what they
+  # are supposed to be. 
+  sds_revisited = sds_revisited[
+    order(sds_revisited$uid, sds_revisited$chromStart),
+  ]
   
   return(list(seq_mutated, sds_revisited))
 }
@@ -420,6 +446,13 @@ carry_out_dup <- function(seq, sds, sv){
   # [Something is wrong in this functin. Commenting it out for now.]
   sds_revisited = sds# sds_document_duplication(sds, sv)
   
+  # W, 14th March 2022. We need to sort here. 
+  # So that '1,end' and '2,start' are what they
+  # are supposed to be. 
+  sds_revisited = sds_revisited[
+    order(sds_revisited$uid, sds_revisited$chromStart),
+  ]
+  
   return(list(seq_mutated, sds_revisited))
 }
 
@@ -573,9 +606,6 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
         if ((pair[1] == 1) & (pair[2] != dim(bitl)[2])){
           bitl_mut = cbind( -bitl[, (as.numeric(pair[2]) - 1):(as.numeric(pair[1]) + 1)],
                              bitl[, as.numeric(pair[2]):dim(bitl)[2]])
-        } else if ((pair[1] != 1) & (pair[2] == dim(bitl)[2])){
-          bitl_mut = cbind( bitl[, 1:as.numeric(pair[1])],
-                            -bitl[, (as.numeric(pair[2]) - 1):(as.numeric(pair[1]) + 1)])
         } else if ((pair[1] == 1) & (pair[2] == dim(bitl)[2])){
           bitl_mut = -bitl[, (as.numeric(pair[2]) - 1):(as.numeric(pair[1]) + 1)]
         } else {
@@ -587,6 +617,8 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
         # (i.e. pair 3-5), then we assign the colnames manually. 
         if (pair[2] - pair[1] == 2){
           colnames(bitl_mut) = colnames(bitl)
+        } else if (pair[2] == dim(bitl)[2]) {
+          colnames(bitl_mut)[pair[2]] = colnames(bitl_mut)[pair[1]]
         }
     }
   }
@@ -599,6 +631,9 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
     colnames(bitl_mut) = colnames(bitl)[1]
   }
   
+  # if ("" %in% colnames(bitl_mut)){
+  #   browser()
+  # }
   # W, 7th March 2022. Excluding this line since bitl now has 
   # meaningful rownames and colnames. 
   #colnames(bitl_mut) = 1:dim(bitl_mut)[2]
