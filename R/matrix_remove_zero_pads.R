@@ -4,10 +4,13 @@
 #' @export
 matrix_remove_zero_pads <- function(bitl_f){
   
-  # Make an early exit if it's just one column.
-  if (dim(bitl_f)[2] <= 1){
+  # Make an early exit if it's just one column or one row.
+  if ((dim(bitl_f)[2] <= 1) | (dim(bitl_f)[1] <= 1)){
     return(bitl_f)
   }
+  
+  # 
+  
   # Make sure everything is good. 
   stopifnot("Error: Removing of zero pads only on matrix class." = class(bitl_f) == c('matrix', 'array'))
   stopifnot("Error: Removing of zero pads only on matrices with dim > 1" = all(dim(bitl_f)[1] > 1))
