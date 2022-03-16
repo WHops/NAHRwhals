@@ -24,6 +24,10 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
   # Remove zero-pads. 
   mat = matrix_remove_zero_pads(mat)
   
+  # If matrix is actually a vector, return NA.
+  if (is.null(dim(mat))){
+    return(NA)
+  }
   # Save matrix dimensions.
   dim_ = dim(mat)
   row = dim_[1]
