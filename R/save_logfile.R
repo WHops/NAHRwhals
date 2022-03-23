@@ -1,8 +1,5 @@
 # Save logfile
 #' I apologize for the existence of this terrible function. 
-#' Everything about it is very bad. I hope I will make it better
-#' one day. 
-#' 
 #' @export
 save_to_logfile <- function(log, res, logfile){
   res_ref = res[res$mut1=='ref','eval']
@@ -13,6 +10,7 @@ save_to_logfile <- function(log, res, logfile){
   
   stopifnot(ncol(maxres) >= 2)
   
+  # Find the result with the fewest steps.
   if (ncol(maxres)>2){
     mut_max = paste0(res[1,2:ncol(maxres)][,((maxres[1,2:ncol(maxres)] != "NA") & (!is.na((maxres[1,2:ncol(maxres)]))))], collapse='+')
   } else if (ncol(maxres) == 2){
