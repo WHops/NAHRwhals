@@ -113,7 +113,8 @@ wrapper_aln_and_analyse <- function(seqname_x,
                   dpi = 300)
 
 
-
+  system(paste0('rm ', genome_x_fa_subseq))
+  system(paste0('rm ', genome_y_fa_subseq))
   
   
 }
