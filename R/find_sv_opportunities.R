@@ -45,10 +45,7 @@ find_sv_opportunities <- function(sample) {
         all_opportunities[n_opportunity, ] = result_pair
         
         n_opportunity = n_opportunity + 1
-        if (all(result_pair == c(2,33,1))){
-          print(result_pair)
-          browser()
-        }
+        
       }
     }
   }
@@ -73,6 +70,11 @@ find_sv_opportunities <- function(sample) {
     all_opportunities = rbind(all_opportunities, pluspairs)
   }
   
+  # No length-1-inversions
+  all_opportunities = all_opportunities[!(
+      ((all_opportunities$p2 - all_opportunities$p1) == 1) & 
+      (all_opportunities$sv == 'inv')
+    ),]
   
   return(all_opportunities)
   

@@ -1,45 +1,71 @@
 #' explore_mutation_space
 #'
-#' @description Main workhorse, tying together the pieces.
+#' @description Main workhorse, tying together the pieces of SV calling.
 #' Hopefully we can replace this whole function with something nicer
-#' one day. It is very s***y :P
+#' one day. It is rather s***y :P
 #' @param bitlocus matrix, nxm
-#' @param depth How many consecutive SVs should be simulated?
+#' @param depth How many consecutive SVs should be simulated? (Typically 2 or 3.)
 #' @return evaluation matrix
 #'
 #' @author Wolfram Höps
 #' @export
 explore_mutation_space <- function(bitlocus, depth) {
-  
-  sample = bitlocus
-  pairs = find_sv_opportunities(sample)
+
+  stopifnot("Error: Only depth <= 3 is implemented." = depth <= 3)
+
+  # Consider to flip y axis. 
+  bitlocus = flip_bitl_y_if_needed(bitlocus)
+
+  pairs = find_sv_opportunities(bitlocus)
   
   if (dim(pairs)[1] == 0){
     res = (matrix(ncol = depth + 1, nrow = 1))
     colnames(res) = c('eval', paste0('mut', 1:depth))
-    res[1, ] = unlist(c(calc_coarse_grained_aln_score(sample, forcecalc=T), 'ref', rep('NA', depth - 1)))
+    res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus, forcecalc=T), 'ref', rep('NA', depth - 1)))
     return(as.data.frame(res))
   }
+  
+
   # Del-dup-direction: do we need to delete or duplicate overall? 
   del_dup_direction = ((dim(bitlocus)[1] / dim(bitlocus)[2]) - 1)
   if (abs(del_dup_direction) < 0.1){ del_dup_direction == 0}
   del_dup_direction = sign(del_dup_direction)
   
   pairs = remove_equivalent_pairs(pairs)
+  if (dim(pairs)[1] > 100){
+    depth = depth - 1
+    print('Reducing depth by 1.')
+  }
+  
   
   res = (matrix(ncol = depth + 1, nrow = (dim(pairs)[1] ** depth) * 5))
   colnames(res) = c('eval', paste0('mut', 1:depth))
-  res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus), 'ref', rep('NA', depth - 1)))
-
+  res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus, forcecalc=T), 'ref', rep('NA', depth - 1)))
+  
+  if (is.na(res[1,'eval'])){
+    res[1,'eval'] = 0
+  }
+  
+  # Early stopping if ref is already near-perfect. 
+  if (as.numeric(res[1,'eval']) > 99){
+    print('Initial alignment is better than 99%. Not attempting to find SV.')
+    
+    # Excuse this terrible code. It's turning the res thing into a dataframe. 
+    res[2,] = res[1,]
+    return(as.data.frame(res[1:2,])[1,])
+  }
+  
   rescount = 2
   
+  
+  # From here on: Tree exploration. First step, 2nd step, 3rd step. 
   for (npair_level1 in 1:dim(pairs)[1]) {
-    print(paste0('Entering front layer ', npair_level1, ' of ', dim(pairs)[1]))
+    print(paste0('Attempting to resolve SV. Processing mutation branch ', npair_level1, ' of ', dim(pairs)[1]))
     
     pair_level1 = pairs[npair_level1, ]
     
     # Trio of function: Mutate, Evaluate, Observate
-    bitl_mut = carry_out_compressed_sv(sample, pair_level1)
+    bitl_mut = carry_out_compressed_sv(bitlocus, pair_level1)
     
     res[rescount, 1:2] = add_eval(res,
                                   m = bitl_mut,
@@ -111,26 +137,32 @@ explore_mutation_space <- function(bitlocus, depth) {
     } # if depth > 1 end
   } # loop 1 end
   
-  #print('hi')
   res_df = as.data.frame(res)
   res_df$eval = as.numeric(res_df$eval)
   
-  # Remove NA rows
-  res_df = res_df[rowSums(is.na(res_df)) != ncol(res_df),]
+  # Remove NA rows, sort output
+  res_df_no_na = res_df[!is.na(res_df$eval),]
+  res_df_no_na = res_df_no_na[order(res_df_no_na$eval, decreasing=T ),]
   
-  # Remove entries without evals
-  #res_df = res_df[!is.na(res_df$eval),]
-  
-  
+  # Report
   print(paste0(
     'Finished ',
     dim(res_df)[1],
     ' mutation simulations (',
-    dim(res_df[res_df$eval != Inf, ])[1],
+    dim(res_df_no_na)[1],
     ' with eval calculated)'
   ))
+
+  # Make an entry to the output logfile #
+  if (exists('log_collection')){
+    log_collection$depth <<- depth
+    log_collection$mut_simulated <<- dim(res_df)[1]
+    log_collection$mut_tested <<- dim(res_df_no_na)[1]
+  }
+  # Log file entry done #
   
-  return(res_df)
+  
+  return(res_df_no_na)
 }
 
 

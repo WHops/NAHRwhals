@@ -112,6 +112,13 @@ carry_out_inv <- function(seq, sds, sv){
   #### B) Update SDs table information
   sds_revisited = sds_document_inversion(sds, sv)
   
+  # W, 14th March 2022. We need to sort here. 
+  # So that '1,end' and '2,start' are what they
+  # are supposed to be. 
+  sds_revisited = sds_revisited[
+    order(sds_revisited$uid, sds_revisited$chromStart),
+  ]
+  
   return(list(seq, sds_revisited))
 }
 
@@ -131,8 +138,17 @@ carry_out_inv <- function(seq, sds, sv){
 #' @export
 sds_document_inversion <- function(sds, sv){
   
+  # W, 14th March 2022. We need to sort here. 
+  # So that '1,end' and '2,start' are what they
+  # are supposed to be. 
+  sds = sds[
+    order(sds$uid, sds$chromStart),
+  ]
+  
   # Calculating again here. 
   sds_specific = sds[sds$uid == sv$SD,]
+  
+
   
   # Which SDs are buried inside the inversion of interest?
   sds$buried_in_inv = (  
@@ -149,11 +165,13 @@ sds_document_inversion <- function(sds, sv){
       chromEnd = sds_specific[2,'chromStart'] - (chromStart - sds_specific[1,'chromEnd']),
       chromStart = sds_specific[2,'chromStart'] - (chromEnd - sds_specific[1,'chromEnd'])
     )
-    
     # A.2) Everyone whose partner has moved. This is not well written...
-    for (transformed_uid in unique(sds[sds$buried_in_inv==T,])){
+    for (transformed_uid in unique(sds[sds$buried_in_inv==T,'uid'])){
+      
+      
       sds_ui = sds[sds$uid == transformed_uid,]
       flipped_id = which(sds_ui$buried_in_inv)
+      if (length(flipped_id) == 1){
       partner_of_flipped_id = 3 - flipped_id # this transforms 2 -> 1 and 1 -> 2
       
       sds[sds$uid == transformed_uid,][partner_of_flipped_id,] = 
@@ -162,6 +180,7 @@ sds_document_inversion <- function(sds, sv){
           otherStart = sds[sds$uid == transformed_uid,][flipped_id,'chromStart'],
           otherEnd = sds[sds$uid == transformed_uid,][flipped_id,'chromEnd']
         )
+      }
       
     }
     
@@ -219,6 +238,13 @@ carry_out_del <- function(seq, sds, sv){
   #### B) Update SDs table information
   
   sds_revisited = sds_document_deletion(sds, sv)
+  
+  # W, 14th March 2022. We need to sort here. 
+  # So that '1,end' and '2,start' are what they
+  # are supposed to be. 
+  sds_revisited = sds_revisited[
+    order(sds_revisited$uid, sds_revisited$chromStart),
+  ]
   
   return(list(seq_mutated, sds_revisited))
 }
@@ -420,6 +446,13 @@ carry_out_dup <- function(seq, sds, sv){
   # [Something is wrong in this functin. Commenting it out for now.]
   sds_revisited = sds# sds_document_duplication(sds, sv)
   
+  # W, 14th March 2022. We need to sort here. 
+  # So that '1,end' and '2,start' are what they
+  # are supposed to be. 
+  sds_revisited = sds_revisited[
+    order(sds_revisited$uid, sds_revisited$chromStart),
+  ]
+  
   return(list(seq_mutated, sds_revisited))
 }
 
@@ -541,42 +574,110 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
   pair = as.numeric(input_ins[1:2])
   action = input_ins[3]
   
-  
   # Modify the matrix accordingly
   if (action == 'del') {
     bitl_mut = bitl[, -c(as.numeric(pair[1]):(as.numeric(pair[2]) - 1))]
   } else if (action == 'dup') {
+    
     bitl_mut = cbind(bitl[, 1:as.numeric(pair[2])],
                      bitl[, as.numeric(pair[1] + 1):dim(bitl)[2]])
+    
+    if (pair[2] - pair[1] == 1){
+      if (pair[1] == 1){
+        # W, 10th March 2022, Changed this a bit to account for cases
+        # with only 2 columns. 
+        colnames(bitl_mut)[dim(bitl_mut)[2]] = colnames(bitl_mut)[2] 
+      } else if (pair[2] == dim(bitl)[2]){
+        colnames(bitl_mut)[dim(bitl_mut)[2]] = colnames(bitl_mut)[dim(bitl_mut)[2]-1]
+      }
+    }
   } else if (action == 'inv') {
-    bitl_mut = cbind(cbind(bitl[, 1:as.numeric(pair[1])],-bitl[, (as.numeric(pair[2]) -
-                                                                    1):(as.numeric(pair[1]) + 1)]),
-                     bitl[, as.numeric(pair[2]):dim(bitl)[2]])
+    
+    # W, 8th March 2022. 
+    # Noticed a problem with one-column inversions. Here, the expression 
+    # -bitl[, (as.numeric(pair[2]) - 1):(as.numeric(pair[1]) + 1)])
+    # Returns a one-line dataframe, which loses its column name. 
+    # Therefore, we now handle one-column inversions differently now. 
+    if ((pair[2] - pair[1]) == 1){
+      bitl_mut = bitl
+    } else if (pair[2] - pair[1] > 1){
+      
+        # A lot of bordercase handling...
+        if ((pair[1] == 1) & (pair[2] != dim(bitl)[2])){
+          bitl_mut = cbind( -bitl[, (as.numeric(pair[2]) - 1):(as.numeric(pair[1]) + 1)],
+                             bitl[, as.numeric(pair[2]):dim(bitl)[2]])
+        } else if ((pair[1] == 1) & (pair[2] == dim(bitl)[2])){
+          bitl_mut = -bitl[, (as.numeric(pair[2]) - 1):(as.numeric(pair[1]) + 1)]
+        } else {
+        bitl_mut = cbind(cbind(bitl[, 1:as.numeric(pair[1])],
+                               -bitl[, (as.numeric(pair[2]) - 1):(as.numeric(pair[1]) + 1)]),
+                         bitl[, as.numeric(pair[2]):dim(bitl)[2]])
+        } 
+        # Border case handling. If inversion is exactly one column, 
+        # (i.e. pair 3-5), then we assign the colnames manually. 
+        if (pair[2] - pair[1] == 2){
+          colnames(bitl_mut) = colnames(bitl)
+        } else if (pair[2] == dim(bitl)[2]) {
+          colnames(bitl_mut)[pair[2]] = colnames(bitl_mut)[pair[1]]
+        }
+    }
   }
   
-  colnames(bitl_mut) = 1:dim(bitl_mut)[2]
+  # It can happen that only one column is left. In that case...
   
+  if (class(bitl_mut) != c('matrix', 'array')){
+    bitl_mut = as.matrix(bitl_mut)
+    row.names(bitl_mut) = row.names(bitl)
+    colnames(bitl_mut) = colnames(bitl)[1]
+  }
+  
+  # if ("" %in% colnames(bitl_mut)){
+  #   browser()
+  # }
+  # W, 7th March 2022. Excluding this line since bitl now has 
+  # meaningful rownames and colnames. 
+  #colnames(bitl_mut) = 1:dim(bitl_mut)[2]
+
   return(bitl_mut)
   
 }
 
+#' modify_gridmatrix
+#' 
+#' Introduce a chain of mutations to gridmatrix. 
+#' Is used after mutation simulation to verify/visualize
+#' the result. 
+#' @param gmx  GridMatriX. Row/Colnames don't matter. 
+#' @param r1 mutation instruction. Not sure about format right now. TODO. 
 #' @export
 modify_gridmatrix <- function(gmx, r1){
   
+  # If there is no mutation to be done, return matrix as it is. 
   if (r1[1,'mut1'] == 'ref'){
     return(gmx)
   }
   
+  # How many mutations do we have to run?
   nmut = length(r1[, colSums(is.na(r1)) == 0]) - 1
   
+  # Run each mutation. 
   for (i in 1:nmut){
     instr = r1[,i+1]
     start = as.numeric(strsplit(instr, '_')[[1]][1])
     end = as.numeric(strsplit(instr, '_')[[1]][2])
     action = strsplit(instr, '_')[[1]][3]
     
+    # Run ONE mutation
     gmx = carry_out_compressed_sv(gmx, c(start, end, action))
   }
+  
+  # Not ENTIRELY sure, but for some reason we have to transpose here to get the 
+  # correct result back apparently? Might be wrong. Keep an eye on it. 
+  gmx = t(gmx)
+  
+  # Simple row and colnames for easy plotting. 
+  colnames(gmx) = 1:ncol(gmx)
+  row.names(gmx) = 1:nrow(gmx)
   
   return(gmx)
 }

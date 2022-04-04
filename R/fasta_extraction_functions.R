@@ -1,30 +1,3 @@
-# Fasta extraction and asssembly tools
-
-#' extract_subseq
-#' helperfunction to extract a subfasta by coordinates
-#'
-#' Is awfully slow unfortunately. We should find a way to only read
-#' the chromosome of interest.
-#' @author Wolfram Hoeps
-#' @export
-extract_subseq <- function(infasta, seqname, start, end, outfasta) {
-  # Read the whole infasta
-  seq = Biostrings::readDNAStringSet(infasta)
-  
-  # Subset it to the sequence name of interest
-  if (!is.null(seqname)) {
-    subseq = Biostrings::subseq(seq[[seqname]], start = start, end = end)
-  } else {
-    subseq = Biostrings::subseq(seq, start = start, end = end)
-  }
-  # Write fasta. Imported function from seqbilder_functions.R
-  writeFasta(data.frame(name = 'seq', seq = as.character(subseq)), outfasta)
-  
-}
-
-
-
-# To document
 #' filter_paf_to_main_region
 #' Script to filter down a whole-genome paf to the 'best matching' region.
 #' query should be short sequence fragments (1kb, 10kb, ...) of the roi.
@@ -100,6 +73,10 @@ filter_paf_to_main_region <- function(paflink, outpaflink) {
   
 }
 
+#' flip_query_target
+#'
+#' Not entirely sure this is still in use. Might be obsolete.
+#' @author Wolfram Höps
 #' @export
 flip_query_target <- function(inpaf, outpaf) {
   # Read in paf
@@ -150,44 +127,58 @@ flip_query_target <- function(inpaf, outpaf) {
 
 
 
-# TRASH #
-
 #' extract_subseq_bedtools
-
+#' Give me an input fasta link, chromosome coordinates and an
+#' output destionation file. I will extract the sequence of that
+#' coordinates from the fasta, and output it into the outfasta.
 #' @author Wolfram Hoeps
 #' @export
 extract_subseq_bedtools <-
   function(infasta, seqname, start, end, outfasta) {
-    # Needed for parallel runs
-    
+    # Where is bedtools?
     bedtoolsloc = query_config("bedtools")
+    
+    # we need to create a temporary bedfile that will be deleted in a few lines.
     random_tag = as.character(runif(1, 1e10, 1e11))
     tmp_bedfile = paste0('region2_', random_tag, '.bed')
+    
+    # Write coordinates into temporary bedfile
     region = paste0(seqname,
                     "\t",
                     format(start, scientific = F),
                     "\t",
                     format(end, scientific = F))
     system(paste0('echo "', region, '" > ', tmp_bedfile))
-    system(
-      paste0(
-        bedtoolsloc,
-        " getfasta -fi ",
-        infasta,
-        " -bed ",
-        tmp_bedfile,
-        " > ",
-        outfasta
-      )
-    )
+    
+    # Run bedtools
+    system(paste0(
+      bedtoolsloc,
+      " getfasta -fi ",
+      infasta,
+      " -bed ",
+      tmp_bedfile,
+      " > ",
+      outfasta
+    ))
+    
+    # Delete tmp file
     system(paste0('rm ', tmp_bedfile))
     
+    # Check if run was successful.
+    stopifnot(
+      "Error: Bedtools was unable to extract sequence. Please make sure a) Your input fasta paths are correct, b) target and queryfasta are different and c) your input fastas and the conversionpaf are matching." =
+        file.size(outfasta) > 0
+    )
+    
+    # Report your success :)
     print(paste0('Subsequence extracted and saved to ', outfasta))
     
   }
 
 
-
+#' find_punctual_liftover
+#' Translates a single point from one assembly to another.
+#' Uses the pre-computed conversion-paf.
 #' @export
 find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
   # Find all alignments overlapping with the pointcoordinate
@@ -214,7 +205,12 @@ find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
   return(data.frame(seqname = best_aln$tname, liftover_coord = coord))
 }
 
-
+#' liftover_coarse
+#'
+#' Wrapperfunction to find a liftover sequence from one assembly to the other.
+#' Better description TBD.
+#'
+#' @author Wolfram Höps
 #' @export
 liftover_coarse <-
   function(seqname,
@@ -222,7 +218,7 @@ liftover_coarse <-
            end,
            conversionpaf_link,
            n_probes = 100,
-           lenfactor = 1.5) {
+           lenfactor = 1.2) {
     # Load conversionpaf
     cpaf = read.table(
       conversionpaf_link,
@@ -247,6 +243,12 @@ liftover_coarse <-
     )
     colnames(cpaf)[1:length(colnames_paf)] = colnames_paf
     
+    # Assert that the input coordinates are within chromosome boundaries
+    stopifnot("Error: Input coordinates exceed input chromosome length." =
+                ((end <= cpaf[cpaf == seqname,][1, 'qlen']) &
+                   (start >= 0)))
+    
+    
     # We take n_probes single points from the alignment, see where they fall, and take their median
     # as the median of our alignment.
     
@@ -262,6 +264,13 @@ liftover_coarse <-
                               find_punctual_liftover(cpaf, pointcoord, seqname))
     }
     
+    # Make sure we got any results.
+    stopifnot(
+      "Error: Unsuccessful liftover of the input sequence: Sequence not found on query" =
+        dim(liftover_coords)[1] > 0
+    )
+    
+    
     # What is the majority vote for the target chromosome?
     winner_chr = names(sort(table(liftover_coords$seqname), decreasing = TRUE)[1])
     
@@ -273,14 +282,24 @@ liftover_coarse <-
     start_winners = middle_median - (lenfactor * (insequence_len / 2))
     end_winners =   middle_median +   (lenfactor * (insequence_len / 2))
     
-    # Make sure we don't exceed chromosome boundaries
-    start_winners_cutoff = as.integer(max(0, start_winners))
-    end_winners_cutoff =   as.integer(min(cpaf[cpaf$tname == winner_chr,][1, 'tlen'], end_winners))
-    
+    # Warn if we are exceeding chromosome boundaries in the query.
     if ((start_winners < 0) |
         (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
       print('Warning! Reaching the end of alignment!')
+      
+      # Make an entry to the output logfile #
+      if (exists('log_collection')){
+        log_collection$exceeds_y <<- T
+      }
+      # Log file entry done #
+      
     }
+    
+    # Make sure we don't exceed chromosome boundaries in the query.
+    start_winners_cutoff = as.integer(max(0, start_winners))
+    end_winners_cutoff =   as.integer(min(cpaf[cpaf$tname == winner_chr,][1, 'tlen'], end_winners))
+    
+    
     
     return(
       list(
@@ -291,3 +310,126 @@ liftover_coarse <-
     )
     
   }
+
+
+#' enlarge_interval_by_factor
+#'
+#' @author Wolfram Höps
+#' @export
+enlarge_interval_by_factor <-
+  function(start,
+           end,
+           factor,
+           seqname_f = NULL,
+           conversionpaf_f = NULL,
+           log_collection = NULL) {
+    
+    # Some border cases #
+    
+    # end should be larger than start
+    stopifnot("Error: interval end must be larger than start." = (end > start))
+    
+    # Factors smaller 0 make no sense
+    stopifnot("Error: xpad factor must be larger than 0." = factor > 0)
+    
+    # Factors smaller 1 make little sense
+    if (factor < 1) {
+      warning(
+        "xpad factors below 1 are typically not a good idea. (You are shorening your input sequence). xpad=1 means no padding."
+      )
+    }
+    
+    # If 1, don't do anything.
+    if (factor == 1) {
+      return(c(start, end))
+    }
+    
+    # How long is interval
+    interval_len = end - start
+    desired_len = interval_len * factor
+    
+    # DO THE PADDING
+    start_pad = round(start - (abs(interval_len - desired_len) / 2))
+    end_pad =   round(end + (abs(interval_len - desired_len) / 2))
+    
+    
+    # From here on: ensure that the padding was good :)
+    if (start_pad < 0) {
+      print('Warning: Start coordinate after padding exceeds chromosome boundary. Setting start to 0')
+      start_pad = 0
+      
+      if (exists('log_collection')){
+        log_collection$exceeds_x <<- T
+      }
+      
+    }
+    
+    # IF conversionpaf is given (recommended), it is used to check how long
+    # that chromosome actually is - and if our padding exceeds boundaries.
+    if (!is.null(conversionpaf_f)) {
+      stopifnot("Sequence padding: chromosome name is required for QC" = !is.na(seqname_f))
+      
+      paf = read_and_prep_paf(conversionpaf_f)
+      
+      chrlen = paf[paf$qname == seqname_f, ][1, 'qlen']
+      if (end_pad > chrlen) {
+        print(
+          paste0(
+            'Warning: End coordinate after padding (',
+            end_pad,
+            ') exceedis chromosome boundary. Setting end to chr end (',
+            chrlen,
+            ') instead.'
+          )
+        )
+        end_pad = chrlen
+        
+        # Make an entry to the output logfile
+        if (exists('log_collection')){
+          log_collection$exceeds_x <<- T
+        }
+        
+      }
+    }
+    
+    # Make an entry to the output logfile #
+    if (exists('log_collection')){
+      log_collection[c('start_pad', 'end_pad')] <<- c(start_pad, end_pad)
+    }
+    # Log file entry done #
+    
+    return(c(start_pad, end_pad))
+  }
+
+#' read_and_prep_paf
+#'
+#' @author Wolfram Hoeps
+#' @export
+read_and_prep_paf <- function(paflink) {
+  # Load conversionpaf
+  cpaf = read.table(
+    paflink,
+    sep = '\t',
+    fill = T,
+    row.names = NULL
+  )
+  
+  colnames_paf = c(
+    'qname',
+    'qlen',
+    'qstart',
+    'qend',
+    'strand',
+    'tname',
+    'tlen',
+    'tstart',
+    'tend',
+    'nmatch',
+    'alen',
+    'mapq'
+  )
+  colnames(cpaf)[1:length(colnames_paf)] = colnames_paf
+  
+  # Assert that the input coordinates are within chromosome boundaries
+  return(cpaf)
+}

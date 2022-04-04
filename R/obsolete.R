@@ -1,4 +1,67 @@
-# Collection of obsolete functions probably no longer needed #
+# Collection of obsolete functions no longer needed.
+# Some are doing tasks that are no longer required, 
+# others have been replaced with better functions. 
+
+
+#' flip_bitl_y_if_needed
+#' 
+#' Early/quick and dirty version. Might need to be revised in the future. 
+#' Update, 9th March 2022: Yes this is obsolete now. 
+#'
+#' @author  Wolfram Hoeps
+#' @export
+flip_bitl_y_if_needed_obsolete <- function(bitl){
+  
+  cornerstones = c(0,0,0,0)
+  i = 1
+  while(all(cornerstones == 0)){
+    cornerstones = c(
+      bitl[i,i],
+      bitl[nrow(bitl),ncol(bitl)],
+      bitl[nrow(bitl),i],
+      bitl[i,ncol(bitl)]
+    )
+    i = i+1
+  }
+  
+  pos_corners = cornerstones[1:2]
+  neg_corners = cornerstones[3:4]
+  
+  if (sum(pos_corners) == 0 & sum(neg_corners) <= 0){
+    print('Inverse y axis detected. Flipping ... ')
+    bitl = -bitl[nrow(bitl):1,]
+    #flip
+  }
+  
+  return(bitl)
+}
+
+
+
+# Fasta extraction and asssembly tools
+
+#' extract_subseq
+#' helperfunction to extract a subfasta by coordinates
+#'
+#' Is awfully slow unfortunately. We should find a way to only read
+#' the chromosome of interest.
+#' @author Wolfram Hoeps
+#' @export
+extract_subseq <- function(infasta, seqname, start, end, outfasta) {
+  # Read the whole infasta
+  seq = Biostrings::readDNAStringSet(infasta)
+  # Subset it to the sequence name of interest
+  if (!is.null(seqname)) {
+    subseq = Biostrings::subseq(seq[[seqname]], start = start, end = end)
+  } else {
+    subseq = Biostrings::subseq(seq, start = start, end = end)
+  }
+  # Write fasta. Imported function from seqbilder_functions.R
+  writeFasta(data.frame(name = 'seq', seq = as.character(subseq)), outfasta)
+  
+}
+
+
 
 #' find_x_intersection
 
