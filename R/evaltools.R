@@ -23,7 +23,6 @@ rep.col <- function(x, n) {
 calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F, forcecalc = F) {
   # Remove zero-pads. 
   mat = matrix_remove_zero_pads(mat)
-  
   # If matrix is actually a vector, return NA.
   if (is.null(dim(mat))){
     return(NA)
@@ -61,6 +60,8 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
   cost_u = rep.col(climb_up_cost, dim(mat)[2])
   cost_r = rep.row(walk_right_cost, dim(mat)[1])
   
+  cumsum_u = cumsum(climb_up_cost)
+  cumsum_r = cumsum(walk_right_cost)
   # cost_d: Diagonal is only allowed if there is a pos alignment.
   #  0 if we have a positive alignment
   #  Inf otherwise.
@@ -81,12 +82,17 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
     uncalc_border_frac = 0.2
   }
 
+  # 1st value
+  cost_res[1,1] = min(climb_up_cost[1] + walk_right_cost[1],cost_d[1,1])
+  
   # For 1st column
   for (i in 2:row) {
     if (i/row > uncalc_border_frac){
       cost_res[i, 1] = Inf
     } else {
-    cost_res[i, 1] = cost_u[i, 1] + cost_res[i - 1, 1]
+    cost_res[i, 1] = min(cost_u[i, 1] + cost_res[i - 1, 1],
+                         cumsum_u[i-1] + cost_d[i,1])
+                         
     }
   }
   # For 1st row
@@ -94,7 +100,8 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
     if (j/col > uncalc_border_frac){
       cost_res[1,j] = Inf
     } else {
-    cost_res[1, j] = cost_r[1, j] + cost_res[1, j - 1]
+    cost_res[1, j] = min(cost_r[1, j] + cost_res[1, j - 1],
+                         cumsum_r[j-1] + cost_d[1,j])
     }
   }
 
