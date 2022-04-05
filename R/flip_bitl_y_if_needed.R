@@ -12,6 +12,7 @@
 #' @export
 flip_bitl_y_if_needed <- function(bitl){
   
+  
   # Create a copy of the input dataframe. 
   # We will mess with that copy, and trash it.
   bitl_f = bitl
@@ -61,7 +62,15 @@ flip_bitl_y_if_needed <- function(bitl){
   # Flip if needed (but on the bitl, not on the messed bitl_f.)
   if (neg_aln_sum > pos_aln_sum){
     print('Inverse y axis detected. Flipping ... ')
-    bitl = -bitl[nrow(bitl):1,]
+    
+    # If the matrix has only one row, we need a special case because apply
+    # return a vector in this case, not a matrix. 
+    if (dim(bitl_f)[1] == 1){
+      bitl = -bitl
+    } else {
+      bitl = -apply(bitl, 2, rev)
+    }
+    
   }
   
   return(bitl)
