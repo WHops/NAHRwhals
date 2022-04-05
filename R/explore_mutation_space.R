@@ -124,6 +124,12 @@ explore_mutation_space <- function(bitlocus, depth) {
               for (npair_level3 in 1:dim(newpairs3)[1]) {
                 pair_level3 = newpairs3[npair_level3, ]
                 
+                # If space is getting short, enlarge output res.
+                # This is a bugfix, 5th April 2022, Wolfy
+                if (rescount > (dim(res)[1] * 0.80)){
+                  res = rbind(res, (matrix(ncol = depth + 1, nrow = rescount * 0.5)))
+                }
+
                 # Duo of function: Mutate, Evaluate
                 bitl_mut3 = carry_out_compressed_sv(bitl_mut2, pair_level3)
                 res[rescount, 1:4] = add_eval(
@@ -144,7 +150,7 @@ explore_mutation_space <- function(bitlocus, depth) {
       } # loop 2 end
     } # if depth > 1 end
   } # loop 1 end
-  
+
   res_df = as.data.frame(res)
   res_df$eval = as.numeric(res_df$eval)
   
