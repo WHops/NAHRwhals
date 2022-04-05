@@ -24,16 +24,20 @@ flip_bitl_y_if_needed <- function(bitl){
   if ((dim(bitl)[1] > 5) | (dim(bitl)[2] > 5)){
     
     # Define frame corners: Which values do we want to consider?
-    y_min = round(dim(bitl_f)[1] * (1/4))
-    y_max = round(dim(bitl_f)[1] * (3/4))
+    # Minimum framesize is now 2. This is a bugfix. 
+    y_min = max(round(dim(bitl_f)[1] * (1/4)), 3)
+    y_max = min(round(dim(bitl_f)[1] * (3/4)), dim(bitl_f)[1] - 3)
     
-    x_min = round(dim(bitl_f)[2] * (1/4))
-    x_max = round(dim(bitl_f)[2] * (3/4))
+    x_min = max(round(dim(bitl_f)[2] * (1/4)), 3)
+    x_max = min(round(dim(bitl_f)[2] * (3/4)), dim(bitl_f)[2] - 3)
+    
     
     # W, 14th March 2022. Changing that part a bit. 
     # Alternatively: set the non-corners of the frame to 0.
     bitl_f[y_min:y_max,] = 0
     bitl_f[,x_min:x_max] = 0
+    
+
   }
   # # Set all inner values to zero. We don't care about them. 
   # bitl_f[y_min:y_max, x_min:x_max] = 0
