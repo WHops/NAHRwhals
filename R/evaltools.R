@@ -27,10 +27,16 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
   # If matrix is only one number, report 100%. 
   if (is.null(dim(mat))){
     return(NA)
-  } else if ((dim(mat)[1] == 1) && (dim(mat)[2] == 1)){
+  } else if ((dim(mat)[1] == 1) & (dim(mat)[2] == 1)){
     return(100)
+  } else if ((dim(mat)[1] == 1) & (dim(mat)[2] > 1)){
+    pos_aln = sum(mat)
+    return(round((pos_aln / sum(as.numeric(row.names(mat))))*100,3))
+  } else if ((dim(mat)[1] > 1) & (dim(mat)[2] == 1)){
+    pos_aln = sum(mat)
+    return(round((pos_aln / sum(as.numeric(colnames(mat))))*100,3))
   }
-  
+
   # Save matrix dimensions.
   dim_ = dim(mat)
   row = dim_[1]
