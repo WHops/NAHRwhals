@@ -24,6 +24,7 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
   # Remove zero-pads. 
   mat = matrix_remove_zero_pads(mat)
   # If matrix is actually a vector, return NA.
+  # If matrix is only one number, report 100%. 
   if (is.null(dim(mat))){
     return(NA)
   } else if ((dim(mat)[1] == 1) & (dim(mat)[2] == 1)){
@@ -53,7 +54,16 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
   # Run away if there are at least 5 columns, and we have less than 95% similarity
   if ((symmetry < 0.75 & row > 5) & (forcecalc == F)) {
     return(NA)
+  } else if ((dim(mat)[1] == 1) & (dim(mat)[2] == 1)){
+    return(100)
+  } else if ((dim(mat)[1] == 1) & (dim(mat)[2] > 1)){
+    pos_aln = sum(mat)
+    return(round((pos_aln / sum(as.numeric(row.names(mat))))*100,3))
+  } else if ((dim(mat)[1] > 1) & (dim(mat)[2] == 1)){
+    pos_aln = sum(mat)
+    return(round((pos_aln / sum(as.numeric(colnames(mat))))*100,3))
   }
+  
   
   # Construct our three cost matrices:
   # cost_u, if you want to go 'up'
