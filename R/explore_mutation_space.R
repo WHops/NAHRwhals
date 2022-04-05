@@ -11,6 +11,14 @@
 #' @export
 explore_mutation_space <- function(bitlocus, depth) {
 
+  # Corner case if bitlocus is a number
+  if (dim(bitlocus) == c(1,1)){
+    res = (matrix(ncol = depth + 1, nrow = 1))
+    colnames(res) = c('eval', paste0('mut', 1:depth))
+    res[1, ] = unlist(c(100, 'ref', rep('NA', depth - 1)))
+    return(as.data.frame(res))
+  }
+  
   stopifnot("Error: Only depth <= 3 is implemented." = depth <= 3)
 
   # Consider to flip y axis. 
@@ -116,6 +124,12 @@ explore_mutation_space <- function(bitlocus, depth) {
               for (npair_level3 in 1:dim(newpairs3)[1]) {
                 pair_level3 = newpairs3[npair_level3, ]
                 
+                # If space is getting short, enlarge output res.
+                # This is a bugfix, 5th April 2022, Wolfy
+                if (rescount > (dim(res)[1] * 0.80)){
+                  res = rbind(res, (matrix(ncol = depth + 1, nrow = rescount * 0.5)))
+                }
+
                 # Duo of function: Mutate, Evaluate
                 bitl_mut3 = carry_out_compressed_sv(bitl_mut2, pair_level3)
                 res[rescount, 1:4] = add_eval(
@@ -136,7 +150,7 @@ explore_mutation_space <- function(bitlocus, depth) {
       } # loop 2 end
     } # if depth > 1 end
   } # loop 1 end
-  
+
   res_df = as.data.frame(res)
   res_df$eval = as.numeric(res_df$eval)
   
