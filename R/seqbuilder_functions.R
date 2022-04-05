@@ -257,7 +257,6 @@ run_minimap2 <-
         outpaf
       )
     )
-   
     # Check if that was successful. 
     stopifnot("Alignment error: Minimap2 has not reported any significant alignment. 
               Check if your input sequence is sufficiently long." = 
