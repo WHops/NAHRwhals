@@ -87,12 +87,15 @@ wrapper_aln_and_analyse <- function(seqname_x,
   genome_x_fa_subseq = paste0(sequence_name_output, '/fasta/', samplename, '_x.fa')
   genome_y_fa_subseq = paste0(sequence_name_output, '/fasta/', samplename, '_y.fa')
   
-  # Pad-sequence
-  start_end_pad = enlarge_interval_by_factor(start_x, end_x, xpad, seqname_f = seqname_x, conversionpaf_f = conversionpaf_link) 
-  start_x_pad = start_end_pad[1]
-  end_x_pad = start_end_pad[2]
+
 
   if (use_paf_library){
+    
+    # Pad-sequence
+    start_end_pad = enlarge_interval_by_factor(start_x, end_x, xpad, seqname_f = seqname_x, conversionpaf_f = conversionpaf_link) 
+    start_x_pad = start_end_pad[1]
+    end_x_pad = start_end_pad[2]
+    
     # Get coordinates in y
     coords_liftover = liftover_coarse(seqname_x, start_x_pad, end_x_pad, conversionpaf_link, lenfactor = aln_pad_factor)
   
@@ -100,6 +103,11 @@ wrapper_aln_and_analyse <- function(seqname_x,
     extract_subseq_bedtools(genome_x_fa, seqname_x, start_x_pad, end_x_pad, genome_x_fa_subseq)
     extract_subseq_bedtools(genome_y_fa, coords_liftover$lift_contig, coords_liftover$lift_start, coords_liftover$lift_end, genome_y_fa_subseq)
   } else {
+    
+    start_x_pad = 0
+    end_x_pad = 1
+    start_x = 0
+    end_x = 1
     system(paste0('cp ', genome_x_fa, ' ', genome_x_fa_subseq))
     system(paste0('cp ', genome_y_fa, ' ', genome_y_fa_subseq))
     

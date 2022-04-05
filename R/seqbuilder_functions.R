@@ -258,6 +258,19 @@ run_minimap2 <-
       )
     )
     
+    print(
+      paste0(
+        minimap2loc,
+        " -x asm20 -P -c -s 0 -M 0.2 -t ",
+        nthreads,
+        " ",
+        targetfasta,
+        " ",
+        queryfasta,
+        " > ",
+        outpaf
+      )
+    )
     # Check if that was successful. 
     stopifnot("Alignment error: Minimap2 has not reported any significant alignment. 
               Check if your input sequence is sufficiently long." = 
