@@ -16,20 +16,28 @@ flip_bitl_y_if_needed <- function(bitl){
   # We will mess with that copy, and trash it.
   bitl_f = bitl
   
-  # Define frame corners: Which values do we want to consider?
-  y_min = round(dim(bitl_f)[1] * (1/4))
-  y_max = round(dim(bitl_f)[1] * (3/4))
   
-  x_min = round(dim(bitl_f)[2] * (1/4))
-  x_max = round(dim(bitl_f)[2] * (3/4))
+
   
+  # If the matrix is large enough, define a frame. 
+  if ((dim(bitl)[1] > 5) | (dim(bitl)[2] > 5)){
+    
+    # Define frame corners: Which values do we want to consider?
+    y_min = round(dim(bitl_f)[1] * (1/4))
+    y_max = round(dim(bitl_f)[1] * (3/4))
+    
+    x_min = round(dim(bitl_f)[2] * (1/4))
+    x_max = round(dim(bitl_f)[2] * (3/4))
+    
+    # W, 14th March 2022. Changing that part a bit. 
+    # Alternatively: set the non-corners of the frame to 0.
+    bitl_f[y_min:y_max,] = 0
+    bitl_f[,x_min:x_max] = 0
+  }
   # # Set all inner values to zero. We don't care about them. 
   # bitl_f[y_min:y_max, x_min:x_max] = 0
   
-  # W, 14th March 2022. Changing that part a bit. 
-  # Alternatively: set the non-corners of the frame to 0.
-  bitl_f[y_min:y_max,] = 0
-  bitl_f[,x_min:x_max] = 0
+
   
   # Count positive and negative alignments in the frame. 
   pos_aln_sum = sum(bitl_f[bitl_f > 0] )
