@@ -100,6 +100,10 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
   } else {
     uncalc_border_frac = 0.2
   }
+  
+  if (forcecalc){
+    uncalc_border_frac = 0
+  }
 
   # 1st value
   cost_res[1,1] = min(climb_up_cost[1] + walk_right_cost[1],cost_d[1,1])
