@@ -604,10 +604,12 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
       
         # A lot of bordercase handling...
         if ((pair[1] == 1) & (pair[2] != dim(bitl)[2])){
-          bitl_mut = cbind( -bitl[, (as.numeric(pair[2]) - 1):(as.numeric(pair[1]) + 1)],
-                             bitl[, as.numeric(pair[2]):dim(bitl)[2]])
+          bitl_mut = cbind( -bitl[, (as.numeric(pair[2])):(as.numeric(pair[1]))],
+                             bitl[, as.numeric(pair[2]+1):dim(bitl)[2]])
+          
         } else if ((pair[1] == 1) & (pair[2] == dim(bitl)[2])){
-          bitl_mut = -bitl[, (as.numeric(pair[2]) - 1):(as.numeric(pair[1]) + 1)]
+          bitl_mut = -bitl[, (as.numeric(pair[2])):(as.numeric(pair[1]))]
+          
         } else {
         bitl_mut = cbind(cbind(bitl[, 1:as.numeric(pair[1])],
                                -bitl[, (as.numeric(pair[2]) - 1):(as.numeric(pair[1]) + 1)]),
