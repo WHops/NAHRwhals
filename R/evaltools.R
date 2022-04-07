@@ -23,10 +23,11 @@ rep.col <- function(x, n) {
 calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F, forcecalc = F) {
   # Remove zero-pads. 
   mat = matrix_remove_zero_pads(mat)
-  # If matrix is actually a vector, return NA.
+  print(mat)
+  # If matrix has no entries (no alignments), return 0
   # If matrix is only one number, report 100%. 
   if (is.null(dim(mat))){
-    return(NA)
+    return(0)
   } else if ((dim(mat)[1] == 1) & (dim(mat)[2] == 1)){
     return(100)
   } else if ((dim(mat)[1] == 1) & (dim(mat)[2] > 1)){
@@ -134,9 +135,9 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
         cost_res[i,j] = Inf
       } else {
       cost_res[i, j] =  (min(
-        cost_d[i - 1, j - 1] + cost_res[i - 1, j - 1],
-        cost_res[i - 1, j] + cost_u[i - 1, j],
-        cost_res[i, j - 1] + cost_r[i, j - 1]
+        cost_res[i - 1, j - 1] + cost_d[i, j],
+        cost_res[i - 1, j] +     cost_u[i, j],
+        cost_res[i, j - 1] +     cost_r[i, j]
       ))
       }
     }
