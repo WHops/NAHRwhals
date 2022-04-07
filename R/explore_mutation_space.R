@@ -15,7 +15,7 @@ explore_mutation_space <- function(bitlocus, depth) {
   if (dim(bitlocus) == c(1,1)){
     res = (matrix(ncol = depth + 1, nrow = 1))
     colnames(res) = c('eval', paste0('mut', 1:depth))
-    res[1, ] = unlist(c(100, 'ref', rep('NA', depth - 1)))
+    res[1, ] = unlist(c(100, 'ref', rep(NA, depth - 1)))
     return(as.data.frame(res))
   }
 
@@ -29,7 +29,7 @@ explore_mutation_space <- function(bitlocus, depth) {
   if (dim(pairs)[1] == 0){
     res = (matrix(ncol = depth + 1, nrow = 1))
     colnames(res) = c('eval', paste0('mut', 1:depth))
-    res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus, forcecalc=T), 'ref', rep('NA', depth - 1)))
+    res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus, forcecalc=T), 'ref', rep(NA, depth - 1)))
     return(as.data.frame(res))
   }
   
@@ -48,7 +48,7 @@ explore_mutation_space <- function(bitlocus, depth) {
   
   res = (matrix(ncol = depth + 1, nrow = (dim(pairs)[1] ** depth) * 5))
   colnames(res) = c('eval', paste0('mut', 1:depth))
-  res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus, forcecalc=T), 'ref', rep('NA', depth - 1)))
+  res[1, ] = unlist(c(calc_coarse_grained_aln_score(bitlocus, forcecalc=T), 'ref', rep(NA, depth - 1)))
   
   if (is.na(res[1,'eval'])){
     res[1,'eval'] = 0

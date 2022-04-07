@@ -31,12 +31,11 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
     return(100)
   } else if ((dim(mat)[1] == 1) & (dim(mat)[2] > 1)){
     pos_aln = sum(mat)
-    return(round((pos_aln / sum(as.numeric(row.names(mat))))*100,3))
+    return(round((pos_aln / sum(as.numeric(colnames(mat))))*100,3))
   } else if ((dim(mat)[1] > 1) & (dim(mat)[2] == 1)){
     pos_aln = sum(mat)
-    return(round((pos_aln / sum(as.numeric(colnames(mat))))*100,3))
+    return(round((pos_aln / sum(as.numeric(row.names(mat))))*100,3))
   }
-
   # Save matrix dimensions.
   dim_ = dim(mat)
   row = dim_[1]
@@ -63,7 +62,6 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
     pos_aln = sum(mat)
     return(round((pos_aln / sum(as.numeric(colnames(mat))))*100,3))
   }
-  
   
   # Construct our three cost matrices:
   # cost_u, if you want to go 'up'
@@ -102,7 +100,7 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
   }
   
   if (forcecalc){
-    uncalc_border_frac = 0
+    uncalc_border_frac = 1
   }
 
   # 1st value
@@ -171,7 +169,9 @@ calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F,
     ))
     
   }
-  
+  #print(cost_res)
+  #print(round((1-(cost_res[row, col]) / sum(climb_up_cost, walk_right_cost)) * 100, 3)) 
+  #print('##########################')
   # Return value: percentage of basepairs not crossed along alignments. 
   return(round((1-(cost_res[row, col]) / sum(climb_up_cost, walk_right_cost)) * 100, 3))
 }
@@ -321,5 +321,6 @@ add_eval <-
       ))
       
     }
+    
     return(res_add)
   }

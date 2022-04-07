@@ -183,10 +183,18 @@ wrapper_aln_and_analyse <- function(seqname_x,
   }
   
   if (clean_all){
-  system(paste0('rm ', genome_x_fa_subseq))
-  system(paste0('rm ', genome_y_fa_subseq))
-  system(paste0('rm ', genome_x_fa_subseq,'.chunk.fa'))
-  system(paste0('rm ', genome_y_fa_subseq, '.chunk.fa'))
+    if (!is.na(file.size(genome_x_fa_subseq))){
+        system(paste0('rm ', genome_x_fa_subseq))
+    }
+    if (!is.na(file.size(genome_y_fa_subseq))){
+        system(paste0('rm ', genome_y_fa_subseq))
+    }
+    if (!is.na(file.size(paste0(genome_x_fa_subseq,'.chunk.fa')))){
+        system(paste0('rm ', genome_x_fa_subseq,'.chunk.fa'))
+    }
+    if (!is.na(file.size(paste0(genome_x_fa_subseq, '.chunk.fa')))){
+        system(paste0('rm ', genome_y_fa_subseq, '.chunk.fa'))
+    }
   }
   save_to_logfile(get('log_collection', envir=globalenv()), res, logfile)
 
