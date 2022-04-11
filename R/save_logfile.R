@@ -5,20 +5,17 @@ save_to_logfile <- function(log, res, logfile){
   res_ref = res[res$mut1=='ref','eval']
   res_max = res[1,'eval']
   n_res_max = dim(res[res$eval == max(res$eval),])[1]
-  print(res[1:10,]) 
   maxres =  res[which.max(rowSums(is.na(res[res$eval==max(res$eval),]))),]
   
   stopifnot(ncol(maxres) >= 2)
   
   # Find the result with the fewest steps.
-  print(maxres)
   # If we have more than one mutation modeled
   if (ncol(maxres)>2){
     mut_max = paste0(maxres[1,2:ncol(maxres)][,((maxres[1,2:ncol(maxres)] != "NA") & (!is.na((maxres[1,2:ncol(maxres)]))))], collapse='+')
   } else if (ncol(maxres) == 2){
     mut_max = paste0(maxres[1,2])
   }
-  print(mut_max)
   ###### TBD ###########
   to_append = data.frame(
     log$chr,

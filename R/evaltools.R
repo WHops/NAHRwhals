@@ -23,7 +23,6 @@ rep.col <- function(x, n) {
 calc_coarse_grained_aln_score <- function(mat, old_way_of_calc = F, verbose = F, forcecalc = F) {
   # Remove zero-pads. 
   mat = matrix_remove_zero_pads(mat)
-  print(mat)
   # If matrix has no entries (no alignments), return 0
   # If matrix is only one number, report 100%. 
   if (is.null(dim(mat))){
