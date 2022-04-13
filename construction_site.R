@@ -262,20 +262,21 @@ grid = wrapper_paf_to_bitlocus(samplepaf_link3, minlen=0, compression = 10)
 library(devtools)
 devtools::load_all()
 ref_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/hg38.fa"
+
 hg38_fa = ref_fa
 hg38fa = hg38_fa
 chm13fa = '/Users/hoeps/PhD/projects/huminvs/genomes/CHM13_T2T/fasta/chm13.draft_v1.1.fasta'
 aln_fa = '/Users/hoeps/PhD/projects/huminvs/genomes/hifi-asm/HG00512_hgsvc_pbsq2-ccs_1000-hifiasm.h1-un.fasta'
 conversionpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/liftover_custom/HG00512_hgsvc_pbsq2-ccs_1000-hifiasm.h1-un_hg38.paf"
 
-aln_fa = '~/Desktop/alns/NA12878_giab_pbsq2-ccs_1000-hifiasm.h2-un.fasta'
+aln_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/alns/NA12878_giab_pbsq2-ccs_1000-hifiasm.h2-un.fasta'
 conversionpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/liftover_custom/NA12878_giab_pbsq2-ccs_1000-hifiasm.h2-un_hg38.paf"
 
-aln_fa = '~/Desktop/alns/HG00731_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un.fasta'
+aln_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/alns/HG00731_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un.fasta'
 conversionpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/liftover_custom/HG00731_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un_hg38.paf"
 
 
-aln_fa = '~/Desktop/alns/NA19240_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un.fasta'
+aln_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/alns/NA19240_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un.fasta'
 conversionpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/liftover_custom/NA19240_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un_hg38.paf"
 
 
@@ -292,59 +293,122 @@ conversionpaf_link = '/Users/hoeps/PhD/projects/huminvs/genomes/rheMac10/rheMac1
 
 # Run intervals of 1Mb.
 #chr8    6297862 6299768
-chr='chr8'
-start = 6297862
-end =   6299768
-chunklen = 1000
+devtools::load_all()
+chr='chr2'
+start = 93786020
+end =   114024020
+chunklen = 50000
+
 wrapper_aln_and_analyse(chr,
                         start,
                         end,
                         hg38_fa,
                         aln_fa,
                         conversionpaf_link,
-                        runname = 'testrun',
+                        samplename = 'exceed_test',
                         chunklen = chunklen,
-                        sd_minlen = 100,
-                        compression = 100,
-                        depth = 2,
-                        xpad = 2)
+                        sd_minlen = 10000,
+                        compression = 10000,
+                        depth = 1, 
+                        xpad = 1,
+                        logfile = 'res/res20-new.tsv',
+                        debug=T, 
+                        include_grid = F)
 
 
 cao_f = "/Users/hoeps/Desktop/chr3_cao_flt.bed"
 cao = read.table(cao_f, sep='\t')
 
-for (i in 6:dim(cao)[1]){
-  chr = cao[i,1]
-  start = cao[i,2]
-  end = cao[i,3]
+random_10_invs = '/Users/hoeps/PhD/projects/huminvs/mosaicatcher/results/hg38_wmap_jun28/v1.3lab/random_invs.tsv'
+random_10_invs = '/Users/hoeps/PhD/projects/huminvs/mosaicatcher/results/hg38_wmap_jun28/v1.3lab/random_invs-2.tsv'
+random_20_invs = '/Users/hoeps/PhD/projects/huminvs/mosaicatcher/results/hg38_wmap_jun28/v1.3lab/random_invs-3.tsv'
+r1i = read.table(random_20_invs, sep='\t')
+
+devtools::load_all()
+for (i in 10:nrow(r1i)){
+  chr = r1i[i,1]
+  start = r1i[i,2]
+  end = r1i[i,3]+1
   
-  start_buffer = (start - (end-start)) - 10000
-  end_buffer = end + (end-start) + 10000
-  
-  if ((end_buffer - start_buffer) > 0){
-    if ((end_buffer - start_buffer) > 10000000){
-      chunklen = 50000
-    } else if ((end_buffer - start_buffer) > 2000000){
-      chunklen = 10000
-    } else
-      chunklen = 1000
-    wrapper_aln_and_analyse(chr,
-                            start_buffer,
-                            end_buffer,
-                            hg38_fa,
-                            hg38_fa,
-                            conversionpaf_link,
-                            runname = 'testrun',
-                            chunklen = chunklen,
-                            sd_minlen = 100,
-                            compression = 100,
-                            depth = 3)
+  chr = 'chr13'
+  start = 37310422
+  end = 37322546
+  # Play with padding values
+  if ((end - start) < 1000){
+    xpad = 20
+  } else if ((end - start) < 100000){
+    xpad = 5
+  } else {
+    xpad = 2
   }
+
+  if (((end - start)*xpad) > 10 * 1000 * 1000){
+    chunklen = 50000
+  } else if (((end - start)*xpad) > 1000 * 1000){
+    chunklen = 10000
+  } else { 
+    chunklen = 1000
+  }
+  wrapper_aln_and_analyse(chr,
+                          start,
+                          end,
+                          hg38_fa,
+                          aln_fa,
+                          conversionpaf_link,
+                          samplename = 'exceed_test',
+                          chunklen = chunklen,
+                          sd_minlen = 100,
+                          compression = 100,
+                          depth = 3, 
+                          xpad = xpad,
+                          logfile = 'res/res20-new.tsv',
+                          debug=T)
+  
 }
 
-seqname = 'chr7'
-start = 65219157
-end = 65531823
+
+hg38_fa = '/Users/hoeps/Desktop/blub/nu7/NA19239_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un_hg38_x.fa'
+aln_fa = '/Users/hoeps/Desktop/blub/nu7/NA19239_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un_hg38_y.fa'
+
+hg38_fa = '/Users/hoeps/Desktop/blub/nu8/HG00733_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un_hg38_x.fa'
+aln_fa = '/Users/hoeps/Desktop/blub/nu8/HG00733_hgsvc_pbsq2-ccs_1000-hifiasm.h2-un_hg38_y.fa'
+
+wrapper_aln_and_analyse('chr',
+                        'start',
+                        'end',
+                        hg38_fa,
+                        aln_fa,
+                        conversionpaf_link,
+                        samplename = 'X10',
+                        chunklen = 1000,
+                        sd_minlen = 1000,
+                        compression = 1000,
+                        depth = 3, 
+                        xpad = 1,
+                        logfile = 'res/res20-new.tsv',
+                        debug=F,
+                        use_paf_library=F)
+
+
+chr = 'chr7'
+start = 64719157  
+end = 66031823
+
+wrapper_aln_and_analyse(chr,
+                        start,
+                        end,
+                        hg38_fa,
+                        aln_fa,
+                        conversionpaf_link,
+                        samplename = 'HG00512_h1',
+                        chunklen = 10000,
+                        sd_minlen = 1000,
+                        compression = 1000,
+                        depth = 1, 
+                        xpad = 1.5,
+                        logfile = 'res/res2.tsv',
+                        debug = F)
+
 
 outfasta_hg38 = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/hg38_sub.fa"
 outfasta_aln = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/aln_sub.fa"
@@ -379,14 +443,16 @@ grid_mut_plot
 
 #hg38
 
+
+
 library(devtools)
 devtools::load_all()
 
-seqname=         'chr11'
-start_orig =     738460    
-end_orig =       738460+2260        
+seqname = 'chr3'
+start_orig = 164555340  
+end_orig = 167629370    
 
-start_end_pad = enlarge_interval_by_factor(start_orig, end_orig, factor = 2.5, seqname_f = seqname, conversionpaf_f = conversionpaf_link)
+start_end_pad = enlarge_interval_by_factor(start_orig, end_orig, factor = 1.3, seqname_f = seqname, conversionpaf_f = conversionpaf_link)
 start = start_end_pad[1]
 end =   start_end_pad[2]
 
@@ -394,6 +460,7 @@ end =   start_end_pad[2]
 outfasta_hg38 = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/hg38_sub.fa"
 outfasta_aln = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/res/aln_sub.fa"
 outpaf_link = as.character(runif(1,1e10,1e11))
+
 
 coords_liftover = liftover_coarse(seqname, start, end, conversionpaf_link, lenfactor = 1.2)
 print(end - start)

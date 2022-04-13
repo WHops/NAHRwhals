@@ -4,7 +4,7 @@
 #' @author Wolfram Höps
 #' @export
 query_config <- function(param) {
-  configfile = "/g/korbel/hoeps/programs/ntk/nahrchainer/conf/config.yml"
+  configfile = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/conf/config.yml"
   return(config::get(param, file = configfile))
 }
 
@@ -130,7 +130,7 @@ make_chunked_minimap_alnment <-
     }
     
     # paf of fragmented paf gets put back together.
-    compress_paf_fnct(inpaf_link = outpaf_filter, outpaf_link = outpaf, quadrantsize = quadrantsize)
+    compress_paf_fnct(inpaf_link = outpaf_filter, outpaf_link = outpaf, quadrantsize = quadrantsize, inparam_chunklen = chunklen)
     
     if (wholegenome) {
       flip_query_target(outpaf, outpaf_plot)

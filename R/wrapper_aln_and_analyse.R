@@ -157,7 +157,8 @@ wrapper_aln_and_analyse <- function(seqname_x,
   if (include_grid){
     # Make an xy grid
     grid_xy = wrapper_paf_to_bitlocus(outpaf_link_x_y, minlen = sd_minlen, compression = compression,
-                                      gridplot_save = outfile_plot_grid, pregridplot_save = outfile_plot_pre_grid )
+                                      gridplot_save = outfile_plot_grid, pregridplot_save = outfile_plot_pre_grid,
+                                      max_n_alns = 50)
     gridmatrix = gridlist_to_gridmatrix(grid_xy)
     res = explore_mutation_space(gridmatrix, depth = depth)
 

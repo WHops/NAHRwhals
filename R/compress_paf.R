@@ -65,7 +65,10 @@ compress_paf_fnct <-
            outpaf_link = NULL,
            inpaf_df = NULL,
            save_outpaf = T,
-           quadrantsize = 100000) {
+           quadrantsize = 100000, 
+           second_run = F, 
+           inparam_chunklen = NULL,
+           inparam_compression = NULL) {
     library(dplyr)
     debug = F
     if (debug) {
@@ -95,6 +98,9 @@ compress_paf_fnct <-
       )
       colnames(inpaf)[1:length(colnames_paf)] = colnames_paf
       
+      # # debug input:
+      # inpaf = inpaf[abs((inpaf$tstart + inpaf$qstart) -  950000) < 50000,]
+      # inpaf = inpaf[inpaf$alen > 5000,]
       # For safety: sort entries by qstart. Reset row names so they start at 1.
       inpaf = inpaf[order(inpaf$qstart),]
       rownames(inpaf) <- NULL
@@ -105,7 +111,6 @@ compress_paf_fnct <-
     }
     
 
-    
     # Compression here?
     # compression = 1000
     # inpaf[,c('qstart','qend','tstart','tend')] = round(data.frame(inpaf[,c('qstart','qend','tstart','tend')] / compression),0) * compression
@@ -135,12 +140,11 @@ compress_paf_fnct <-
               (inpaf$qstart <= qstep + quadrantsize)
           )   ,]
         
-        rowpairs = rbind(rowpairs, merge_paf_entries_intraloop(inpaf_q))
+        rowpairs = rbind(rowpairs, merge_paf_entries_intraloop(inpaf_q, second_run, inparam_chunklen, inparam_compression))
         count = count + 1
         #print(count)
       }
     }
-    #browser()
     # Sort once again, by row.
     
     rowpairs = rowpairs[order(rowpairs$col),]

@@ -26,6 +26,9 @@ load_and_prep_paf_for_gridplot_transform <- function(inpaf, minlen, compression)
   )
   
   ### PAF prep ###
+  # Merge before compression. 
+  paf = compress_paf_fnct(inpaf_df = paf, save_outpaf=F, second_run=T, inparam_compression=compression, quadrantsize = 1e10)
+  print('first done')
   # Filter alignments by length
   paf = paf[paf$alen > minlen, ]
   
@@ -38,9 +41,9 @@ load_and_prep_paf_for_gridplot_transform <- function(inpaf, minlen, compression)
   # If any entry is not slope 1 yet (which is unlikely after compression), then make it so.
   paf = enforce_slope_one(paf)
   
-  # Now, in case any two ends have come close together, re-merge them. 
-  paf = compress_paf_fnct(inpaf_df = paf, save_outpaf=F)
-  
+  # Now, in case any two ends have come close together, re-merge them.
+  paf = compress_paf_fnct(inpaf_df = paf, save_outpaf=F, second_run=F, inparam_chunklen=100)
+  print('second done')
   # In paf, start is always smaller than end. For our slope etc calculation, it will be easier
   # to change the order of start and end, if the orientation of the alignment is negative.
   paf = transform(
@@ -116,7 +119,8 @@ wrapper_paf_to_bitlocus <-
            pregridplot_nolines = F,
            saveplot = F,
            minlen = 1000,
-           compression = 1000) {
+           compression = 1000,
+           max_n_alns = 50) {
     
     
     # Load paf. If compression is too low change it automatically. 
@@ -127,8 +131,7 @@ wrapper_paf_to_bitlocus <-
     
     while(!n_aln_acceptable){
       paf = load_and_prep_paf_for_gridplot_transform(inpaf, minlen, compression)
-      if (dim(paf)[1] < 50){
-        
+      if (dim(paf)[1] < max_n_alns){
         # Make a grid, using the bounce algorithm.
         gxy = make_xy_grid(paf, n_additional_bounces = 2)
         
@@ -163,7 +166,7 @@ wrapper_paf_to_bitlocus <-
     # Log file entry done #
     
     
-
+    browser()
     gridlines.x = gxy[[1]]
     gridlines.y = gxy[[2]]
     
@@ -184,10 +187,14 @@ wrapper_paf_to_bitlocus <-
       ))
     }
     
+    browser()
+
+    
+    # Sweep clean (?)
+    grid_list2 = clean_sweep_matrix(grid_list)
+    
     # Sort by x
     grid_list = grid_list[order(grid_list$x),]
-    
-
     
     grid_list = remove_duplicates_triple(grid_list)
     
