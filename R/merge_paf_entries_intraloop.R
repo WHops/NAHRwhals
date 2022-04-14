@@ -20,8 +20,7 @@ merge_paf_entries_intraloop <- function(inpaf, second_run=F, inparam_chunklen=NU
     chunklen = min(inpaf$qlen)
     tolerance_bp_unlimited = 0.5 * inparam_compression
     tolerance_bp = min(tolerance_bp_unlimited, chunklen * 0.9)
-    print(tolerance_bp)
-    
+
   } else {
     # On second thought, let's have this cap on the length of the input chunklen. 
     tolerance_bp = 0.05 * inparam_chunklen
@@ -40,11 +39,7 @@ merge_paf_entries_intraloop <- function(inpaf, second_run=F, inparam_chunklen=NU
     qstart = ifelse(strand == '-', qend, qstart)
   )
   
-  # Quick and dirty fix for problem of matches if both 
-  # start and end are inside of the threshold. 
-  if (tolerance_bp > 100){
-    inpaf_t = inpaf_t[(inpaf_t$alen > tolerance_bp),]
-  }
+
   rowpairs = data.frame(which(
     
     # only first half of matrix
@@ -76,8 +71,17 @@ merge_paf_entries_intraloop <- function(inpaf, second_run=F, inparam_chunklen=NU
   #     (outer(inpaf$strand, inpaf$strand, '==')),
   #   arr.ind = T))
   
+  # Remove pairs with very small alignments.
+  if (tolerance_bp > 100){
+    rowpairs = rowpairs[inpaf_t[rowpairs$row,]$alen > tolerance_bp,]
+    rowpairs = rowpairs[inpaf_t[rowpairs$col,]$alen > tolerance_bp,]
+    
+  }
+  
   rowpairs$row = as.numeric(inpaf_rownames[rowpairs$row])
   rowpairs$col = as.numeric(inpaf_rownames[rowpairs$col])
+  
+
   
   
   return(rowpairs)

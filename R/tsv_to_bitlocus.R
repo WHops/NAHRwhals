@@ -8,7 +8,7 @@
 #' Append qmin qmax columns.
 #' @author Wolfram Hoeps
 #' @export
-load_and_prep_paf_for_gridplot_transform <- function(inpaf, minlen, compression){
+load_and_prep_paf_for_gridplot_transform <- function(inpaf, minlen, compression, quadrantsize = 1e5){
   paf = read.table(inpaf)
   colnames(paf) = c(
     'qname',
@@ -27,11 +27,14 @@ load_and_prep_paf_for_gridplot_transform <- function(inpaf, minlen, compression)
   
   ### PAF prep ###
   # Merge before compression. 
-  paf = compress_paf_fnct(inpaf_df = paf, save_outpaf=F, second_run=T, inparam_compression=compression, quadrantsize = 1e10)
-  print('first done')
+  paf = compress_paf_fnct(inpaf_df = paf, save_outpaf=F, second_run=T, inparam_compression=compression, quadrantsize = quadrantsize, inparam_chunklen = 10000)
+
   # Filter alignments by length
   paf = paf[paf$alen > minlen, ]
   
+  if (dim(paf)[1] == 0){
+    return(paf)
+  }
   # (Error out if no paf survives initial filtering)
   stopifnot("Error: no alignment longer than minlen" = dim(paf)[1] > 0)
   
@@ -42,8 +45,8 @@ load_and_prep_paf_for_gridplot_transform <- function(inpaf, minlen, compression)
   paf = enforce_slope_one(paf)
   
   # Now, in case any two ends have come close together, re-merge them.
-  paf = compress_paf_fnct(inpaf_df = paf, save_outpaf=F, second_run=F, inparam_chunklen=100)
-  print('second done')
+  paf = compress_paf_fnct(inpaf_df = paf, save_outpaf=F, second_run=T, inparam_compression=compression, quadrantsize = 1e10, inparam_chunklen = 10000)
+
   # In paf, start is always smaller than end. For our slope etc calculation, it will be easier
   # to change the order of start and end, if the orientation of the alignment is negative.
   paf = transform(
@@ -120,7 +123,7 @@ wrapper_paf_to_bitlocus <-
            saveplot = F,
            minlen = 1000,
            compression = 1000,
-           max_n_alns = 50) {
+           max_n_alns = 150) {
     
     
     # Load paf. If compression is too low change it automatically. 
@@ -128,33 +131,41 @@ wrapper_paf_to_bitlocus <-
     # 1) there are less than 50 alignments, and 
     # 2) There are no incongruencies in the grid. 
     n_aln_acceptable = F
+    browser()
     
+    wiggled_params = find_minlen_compression_params_wiggle(inpaf, n_tests = 50)
+    minlen = wiggled_params[[1]]
+    compression = wiggled_params[[2]]
     while(!n_aln_acceptable){
+      print('Attempting to make a grid with:')
+      print(paste0('Minlen: ', minlen))
+      print(paste0('Compression: ', compression))
       paf = load_and_prep_paf_for_gridplot_transform(inpaf, minlen, compression)
+      print(paste0('Leading to a paf of dimensions: ', dim(paf)[1]))
       if (dim(paf)[1] < max_n_alns){
         # Make a grid, using the bounce algorithm.
-        gxy = make_xy_grid(paf, n_additional_bounces = 2)
+        gxy = make_xy_grid(paf, n_additional_bounces = 10)
         
         if (gxy[[3]] == T){
           n_aln_acceptable = T
         } else if (gxy[[3]] == F){
           n_aln_acceptable = F
-          if (minlen < 1000){
-            minlen = minlen + 100
-            compression = compression + 100
+          if (compression < 1000){
+            minlen = minlen *2
+            compression = compression * 2
           } else {
-            minlen = minlen + 1000
-            compression = compression + 1000
+            minlen = minlen *2
+            compression = compression * 2
           }
         }
         
       } else {
         if (minlen < 1000){
-          minlen = minlen + 100
-          compression = compression + 100
+          minlen = minlen * 1.5
+          compression = compression * 1.5
         } else {
-          minlen = minlen + 1000
-          compression = compression + 1000
+          minlen = minlen * 1.5
+          compression = compression * 1.5
         }
       }
     }
@@ -166,7 +177,7 @@ wrapper_paf_to_bitlocus <-
     # Log file entry done #
     
     
-    browser()
+    #browser()
     gridlines.x = gxy[[1]]
     gridlines.y = gxy[[2]]
     
@@ -187,16 +198,18 @@ wrapper_paf_to_bitlocus <-
       ))
     }
     
-    browser()
-
+    grid_list = remove_duplicates_triple(grid_list)
     
+    #grid_list_bu = grid_list
     # Sweep clean (?)
-    grid_list2 = clean_sweep_matrix(grid_list)
+    #grid_list = clean_sweep_matrix(grid_list)
     
     # Sort by x
     grid_list = grid_list[order(grid_list$x),]
+    #grid_list_bu = grid_list_bu[order(grid_list_bu$x),]
     
     grid_list = remove_duplicates_triple(grid_list)
+    #grid_list_bu = remove_duplicates_triple(grid_list_bu)
     
     ### MAKE AND SAVE PLOTS
     pregridplot_paf = plot_paf(paf, gridlines.x, gridlines.y, linewidth = 0.1)
@@ -214,10 +227,9 @@ wrapper_paf_to_bitlocus <-
           device = 'pdf'
         )
       }
-      
-      
+      browser()
       p = plot_matrix_ggplot_named(grid_list, gridlines.x, gridlines.y)
-      
+      print(p)
       if (gridplot_save == F) {
         print(p)
       } else {

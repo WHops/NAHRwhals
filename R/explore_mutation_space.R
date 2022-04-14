@@ -40,7 +40,7 @@ explore_mutation_space <- function(bitlocus, depth) {
   del_dup_direction = sign(del_dup_direction)
   
   pairs = remove_equivalent_pairs(pairs)
-  if (dim(pairs)[1] > 100){
+  if ((dim(pairs)[1] > 100) & (depth > 1)){
     depth = depth - 1
     print('Reducing depth by 1.')
   }

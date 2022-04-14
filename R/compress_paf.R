@@ -98,6 +98,7 @@ compress_paf_fnct <-
       )
       colnames(inpaf)[1:length(colnames_paf)] = colnames_paf
       
+      #inpaf = inpaf[(inpaf$tstart > 809000) & (inpaf$qstart > 809000),]
       # # debug input:
       # inpaf = inpaf[abs((inpaf$tstart + inpaf$qstart) -  950000) < 50000,]
       # inpaf = inpaf[inpaf$alen > 5000,]
@@ -109,7 +110,6 @@ compress_paf_fnct <-
       # Rename rows 
       row.names(inpaf) = 1:dim(inpaf)[1]
     }
-    
 
     # Compression here?
     # compression = 1000
@@ -139,14 +139,13 @@ compress_paf_fnct <-
               (inpaf$qend >= qstep) &
               (inpaf$qstart <= qstep + quadrantsize)
           )   ,]
-        
+        a = merge_paf_entries_intraloop(inpaf_q, second_run, inparam_chunklen, inparam_compression)
         rowpairs = rbind(rowpairs, merge_paf_entries_intraloop(inpaf_q, second_run, inparam_chunklen, inparam_compression))
         count = count + 1
         #print(count)
       }
     }
     # Sort once again, by row.
-    
     rowpairs = rowpairs[order(rowpairs$col),]
     row.names(rowpairs) <- NULL
     
