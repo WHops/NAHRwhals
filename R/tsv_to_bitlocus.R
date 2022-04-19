@@ -131,9 +131,9 @@ wrapper_paf_to_bitlocus <-
     # 1) there are less than 50 alignments, and 
     # 2) There are no incongruencies in the grid. 
     n_aln_acceptable = F
-    browser()
-    
-    wiggled_params = find_minlen_compression_params_wiggle(inpaf, n_tests = 50)
+
+    wiggled_params = find_minlen_compression_params_wiggle(inpaf, n_tests = 20)
+    #browser()
     minlen = wiggled_params[[1]]
     compression = wiggled_params[[2]]
     while(!n_aln_acceptable){
@@ -227,7 +227,6 @@ wrapper_paf_to_bitlocus <-
           device = 'pdf'
         )
       }
-      browser()
       p = plot_matrix_ggplot_named(grid_list, gridlines.x, gridlines.y)
       print(p)
       if (gridplot_save == F) {

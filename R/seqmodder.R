@@ -623,11 +623,13 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
           colnames(bitl_mut)[pair[2]] = colnames(bitl_mut)[pair[1]]
         }
     }
-  }
+    } else if (action == 'ref'){
+      bitl_mut = bitl
+    }
   
   # It can happen that only one column is left. In that case...
   
-  if (class(bitl_mut) != c('matrix', 'array')){
+  if (any((class(bitl_mut) != c('matrix', 'array')))){
     bitl_mut = as.matrix(bitl_mut)
     row.names(bitl_mut) = row.names(bitl)
     colnames(bitl_mut) = colnames(bitl)[1]
@@ -640,6 +642,8 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
   # meaningful rownames and colnames. 
   #colnames(bitl_mut) = 1:dim(bitl_mut)[2]
 
+  # Turn minus-zero into zero.
+  bitl_mut[bitl_mut == 0] = 0
   return(bitl_mut)
   
 }
