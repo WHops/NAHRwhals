@@ -21,7 +21,7 @@ matrix_remove_zero_pads <- function(bitl_f){
   # Filter bitl
   bitl_f_filter = as.matrix(bitl_f[rows_to_keep, cols_to_keep])
   
-  if (dim(bitl_f_filter) == c(0,0)){
+  if (all(dim(bitl_f_filter) == c(0,0))){
     return(NULL)
   }
     

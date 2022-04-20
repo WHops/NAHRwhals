@@ -46,13 +46,13 @@ determine_xpad <- function(start, end){
 determine_chunklen_compression <- function(start, end){
   if ((end - start) > 500 * 1000){
     chunklen = 10000
-    compression = 10000
+    compression = 1000
   } else if (((end - start)) < 50 * 1000){
     chunklen = 1000
-    compression = min(500, ((end-start)/10))
+    compression = 100 # min(100, ((end-start)/10))
   } else { 
     chunklen = 1000
-    compression = 1000
+    compression = 100
   }
   
   return(c(chunklen, compression))
@@ -61,27 +61,27 @@ determine_chunklen_compression <- function(start, end){
 devtools::load_all()
 tests = read.table(test_list, header=T, sep='\t')
 
-for (nrow in 1:dim(tests)[1]){
-  
+for (nrow in 1:10){#dim(tests)[1]){
+  nrun = 1
   interval = tests[nrow,]
   chunk_comp = determine_chunklen_compression(interval$start, interval$end)
   chunklen = chunk_comp[1]
   compression = chunk_comp[2]
-  #compression = 10
+  #compression = 10§§
     wrapper_aln_and_analyse(interval$chr,
                             interval$start,
                             interval$end,
                             hg38_fa,
                             assembly_fastas[[interval$sample]],
                             conversion_pafs[[interval$sample]],
-                            samplename = paste0(interval$sample, '-', interval$category, '-', compression),
+                            samplename = paste0(interval$sample, '-', interval$category, '-', nrun),
                             chunklen = chunklen,
                             sd_minlen = compression,
                             compression = compression,
                             depth = 2, 
                             xpad = determine_xpad(interval$start, interval$end),
-                            logfile = 'res/unittest2.tsv',
+                            logfile = 'res/unittest_v3.tsv',
                             debug=F)
-  }
+}
   
 

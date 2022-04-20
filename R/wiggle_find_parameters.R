@@ -11,7 +11,7 @@ find_minlen_compression_params_wiggle <- function(inpaf, n_tests = 50, n_max_aln
     if (mode == 'precise'){
       quantile_preferred = 0.0
     } else if (mode == 'compressed'){
-      quantile_preferred = 0.5
+      quantile_preferred = 0.1
     }
     
     counter = 0
@@ -37,7 +37,7 @@ find_minlen_compression_params_wiggle <- function(inpaf, n_tests = 50, n_max_aln
       print(paste0('Compression wiggle: ', counter, ' of ', n_tests ))
     }
     
-    res$collapspenalty = (res$minlen + res$compression)# * (max(res$minlen, res$compression) / min(res$minlen, res$compression))
+    res$collapspenalty = ((res$minlen) + (res$compression)) # * (max(res$minlen, res$compression) / min(res$minlen, res$compression))
     res_interesting = res[res$success == T,]
     
     n_max_alns = n_max_alns * 1.25

@@ -132,7 +132,7 @@ wrapper_paf_to_bitlocus <-
     # 2) There are no incongruencies in the grid. 
     n_aln_acceptable = F
 
-    wiggled_params = find_minlen_compression_params_wiggle(inpaf, n_tests = 20)
+    wiggled_params = find_minlen_compression_params_wiggle(inpaf, n_tests = 20, mode = 'precise')
     #browser()
     minlen = wiggled_params[[1]]
     compression = wiggled_params[[2]]
