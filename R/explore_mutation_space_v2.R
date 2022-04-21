@@ -7,9 +7,9 @@
 # 
 # # # bitlocusfull = readRDS('~/Desktop/gridmatrix_sample')
 # # #bitlocusfull = readRDS('~/Desktop/blub.tsv')
-bitlocusfull = readRDS('~/Desktop/n2')
+#bitlocusfull = readRDS('~/Desktop/n2')
 # # 
-bitlocus = bitlocusfull#[15:35, 15:35]
+#bitlocus = bitlocusfull#[15:35, 15:35]
 
 #' Turn a hash into a data.frame
 #'
