@@ -101,7 +101,11 @@ dfsutil <- function(visited, pair, mutator, depth, maxdepth = 3, pairhistory=NUL
   if (increase_only){
     min_score = rep(c(max(score_ref, max(as.numeric(df_output[df_output$depth==depth,]$eval)))),10)
   } else {
-    min_score = c(0, score_ref * 0.6, score_ref * 0.8, score_ref)
+    min_score = c(0, 
+                  (100-((100-score_ref)/0.6)), 
+                  (100-((100-score_ref)/0.8)),
+                  (100-(100-score_ref)))
+    #min_score = c(0, score_ref * 0.6, score_ref * 0.8, score_ref)
   }
   continue = ((
                  (aln_score < 100) & 
@@ -169,6 +173,11 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F){
   
   # Prepare bitlocus that we will be working on. 
   bitl = flip_bitl_y_if_needed(bitlocus)
+  
+  if ((sum(bitl !=0 ) > 200) & (maxdepth == 3) & (increase_only=F)){
+    print('Uh oh that is a bit large. Reducing depth to 2. Try to avoid producing such large alignments.')
+    maxdepth = 2
+  }
   # Initialize a hash. 
   visited = hash::hash()
   ref_mut_pair = data.frame(p1='1', p2='1', sv='ref')
@@ -198,7 +207,7 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F){
 solve_mutation_slimmer <- function(bitlocus, depth){
 
   # Run a shallow run. 
-  vis_list = (dfs(bitlocus, maxdepth = 2, increase_only = T))
+  vis_list = (dfs(bitlocus, maxdepth = 1, increase_only = T))
   res_df = vis_list[[2]]
   res_df_sort = sort_new_by_penalised(bitlocus, res_df)
 
@@ -225,9 +234,16 @@ solve_mutation_slimmer <- function(bitlocus, depth){
 #' @export
 solve_mutation <- function(bitlocus, depth){
   
+  # reject weird stuff
+  if (is_cluttered(bitlocus)){
+    print("ÜÄH disgusting locus, make frame larger.")
+    res_out = data.frame(eval=0, mut1='ref')
+    
+    return(res_out)
+  }
+  
   conclusion_found = F
   attempt = 1
-  threshold = 100
   while (!conclusion_found){
     if (attempt == 1){
       # First, try if there is an easy solution on depth 1.
@@ -347,13 +363,36 @@ find_threshold <- function(bitlocus_f, nmut){
   return(threshold)
 }
 
-
-# # # #bitlocusfull = readRDS('~/Desktop/blub.tsv')
-# bitlocusfull = readRDS('~/Desktop/n5_difficult')
-# # # 
-# bitlocus = bitlocusfull#[15:35, 15:35]
+#' to be documented
+#' @export
+is_cluttered <- function(bitlocus_f){
+  is_large = (dim(bitlocus_f)[1] > 5 & dim(bitlocus_f)[2] > 5)
+  
+  if (!is_large){
+    return(F)
+  }
+  
+  clutter1 = sum(bitlocus_f[1                 ,2:(dim(bitlocus_f)[2]-1)] != 0)
+  clutter2 = sum(bitlocus_f[dim(bitlocus_f)[1],2:(dim(bitlocus_f)[2]-1)] != 0)
+  clutter3 = sum(bitlocus_f[2:(dim(bitlocus_f)[1]-1),1] != 0)
+  clutter4 = sum(bitlocus_f[2:(dim(bitlocus_f)[1]-1),dim(bitlocus_f)[2]] != 0)
+  clutter_all = c(clutter1, clutter2, clutter3, clutter4)
+  
+  if (any(clutter_all >= 3 )){
+    return(T)
+  }
+  
+  return(F)
+}
 # 
+bitlocusfull = readRDS('~/Desktop/latest')
+# # # bitlocusfull = readRDS('~/Desktop/n5_difficult')
+# # # # #
+# bitlocus = bitlocusfull#[15:35, 15:35]
+# # # 
 # plot_matrix(log2(abs(bitlocus) +1))
+#  
+#  solve_mutation(bitlocus, 3)
 # vis = NULL
 # vis_list = (dfs(bitlocus, maxdepth = 3))
 # df_output = vis_list[[2]]

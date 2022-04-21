@@ -1,7 +1,7 @@
 #' Find parameters by wiggling.
 #' 
 #' @export
-find_minlen_compression_params_wiggle <- function(inpaf, n_tests = 50, n_max_alns = 100, mode='precise'){
+find_minlen_compression_params_wiggle <- function(inpaf, n_tests = 50, n_max_alns = 100, mode='precise', max_size_col_plus_rows=150){
   
   res_interesting = data.frame()
   nround = 0
@@ -32,15 +32,19 @@ find_minlen_compression_params_wiggle <- function(inpaf, n_tests = 50, n_max_aln
       
       if ((dim(paf)[1] > 0) & (dim(paf)[1] < n_max_alns)){
         gxy = make_xy_grid(paf, n_additional_bounces = 2)
-        res = rbind(res, data.frame(minlen=minlen, compression=compression, success=gxy[[3]], n_alns=dim(paf)[1]))
+        if ((length(gxy[[1]]) + length(gxy[[2]])) > max_size_col_plus_rows){
+          print('Failing: Exceeding dotplot dimensions.')
+        }
+        res = rbind(res, data.frame(minlen=minlen, compression=compression, success=gxy[[3]], n_alns=dim(paf)[1], n_rows_cols=length(gxy[[1]]) + length(gxy[[2]])))
       }
       print(paste0('Compression wiggle: ', counter, ' of ', n_tests ))
     }
     
     res$collapspenalty = ((res$minlen) + (res$compression)) # * (max(res$minlen, res$compression) / min(res$minlen, res$compression))
-    res_interesting = res[res$success == T,]
+    res_interesting = res[(res$success == T) & (res$n_rows_cols <= max_size_col_plus_rows),]
     
     n_max_alns = n_max_alns * 1.25
+    max_size_col_plus_rows = max_size_col_plus_rows * 1.25
     nround = nround + 1
   }
 

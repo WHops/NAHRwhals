@@ -160,11 +160,11 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                       gridplot_save = outfile_plot_grid, pregridplot_save = outfile_plot_pre_grid,
                                       max_n_alns = 50)
     gridmatrix = gridlist_to_gridmatrix(grid_xy)
-    #saveRDS(gridmatrix, file='~/Desktop/latest')
+    saveRDS(gridmatrix, file='~/Desktop/latest')
     #gridmatrix = readRDS('~/Desktop/latest')
     #resold = explore_mutation_space(gridmatrix, depth = depth)
     
-    res = solve_mutation(gridmatrix, depth = 3)
+    res = solve_mutation(gridmatrix, depth = depth)
     # Make a grid after applying the top res
     
     print("hi")
