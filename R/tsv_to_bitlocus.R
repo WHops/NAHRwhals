@@ -121,8 +121,6 @@ wrapper_paf_to_bitlocus <-
            pregridplot_save = F,
            pregridplot_nolines = F,
            saveplot = F,
-           minlen = 1000,
-           compression = 1000,
            max_n_alns = 150) {
     
     
