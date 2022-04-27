@@ -385,7 +385,7 @@ is_cluttered <- function(bitlocus_f){
   return(F)
 }
 # 
-bitlocusfull = readRDS('~/Desktop/latest')
+#bitlocusfull = readRDS('~/Desktop/latest')
 # # # bitlocusfull = readRDS('~/Desktop/n5_difficult')
 # # # # #
 # bitlocus = bitlocusfull#[15:35, 15:35]
