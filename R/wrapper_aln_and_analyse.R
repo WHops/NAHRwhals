@@ -39,8 +39,6 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                     logfile,
                                     chunklen = 1000,
                                     aln_pad_factor = 1.0,
-                                    sd_minlen = 1000,
-                                    compression = 1000,
                                     depth = 2,
                                     samplename = 'test',
                                     include_grid = T,
@@ -140,6 +138,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                              chunklen = chunklen, minsdlen = 2000, saveplot=F,
                                              hllink = F, hltype = F, hlstart = start_x - start_x_pad, hlend = end_x - start_x_pad)
   
+  print(plot_x_y)
   # Save alignments
   ggplot2::ggsave(filename = outfile_plot_self_y,
                   plot = plot_self_y, 
@@ -156,17 +155,16 @@ wrapper_aln_and_analyse <- function(seqname_x,
   
   if (include_grid){
     # Make an xy grid
-    grid_xy = wrapper_paf_to_bitlocus(outpaf_link_x_y, minlen = sd_minlen, compression = compression,
+    grid_xy = wrapper_paf_to_bitlocus(outpaf_link_x_y, 
                                       gridplot_save = outfile_plot_grid, pregridplot_save = outfile_plot_pre_grid,
                                       max_n_alns = 50)
     gridmatrix = gridlist_to_gridmatrix(grid_xy)
     #saveRDS(gridmatrix, file='~/Desktop/latest')
     #gridmatrix = readRDS('~/Desktop/latest')
     #resold = explore_mutation_space(gridmatrix, depth = depth)
-    
     res = solve_mutation(gridmatrix, depth = depth)
     # Make a grid after applying the top res
-    
+    print(head(res))
     print("hi")
     print('sup')
     grid_modified = modify_gridmatrix(gridmatrix, res[1,])
@@ -211,3 +209,33 @@ wrapper_aln_and_analyse <- function(seqname_x,
 
 
 
+#' TODO: describe
+#' @export
+determine_xpad <- function(start, end){
+  # Play with padding values
+  if ((end - start) < 1000){
+    xpad = 3
+  } else if ((end - start) < 100000){
+    xpad = 3
+  } else {
+    xpad = 2
+  }
+  return(xpad)
+}
+
+#' TODO: describe
+#' @export
+determine_chunklen_compression <- function(start, end){
+  if ((end - start) > 500 * 1000){
+    chunklen = 10000
+    compression = 1000
+  } else if (((end - start)) < 50 * 1000){
+    chunklen = 1000
+    compression = 100 # min(100, ((end-start)/10))
+  } else { 
+    chunklen = 1000
+    compression = 100
+  }
+  
+  return(c(chunklen, compression))
+}

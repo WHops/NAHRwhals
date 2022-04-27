@@ -77,8 +77,12 @@ decide_loop_continue <- function(bitl_f, symm_cutoff = 0.80){
 dfsutil <- function(visited, pair, mutator, depth, maxdepth = 3, pairhistory=NULL, df_output=NULL, increase_only=NULL, last_eval=0){
   
   # Calc score of a node
-  aln_score = calc_coarse_grained_aln_score(mutator)
-  
+  if (pair$sv == 'ref'){
+    aln_score = calc_coarse_grained_aln_score(mutator, forcecalc = T)
+  } else {
+    aln_score = calc_coarse_grained_aln_score(mutator, forcecalc = F)
+    
+  }
   # Make an entry to the output df. 
   if (is.null(df_output)){
     df_output = data.frame(matrix(nrow = 1, ncol=4)) 
@@ -233,7 +237,6 @@ solve_mutation_slimmer <- function(bitlocus, depth){
 #' TODO: description
 #' @export
 solve_mutation <- function(bitlocus, depth){
-  
   # reject weird stuff
   if (is_cluttered(bitlocus)){
     print("ÜÄH disgusting locus, make frame larger.")
@@ -267,24 +270,30 @@ solve_mutation <- function(bitlocus, depth){
           bitlocus_new = carry_out_compressed_sv(bitlocus, data.frame(p1=strsplit(res_preferred[1,2],'_')[[1]][1],
                                                                       p2=strsplit(res_preferred[1,2],'_')[[1]][2],
                                                                       sv=strsplit(res_preferred[1,2],'_')[[1]][3]))
+        } else {
+          bitlocus_new = bitlocus
         }
         res_memory = res_preferred
+        res_ref = transform_res_new_to_old(res_df_sort[res_df_sort$mut_path=='1_1_ref',])
         while (res_preferred[2] != 'ref'){
           n = n+1
           vis_list = (dfs(bitlocus_new, maxdepth = 1, increase_only = T))
           res_df = vis_list[[2]]
-          res_df_sort = sort_new_by_penalised(bitlocus, res_df)
+          res_df_sort = sort_new_by_penalised(bitlocus_new, res_df)
           res_preferred = transform_res_new_to_old(res_df_sort)[1,]
           if (res_preferred[2] != 'ref'){
-            bitlocus_new = carry_out_compressed_sv(bitlocus, data.frame(p1=strsplit(res_preferred[1,2],'_')[[1]][1],
+            bitlocus_new = carry_out_compressed_sv(bitlocus_new, data.frame(p1=strsplit(res_preferred[1,2],'_')[[1]][1],
                                                                         p2=strsplit(res_preferred[1,2],'_')[[1]][2],
                                                                         sv=strsplit(res_preferred[1,2],'_')[[1]][3]))
-            res_memory[[eval]] = res_preferred$eval
+            res_memory[['eval']] = res_preferred$eval
             res_memory[[paste0('mut',n)]] = res_preferred$mut1
           }
         }
-        conclusion_found = res_memory$eval >= find_threshold(bitlocus, dim(res_memory)[2]-1)
-        res_out = rbind(res_memory, res_preferred)
+        conclusion_found = res_memory$eval >= find_threshold(bitlocus_new, dim(res_memory)[2]-1)
+        res_memory$eval = as.numeric(res_memory$eval)
+        res_out = dplyr::bind_rows(res_memory, res_ref)
+        
+        
         print(conclusion_found)
     } else if (attempt == 3){
     conclusion_found = T
@@ -385,18 +394,6 @@ is_cluttered <- function(bitlocus_f){
   return(F)
 }
 # 
-#bitlocusfull = readRDS('~/Desktop/latest')
-# # # bitlocusfull = readRDS('~/Desktop/n5_difficult')
-# # # # #
+# bitlocusfull = readRDS('~/Desktop/latest')
 # bitlocus = bitlocusfull#[15:35, 15:35]
-# # # 
-# plot_matrix(log2(abs(bitlocus) +1))
-#  
-#  solve_mutation(bitlocus, 3)
-# vis = NULL
-# vis_list = (dfs(bitlocus, maxdepth = 3))
-# df_output = vis_list[[2]]
-#as.data.frame.hash(aa)
-#df_output = na.omit(as.data.frame(df_output))
-#df_output$eval = as.numeric(df_output$eval)
 
