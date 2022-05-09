@@ -57,20 +57,6 @@ merge_paf_entries_intraloop <- function(inpaf, second_run=F, inparam_chunklen=NU
   
   rowpairs = rowpairs[rowpairs$col > rowpairs$row,]
 
-  # rowpairs = data.frame(which(
-  #   
-  #   
-  #   (((abs(outer(inpaf$tend, inpaf$tstart, '-')) < tolerance_bp) &
-  #      (abs(outer(inpaf$qend, inpaf$qstart, '-')) < tolerance_bp)) | 
-  #     
-  #      
-  #        ((abs(outer(inpaf$tstart, inpaf$tend, '-')) < tolerance_bp) &
-  #      
-  #        (abs(outer(inpaf$qstart, inpaf$qend, '-')) < tolerance_bp))) &
-  #     
-  #     (outer(inpaf$strand, inpaf$strand, '==')),
-  #   arr.ind = T))
-  
   # Remove pairs with very small alignments.
   if (tolerance_bp > 100){
     rowpairs = rowpairs[inpaf_t[rowpairs$row,]$alen > tolerance_bp,]

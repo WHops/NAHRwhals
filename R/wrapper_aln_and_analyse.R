@@ -113,26 +113,26 @@ wrapper_aln_and_analyse <- function(seqname_x,
     
   }
   # Run alignments. 
-  # Run REF self alignment only if it hasn't been run before. 
-  if (is.na(file.size(outfile_plot_self_x))){
+  # Run REF self alignment only if it hasn't been run before.
+  #if (is.na(file.size(outfile_plot_self_x))){
     plot_self_x = make_chunked_minimap_alnment(genome_x_fa_subseq, genome_x_fa_subseq, outpaf_link_self_x,
                                                chunklen = chunklen, minsdlen = 2000, saveplot=F,
                                                hllink = F, hltype = F, hlstart = start_x - start_x_pad, hlend = end_x - start_x_pad)
-    
+
     # Save alignment
     ggplot2::ggsave(filename = outfile_plot_self_x,
-                    plot = plot_self_x, 
-                    width = 20, 
-                    height = 20, 
+                    plot = plot_self_x,
+                    width = 20,
+                    height = 20,
                     units = 'cm',
                     dpi = 300)
-  }
-  
+  #}
+
   # Run y self alignment
   plot_self_y = make_chunked_minimap_alnment(genome_y_fa_subseq, genome_y_fa_subseq, outpaf_link_self_y,
                                              chunklen = chunklen, minsdlen = 2000, saveplot=F,
                                              hllink = F, hltype = F, hlstart = start_x - start_x_pad, hlend = end_x - start_x_pad)
-  
+
   # Run xy alignment
   plot_x_y = make_chunked_minimap_alnment(genome_x_fa_subseq, genome_y_fa_subseq, outpaf_link_x_y,
                                              chunklen = chunklen, minsdlen = 2000, saveplot=F,
@@ -228,16 +228,16 @@ determine_xpad <- function(start, end){
 #' TODO: describe
 #' @export
 determine_chunklen_compression <- function(start, end){
+  if ((end - start) > 5000 * 1000){
+    chunklen = 100000
+  }
   if ((end - start) > 500 * 1000){
     chunklen = 10000
-    compression = 1000
   } else if (((end - start)) < 50 * 1000){
     chunklen = 1000
-    compression = 100 # min(100, ((end-start)/10))
   } else { 
     chunklen = 1000
-    compression = 100
   }
   
-  return(c(chunklen, compression))
+  return(chunklen)
 }

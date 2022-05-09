@@ -82,6 +82,9 @@ compress_paf_fnct <-
     if (is.null(inpaf_df)) {
       # Read and col-annotate the input paf
       inpaf = read.table(inpaf_link, sep = '\t')
+      # Remove redundant rows
+      inpaf = unique(inpaf)
+      
       colnames_paf = c(
         'qname',
         'qlen',
@@ -111,6 +114,16 @@ compress_paf_fnct <-
       row.names(inpaf) = 1:dim(inpaf)[1]
     }
 
+    
+    # Thin if there are just *too* many alignments
+    # browser()
+    # ggplot2::ggplot(inpaf) + ggplot2::geom_segment(ggplot2::aes(x=qstart, xend=qend, y=tstart,yend=tend))
+    alen_min = 0
+    while (dim(inpaf)[1] > 50000){
+      alen_min = alen_min + 100
+      inpaf = inpaf[inpaf$alen >= alen_min,]
+      print(paste0('Trimming length: ', alen_min))
+    }
     # Compression here?
     # compression = 1000
     # inpaf[,c('qstart','qend','tstart','tend')] = round(data.frame(inpaf[,c('qstart','qend','tstart','tend')] / compression),0) * compression
@@ -123,6 +136,7 @@ compress_paf_fnct <-
     
     tsteps = c(seq(1, range[1], quadrantsize), max(inpaf$tend))
     qsteps = c(seq(1, range[2], quadrantsize), max(inpaf$qend))
+    n_steps = length(tsteps) * length(qsteps)
     rowpairs = data.frame()
     count = 0
     #browser()
@@ -139,10 +153,9 @@ compress_paf_fnct <-
               (inpaf$qend >= qstep) &
               (inpaf$qstart <= qstep + quadrantsize)
           )   ,]
-        a = merge_paf_entries_intraloop(inpaf_q, second_run, inparam_chunklen, inparam_compression)
         rowpairs = rbind(rowpairs, merge_paf_entries_intraloop(inpaf_q, second_run, inparam_chunklen, inparam_compression))
         count = count + 1
-        #print(count)
+        #print(paste0('Merging step ', count, ' out of ', n_steps))
       }
     }
     # Sort once again, by row.
@@ -160,7 +173,16 @@ compress_paf_fnct <-
     # We will use this metric to decide a 'winning' pair if any vectors
     # want to pair with multiple other vectors.
     rowpairs$combined_matchlen = inpaf$nmatch[rowpairs$row] + inpaf$nmatch[rowpairs$col]
+    # rowpairs$tdist1 = inpaf$tend[rowpairs$row] - inpaf$tstart[rowpairs$col]
+    # rowpairs$tdist2 = inpaf$tstart[rowpairs$row] - inpaf$tend[rowpairs$col]
+    # rowpairs$qdist1 = inpaf$qend[rowpairs$row] - inpaf$qstart[rowpairs$col]
+    # rowpairs$qdist2 = inpaf$qstart[rowpairs$row] - inpaf$qend[rowpairs$col]
     
+    # Remove very short stuff
+    print(dim(rowpairs))
+    rowpairs = rowpairs[rowpairs$combined_matchlen > (inparam_chunklen/10),]
+
+    print(dim(rowpairs))
     # Cut down redundant pairs
     rowpairs_singular = as.data.frame(
       rowpairs %>%
@@ -170,9 +192,15 @@ compress_paf_fnct <-
     
     # Go through each pair, make the merge. We go through the lines backwards,
     # so that previous merges don't disturb later ones.
+    # old_len = sum(inpaf$tend - inpaf$tstart) + sum(inpaf$qend - inpaf$qstart)
     if (dim(rowpairs_singular)[1] > 0) {
       for (nrow in dim(rowpairs_singular)[1]:1) {
         inpaf = merge_rows(inpaf, rowpairs_singular[nrow, 1], rowpairs_singular[nrow, 2])
+        # new_len = (sum(inpaf$tend - inpaf$tstart) + sum(inpaf$qend - inpaf$qstart))
+        # if (abs(old_len - new_len) > 100000){
+        #   browser()
+        # }
+        #print(old_len - new_len)
       }
     }
     
