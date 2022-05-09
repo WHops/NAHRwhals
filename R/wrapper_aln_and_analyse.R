@@ -201,8 +201,10 @@ wrapper_aln_and_analyse <- function(seqname_x,
         system(paste0('rm ', genome_y_fa_subseq, '.chunk.fa'))
     }
   }
-  save_to_logfile(get('log_collection', envir=globalenv()), res, logfile)
-
+  
+  if (include_grid){
+    save_to_logfile(get('log_collection', envir=globalenv()), res, logfile)
+  }
   
   
 }
