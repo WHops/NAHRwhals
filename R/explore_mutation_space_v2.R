@@ -395,17 +395,5 @@ is_cluttered <- function(bitlocus_f){
 }
 # 
 # bitlocusfull = readRDS('~/Desktop/latest')
-# # # # # bitlocusfull = readRDS('~/Desktop/n5_difficult')
-# # # # # # #
 # bitlocus = bitlocusfull#[15:35, 15:35]
-# # # # # 
-# # # plot_matrix(log2(abs(bitlocus) +1))
-# # #  
-# # #  solve_mutation(bitlocus, 3)
-# # vis = NULL
-# vis_list = (dfs(bitlocus, maxdepth = 3))
-# df_output = vis_list[[2]]
-#as.data.frame.hash(aa)
-#df_output = na.omit(as.data.frame(df_output))
-#df_output$eval = as.numeric(df_output$eval)
 
