@@ -44,7 +44,7 @@ gimme_sample_matrix <- function(mode = 'diff') {
     hltype = F,
     quadrantsize = 10000
   )
-  grid = wrapper_paf_to_bitlocus(samplepaf_link, compression = 100, minlen = 0)[[3]]
+  grid = wrapper_paf_to_bitlocus(samplepaf_link)[[3]]
   
   gridmatrix = gridlist_to_gridmatrix(grid)
   
