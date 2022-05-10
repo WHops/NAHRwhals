@@ -49,29 +49,20 @@ find_minlen_compression_params_wiggle <- function(inpaf, n_tests = 50, n_max_aln
     
   }
 }
-  #else {
-  #   print('Unable to find non-failing parameter. Try again with more tests or higher intervals. Using default values 1000, 1000.')
-  #   return(list(minlen=1000, compression=1000, res=res))
-  #   
-  #}
-#}
 
 
+
+#' TODO: describe
+#' @export
 run_n_tests <- function(inpaf, min_, max_, res, n_tests, n_max_alns, max_size_col_plus_rows){
   
-  counter = 0
   smallest_success_minlen = 2**max_
+  
   for (i in 1:n_tests){
+
     minlen = as.integer(runif(1, min = 2**min_, max = smallest_success_minlen))
     compression = as.integer(runif(1, min = 2**min_, max = minlen))
     
-    print(minlen)
-    print(compression)
-    # 
-    # compression = min(x1,x2)
-    # minlen = max(x1,x2)
-    
-    counter = counter + 1
     paf = load_and_prep_paf_for_gridplot_transform(inpaf, minlen= minlen, compression = compression, quadrantsize = 1e5)
     
     # If not too many alignments, construct a grid.
@@ -97,11 +88,10 @@ run_n_tests <- function(inpaf, min_, max_, res, n_tests, n_max_alns, max_size_co
       print(smallest_success_minlen)
     }
     
-    
-    print(paste0('Compression wiggle: ', counter, ' of ', n_tests ))
+    print(paste0('Compression wiggle: ', i, ' of ', n_tests ))
   }
   
-  res$collapspenalty = ((res$minlen) + (res$compression)) # * (max(res$minlen, res$compression) / min(res$minlen, res$compression))
+  res$collapspenalty = (res$minlen) + (res$compression)
 
   return(res)
 }

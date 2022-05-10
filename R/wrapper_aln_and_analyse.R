@@ -76,9 +76,9 @@ wrapper_aln_and_analyse <- function(seqname_x,
   
   res_table_xy =        paste0(sequence_name_output, '/diff/', samplename, '_res.tsv')
   
-  outfile_plot_self_x = paste0(sequence_name_output, '/self/pdf/aln_ref.pdf')
-  outfile_plot_self_y = paste0(sequence_name_output, '/self/pdf/', samplename, '_y.pdf')
-  outfile_plot_x_y =    paste0(sequence_name_output, '/diff/pdf/', samplename, '_x_y.pdf')
+  outfile_plot_self_x = paste0(sequence_name_output, '/self/pdf/aln_ref')
+  outfile_plot_self_y = paste0(sequence_name_output, '/self/pdf/', samplename, '_y')
+  outfile_plot_x_y =    paste0(sequence_name_output, '/diff/pdf/', samplename, '_x_y')
   
   outfile_plot_pre_grid = paste0(sequence_name_output, '/diff/pdf/grid/', samplename, '_x_y_grid_pre.pdf')
   outfile_plot_grid =     paste0(sequence_name_output, '/diff/pdf/grid/', samplename, '_x_y_grid.pdf')
@@ -114,19 +114,16 @@ wrapper_aln_and_analyse <- function(seqname_x,
   }
   # Run alignments. 
   # Run REF self alignment only if it hasn't been run before.
-  #if (is.na(file.size(outfile_plot_self_x))){
+  if (is.na(file.size(outfile_plot_self_x))){
     plot_self_x = make_chunked_minimap_alnment(genome_x_fa_subseq, genome_x_fa_subseq, outpaf_link_self_x,
                                                chunklen = chunklen, minsdlen = 2000, saveplot=F,
                                                hllink = F, hltype = F, hlstart = start_x - start_x_pad, hlend = end_x - start_x_pad)
 
     # Save alignment
-    ggplot2::ggsave(filename = outfile_plot_self_x,
-                    plot = plot_self_x,
-                    width = 20,
-                    height = 20,
-                    units = 'cm',
-                    dpi = 300)
-  #}
+    save_plot_custom(plot_self_x, outfile_plot_self_x, 'pdf')
+    save_plot_custom(plot_self_x, outfile_plot_self_x, 'png')
+    
+  }
 
   # Run y self alignment
   plot_self_y = make_chunked_minimap_alnment(genome_y_fa_subseq, genome_y_fa_subseq, outpaf_link_self_y,
@@ -140,19 +137,15 @@ wrapper_aln_and_analyse <- function(seqname_x,
   
   print(plot_x_y)
   # Save alignments
-  ggplot2::ggsave(filename = outfile_plot_self_y,
-                  plot = plot_self_y, 
-                  width = 20, 
-                  height = 20, 
-                  units = 'cm',
-                  dpi = 300)
-  ggplot2::ggsave(filename = outfile_plot_x_y,
-                  plot = plot_x_y, 
-                  width = 20, 
-                  height = 20, 
-                  units = 'cm',
-                  dpi = 300)
   
+
+  
+  save_plot_custom(plot_self_y, outfile_plot_self_y, 'pdf')
+  save_plot_custom(plot_self_y, outfile_plot_self_y, 'png')
+  
+  save_plot_custom(plot_x_y, outfile_plot_x_y, 'pdf')
+  save_plot_custom(plot_x_y, outfile_plot_x_y, 'png', width=10, height=10)
+
   if (include_grid){
     # Make an xy grid
     grid_xy = wrapper_paf_to_bitlocus(outpaf_link_x_y, 
@@ -240,4 +233,17 @@ determine_chunklen_compression <- function(start, end){
   }
   
   return(chunklen)
+}
+
+#' TODO: describe
+#' @export
+save_plot_custom <- function(inplot, filename, device, width=20, height=20, units='cm'){
+  ggplot2::ggsave(filename = paste0(filename, '.', device),
+                  plot = inplot, 
+                  width = width, 
+                  height = height, 
+                  units = 'cm',
+                  dpi = 300, 
+                  device=device)
+  print('plot saved.')
 }
