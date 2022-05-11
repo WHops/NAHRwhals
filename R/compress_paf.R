@@ -180,7 +180,7 @@ compress_paf_fnct <-
     
     # Remove very short stuff
     print(dim(rowpairs))
-    rowpairs = rowpairs[rowpairs$combined_matchlen > (inparam_chunklen/10),]
+    rowpairs = rowpairs[rowpairs$combined_matchlen > (inparam_chunklen/5),]
 
     print(dim(rowpairs))
     # Cut down redundant pairs
