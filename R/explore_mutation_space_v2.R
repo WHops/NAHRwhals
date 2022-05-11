@@ -42,11 +42,13 @@ as.data.frame.hash <- function(x, ..., key="key", value="value" ){
 #' @export
 annotate_pairs_with_hash <- function(bitlocus, pairs){
   
-  # # border cases
-  # if (dim(pairs)[1] == 0){
-  #   return(pairs)
-  # }
-  
+  # border cases
+  # May 11th, Introducing this again after finding error $4.
+  # I'm surprised why this was once here but apparently commented out. 
+  if (dim(pairs)[1] == 0){
+    return(pairs)
+  }
+
   pairs$hash = 'NA'
   for (npair in seq_along(pairs$hash)){
     pairs[npair, 'hash'] = rlang::hash(as.numeric(carry_out_compressed_sv(bitlocus, pairs[npair,1:3])))
@@ -57,11 +59,11 @@ annotate_pairs_with_hash <- function(bitlocus, pairs){
 
 
 decide_loop_continue <- function(bitl_f, symm_cutoff = 0.80){
-  
+
   climb_up_cost = as.numeric(row.names(bitl_f))
   walk_right_cost = as.numeric(colnames(bitl_f))
   symmetry = min(sum(climb_up_cost), sum(walk_right_cost)) / max(sum(climb_up_cost), sum(walk_right_cost))
-  
+
   # Run away if there are at least 5 columns, and we have less than 75% symmetry
   if ((symmetry < symm_cutoff) & (dim(bitl_f)[1] > 5)){
     return(F)
@@ -134,7 +136,7 @@ dfsutil <- function(visited, pair, mutator, depth, maxdepth = 3, pairhistory=NUL
       if (node_is_novel_bool){
         
         bitl_mut = carry_out_compressed_sv(mutator, pairs[npair,1:3])
-        
+
         node_passes_symmetry_crit = decide_loop_continue(bitl_mut)
         if (node_passes_symmetry_crit){
           list_visit = dfsutil(visited=visited, 
@@ -255,13 +257,15 @@ solve_mutation <- function(bitlocus, depth){
       conclusion_found = (max(as.numeric(res_df$eval)) == 100)
       print(conclusion_found)
       if (conclusion_found){
+        print('Good news! Very easy solution found :) No need to continue calculating.')
         res_df_sort = sort_new_by_penalised(bitlocus, res_df)
         res_out = transform_res_new_to_old(res_df_sort)
       }
     } else if (attempt == 2){
+      print('No very easy solution found. Continuing steepest-descent solution search.')
       # Next, try if there is a combination of individual adaptations.
         n = 1
-        vis_list = (dfs(bitlocus, maxdepth = 1, increase_only = T))
+        vis_list = dfs(bitlocus, maxdepth = 1, increase_only = T)
         res_df = vis_list[[2]]
         res_df_sort = sort_new_by_penalised(bitlocus, res_df)
         res_preferred = transform_res_new_to_old(res_df_sort)[1,]
@@ -296,12 +300,13 @@ solve_mutation <- function(bitlocus, depth){
         
         print(conclusion_found)
     } else if (attempt == 3){
-    conclusion_found = T
       print('No easy solution found. Continuing with complicated ones.')
       vis_list = (dfs(bitlocus, maxdepth = depth))
       res_df = vis_list[[2]]
       res_df_sort = sort_new_by_penalised(bitlocus, res_df)
       res_out = transform_res_new_to_old(res_df_sort)
+      
+      conclusion_found = T
       
     }
     attempt = attempt + 1  
