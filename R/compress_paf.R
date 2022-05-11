@@ -179,10 +179,8 @@ compress_paf_fnct <-
     # rowpairs$qdist2 = inpaf$qstart[rowpairs$row] - inpaf$qend[rowpairs$col]
     
     # Remove very short stuff
-    print(dim(rowpairs))
     rowpairs = rowpairs[rowpairs$combined_matchlen > (inparam_chunklen/10),]
 
-    print(dim(rowpairs))
     # Cut down redundant pairs
     rowpairs_singular = as.data.frame(
       rowpairs %>%

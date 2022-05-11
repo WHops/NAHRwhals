@@ -134,7 +134,6 @@ wrapper_aln_and_analyse <- function(seqname_x,
   plot_x_y = make_chunked_minimap_alnment(genome_x_fa_subseq, genome_y_fa_subseq, outpaf_link_x_y,
                                              chunklen = chunklen, minsdlen = 2000, saveplot=F,
                                              hllink = F, hltype = F, hlstart = start_x - start_x_pad, hlend = end_x - start_x_pad)
-  
   print(plot_x_y)
   # Save alignments
   

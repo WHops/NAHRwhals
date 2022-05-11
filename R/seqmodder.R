@@ -606,6 +606,17 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
         if ((pair[1] == 1) & (pair[2] != dim(bitl)[2])){
           bitl_mut = cbind( -bitl[, (as.numeric(pair[2])):(as.numeric(pair[1]))],
                              bitl[, as.numeric(pair[2]+1):dim(bitl)[2]])
+          # Manually edit the last entry of the header. This is necessary if pair[2] == dim-1.
+          # This is in response to an error ('error #2, may11th 2022')
+          colnames(bitl_mut)[dim(bitl_mut)[2]] = colnames(bitl)[dim(bitl_mut)[2]]
+          
+          # This black was added not for an error, but i realized that I think it should be in (may11th 2022)
+        } else if ((pair[1] > 1) & (pair[2] == dim(bitl)[2])){
+          bitl_mut = cbind( bitl[, 1:(as.numeric(pair[1])-1)],
+                            -bitl[, (as.numeric(pair[2])):(as.numeric(pair[1]))])
+          # Manually edit the last entry of the header. This is necessary if pair[1] == 2
+          # This is in response to an error ('error #2, may11th 2022')
+          colnames(bitl_mut)[1] = colnames(bitl)[1]
           
         } else if ((pair[1] == 1) & (pair[2] == dim(bitl)[2])){
           bitl_mut = -bitl[, (as.numeric(pair[2])):(as.numeric(pair[1]))]
