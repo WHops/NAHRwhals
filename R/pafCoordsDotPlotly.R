@@ -212,6 +212,12 @@ dotplotly_dotplot <- function(opt) {
     alignments$percentIDmean = as.numeric(scaffoldIDmean[match(as.character(alignments$queryID), names(scaffoldIDmean))])
   }
   
+  alignments = alignments[(abs(alignments$refEnd - alignments$refStart) > opt$minsdlen),]
+  # print(paste0('Printing a final thing with ', dim(alignments)[1], ' entries.'))
+  # and a filter for artifacts... :) 
+  alignments = alignments[  between((abs(alignments$refEnd - alignments$refStart) / 
+                            abs(alignments$queryEnd - alignments$queryStart)), 0.5, 2),  ]
+  
   # plot
   yTickMarks = tapply(alignments$queryEnd, alignments$queryID, max)
   options(warn = -1) # turn off warnings
@@ -323,7 +329,9 @@ dotplotly_dotplot <- function(opt) {
         'id'
       )
     }
-    sd_simple = sd_simple[(sd_simple$chromEnd - sd_simple$chromStart > opt$minsdlen),]
+    sd_simple = sd_simple[((sd_simple$chromEnd - sd_simple$chromStart) > opt$minsdlen),]
+    
+    print(paste0('Printing a final thing with ', dim(sd_simple)[1], ' entries.'))
     # Assumes sd_simple is in BED format - each SD only once. (?)
     gp = gp + ggplot2::geom_rect(
       data = sd_simple,

@@ -1,8 +1,8 @@
 #' Find parameters by wiggling.
 #' 
 #' @export
-find_minlen_compression_params_wiggle <- function(inpaf, n_tests = 50, n_max_alns = 100, mode='precise', max_size_col_plus_rows=80){
-  
+find_minlen_compression_params_wiggle <- function(inpaf, n_tests = 50, max_n_alns = 100, mode='precise', max_size_col_plus_rows=80){
+
   if (mode == 'precise'){
     quantile_preferred = 0.0
   } else if (mode == 'compressed'){
@@ -12,9 +12,11 @@ find_minlen_compression_params_wiggle <- function(inpaf, n_tests = 50, n_max_aln
   paf_loaded = read.table(inpaf)
   approx_size = (max(paf_loaded$V8) - min(paf_loaded$V8))
   
-  baseline_minsize_min = max(log2(256), log2(approx_size/1000))
+  baseline_minsize_min = max(log2(64), log2(approx_size/10000))
   baseline_minsize_max = max(log2(16384), log2(approx_size/10))
 
+  #baseline_minsize_min = log2(1)
+  #baseline_minsize_max = log2(300)
   res_interesting = data.frame()
   res = data.frame()
   
@@ -27,13 +29,12 @@ find_minlen_compression_params_wiggle <- function(inpaf, n_tests = 50, n_max_aln
     min_ = baseline_minsize_min + 2 * nround
     max_ = max(baseline_minsize_max)
     
-    res = rbind(res, run_n_tests(inpaf, min_, max_, res, n_tests, n_max_alns, max_size_col_plus_rows))
+    res = rbind(res, run_n_tests(inpaf, min_, max_, res, n_tests, max_n_alns, max_size_col_plus_rows))
     
     res_interesting = res[(res$success == T) & (res$n_rows_cols <= max_size_col_plus_rows),]
-    
     if (dim(res_interesting)[1] < 2){
       
-      n_max_alns = n_max_alns * 1.25
+      max_n_alns = max_n_alns * 1.25
       max_size_col_plus_rows = max_size_col_plus_rows * 1.25
       nround = nround + 1
       res_interesting = res[(res$success == T) & (res$n_rows_cols <= max_size_col_plus_rows),]

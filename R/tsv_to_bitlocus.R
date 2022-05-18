@@ -27,7 +27,7 @@ load_and_prep_paf_for_gridplot_transform <- function(inpaf, minlen, compression,
   
   ### PAF prep ###
   # Merge before compression. 
-  paf = compress_paf_fnct(inpaf_df = paf, save_outpaf=F, second_run=T, inparam_compression=compression, quadrantsize = quadrantsize, inparam_chunklen = 10000)
+  paf = compress_paf_fnct(inpaf_df = paf, save_outpaf=F, second_run=T, inparam_compression=compression, inparam_chunklen = 10000)
 
   # Filter alignments by length
   paf = paf[paf$alen > minlen, ]
@@ -45,7 +45,7 @@ load_and_prep_paf_for_gridplot_transform <- function(inpaf, minlen, compression,
   paf = enforce_slope_one(paf)
   
   # Now, in case any two ends have come close together, re-merge them.
-  paf = compress_paf_fnct(inpaf_df = paf, save_outpaf=F, second_run=T, inparam_compression=compression, quadrantsize = 1e10, inparam_chunklen = 10000)
+  paf = compress_paf_fnct(inpaf_df = paf, save_outpaf=F, second_run=T, inparam_compression=compression, inparam_chunklen = 10000)
 
   # In paf, start is always smaller than end. For our slope etc calculation, it will be easier
   # to change the order of start and end, if the orientation of the alignment is negative.
@@ -121,7 +121,7 @@ wrapper_paf_to_bitlocus <-
            pregridplot_save = F,
            pregridplot_nolines = F,
            saveplot = F,
-           max_n_alns = 150) {
+           max_n_alns = 300) {
     
     
     # Load paf. If compression is too low change it automatically. 
@@ -130,7 +130,8 @@ wrapper_paf_to_bitlocus <-
     # 2) There are no incongruencies in the grid. 
     n_aln_acceptable = F
 
-    wiggled_params = find_minlen_compression_params_wiggle(inpaf, n_tests = 20, mode = 'precise')
+    wiggled_params = find_minlen_compression_params_wiggle(inpaf, n_tests = 20, mode = 'precise', max_n_alns=max_n_alns)
+    
     #browser()
     minlen = wiggled_params[[1]]
     compression = wiggled_params[[2]]
