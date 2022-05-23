@@ -4,7 +4,7 @@
 #' @author Wolfram Höps
 #' @export
 query_config <- function(param) {
-  configfile = "/g/korbel/hoeps/programs/ntk/nahrchainer/conf/config.yml"
+  configfile = "~/PhD/projects/nahrcall/nahrchainer/conf/config.yml"
   return(config::get(param, file = configfile))
 }
 

@@ -27,6 +27,16 @@ load_and_prep_paf_for_gridplot_transform <-
     )
     
     ### PAF prep ###
+    
+ 
+    # In paf, start is always smaller than end. For our slope etc calculation, it will be easier
+    # to change the order of start and end, if the orientation of the alignment is negative.
+    paf = transform(
+      paf,
+      qend = ifelse(strand == '-', qstart, qend),
+      qstart = ifelse(strand == '-', qend, qstart)
+    )
+    
     # Merge before compression.
     paf = compress_paf_fnct(
       inpaf_df = paf,
@@ -48,8 +58,25 @@ load_and_prep_paf_for_gridplot_transform <-
     # Round start/end by compression factor
     paf[, c('qstart', 'qend', 'tstart', 'tend')] = round(data.frame(paf[, c('qstart', 'qend', 'tstart', 'tend')] / compression), 0) * compression
     
+    # In paf, start is always smaller than end. For our slope etc calculation, it will be easier
+    # to change the order of start and end, if the orientation of the alignment is negative.
+    paf = transform(
+      paf,
+      qend = ifelse(strand == '-', qstart, qend),
+      qstart = ifelse(strand == '-', qend, qstart)
+    )
+
+    
     # If any entry is not slope 1 yet (which is unlikely after compression), then make it so.
     paf = enforce_slope_one(paf)
+    
+    # In paf, start is always smaller than end. For our slope etc calculation, it will be easier
+    # to change the order of start and end, if the orientation of the alignment is negative.
+    paf = transform(
+      paf,
+      qend = ifelse(strand == '-', qstart, qend),
+      qstart = ifelse(strand == '-', qend, qstart)
+    )
     
     # Now, in case any two ends have come close together, re-merge them.
     paf = compress_paf_fnct(
@@ -60,13 +87,7 @@ load_and_prep_paf_for_gridplot_transform <-
       inparam_chunklen = 10000
     )
     
-    # In paf, start is always smaller than end. For our slope etc calculation, it will be easier
-    # to change the order of start and end, if the orientation of the alignment is negative.
-    paf = transform(
-      paf,
-      qend = ifelse(strand == '-', qstart, qend),
-      qstart = ifelse(strand == '-', qend, qstart)
-    )
+
     
     # Add slope information to the paf.
     paf = cbind(paf, add_slope_intercept_info(paf))
@@ -151,10 +172,10 @@ wrapper_paf_to_bitlocus <-
       minlen = compression_params$minlen
       compression = compression_params$compression
     }
-    
     print('Making the final grid with:')
     print(paste0('Minlen: ', minlen))
     print(paste0('Compression: ', compression))
+
     paf = load_and_prep_paf_for_gridplot_transform(inpaf, minlen, compression)
     print(paste0('Leading to a paf of dimensions: ', dim(paf)[1]))
     gxy = make_xy_grid(paf, n_additional_bounces = 10)

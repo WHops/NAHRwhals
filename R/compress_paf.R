@@ -163,6 +163,7 @@ compress_paf_fnct <-
     }
     
     # Determine number of quadrants
+    
     if (is.null(n_quadrants_per_axis)){
       if (range[1] < 50000){
         n_quadrants_per_axis = 2
@@ -178,7 +179,10 @@ compress_paf_fnct <-
     qsteps = round(seq(1, range[2], length.out=n_quadrants_per_axis))
     tstepsize = unique(diff(tsteps))[1]
     qstepsize = unique(diff(qsteps))[1]
-    
+    if (n_quadrants_per_axis == 1){
+      tstepsize = 1e10
+      qstepsize = 1e10
+    }
     n_steps = length(tsteps) * length(qsteps)
     rowpairs = data.frame()
     count = 0
