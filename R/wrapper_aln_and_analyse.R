@@ -262,11 +262,30 @@ determine_xpad <- function(start, end) {
     xpad = 3
   } else if ((end - start) < 100000) {
     xpad = 3
+  } else if ((end - start) > 5000000){
+    xpad = 1
   } else {
     xpad = 2
   }
   return(xpad)
 }
+
+#' TODO: describe
+#' @export
+determine_plot_minlen <- function(start, end){
+  if ((end - start) > 100000){
+    minlen = 500
+  }
+  if ((end - start) > 5000000){
+    minlen = 1000
+  } else if ((end - start) > 10000000){
+    minlen = 2000
+  } else {
+    minlen = 200
+  }
+  return(minlen)
+}
+
 
 #' TODO: describe
 #' @export
