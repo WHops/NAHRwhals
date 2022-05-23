@@ -164,9 +164,9 @@ compress_paf_fnct <-
     
     # Determine number of quadrants
     if (is.null(n_quadrants_per_axis)){
-      if (range < 50000){
+      if (range[1] < 50000){
         n_quadrants_per_axis = 2
-      } else if (range >= 50000) {
+      } else if (range[1] >= 50000) {
         n_quadrants_per_axis = 10
       }
     }
