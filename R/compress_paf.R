@@ -159,7 +159,7 @@ compress_paf_fnct <-
     if (dim(inpaf)[1] < 15000){
       minlen_for_merge = 0
     } else {
-      minlen_for_merge = chunklen*0.9
+      minlen_for_merge = inparam_chunklen*0.9
     }
     
     # Determine number of quadrants
@@ -234,7 +234,6 @@ compress_paf_fnct <-
     # so that previous merges don't disturb later ones.
     # old_len = sum(inpaf$tend - inpaf$tstart) + sum(inpaf$qend - inpaf$qstart)
     count = 0
-    print('Hss')
     if (dim(rowpairs_singular)[1] > 0) {
         inpaf = merge_rows(inpaf, rowpairs_singular)
     }
