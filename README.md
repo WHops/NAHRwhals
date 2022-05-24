@@ -21,13 +21,13 @@ To install NTK from Github, follow the steps below:
 2. Install required side-packages:
 	- minimap2
 
-3. run the installation
+3. Change the paths in conf/config.yml to fit your system (... step will be abolished in future versions). You can use the 'which' function in the terminal to find the location of your binaries, e.g. 'which minimap2'
+
+4. Edit the path in seqbuilder_functions.R / query_config function to point to your config.yml (... step will be abolished in future versions)
+
+5. run the installation script
     `cd nahrchainer`
     `Rscript install_package.R`
- 
-4. Change the paths in conf/config.yml to fit your system (... step will be abolished in future versions). You can use the 'which' function in the terminal to find the location of your binaries, e.g. 'which minimap2'
-
-5. Edit the path in seqbuilder_functions.R / query_config function to point to your config.yml (... step will be abolished in future versions)
     
 6. Verify successful installation
 `R` 
@@ -46,7 +46,9 @@ To install NTK from Github, follow the steps below:
 8. Prepare running your own stuff. Whenever we run an assembly, we need to pre-compute an alignment with minimap2. Runtime for two whole human assemblies can be 30m - 2h.
 
     [optional: open run_a_locus.R and change parameters]
+
     `minimap2 -t 8 -cx asm20 /your/assembly.fa /your/reference.fa > alignment_sample_hg38.paf`
+
     `Rscript run_a_locus.R -f /your/reference.fa -g /your/assembly.fa -p alignment_sample_hg38.paf -o testrun_name -i chr1-10000-20000`
 
 
