@@ -38,12 +38,22 @@ To install NTK from Github, follow the steps below:
 
 `>The NAHRtoolkit is loaded and ready to go.`
 
+7. Run an example run
+
+    `cd nahrchainer`
+    `Rscript run_a_locus.R --example T`
+
+8. Prepare running your own stuff. Whenever we run an assembly, we need to pre-compute an alignment with minimap2. Runtime for two whole human assemblies can be 30m - 2h.
+
+    [optional: open run_a_locus.R and change parameters]
+    `minimap2 -t 8 -cx asm20 /your/assembly.fa /your/reference.fa > alignment_sample_hg38.paf`
+    `Rscript run_a_locus.R -f /your/reference.fa -g /your/assembly.fa -p alignment_sample_hg38.paf -o testrun_name -i chr1-10000-20000`
+
 
 ## Usage
 
 Please refer to the vignette (/vignettes/) for example use cases of NTK. 
 
-More examples and unpolished pipelines can be found in construction_site.R. Consider running the first few lines there in Rstudio to get a feeling for the program. 
 
 ## Report Errors
 

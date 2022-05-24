@@ -1,0 +1,2 @@
+paf file created with
+minimap2 -t 8 -cx asm20 chr22_example_T2T.fa chr22_example_hg38.fa > chr22_example_T2T_hg38.paf
