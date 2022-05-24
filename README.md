@@ -53,7 +53,7 @@ To install NTK from Github, follow the steps below:
 ## Usage
 
 Please refer to the vignette (/vignettes/) for example use cases of NTK. 
-
+If you are looking to run NTK with many samples, check https://github.com/WHops/ntk-scan-snakemake for a snakemake integration.
 
 ## Report Errors
 
