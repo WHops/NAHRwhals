@@ -218,7 +218,8 @@ liftover_coarse <-
            end,
            conversionpaf_link,
            n_probes = 100,
-           lenfactor = 1.2) {
+           lenfactor = 1.2,
+           whole_chr = F) {
     # Load conversionpaf
     cpaf = read.table(
       conversionpaf_link,
@@ -274,19 +275,26 @@ liftover_coarse <-
     # What is the majority vote for the target chromosome?
     winner_chr = names(sort(table(liftover_coords$seqname), decreasing = TRUE)[1])
     
-    # And those snipplets matching to the winner chromosome - where do they fall (median)?
-    middle_median = median(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord)
     
-    # Now  extend from median towards front and back.
-    insequence_len = end - start
-    start_winners = middle_median - (lenfactor * (insequence_len / 2))
-    end_winners =   middle_median +   (lenfactor * (insequence_len / 2))
-    
-    # Warn if we are exceeding chromosome boundaries in the query.
-    if ((start_winners < 0) |
-        (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
-      print('Warning! Reaching the end of alignment!')
+    # If we want to get a whole chromosome (tested for chrY only), we start at 1, and
+    # go as far as probes land (... thusly avoiding heterochromatin.)
+    if (whole_chr){
+      start_winners = 1
+      end_winners = max(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord)
+    } else {
+      # And those snipplets matching to the winner chromosome - where do they fall (median)?
+      middle_median = median(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord)
       
+      # Now  extend from median towards front and back.
+      insequence_len = end - start
+      start_winners = middle_median - (lenfactor * (insequence_len / 2))
+      end_winners =   middle_median +   (lenfactor * (insequence_len / 2))
+      
+      # Warn if we are exceeding chromosome boundaries in the query.
+      if ((start_winners < 0) |
+          (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
+        print('Warning! Reaching the end of alignment!')
+    }
       # Make an entry to the output logfile #
       if (exists('log_collection')){
         log_collection$exceeds_y <<- T

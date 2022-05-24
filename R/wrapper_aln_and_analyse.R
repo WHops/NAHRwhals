@@ -81,13 +81,14 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                                conversionpaf_f = conversionpaf_link)
     start_x_pad = start_end_pad[1]
     end_x_pad = start_end_pad[2]
-    
+    browser()
     # Get coordinates in y
     coords_liftover = liftover_coarse(seqname_x,
                                       start_x_pad,
                                       end_x_pad,
                                       conversionpaf_link,
-                                      lenfactor = aln_pad_factor)
+                                      lenfactor = aln_pad_factor,
+                                      whole_chr = params$whole_chr)
     
     # Get subseq-fastas in x and y
     extract_subseq_bedtools(genome_x_fa,
