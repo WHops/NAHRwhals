@@ -81,7 +81,6 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                                conversionpaf_f = conversionpaf_link)
     start_x_pad = start_end_pad[1]
     end_x_pad = start_end_pad[2]
-    browser()
     # Get coordinates in y
     coords_liftover = liftover_coarse(seqname_x,
                                       start_x_pad,
