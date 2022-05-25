@@ -62,9 +62,9 @@ if (sys.nframe() == 0) {
     print('Running an example locus.')
     opt = list()
     opt$interval = "chr22_hg38_piece-400000-800000"
-    opt$fasta_x = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/examples/chr22_example_hg38.fa"
-    opt$fasta_y = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/examples/chr22_example_T2T.fa"
-    opt$paf = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/examples/chr22_example_T2T_hg38.paf"
+    opt$fasta_x = "data/examples/chr22_example_hg38.fa"
+    opt$fasta_y = "data/examples/chr22_example_T2T.fa"
+    opt$paf = "data/examples/chr22_example_T2T_hg38.paf"
     opt$outprefix = 'example'
   }
   
