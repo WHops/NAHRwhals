@@ -1,5 +1,96 @@
 #!/usr/bin/env Rscript
 
+
+#' @export
+add_file_highlight <- function(gp, opt){
+  # if sdlink links to sd file (e.g. because it is a groundtruth):
+  # Format to bed (... why exactly?)
+  # sd_simple = sd_to_bed(opt$sdlink)
+  
+  # Load in the annotation file. Can be different formats.
+  if (opt$hltype == 'bed') {
+    print('Taking a bedfile as highlighting input')
+    sd_simple = read.table(opt$hllink, sep = '\t')
+    colnames(sd_simple) =  c(
+      'chrom',
+      'chromStart',
+      'chromEnd',
+      'uid',
+      'otherChrom',
+      'otherStart',
+      'otherEnd',
+      'strand',
+      'fracMatch'
+    )
+  } else if (opt$hltype == 'sd') {
+    print('Taking an sdfile as highlighting input')
+    sd_simple = sd_to_bed(opt$hllink, outbedfile = NULL)
+  } else if (opt$hltype == 'paf') {
+    print('Taking a paffile as highlighting input')
+    print(opt$hltype)
+    sd_simple = paf_write_bed(opt$hllink, outsdbed_link = NULL)
+    
+    # [W] playing around with colnames a bit here. We want to plot
+    # target on X, and query on Y. The paf format has
+    # first query, and then target.
+    colnames(sd_simple) = c(
+      'otherName',
+      'otherStart',
+      'otherEnd',
+      'uid',
+      'chromName',
+      'chromStart',
+      'chromEnd',
+      'strand',
+      'id'
+    )
+  }
+  sd_simple = sd_simple[((sd_simple$chromEnd - sd_simple$chromStart) > opt$minsdlen),]
+  
+  print(paste0('Printing a final thing with ', dim(sd_simple)[1], ' entries.'))
+  # Assumes sd_simple is in BED format - each SD only once. (?)
+  gp = gp + ggplot2::geom_rect(
+    data = sd_simple,
+    ggplot2::aes(
+      xmin = chromStart,
+      xmax = chromEnd,
+      ymin = otherStart,
+      ymax = otherEnd
+    ),
+    alpha = 0.25,
+    fill = 'orange'
+  ) +
+    ggplot2::geom_rect(
+      data = sd_simple,
+      ggplot2::aes(
+        xmin = chromStart,
+        xmax = chromEnd,
+        ymin = chromStart,
+        ymax = otherEnd
+      ),
+      alpha = 0.25,
+      fill = 'grey'
+    ) +
+    ggplot2::geom_rect(
+      data = sd_simple,
+      ggplot2::aes(
+        xmin = chromStart,
+        xmax = otherEnd,
+        ymin = otherStart,
+        ymax = otherEnd
+      ),
+      alpha = 0.25,
+      fill = 'grey'
+    )
+  
+}
+
+
+
+
+
+
+
 ## Make Dot Plot with Percent Divergence on color scale
 
 #' A core function for plotting a paf.
@@ -15,7 +106,7 @@
 #'
 #' @author Tom Poorten, edited by Wolfram Höps
 #' @export
-dotplotly_dotplot <- function(opt) {
+dotplotly_dotplot_return_aln <- function(opt) {
   if (opt$v) {
     cat(paste0("PARAMETERS:\ninput (-i): ", opt$input_filename, "\n"))
     cat(paste0("output (-o): ", opt$output_filename, "\n"))
@@ -175,28 +266,6 @@ dotplotly_dotplot <- function(opt) {
   # set order for queryID
   alignments$queryID = factor(alignments$queryID, levels = (levels(alignments$queryID))[order(match(queryID_Ref, levels(alignments$refID)))])
   
-  #  flip query starts stops to forward if most align are in reverse complement
-  # queryRevComp = tapply(alignments$queryEnd - alignments$queryStart, alignments$queryID, function(x) sum(x)) < 0
-  # queryRevComp = names(queryRevComp)[which(queryRevComp)]
-  # queryMax = tapply(c(alignments$queryEnd, alignments$queryStart), c(alignments$queryID,alignments$queryID), max)
-  # names(queryMax) = levels(alignments$queryID)
-  # alignments$queryStart[which(alignments$queryID %in% queryRevComp)] = queryMax[match(as.character(alignments$queryID[which(alignments$queryID %in% queryRevComp)]), names(queryMax))] - alignments$queryStart[which(alignments$queryID %in% queryRevComp)] + 1
-  # alignments$queryEnd[which(alignments$queryID %in% queryRevComp)] =   queryMax[match(as.character(alignments$queryID[which(alignments$queryID %in% queryRevComp)]), names(queryMax))] - alignments$queryEnd[which(alignments$queryID %in% queryRevComp)] + 1
-  #
-  ## make new query alignments for dot plot
-  # subtract queryStart and Ends by the minimum alignment coordinate + 1
-  #queryMin = tapply(c(alignments$queryEnd, alignments$queryStart), c(alignments$queryID,alignments$queryID), min)
-  #names(queryMin) = levels(alignments$queryID)
-  
-  #[W, 2nd June 2021. Removing this because I think it's pointless].
-  #alignments$queryStart = as.numeric(alignments$queryStart - queryMin[match(as.character(alignments$queryID),names(queryMin))] + 1)
-  #alignments$queryEnd = as.numeric(alignments$queryEnd - queryMin[match(as.character(alignments$queryID),names(queryMin))] + 1)
-  
-  #queryMax = tapply(c(alignments$queryEnd, alignments$queryStart), c(alignments$queryID,alignments$queryID), max)
-  #names(queryMax) = levels(alignments$queryID)
-  #alignments$queryStart2 = alignments$queryStart #+ #sapply(as.character(alignments$queryID), function(x) ifelse(x == names(queryMax)[1], 0, cumsum(queryMax)[match(x, names(queryMax)) - 1]) )
-  #alignments$queryEnd2 = alignments$queryEnd #+     #sapply(as.character(alignments$queryID), function(x) ifelse(x == names(queryMax)[1], 0, cumsum(queryMax)[match(x, names(queryMax)) - 1]) )
-  
   # get mean percent ID per contig
   #   calc percent ID based on on-target alignments only
   if (opt$on_target & length(levels(alignments$refID)) > 1) {
@@ -213,20 +282,25 @@ dotplotly_dotplot <- function(opt) {
   }
   
   alignments = alignments[(abs(alignments$refEnd - alignments$refStart) > opt$minsdlen),]
-  # print(paste0('Printing a final thing with ', dim(alignments)[1], ' entries.'))
+
   # and a filter for artifacts... :) 
   alignments = alignments[  between((abs(alignments$refEnd - alignments$refStart) / 
                             abs(alignments$queryEnd - alignments$queryStart)), 0.5, 2),  ]
   
-  # plot
+  
+  return(alignments)
+}
+
+
+
+#' @export
+plot_alignments <-function(alignments, opt){
+  ### Plot ###
+  
+  
   yTickMarks = tapply(alignments$queryEnd, alignments$queryID, max)
-  options(warn = -1) # turn off warnings
-  if (TRUE) {
-    gp = ggplot2::ggplot(alignments) +
-      #geom_point(mapping = ggplot2::aes(y = refStart2, x = queryStart2),
-      #           size = 0.009) +
-      #geom_point(mapping = ggplot2::aes(y = refEnd2, x = queryEnd2),
-      #           size = 0.009) +
+
+  gp = ggplot2::ggplot(alignments) +
       ggplot2::geom_segment(
         ggplot2::aes(
           y = queryStart,
@@ -247,8 +321,6 @@ dotplotly_dotplot <- function(opt) {
           )
         )
       ) +
-
-      #ggplot2::scale_fill_viridis_c(option = 'magma') +
       ggplot2::labs(color = "Percent ID",
                     title = opt$input_filename) +
       ggplot2::xlab(as.character(alignments$refID[1])) +
@@ -265,130 +337,41 @@ dotplotly_dotplot <- function(opt) {
       ggplot2::theme_bw() + 
       ggplot2::theme(panel.grid.major = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank())
     
-  }
   
-  if (any(!is.null(opt$hlstart), !is.null(opt$hlend))){
-    
-    # Some border cases.
-    stopifnot("Error: Highlighting needs start and stop option. Only one of the two is set."
-              = (!is.null(opt$hlstart) & !is.null(opt$hlend)))
-    stopifnot("Error: End must be larger than Start." = (opt$hlend > opt$hlstart))
-    gp = gp + ggplot2::geom_rect(
-      ggplot2::aes(
-        xmin = opt$hlstart,
-        xmax = opt$hlend,
-        ymin = -0.5,
-        ymax = Inf
-      ),
-      alpha = 0.005,
-      fill = 'orange'
-    )
-    
-  }
-  
+  # Consider to add a highlight
+  # if (any(!is.null(opt$hlstart), !is.null(opt$hlend))){
+  #   
+  #   # Some border cases.
+  #   stopifnot("Error: Highlighting needs start and stop option. Only one of the two is set."
+  #             = (!is.null(opt$hlstart) & !is.null(opt$hlend)))
+  #   stopifnot("Error: End must be larger than Start." = (opt$hlend > opt$hlstart))
+  #   gp = gp + ggplot2::geom_rect(
+  #     ggplot2::aes(
+  #       xmin = opt$hlstart,
+  #       xmax = opt$hlend,
+  #       ymin = -0.5,
+  #       ymax = Inf
+  #     ),
+  #     alpha = 0.005,
+  #     fill = 'orange'
+  #   )
+  #   
+  # }
+  # 
+  # If a link is given for highlighting
   if (opt$hllink != F) {
-    # if sdlink links to sd file (e.g. because it is a groundtruth):
-    # Format to bed (... why exactly?)
-    # sd_simple = sd_to_bed(opt$sdlink)
     
-    # Load in the annotation file. Can be different formats.
-    if (opt$hltype == 'bed') {
-      print('Taking a bedfile as highlighting input')
-      sd_simple = read.table(opt$hllink, sep = '\t')
-      colnames(sd_simple) =  c(
-        'chrom',
-        'chromStart',
-        'chromEnd',
-        'uid',
-        'otherChrom',
-        'otherStart',
-        'otherEnd',
-        'strand',
-        'fracMatch'
-      )
-    } else if (opt$hltype == 'sd') {
-      print('Taking an sdfile as highlighting input')
-      sd_simple = sd_to_bed(opt$hllink, outbedfile = NULL)
-    } else if (opt$hltype == 'paf') {
-      print('Taking a paffile as highlighting input')
-      print(opt$hltype)
-      sd_simple = paf_write_bed(opt$hllink, outsdbed_link = NULL)
-      
-      # [W] playing around with colnames a bit here. We want to plot
-      # target on X, and query on Y. The paf format has
-      # first query, and then target.
-      colnames(sd_simple) = c(
-        'otherName',
-        'otherStart',
-        'otherEnd',
-        'uid',
-        'chromName',
-        'chromStart',
-        'chromEnd',
-        'strand',
-        'id'
-      )
-    }
-    sd_simple = sd_simple[((sd_simple$chromEnd - sd_simple$chromStart) > opt$minsdlen),]
+    gp = add_file_highlight(gp, opt)
     
-    print(paste0('Printing a final thing with ', dim(sd_simple)[1], ' entries.'))
-    # Assumes sd_simple is in BED format - each SD only once. (?)
-    gp = gp + ggplot2::geom_rect(
-      data = sd_simple,
-      ggplot2::aes(
-        xmin = chromStart,
-        xmax = chromEnd,
-        ymin = otherStart,
-        ymax = otherEnd
-      ),
-      alpha = 0.25,
-      fill = 'orange'
-    ) +
-      ggplot2::geom_rect(
-        data = sd_simple,
-        ggplot2::aes(
-          xmin = chromStart,
-          xmax = chromEnd,
-          ymin = chromStart,
-          ymax = otherEnd
-        ),
-        alpha = 0.25,
-        fill = 'grey'
-      ) +
-      ggplot2::geom_rect(
-        data = sd_simple,
-        ggplot2::aes(
-          xmin = chromStart,
-          xmax = otherEnd,
-          ymin = otherStart,
-          ymax = otherEnd
-        ),
-        alpha = 0.25,
-        fill = 'grey'
-      )
   }
-  # gp
-  #ggsave(filename = paste0(opt$output_filename, ".png"), width = opt$plot_size, height = opt$plot_size, units = "in", dpi = 300, limitsize = F)
   
-  #
-  #   if (opt$save == T){
-  #     ggplot2::ggsave(filename = paste0(opt$output_filename, ".pdf"), width = opt$plot_size, height = opt$plot_size, units = "in", device='pdf', limitsize = F)
-  #     print('png and pdf saved')
-  #     if(opt$interactive){
-  #       pdf(NULL)
-  #       print('ggplotlying')
-  #       gply = ggplotly(gp, tooltip = "text")
-  #       print('saving now')
-  #       htmlwidgets::saveWidget(as.widget(gply), file = paste0(opt$output_filename, ".html"), selfcontained=FALSE)
-  #       print('saved')
-  #     }
-  #   } else if (opt$save == F) {
-  #
-  #   }
+  if (!is.null(opt$anntrack)){
+    
+    gp = add_ann_visualization(gp, opt)
+  }
+
   return(gp)
   
-  options(warn = 0) # turn on warnings
-  #
 }
 
 
@@ -431,7 +414,14 @@ pafdotplot_make <-
            hlstart = NULL,
            hlend = NULL,
            save = T,
-           minsdlen = 5000) {
+           minsdlen = 5000,
+           anntrack = NULL,
+           x_seqname = NULL,
+           x_start = NULL,
+           x_end = NULL,
+           hltrackn = NULL) {
+    
+    # I deserve death penalty for this :)
     opt = list(
       input_filename = inpaf_link,
       output_filename = outplot_link,
@@ -449,136 +439,252 @@ pafdotplot_make <-
       hlstart = hlstart,
       hlend = hlend,
       save = save,
-      minsdlen = minsdlen
+      minsdlen = minsdlen,
+      x_seqname = x_seqname,
+      x_start = x_start,
+      x_end = x_end,
+      anntrack = anntrack,
+      hltrackn = hltrackn
     )
     
-    plot = dotplotly_dotplot(opt)
+    alignments = dotplotly_dotplot_return_aln(opt)
+    plot = plot_alignments(alignments, opt)
     return(plot)
   }
 
 
-# runs only when script is run by itself
-if (sys.nframe() == 0) {
-  debugmode = F
-  if (!debugmode) {
-    option_list <- list(
-      optparse::make_option(
-        c("-i", "--input"),
-        type = "character",
-        default = NULL,
-        help = "coords file from mummer program 'show.coords' [default %default]",
-        dest = "input_filename"
-      ),
-      optparse::make_option(
-        c("-o", "--output"),
-        type = "character",
-        default = "out",
-        help = "output filename prefix [default %default]",
-        dest = "output_filename"
-      ),
-      optparse::make_option(
-        c("-v", "--verbose"),
-        action = "store_true",
-        default = TRUE,
-        help = "Print out all parameter settings [default]"
-      ),
-      optparse::make_option(
-        c("-q", "--min-query-length"),
-        type = "numeric",
-        default = 400000,
-        help = "filter queries with total alignments less than cutoff X bp [default %default]",
-        dest = "min_query_aln"
-      ),
-      optparse::make_option(
-        c("-m", "--min-alignment-length"),
-        type = "numeric",
-        default = 10000,
-        help = "filter alignments less than cutoff X bp [default %default]",
-        dest = "min_align"
-      ),
-      optparse::make_option(
-        c("-p", "--plot-size"),
-        type = "numeric",
-        default = 15,
-        help = "plot size X by X inches [default %default]",
-        dest = "plot_size"
-      ),
-      optparse::make_option(
-        c("-l", "--show-horizontal-lines"),
-        action = "store_true",
-        default = FALSE,
-        help = "turn on horizontal lines on plot for separating scaffolds  [default %default]",
-        dest = "h_lines"
-      ),
-      optparse::make_option(
-        c("-k", "--number-ref-chromosomes"),
-        type = "numeric",
-        default = NULL,
-        help = "number of sorted reference chromosomes to keep [default all chromosmes]",
-        dest = "keep_ref"
-      ),
-      optparse::make_option(
-        c("-s", "--identity"),
-        action = "store_true",
-        default = FALSE,
-        help = "turn on color alignments by % identity [default %default]",
-        dest = "similarity"
-      ),
-      optparse::make_option(
-        c("-t", "--identity-on-target"),
-        action = "store_true",
-        default = FALSE,
-        help = "turn on calculation of % identity for on-target alignments only [default %default]",
-        dest = "on_target"
-      ),
-      optparse::make_option(
-        c("-x", "--interactive-plot-off"),
-        action = "store_false",
-        default = TRUE,
-        help = "turn off production of interactive plotly [default %default]",
-        dest = "interactive"
-      ),
-      optparse::make_option(
-        c("-r", "--reference-ids"),
-        type = "character",
-        default = NULL,
-        help = "comma-separated list of reference IDs to keep [default %default]",
-        dest = "refIDs"
-      ),
-      optparse::make_option(
-        c("-j", "--originvbed"),
-        type = "character",
-        default = NULL,
-        help = "inversion length in bp",
-        dest = "originvbed"
-      )
-    )
+# # runs only when script is run by itself
+# if (sys.nframe() == 0) {
+#   debugmode = F
+#   if (!debugmode) {
+#     option_list <- list(
+#       optparse::make_option(
+#         c("-i", "--input"),
+#         type = "character",
+#         default = NULL,
+#         help = "coords file from mummer program 'show.coords' [default %default]",
+#         dest = "input_filename"
+#       ),
+#       optparse::make_option(
+#         c("-o", "--output"),
+#         type = "character",
+#         default = "out",
+#         help = "output filename prefix [default %default]",
+#         dest = "output_filename"
+#       ),
+#       optparse::make_option(
+#         c("-v", "--verbose"),
+#         action = "store_true",
+#         default = TRUE,
+#         help = "Print out all parameter settings [default]"
+#       ),
+#       optparse::make_option(
+#         c("-q", "--min-query-length"),
+#         type = "numeric",
+#         default = 400000,
+#         help = "filter queries with total alignments less than cutoff X bp [default %default]",
+#         dest = "min_query_aln"
+#       ),
+#       optparse::make_option(
+#         c("-m", "--min-alignment-length"),
+#         type = "numeric",
+#         default = 10000,
+#         help = "filter alignments less than cutoff X bp [default %default]",
+#         dest = "min_align"
+#       ),
+#       optparse::make_option(
+#         c("-p", "--plot-size"),
+#         type = "numeric",
+#         default = 15,
+#         help = "plot size X by X inches [default %default]",
+#         dest = "plot_size"
+#       ),
+#       optparse::make_option(
+#         c("-l", "--show-horizontal-lines"),
+#         action = "store_true",
+#         default = FALSE,
+#         help = "turn on horizontal lines on plot for separating scaffolds  [default %default]",
+#         dest = "h_lines"
+#       ),
+#       optparse::make_option(
+#         c("-k", "--number-ref-chromosomes"),
+#         type = "numeric",
+#         default = NULL,
+#         help = "number of sorted reference chromosomes to keep [default all chromosmes]",
+#         dest = "keep_ref"
+#       ),
+#       optparse::make_option(
+#         c("-s", "--identity"),
+#         action = "store_true",
+#         default = FALSE,
+#         help = "turn on color alignments by % identity [default %default]",
+#         dest = "similarity"
+#       ),
+#       optparse::make_option(
+#         c("-t", "--identity-on-target"),
+#         action = "store_true",
+#         default = FALSE,
+#         help = "turn on calculation of % identity for on-target alignments only [default %default]",
+#         dest = "on_target"
+#       ),
+#       optparse::make_option(
+#         c("-x", "--interactive-plot-off"),
+#         action = "store_false",
+#         default = TRUE,
+#         help = "turn off production of interactive plotly [default %default]",
+#         dest = "interactive"
+#       ),
+#       optparse::make_option(
+#         c("-r", "--reference-ids"),
+#         type = "character",
+#         default = NULL,
+#         help = "comma-separated list of reference IDs to keep [default %default]",
+#         dest = "refIDs"
+#       ),
+#       optparse::make_option(
+#         c("-j", "--originvbed"),
+#         type = "character",
+#         default = NULL,
+#         help = "inversion length in bp",
+#         dest = "originvbed"
+#       )
+#     )
+#     
+#     options(error = traceback)
+#     
+#     parser <-
+#       optparse::OptionParser(usage = "%prog -i alignments.coords -o out [options]", option_list =
+#                                option_list)
+#     opt = optparse::parse_args(parser)
+#     
+#   } else if (debugmode == T) {
+#     rm(list = ls())
+#     opt = list(
+#       input_filename = "~/s/g/korbel/hoeps/lab/assemblies/new_invextracts/chr1-26641304-INV-5445_backup/paf/chr1-26641304-INV-5445_HG00096_h1.paf",
+#       output_filename = "~/s/g/korbel/hoeps/lab/assemblies/new_invextracts/chr10-55007429-55013435/dotplots/blub",
+#       originvbed = "~/s/g/korbel/hoeps/lab/assemblies/new_invextracts/beds/chr1-26641304-INV-5445.bed",
+#       min_align = 11,
+#       min_query_aln = 11,
+#       keep_ref = 23,
+#       similarity = T,
+#       h_lines = T,
+#       interactive = F,
+#       plot_size = 15,
+#       on_target = T,
+#       v = FALSE
+#     )
+#   }
+#   
+#   alignments = dotplotly_dotplot_return_aln(opt)
+#   plot = plot_alignments(alignments)
+#   
+# }
+
+#' @export
+add_ann_visualization <- function(gp, opt){
+
+  if (!is.null(opt$hltrackn)){
+    gp = highlight_region(gp, opt)
+  }
+  files = opt$anntrack
+  
+  if (T){
+    return(gp)
+  }
+  plot_list = list()
+  for (i in 1:length(files)){
+    print(i)
+    annotation = read.table(files[i], sep='\t')
+    a_int = annotation[annotation$V1 == opt$x_seqname,]
     
-    options(error = traceback)
+    a_int2 = a_int[(a_int$V2 > opt$x_start & a_int$V2 < opt$x_end) | # Start is Embedded
+                   (a_int$V3 > opt$x_start & a_int$V3 < opt$x_end) ,] # End is embedded
     
-    parser <-
-      optparse::OptionParser(usage = "%prog -i alignments.coords -o out [options]", option_list =
-                               option_list)
-    opt = optparse::parse_args(parser)
+    h2 = ggplot(a_int2) + 
+      ggplot2::geom_rect(
+        ggplot2::aes(xmin= (V2 - opt$x_start),xmax= (V3 - opt$x_start),ymin = 0,ymax = runif(dim(a_int2)[1], 0.75, 1.25)),
+            alpha = 0.5,
+            fill = 'blue'
+      ) + 
+      # ggrepel::geom_text_repel(
+      #   ggplot2::aes(x= ((V3 - opt$x_start) + (V2 - opt$x_start)) / 2,y = 2, label=V4),
+      #   max.overlaps=100 
+      # ) +
+    xlim(c(1,opt$x_end - opt$x_start)) + 
+    theme_void() +
+    ylim(c(0,2)) +
+    theme(legend.position='none',
+          axis.ticks = element_blank(),
+          panel.spacing.x = unit(1, "mm"),
+          axis.title.x = element_blank(),
+          strip.background.x = element_blank(),
+          strip.text.x = element_blank())
     
-  } else if (debugmode == T) {
-    rm(list = ls())
-    opt = list(
-      input_filename = "~/s/g/korbel/hoeps/lab/assemblies/new_invextracts/chr1-26641304-INV-5445_backup/paf/chr1-26641304-INV-5445_HG00096_h1.paf",
-      output_filename = "~/s/g/korbel/hoeps/lab/assemblies/new_invextracts/chr10-55007429-55013435/dotplots/blub",
-      originvbed = "~/s/g/korbel/hoeps/lab/assemblies/new_invextracts/beds/chr1-26641304-INV-5445.bed",
-      min_align = 11,
-      min_query_aln = 11,
-      keep_ref = 23,
-      similarity = T,
-      h_lines = T,
-      interactive = F,
-      plot_size = 15,
-      on_target = T,
-      v = FALSE
-    )
+    plot_list[[i]] = h2
   }
   
-  dotplotly_dotplot(opt)
+  labels = sub(".*/", "", c(opt$anntrack, 'plot'))
+
+  gp_out = plot_grid(plot_list[[1]],gp+theme(legend.position = "none"), 
+                     nrow=length(plot_list)+1, 
+                     ncol = 1,
+                     rel_heights = c(rep(2,length(opt$anntrack)),10),
+                     align='hv', 
+                     axis='l', 
+                     labels=labels) 
+
+
+  
+  return(gp_out)
+  
+  # Filter annotation to interesting loci
+  # annotation_int = 
   
 }
+
+#' @export
+highlight_region <- function(gp, opt){
+  
+  annotation = read.table(opt$anntrack[opt$hltrackn], sep='\t')
+  a_int = annotation[annotation$V1 == opt$x_seqname,]
+  
+  a_int2 = a_int[(a_int$V2 > opt$x_start & a_int$V2 < opt$x_end) | # Start is Embedded
+                   (a_int$V3 > opt$x_start & a_int$V3 < opt$x_end) ,] # End is embedded
+
+  if (is.null(a_int2$V5)){
+    a_int2$V5 = rainbow(dim(a_int2)[1])
+  } 
+  
+  if (sum(!areColors(a_int2$V5)) > 0){
+    a_int2[!areColors(a_int2$V5),]$V5 = rainbow(length(a_int2[!areColors(a_int2$V5),]$V5))
+  }
+  
+    gp = gp + ggplot2::geom_rect(data=a_int2,
+      ggplot2::aes(xmin= (V2 - opt$x_start),xmax= (V3 - opt$x_start),ymin = -0.5,ymax = Inf, fill = V5),
+      alpha = 0.5
+    ) + theme(legend.position = 'none')
+    
+
+
+  return(gp)
+  
+  
+}
+
+#' @export
+areColors <- function(x) {
+  sapply(x, function(X) {
+    tryCatch(is.matrix(col2rgb(X)), 
+             error = function(e) FALSE)
+  })
+}
+
+#   gp = gp + ggplot2::geom_rect(
+#     ggplot2::aes(
+#       xmin = opt$hlstart,
+#       xmax = opt$hlend,
+#       ymin = -0.5,
+#       ymax = Inf
+#     ),
+#     alpha = 0.005,
+#     fill = 'orange'

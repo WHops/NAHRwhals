@@ -99,7 +99,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
       genome_y_fa,
       coords_liftover$lift_contig,
       coords_liftover$lift_start,
-      coords_liftover$lift_end,
+      coords_liftover$lift_end + 500000,
       outlinks$genome_y_fa_subseq
     )
   } else {
@@ -117,7 +117,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
   
   # Run alignments.
   # Run REF self alignment only if it hasn't been run before.
-  if (F) {
+  if (T) {
     if (is.na(file.size(outlinks$outfile_plot_self_x))) {
       plot_self_x = make_chunked_minimap_alnment(
         outlinks$genome_x_fa_subseq,
@@ -129,7 +129,12 @@ wrapper_aln_and_analyse <- function(seqname_x,
         hllink = F,
         hltype = F,
         hlstart = start_x - start_x_pad,
-        hlend = end_x - start_x_pad
+        hlend = end_x - start_x_pad,
+        x_start = start_x_pad,
+        x_end = end_x_pad,
+        x_seqname = seqname_x,
+        anntrack = params$anntrack,
+        hltrackn = params$hltrackn
       )
       print(plot_self_x)
       # Save alignment
@@ -139,7 +144,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                        'png',
                        width = 20,
                        height = 20)
-      
+
     }
     
     # Run y self alignment
@@ -152,8 +157,8 @@ wrapper_aln_and_analyse <- function(seqname_x,
       saveplot = F,
       hllink = F,
       hltype = F,
-      hlstart = NULL,
-      hlend = NULL
+      hlstart = F,#NULL,
+      hlend = F#NULL
     )
     save_plot_custom(plot_self_y, outlinks$outfile_plot_self_y, 'pdf')
     save_plot_custom(plot_self_y,
@@ -173,8 +178,13 @@ wrapper_aln_and_analyse <- function(seqname_x,
     saveplot = F,
     hllink = F,
     hltype = F,
-    hlstart = start_x - start_x_pad,
-    hlend = end_x - start_x_pad
+    hlstart = F,#start_x - start_x_pad,
+    hlend = F,
+    x_start = start_x_pad,
+    x_end = end_x_pad,
+    x_seqname = seqname_x,
+    anntrack = params$anntrack,
+    hltrackn = params$hltrackn#end_x - start_x_pad
   )
   # Save alignments
   print(plot_x_y)
