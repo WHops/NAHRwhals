@@ -145,7 +145,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                        width = 20,
                        height = 20)
 
-    }
+    
     
     # Run y self alignment
     plot_self_y = make_chunked_minimap_alnment(
