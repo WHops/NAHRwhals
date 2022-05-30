@@ -84,8 +84,7 @@ make_chunked_minimap_alnment <-
            hlstart = NULL,
            hlend = NULL,
            targetrange = NULL,
-           queryrange = NULL,
-           wholegenome = F)
+           queryrange = NULL)
  {
     # Define intermediate files
     queryfasta_chunk = paste0(queryfasta, ".chunk.fa")
@@ -119,31 +118,15 @@ make_chunked_minimap_alnment <-
     
     # Awk is used to correct the sequence names. This is because I know only there
     # how to use regex...
-    awk_edit_paf(outpaf_chunk, outpaf_awk)
-    
-    
-    # If we operate on a large reference, cut down the paf.
-    if (wholegenome) {
-      filter_paf_to_main_region(outpaf_awk, outpaf_filter)
-    } else {
-      outpaf_filter = outpaf_awk
-    }
-
+    awk_edit_paf(outpaf_chunk, outpaf_filter)
     # paf of fragmented paf gets put back together.
-    compress_paf_fnct(inpaf_link = outpaf_filter, outpaf_link = outpaf, quadrantsize = chunklen * 10, inparam_chunklen = chunklen)
-    
-
-    if (wholegenome) {
-      flip_query_target(outpaf, outpaf_plot)
-    } else {
-      outpaf_plot = outpaf
-    }
+    compress_paf_fnct(inpaf_link = outpaf_filter, outpaf_link = outpaf, inparam_chunklen = chunklen)
     
     
     print('4')
     # Make a dotplot of that final paf (and with sd highlighting).
     miniplot = pafdotplot_make(
-      outpaf_plot,
+      outpaf,
       outplot,
       keep_ref = keep_ref,
       plot_size = plot_size,
@@ -489,4 +472,4 @@ colMax <- function(data)
   sapply(data, max, na.rm = TRUE)
 
 
-
+# Hi we are in a feature adding branch.

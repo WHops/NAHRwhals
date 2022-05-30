@@ -1,0 +1,5 @@
+default:
+  shred: "/g/korbel/hoeps/programs/ntk/nahrchainer/bbmap/shred.sh"
+  minimap2: "/g/korbel/hoeps/programs/paftools/minimap2/minimap2"
+  awkscript: '/g/korbel/hoeps/programs/ntk/nahrchainer/scripts/awk_on_paf.sh'
+  bedtools: '/g/funcgen/bin/bedtools'
