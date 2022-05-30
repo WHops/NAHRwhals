@@ -365,14 +365,162 @@ plot_alignments <-function(alignments, opt){
     
   }
   
-  if (!is.null(opt$anntrack)){
-    
-    gp = add_ann_visualization(gp, opt)
+  # If a (colored) highlight track is given...
+  if (!is.null(opt$hltrack)){
+    gp = highlight_region(gp, opt)
   }
+
+  # If a (colored) block track is given...
+  if (!is.null(opt$anntrack)){
+    gp = add_ann_blocks(gp, opt)
+  }
+  
+
 
   return(gp)
   
 }
+
+
+
+#' @export
+add_ann_blocks <- function(gp, opt){
+  
+
+  plot_list = list()
+  for (i in 1:length(opt$anntrack)){
+
+    annotation = read.table(opt$hltrack, header=F, comment.char="")
+    a_int = annotation[annotation$V1 == opt$x_seqname,]
+    
+    
+    
+    
+    a_int2 = a_int[(a_int$V2 > opt$x_start & a_int$V2 < opt$x_end) | # Start is Embedded
+                     (a_int$V3 > opt$x_start & a_int$V3 < opt$x_end) ,] # End is embedded
+    
+    if (dim(a_int2)[1] == 0){
+      return(gp)
+    }
+    
+    a_int2$plotstart = (a_int2$V2 - opt$x_start)
+    a_int2$plotend = (a_int2$V3 - opt$x_start)
+    a_int2$plotstart[a_int2$plotstart <= 0] = 1
+    a_int2$plotend[a_int2$plotend > (opt$x_end - opt$x_start)] = (opt$x_end - opt$x_start) - 1
+    
+    if (is.null(a_int2$V5)) {
+      a_int2$V5 = rainbow(dim(a_int2)[1])
+    }
+    
+    if (sum(!areColors(a_int2$V5)) > 0) {
+      a_int2[!areColors(a_int2$V5), ]$V5 = rainbow(length(a_int2[!areColors(a_int2$V5), ]$V5))
+    }
+    
+    h2 = ggplot2::ggplot(a_int2) + 
+         ggplot2::geom_rect(
+         ggplot2::aes(xmin= plotstart,
+                     xmax= plotend,
+                     ymin = 0,
+                     ymax = runif(dim(a_int2)[1], 0.75, 1.25),
+                     fill = V5),
+        alpha = 0.5
+      ) + 
+      ggplot2::scale_fill_identity(guide="legend",breaks=a_int2$V5) + 
+      ggrepel::geom_text_repel(
+        ggplot2::aes(x= ((V3 - opt$x_start) + (V2 - opt$x_start)) / 2,y = 2, label=V4),
+        max.overlaps=100
+      ) +
+      ggplot2::xlim(c(1,opt$x_end - opt$x_start)) + 
+      ggplot2::ylim(c(0,2)) +
+      ggplot2::theme_void() +
+      ggplot2::theme(legend.position='none',
+                     axis.ticks = ggplot2::element_blank(),
+                     panel.spacing.x = ggplot2::unit(1, "mm"),
+                     axis.title.x = ggplot2::element_blank(),
+                     strip.background.x = ggplot2::element_blank(),
+                     strip.text.x = ggplot2::element_blank())
+    
+    plot_list[[i]] = h2
+  }
+  
+  labels = sub(".*/", "", c(opt$anntrack, 'plot'))
+  
+  gp_out = cowplot::plot_grid(plot_list[[1]],gp+ggplot2::theme(legend.position = "none"), 
+                              ncol = 1,
+                              rel_heights = c(rep(2,length(opt$anntrack)),10),
+                              align='hv', 
+                              axis='l', 
+                              labels=labels) +
+    ggplot2::xlim(c(0, opt$x_end - opt$x_start))
+  
+  
+  
+  return(gp_out)
+  
+  # Filter annotation to interesting loci
+  # annotation_int = 
+  
+}
+
+#' @export
+highlight_region <- function(gp, opt){
+  
+  #
+  stopifnot(class(opt$hltrack) == 'character')
+  annotation = read.table(opt$hltrack, header=F, comment.char="")
+  a_int = annotation[annotation$V1 == opt$x_seqname, ]
+  
+  a_int2 = a_int[(a_int$V2 > opt$x_start &
+                    a_int$V2 < opt$x_end) | # Start is Embedded
+                 (a_int$V3 > opt$x_start &
+                    a_int$V3 < opt$x_end) , ] # End is embedded
+  
+  if (dim(a_int2)[1] == 0){
+    return(gp)
+  }
+  if (is.null(a_int2$V5)) {
+    a_int2$V5 = rainbow(dim(a_int2)[1])
+  }
+  
+  if (sum(!areColors(a_int2$V5)) > 0) {
+    a_int2[!areColors(a_int2$V5), ]$V5 = rainbow(length(a_int2[!areColors(a_int2$V5), ]$V5))
+  }
+  
+  a_int2$plotstart = (a_int2$V2 - opt$x_start)
+  a_int2$plotend = (a_int2$V3 - opt$x_start)
+  a_int2$plotstart[a_int2$plotstart <= 0] = 1
+  a_int2$plotend[a_int2$plotend > (opt$x_end - opt$x_start)] = (opt$x_end - opt$x_start) - 1
+  
+  
+  gp = gp + ggplot2::geom_rect(
+    data = a_int2,
+    ggplot2::aes(
+      xmin = plotstart,
+      xmax = plotend,
+      ymin = -0.5,
+      ymax = Inf,
+      fill = V5
+    ),
+    alpha = 0.5
+  ) + ggplot2::scale_fill_identity(guide = "legend", breaks = a_int2$V5) +
+      ggplot2::theme(legend.position = 'none')
+  
+  
+  return(gp)
+  
+  
+}
+
+#' @export
+areColors <- function(x) {
+  x[is.na(x)] = 'none'
+  sapply(x, function(X) {
+    tryCatch(is.matrix(col2rgb(X)), 
+             error = function(e) FALSE)
+  })
+}
+
+
 
 
 #' Wrapperfunction for turning a paf (and an SD highlight annotation) into a dotplot pdf.
@@ -419,7 +567,7 @@ pafdotplot_make <-
            x_seqname = NULL,
            x_start = NULL,
            x_end = NULL,
-           hltrackn = NULL) {
+           hltrack = NULL) {
     
     # I deserve death penalty for this :)
     opt = list(
@@ -444,7 +592,7 @@ pafdotplot_make <-
       x_start = x_start,
       x_end = x_end,
       anntrack = anntrack,
-      hltrackn = hltrackn
+      hltrack = hltrack
     )
     
     alignments = dotplotly_dotplot_return_aln(opt)
@@ -580,104 +728,7 @@ pafdotplot_make <-
 #   
 # }
 
-#' @export
-add_ann_visualization <- function(gp, opt){
 
-  if (!is.null(opt$hltrackn)){
-    gp = highlight_region(gp, opt)
-  }
-  files = opt$anntrack
-  
-  if (T){
-    return(gp)
-  }
-  plot_list = list()
-  for (i in 1:length(files)){
-    print(i)
-    annotation = read.table(files[i], sep='\t')
-    a_int = annotation[annotation$V1 == opt$x_seqname,]
-    
-    a_int2 = a_int[(a_int$V2 > opt$x_start & a_int$V2 < opt$x_end) | # Start is Embedded
-                   (a_int$V3 > opt$x_start & a_int$V3 < opt$x_end) ,] # End is embedded
-    
-    h2 = ggplot(a_int2) + 
-      ggplot2::geom_rect(
-        ggplot2::aes(xmin= (V2 - opt$x_start),xmax= (V3 - opt$x_start),ymin = 0,ymax = runif(dim(a_int2)[1], 0.75, 1.25)),
-            alpha = 0.5,
-            fill = 'blue'
-      ) + 
-      # ggrepel::geom_text_repel(
-      #   ggplot2::aes(x= ((V3 - opt$x_start) + (V2 - opt$x_start)) / 2,y = 2, label=V4),
-      #   max.overlaps=100 
-      # ) +
-    xlim(c(1,opt$x_end - opt$x_start)) + 
-    theme_void() +
-    ylim(c(0,2)) +
-    theme(legend.position='none',
-          axis.ticks = element_blank(),
-          panel.spacing.x = unit(1, "mm"),
-          axis.title.x = element_blank(),
-          strip.background.x = element_blank(),
-          strip.text.x = element_blank())
-    
-    plot_list[[i]] = h2
-  }
-  
-  labels = sub(".*/", "", c(opt$anntrack, 'plot'))
-
-  gp_out = plot_grid(plot_list[[1]],gp+theme(legend.position = "none"), 
-                     nrow=length(plot_list)+1, 
-                     ncol = 1,
-                     rel_heights = c(rep(2,length(opt$anntrack)),10),
-                     align='hv', 
-                     axis='l', 
-                     labels=labels) 
-
-
-  
-  return(gp_out)
-  
-  # Filter annotation to interesting loci
-  # annotation_int = 
-  
-}
-
-#' @export
-highlight_region <- function(gp, opt){
-  
-  annotation = read.table(opt$anntrack[opt$hltrackn], sep='\t')
-  a_int = annotation[annotation$V1 == opt$x_seqname,]
-  
-  a_int2 = a_int[(a_int$V2 > opt$x_start & a_int$V2 < opt$x_end) | # Start is Embedded
-                   (a_int$V3 > opt$x_start & a_int$V3 < opt$x_end) ,] # End is embedded
-
-  if (is.null(a_int2$V5)){
-    a_int2$V5 = rainbow(dim(a_int2)[1])
-  } 
-  
-  if (sum(!areColors(a_int2$V5)) > 0){
-    a_int2[!areColors(a_int2$V5),]$V5 = rainbow(length(a_int2[!areColors(a_int2$V5),]$V5))
-  }
-  
-    gp = gp + ggplot2::geom_rect(data=a_int2,
-      ggplot2::aes(xmin= (V2 - opt$x_start),xmax= (V3 - opt$x_start),ymin = -0.5,ymax = Inf, fill = V5),
-      alpha = 0.5
-    ) + theme(legend.position = 'none')
-    
-
-
-  return(gp)
-  
-  
-}
-
-#' @export
-areColors <- function(x) {
-  sapply(x, function(X) {
-    tryCatch(is.matrix(col2rgb(X)), 
-             error = function(e) FALSE)
-  })
-}
 
 #   gp = gp + ggplot2::geom_rect(
 #     ggplot2::aes(

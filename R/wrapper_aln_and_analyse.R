@@ -99,7 +99,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
       genome_y_fa,
       coords_liftover$lift_contig,
       coords_liftover$lift_start,
-      coords_liftover$lift_end + 500000,
+      coords_liftover$lift_end,
       outlinks$genome_y_fa_subseq
     )
   } else {
@@ -134,7 +134,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
         x_end = end_x_pad,
         x_seqname = seqname_x,
         anntrack = params$anntrack,
-        hltrackn = params$hltrackn
+        hltrack = params$hltrack
       )
       print(plot_self_x)
       # Save alignment
@@ -184,7 +184,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
     x_end = end_x_pad,
     x_seqname = seqname_x,
     anntrack = params$anntrack,
-    hltrackn = params$hltrackn#end_x - start_x_pad
+    hltrack = params$hltrack#end_x - start_x_pad
   )
   # Save alignments
   print(plot_x_y)

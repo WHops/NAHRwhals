@@ -89,7 +89,7 @@ make_chunked_minimap_alnment <-
            x_seqname = NULL,
            x_start = NULL,
            x_end = NULL, 
-           hltrackn = NULL)
+           hltrack = NULL)
  {
     # Define intermediate files
     queryfasta_chunk = paste0(queryfasta, ".chunk.fa")
@@ -145,7 +145,7 @@ make_chunked_minimap_alnment <-
       x_start = x_start, 
       x_end = x_end,
       x_seqname = x_seqname,
-      hltrackn = hltrackn
+      hltrack = hltrack
     )
     print('5')
     if (saveplot == F) {
