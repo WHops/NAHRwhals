@@ -5,6 +5,10 @@ find_minlen_compression_params_wiggle <-
   function(inpaf,
            compression_params) {
     
+    # (unfortunately) There is a random factor in this at the moment.
+    # Would be better to go without randomness in the future.
+    set.seed(1)
+    
     # Which mode are we operating in?
     if (compression_params$mode == 'precise') {
       quantile_preferred = 0.0
@@ -25,7 +29,14 @@ find_minlen_compression_params_wiggle <-
     nround = 0
     
     # Do this until one round has yielded more than 3 viable grids.
-    while (dim(res_interesting)[1] < 2) {
+    while (dim(res_interesting)[1] < 2){
+      
+      if  (dim(res)[1] >= (compression_params$n_tests * compression_params$n_max_testchunks)){
+        resp = res[res$n_rows_cols < Inf,]
+        return(list(minlen=resp[resp$n_rows_cols == max(resp$n_rows_cols),]$minlen,
+                    compression=resp[resp$n_rows_cols == min(resp$n_rows_cols),]$compression))
+      } 
+      
       print('running...')
 
       # Increase lower cutoff with every round. We steer towards more coarse grids.
@@ -45,11 +56,12 @@ find_minlen_compression_params_wiggle <-
           compression_params$max_size_col_plus_rows
         )
       )
-      
+      res$success = F
       # The interesting stuff is what was 'successful' (no incongruencies)
       # and is not too big. 
       res_interesting = res[(res$success == T) &
                               (res$n_rows_cols <= compression_params$max_size_col_plus_rows), ]
+      
       # If we don't have enough good results, raise criteria now and see if 
       # it works then. This prevents us from rerunning everything. 
       if (dim(res_interesting)[1] < 2) {
@@ -80,7 +92,6 @@ find_minlen_compression_params_wiggle <-
     return(list(
       minlen = take$minlen,
       compression = take$compression,
-      res = res
     ))
 }
 
@@ -96,15 +107,15 @@ run_n_tests <-
            n_tests,
            n_max_alns,
            max_size_col_plus_rows) {
-    # (unfortunately) There is a random factor in this at the moment.
-    # Would be better to go without randomness in the future.
-    set.seed(1)
+
     
     upper_bound_minlen = 2 ** max_
     smallest_fail_minlen = 1e10
     lower_bound_minlen = 2 ** min_
-    
     for (i in 1:n_tests) {
+      
+      print(paste0('Compression wiggle: ', i, ' of ', n_tests))
+      
       if (upper_bound_minlen < lower_bound_minlen) {
         lower_bound_minlen = 2 ** min_
       }
@@ -140,7 +151,8 @@ run_n_tests <-
             compression = compression,
             success = gxy[[3]],
             n_alns = dim(paf)[1],
-            n_rows_cols = length(gxy[[1]]) + length(gxy[[2]])
+            n_rows_cols = length(gxy[[1]]) + length(gxy[[2]]),
+            collapspenalty = Inf
           )
         )
       } else if (dim(paf)[1] > n_max_alns){
@@ -148,11 +160,31 @@ run_n_tests <-
         if (minlen > lower_bound_minlen) {
           lower_bound_minlen = minlen
           print(paste0('Updating lower_bound minlen to ', minlen))
+          res = rbind(res,
+                      data.frame(
+                        minlen = minlen,
+                        compression = compression,
+                        success = F,
+                        n_alns = dim(paf)[1],
+                        n_rows_cols = Inf,
+                        collapspenalty = Inf
+                      ))
+          
         }
       } else if (dim(paf)[1] == 0){
         print('No alignments! Continue searching in larger areas')
         upper_bound_minlen = minlen
-        
+        res = rbind(res,
+                    data.frame(
+                      minlen = minlen,
+                      compression = compression,
+                      success = F,
+                      n_alns = dim(paf)[1],
+                      n_rows_cols = Inf,
+                      collapspenalty = Inf
+                      
+                    ))
+      } else {
       }
       
       
@@ -166,7 +198,6 @@ run_n_tests <-
         ))
       }
       
-      print(paste0('Compression wiggle: ', i, ' of ', n_tests))
     }
     
     res$collapspenalty = (res$minlen) + (res$compression)

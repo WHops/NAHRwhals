@@ -117,7 +117,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
   
   # Run alignments.
   # Run REF self alignment only if it hasn't been run before.
-  if (F) {
+  if (T) {
     if (is.na(file.size(outlinks$outfile_plot_self_x))) {
       plot_self_x = make_chunked_minimap_alnment(
         outlinks$genome_x_fa_subseq,
@@ -140,7 +140,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                        width = 20,
                        height = 20)
       
-    }
+    
     
     # Run y self alignment
     plot_self_y = make_chunked_minimap_alnment(
@@ -162,6 +162,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                      width = 20,
                      height = 20)
     print(plot_self_y)
+    }
   }
   # Run xy alignment
   plot_x_y = make_chunked_minimap_alnment(
