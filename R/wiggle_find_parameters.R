@@ -90,7 +90,7 @@ find_minlen_compression_params_wiggle <-
     
     return(list(
       minlen = take$minlen,
-      compression = take$compression,
+      compression = take$compression
     ))
 }
 
