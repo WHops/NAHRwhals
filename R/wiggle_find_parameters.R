@@ -56,7 +56,6 @@ find_minlen_compression_params_wiggle <-
           compression_params$max_size_col_plus_rows
         )
       )
-      res$success = F
       # The interesting stuff is what was 'successful' (no incongruencies)
       # and is not too big. 
       res_interesting = res[(res$success == T) &
