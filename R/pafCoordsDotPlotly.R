@@ -327,13 +327,15 @@ plot_alignments <-function(alignments, opt){
       ggplot2::ylab(as.character(alignments$queryID[1])) +
       ggplot2::scale_x_continuous(labels = scales::comma) +
       ggplot2::scale_y_continuous(labels = scales::comma) +
-      ggplot2::coord_fixed(
-        ratio = 1,
-        xlim = NULL,
-        ylim = NULL,
-        expand = TRUE,
-        clip = "on"
-      ) +
+      # ggplot2::coord_fixed(
+      #   ratio = 1,
+      #   xlim = NULL,
+      #   ylim = NULL,
+      #   expand = TRUE,
+      #   clip = "on"
+      # ) +
+      ggplot2::coord_fixed()+
+      ggplot2::labs(title=NULL) + 
       ggplot2::theme_bw() + 
       ggplot2::theme(panel.grid.major = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank())
     
@@ -385,21 +387,27 @@ plot_alignments <-function(alignments, opt){
 
 #' @export
 add_ann_blocks <- function(gp, opt){
-  
 
-  plot_list = list()
-  for (i in 1:length(opt$anntrack)){
-
-    annotation = read.table(opt$hltrack, header=F, comment.char="")
+    max_ann_blocks = 50
+    library(patchwork)
+    
+    annotation = read.table(opt$anntrack, header=F, comment.char="")
     a_int = annotation[annotation$V1 == opt$x_seqname,]
     
     
     
     
-    a_int2 = a_int[(a_int$V2 > opt$x_start & a_int$V2 < opt$x_end) | # Start is Embedded
-                     (a_int$V3 > opt$x_start & a_int$V3 < opt$x_end) ,] # End is embedded
+    a_int2 = a_int[(a_int$V2 > opt$x_start &
+                      a_int$V2 < opt$x_end) | # Start is Embedded
+                     (a_int$V3 > opt$x_start &
+                        a_int$V3 < opt$x_end) | # End is embedded
+                     (a_int$V2 < opt$x_start &
+                        a_int$V3 > opt$x_end)  ,] # Annotation spans whole region
     
-    if (dim(a_int2)[1] == 0){
+    cond1 = dim(a_int2)[1] == 0
+    cond2 = dim(a_int2)[1] > max_ann_blocks
+    
+    if (cond1 | cond2){
       return(gp)
     }
     
@@ -421,13 +429,14 @@ add_ann_blocks <- function(gp, opt){
          ggplot2::aes(xmin= plotstart,
                      xmax= plotend,
                      ymin = 0,
-                     ymax = runif(dim(a_int2)[1], 0.75, 1.25),
+                     ymax = 1,#0 + runif(dim(a_int2)[1], 0.75, 1.25),
                      fill = V5),
         alpha = 0.5
       ) + 
       ggplot2::scale_fill_identity(guide="legend",breaks=a_int2$V5) + 
       ggrepel::geom_text_repel(
-        ggplot2::aes(x= ((V3 - opt$x_start) + (V2 - opt$x_start)) / 2,y = 2, label=V4),
+        ggplot2::aes(x= ((V3 - opt$x_start) + (V2 - opt$x_start)) / 2,y = 1, label=V4),
+        color=a_int2$V5,
         max.overlaps=100
       ) +
       ggplot2::xlim(c(1,opt$x_end - opt$x_start)) + 
@@ -440,20 +449,27 @@ add_ann_blocks <- function(gp, opt){
                      strip.background.x = ggplot2::element_blank(),
                      strip.text.x = ggplot2::element_blank())
     
-    plot_list[[i]] = h2
-  }
   
   labels = sub(".*/", "", c(opt$anntrack, 'plot'))
+
+  gp_out = h2 + (gp) + 
+    patchwork::plot_layout(ncol=1, heights = c(1,10))
   
-  gp_out = cowplot::plot_grid(plot_list[[1]],gp+ggplot2::theme(legend.position = "none"), 
-                              ncol = 1,
-                              rel_heights = c(rep(2,length(opt$anntrack)),10),
-                              align='hv', 
-                              axis='l', 
-                              labels=labels) +
-    ggplot2::xlim(c(0, opt$x_end - opt$x_start))
-  
-  
+  # 
+  # cowplot::plot_grid(h2,gp+ggplot2::theme(legend.position = "none"), 
+  #                             ncol = 1,
+  #                             rel_heights = c(2,10),
+  #                             align='hv', 
+  #                             axis='tb', 
+  #                             labels=labels) #+ coord_equal()
+    #ggplot2::xlim(c(0, opt$x_end - opt$x_start)) + 
+    # ggplot2::coord_fixed(
+    #   ratio = 1,
+    #   xlim = NULL,
+    #   ylim = NULL,
+    #   expand = TRUE,
+    #   clip = "on"
+    # )
   
   return(gp_out)
   
@@ -473,7 +489,9 @@ highlight_region <- function(gp, opt){
   a_int2 = a_int[(a_int$V2 > opt$x_start &
                     a_int$V2 < opt$x_end) | # Start is Embedded
                  (a_int$V3 > opt$x_start &
-                    a_int$V3 < opt$x_end) , ] # End is embedded
+                    a_int$V3 < opt$x_end) | # End is embedded
+                 (a_int$V2 < opt$x_start &
+                    a_int$V3 > opt$x_end)  ,] # Annotation spans whole region
   
   if (dim(a_int2)[1] == 0){
     return(gp)
