@@ -189,7 +189,7 @@ find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
   
   # If no alignment overlaps, we return an empty value.
   if (dim(overlappers)[1] == 0) {
-    return(NULL)
+    return(c(NA, NA))
   }
   
   # Find the alignment with the hightest nmatch value.
@@ -218,36 +218,15 @@ liftover_coarse <-
            end,
            conversionpaf_link,
            n_probes = 100,
-           lenfactor = 1.2,
+           lenfactor = 1.2, #Typically 1.0, because we want to get symmetrical dotplots.
            whole_chr = F) {
-    # Load conversionpaf
-    cpaf = read.table(
-      conversionpaf_link,
-      sep = '\t',
-      fill = T,
-      row.names = NULL
-    )
     
-    colnames_paf = c(
-      'qname',
-      'qlen',
-      'qstart',
-      'qend',
-      'strand',
-      'tname',
-      'tlen',
-      'tstart',
-      'tend',
-      'nmatch',
-      'alen',
-      'mapq'
-    )
-    colnames(cpaf)[1:length(colnames_paf)] = colnames_paf
-    
+
+    cpaf = read_and_prep_paf(conversionpaf_link)
     # Assert that the input coordinates are within chromosome boundaries
-    stopifnot("Error: Input coordinates exceed input chromosome length." =
-                ((end <= cpaf[cpaf == seqname,][1, 'qlen']) &
-                   (start >= 0)))
+    # stopifnot("Error: Input coordinates exceed input chromosome length." =
+    #             ((end <= cpaf[cpaf == seqname,][1, 'qlen']) &
+    #                (start >= 0)))
     
     
     # We take n_probes single points from the alignment, see where they fall, and take their median
@@ -258,12 +237,23 @@ liftover_coarse <-
                                                                               1))))
     
     # Liftover every probe
-    liftover_coords <- data.frame(matrix(ncol = 2, nrow = 0))
-    colnames(liftover_coords) <- c('seqname', 'liftover_coord')
+    liftover_coords <- data.frame(matrix(ncol = 3, nrow = length(pos_probes)))
+    colnames(liftover_coords) <- c('pos_probe','seqname', 'liftover_coord')
+    liftover_coords$pos_probe = pos_probes
+    counter = 1
+    #browser()
     for (pointcoord in pos_probes) {
-      liftover_coords = rbind(liftover_coords,
-                              find_punctual_liftover(cpaf, pointcoord, seqname))
+      liftover_coords[counter, c('seqname','liftover_coord')] = 
+                              find_punctual_liftover(cpaf, pointcoord, seqname)
+      counter = counter + 1
     }
+    
+
+    #browser()
+    liftover_coords = na.omit(liftover_coords)
+    # Debug Tent
+    library(ggplot2)
+    ggplot(liftover_coords) + geom_point(aes(x=pos_probe, y=liftover_coord))
     
     # Make sure we got any results.
     stopifnot(
@@ -275,13 +265,14 @@ liftover_coarse <-
     # What is the majority vote for the target chromosome?
     winner_chr = names(sort(table(liftover_coords$seqname), decreasing = TRUE)[1])
     
-    
+    extrapolation_mode = T
     # If we want to get a whole chromosome (tested for chrY only), we start at 1, and
     # go as far as probes land (... thusly avoiding heterochromatin.)
     if (whole_chr){
       start_winners = 1
       end_winners = max(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord)
-    } else {
+      
+    } else if (extrapolation_mode ==F) {
       # And those snipplets matching to the winner chromosome - where do they fall (median)?
       middle_median = median(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord)
       
@@ -295,6 +286,48 @@ liftover_coarse <-
           (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
         print('Warning! Reaching the end of alignment!')
     }
+      # Make an entry to the output logfile #
+      if (exists('log_collection')){
+        log_collection$exceeds_y <<- T
+      }
+      # Log file entry done #
+      
+    } else if (extrapolation_mode) {
+      
+      # And those snipplets matching to the winner chromosome - where do they fall (median)?
+      liftover_coords_maxseq = liftover_coords[liftover_coords$seqname == winner_chr,]
+      
+      # Probes are sorted. 
+      mapping_direction = sign(sum(sign(diff(liftover_coords_maxseq$liftover_coord))))
+      
+      middle_median = median(liftover_coords_maxseq$liftover_coord)
+      mapped_x_region = c(min(liftover_coords_maxseq$pos_probe), max(liftover_coords_maxseq$pos_probe))
+      mapped_x_region_mid = median(mapped_x_region)
+      
+      extend_median_bwd = mapped_x_region_mid - start
+      extend_median_fwd = end - mapped_x_region_mid
+      
+      # Make sure we got any results.
+      stopifnot(
+        "Error: No mapping direction recognized." =
+          mapping_direction %in% c(1,-1)
+      )
+      
+      if (mapping_direction == 1){
+        start_winners = middle_median - extend_median_bwd
+        end_winners = middle_median + extend_median_fwd
+      } else if (mapping_direction == -1){
+        start_winners = middle_median - extend_median_fwd
+        end_winners = middle_median + extend_median_bwd
+      } else {
+
+      }
+      
+      # Warn if we are exceeding chromosome boundaries in the query.
+      if ((start_winners < 0) |
+          (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
+        print('Warning! Reaching the end of alignment!')
+      }
       # Make an entry to the output logfile #
       if (exists('log_collection')){
         log_collection$exceeds_y <<- T
@@ -441,3 +474,4 @@ read_and_prep_paf <- function(paflink) {
   # Assert that the input coordinates are within chromosome boundaries
   return(cpaf)
 }
+

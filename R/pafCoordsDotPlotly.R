@@ -388,7 +388,7 @@ plot_alignments <-function(alignments, opt){
 #' @export
 add_ann_blocks <- function(gp, opt){
 
-    max_ann_blocks = 50
+    max_ann_blocks = 100
     library(patchwork)
     
     annotation = read.table(opt$anntrack, header=F, comment.char="")

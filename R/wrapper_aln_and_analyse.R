@@ -82,13 +82,15 @@ wrapper_aln_and_analyse <- function(seqname_x,
     start_x_pad = start_end_pad[1]
     end_x_pad = start_end_pad[2]
     # Get coordinates in y
+
     coords_liftover = liftover_coarse(seqname_x,
                                       start_x_pad,
                                       end_x_pad,
                                       conversionpaf_link,
                                       lenfactor = aln_pad_factor,
-                                      whole_chr = params$whole_chr)
-    
+                                      whole_chr = (start_x %in% c(0, 1)))
+    print(coords_liftover)
+
     # Get subseq-fastas in x and y
     extract_subseq_bedtools(genome_x_fa,
                             seqname_x,
@@ -169,7 +171,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
     print(plot_self_y)
     }
   }
-  # Run xy alignment
+  #Run xy alignment
   plot_x_y = make_chunked_minimap_alnment(
     outlinks$genome_x_fa_subseq,
     outlinks$genome_y_fa_subseq,
@@ -195,10 +197,10 @@ wrapper_aln_and_analyse <- function(seqname_x,
                    'png',
                    width = 20,
                    height = 20)
-  
-  
-  
-  
+
+
+
+
   if (!params$plot_only) {
     # Make an xy grid
     grid_xy = wrapper_paf_to_bitlocus(
