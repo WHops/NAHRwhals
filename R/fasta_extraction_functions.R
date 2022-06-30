@@ -270,8 +270,7 @@ liftover_coarse <-
     # go as far as probes land (... thusly avoiding heterochromatin.)
     if (whole_chr){
       start_winners = 1
-      end_winners = max(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord)
-      
+      end_winners = min(28300000,max(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord))
     } else if (extrapolation_mode ==F) {
       # And those snipplets matching to the winner chromosome - where do they fall (median)?
       middle_median = median(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord)
