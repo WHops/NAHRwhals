@@ -379,13 +379,6 @@ plot_alignments <-function(alignments, opt){
     gp = add_ann_blocks(gp, opt)
   }
   
-  ggplot2::ggsave(
-    filename = 'Desktop/blub.pdf',
-    plot = miniplot,
-    height = 10,
-    width = 10,
-    device = 'pdf'
-  )
 
   return(gp)
   
