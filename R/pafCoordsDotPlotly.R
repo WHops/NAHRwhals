@@ -299,8 +299,8 @@ plot_alignments <-function(alignments, opt){
   
   
   yTickMarks = tapply(alignments$queryEnd, alignments$queryID, max)
-
-  gp = ggplot2::ggplot(alignments) +
+  gp = 
+    ggplot2::ggplot(alignments) +
       ggplot2::geom_segment(
         ggplot2::aes(
           y = queryStart,
@@ -327,6 +327,7 @@ plot_alignments <-function(alignments, opt){
       ggplot2::ylab(as.character(alignments$queryID[1])) +
       ggplot2::scale_x_continuous(labels = scales::comma) +
       ggplot2::scale_y_continuous(labels = scales::comma) +
+      ggplot2::xlim(c(0, opt$x_end-opt$x_start)) + 
       # ggplot2::coord_fixed(
       #   ratio = 1,
       #   xlim = NULL,
@@ -340,7 +341,6 @@ plot_alignments <-function(alignments, opt){
       ggplot2::theme(panel.grid.major = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank())
     
   
-
   # If a link is given for highlighting
   if (opt$hllink != F) {
     
@@ -348,19 +348,18 @@ plot_alignments <-function(alignments, opt){
     
   }
   
-  plot_x_min = opt$x_start + min(alignments$refStart, min(alignments$refEnd))
-  plot_x_max = opt$x_start + max(alignments$refStart, min(alignments$refEnd))
+
 
   # If a (colored) highlight track is given...
   if (!is.null(opt$hltrack)){
-    gp = highlight_region(gp, opt, plot_x_min, plot_x_max)
+    gp = highlight_region(gp, opt)
   }
 
   # If a (colored) block track is given...
   if (!is.null(opt$anntrack)){
 
     
-    gp = add_ann_blocks(gp, opt, plot_x_min, plot_x_max)
+    gp = add_ann_blocks(gp, opt)
   }
   
 
@@ -371,7 +370,7 @@ plot_alignments <-function(alignments, opt){
 
 
 #' @export
-add_ann_blocks <- function(gp, opt, plot_x_min, plot_x_max){
+add_ann_blocks <- function(gp, opt){
 
     max_ann_blocks = 100
     library(patchwork)
@@ -380,12 +379,12 @@ add_ann_blocks <- function(gp, opt, plot_x_min, plot_x_max){
     a_int = annotation[annotation$V1 == opt$x_seqname,]
     
     
-    a_int2 = a_int[(a_int$V2 > plot_x_min &
-                      a_int$V2 < plot_x_max) | # Start is Embedded
-                     (a_int$V3 > plot_x_min &
-                        a_int$V3 < plot_x_max) | # End is embedded
-                     (a_int$V2 < plot_x_min &
-                        a_int$V3 > plot_x_max)  ,] # Annotation spans whole region
+    a_int2 = a_int[(a_int$V2 > opt$x_start &
+                      a_int$V2 < opt$x_end) | # Start is Embedded
+                     (a_int$V3 > opt$x_start &
+                        a_int$V3 < opt$x_end) | # End is embedded
+                     (a_int$V2 < opt$x_start &
+                        a_int$V3 > opt$x_end)  ,] # Annotation spans whole region
     
     cond1 = dim(a_int2)[1] == 0
     cond2 = dim(a_int2)[1] > max_ann_blocks
@@ -394,10 +393,10 @@ add_ann_blocks <- function(gp, opt, plot_x_min, plot_x_max){
       return(gp)
     }
     
-    a_int2$plotstart = (a_int2$V2 - plot_x_min)
-    a_int2$plotend = (a_int2$V3 - plot_x_min)
+    a_int2$plotstart = (a_int2$V2 - opt$x_start)
+    a_int2$plotend = (a_int2$V3 - opt$x_start)
     a_int2$plotstart[a_int2$plotstart <= 0] = 1
-    a_int2$plotend[a_int2$plotend > (plot_x_max - plot_x_min)] = (plot_x_max - plot_x_min) - 1
+    a_int2$plotend[a_int2$plotend > (opt$x_end - opt$x_start)] = (opt$x_end - opt$x_start) - 1
     
     if (is.null(a_int2$V5)) {
       a_int2$V5 = rainbow(dim(a_int2)[1])
@@ -418,24 +417,24 @@ add_ann_blocks <- function(gp, opt, plot_x_min, plot_x_max){
       ) + 
       ggplot2::scale_fill_identity(guide="legend",breaks=a_int2$V5) + 
       ggrepel::geom_text_repel(
-        ggplot2::aes(x= ((V3 - plot_x_min) + (V2 - plot_x_min)) / 2,y = 1, label=V4),
+        ggplot2::aes(x= ((V3 - opt$x_start) + (V2 - opt$x_start)) / 2,y = 1, label=V4),
         color=a_int2$V5,
         max.overlaps=100
       ) +
-      ggplot2::xlim(c(0,plot_x_max - plot_x_min)) + 
-      ggplot2::ylim(c(0,2)) +
-      ggplot2::theme_void() +
-      ggplot2::theme(legend.position='none',
-                     axis.ticks = ggplot2::element_blank(),
-                     panel.spacing.x = ggplot2::unit(1, "mm"),
-                     axis.title.x = ggplot2::element_blank(),
-                     strip.background.x = ggplot2::element_blank(),
-                     strip.text.x = ggplot2::element_blank())
+      ggplot2::xlim(c(0,opt$x_end - opt$x_start)) + 
+      ggplot2::ylim(c(0,2))# +
+      # ggplot2::theme_void() +
+      # ggplot2::theme(legend.position='none',
+      #                axis.ticks = ggplot2::element_blank(),
+      #                panel.spacing.x = ggplot2::unit(1, "mm"),
+      #                axis.title.x = ggplot2::element_blank(),
+      #                strip.background.x = ggplot2::element_blank(),
+      #                strip.text.x = ggplot2::element_blank())
     
   
   labels = sub(".*/", "", c(opt$anntrack, 'plot'))
   gp_out = 
-    (h2 + ggplot2::coord_fixed(ratio = (plot_x_min - plot_x_max) / 50)) + (gp + ggplot2::coord_fixed()) + 
+    (h2 + ggplot2::coord_fixed(ratio = (opt$x_start - opt$x_end) / 50)) + (gp + ggplot2::coord_fixed()) + 
     patchwork::plot_layout(ncol=1)
   
   # 
@@ -462,19 +461,19 @@ add_ann_blocks <- function(gp, opt, plot_x_min, plot_x_max){
 }
 
 #' @export
-highlight_region <- function(gp, opt, plot_x_min, plot_x_max){
+highlight_region <- function(gp, opt){
   
   #
   stopifnot(class(opt$hltrack) == 'character')
   annotation = read.table(opt$hltrack, header=F, comment.char="")
   a_int = annotation[annotation$V1 == opt$x_seqname, ]
   
-  a_int2 = a_int[(a_int$V2 > plot_x_min &
-                    a_int$V2 < plot_x_max) | # Start is Embedded
-                 (a_int$V3 > plot_x_min &
-                    a_int$V3 < plot_x_max) | # End is embedded
-                 (a_int$V2 < plot_x_min &
-                    a_int$V3 > plot_x_max)  ,] # Annotation spans whole region
+  a_int2 = a_int[(a_int$V2 > opt$x_start &
+                    a_int$V2 < opt$x_end) | # Start is Embedded
+                 (a_int$V3 > opt$x_start &
+                    a_int$V3 < opt$x_end) | # End is embedded
+                 (a_int$V2 < opt$x_start &
+                    a_int$V3 > opt$x_end)  ,] # Annotation spans whole region
   
   if (dim(a_int2)[1] == 0){
     return(gp)
@@ -487,10 +486,10 @@ highlight_region <- function(gp, opt, plot_x_min, plot_x_max){
     a_int2[!areColors(a_int2$V5), ]$V5 = rainbow(length(a_int2[!areColors(a_int2$V5), ]$V5))
   }
   
-  a_int2$plotstart = (a_int2$V2 - plot_x_min)
-  a_int2$plotend = (a_int2$V3 - plot_x_min)
+  a_int2$plotstart = (a_int2$V2 - opt$x_start)
+  a_int2$plotend = (a_int2$V3 - opt$x_start)
   a_int2$plotstart[a_int2$plotstart <= 0] = 1
-  a_int2$plotend[a_int2$plotend > (plot_x_max - plot_x_min)] = (plot_x_max - plot_x_min) - 1
+  a_int2$plotend[a_int2$plotend > (opt$x_end - opt$x_start)] = (opt$x_end - opt$x_start) - 1
   
   
   gp = gp + ggplot2::geom_rect(
