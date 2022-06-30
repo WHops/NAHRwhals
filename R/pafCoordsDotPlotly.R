@@ -297,7 +297,8 @@ dotplotly_dotplot_return_aln <- function(opt) {
 plot_alignments <-function(alignments, opt){
   ### Plot ###
   
-  
+  print(opt$x_end)
+  print(opt$x_start)
   yTickMarks = tapply(alignments$queryEnd, alignments$queryID, max)
 
   gp = 
@@ -328,6 +329,10 @@ plot_alignments <-function(alignments, opt){
       ggplot2::ylab(as.character(alignments$queryID[1])) +
       ggplot2::scale_x_continuous(labels = scales::comma) +
       ggplot2::scale_y_continuous(labels = scales::comma) +
+<<<<<<< Updated upstream
+=======
+      ggplot2::xlim(c(0, opt$x_end - opt$x_start)) + 
+>>>>>>> Stashed changes
       # ggplot2::coord_fixed(
       #   ratio = 1,
       #   xlim = NULL,
