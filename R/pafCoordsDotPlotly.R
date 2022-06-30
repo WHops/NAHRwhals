@@ -299,6 +299,7 @@ plot_alignments <-function(alignments, opt){
   
   
   yTickMarks = tapply(alignments$queryEnd, alignments$queryID, max)
+
   gp = 
     ggplot2::ggplot(alignments) +
       ggplot2::geom_segment(
@@ -327,7 +328,6 @@ plot_alignments <-function(alignments, opt){
       ggplot2::ylab(as.character(alignments$queryID[1])) +
       ggplot2::scale_x_continuous(labels = scales::comma) +
       ggplot2::scale_y_continuous(labels = scales::comma) +
-      ggplot2::xlim(c(0, opt$x_end-opt$x_start)) + 
       # ggplot2::coord_fixed(
       #   ratio = 1,
       #   xlim = NULL,
@@ -340,6 +340,9 @@ plot_alignments <-function(alignments, opt){
       ggplot2::theme_bw() + 
       ggplot2::theme(panel.grid.major = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank())
     
+  if ((!is.null(opt$x_start)) & (!is.null(opt$x_end))){
+    gp = gp + ggplot2::xlim(c(0, opt$x_end-opt$x_start))
+  }
   
   # If a link is given for highlighting
   if (opt$hllink != F) {
@@ -422,14 +425,14 @@ add_ann_blocks <- function(gp, opt){
         max.overlaps=100
       ) +
       ggplot2::xlim(c(0,opt$x_end - opt$x_start)) + 
-      ggplot2::ylim(c(0,2))# +
-      # ggplot2::theme_void() +
-      # ggplot2::theme(legend.position='none',
-      #                axis.ticks = ggplot2::element_blank(),
-      #                panel.spacing.x = ggplot2::unit(1, "mm"),
-      #                axis.title.x = ggplot2::element_blank(),
-      #                strip.background.x = ggplot2::element_blank(),
-      #                strip.text.x = ggplot2::element_blank())
+      ggplot2::ylim(c(0,2)) +
+      ggplot2::theme_void() +
+      ggplot2::theme(legend.position='none',
+                     axis.ticks = ggplot2::element_blank(),
+                     panel.spacing.x = ggplot2::unit(1, "mm"),
+                     axis.title.x = ggplot2::element_blank(),
+                     strip.background.x = ggplot2::element_blank(),
+                     strip.text.x = ggplot2::element_blank())
     
   
   labels = sub(".*/", "", c(opt$anntrack, 'plot'))
