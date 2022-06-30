@@ -334,7 +334,7 @@ plot_alignments <-function(alignments, opt){
       #   expand = TRUE,
       #   clip = "on"
       # ) +
-      ggplot2::coord_fixed()+
+      #ggplot2::coord_fixed()+
       ggplot2::labs(title=NULL) + 
       ggplot2::theme_bw() + 
       ggplot2::theme(panel.grid.major = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank())
@@ -360,12 +360,14 @@ plot_alignments <-function(alignments, opt){
   #   
   # }
   # 
+  
   # If a link is given for highlighting
   if (opt$hllink != F) {
     
     gp = add_file_highlight(gp, opt)
     
   }
+  
   
   # If a (colored) highlight track is given...
   if (!is.null(opt$hltrack)){
@@ -377,7 +379,13 @@ plot_alignments <-function(alignments, opt){
     gp = add_ann_blocks(gp, opt)
   }
   
-
+  ggplot2::ggsave(
+    filename = 'Desktop/blub.pdf',
+    plot = miniplot,
+    height = 10,
+    width = 10,
+    device = 'pdf'
+  )
 
   return(gp)
   
@@ -452,8 +460,9 @@ add_ann_blocks <- function(gp, opt){
   
   labels = sub(".*/", "", c(opt$anntrack, 'plot'))
 
-  gp_out = h2 + (gp) + 
-    patchwork::plot_layout(ncol=1, heights = c(1,10))
+  gp_out = 
+    (h2 + coord_fixed(ratio = (opt$x_end - opt$x_start) / 50)) + (gp + coord_fixed()) + 
+    patchwork::plot_layout(ncol=1)
   
   # 
   # cowplot::plot_grid(h2,gp+ggplot2::theme(legend.position = "none"), 
