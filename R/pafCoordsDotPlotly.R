@@ -454,7 +454,7 @@ add_ann_blocks <- function(gp, opt){
   labels = sub(".*/", "", c(opt$anntrack, 'plot'))
 
   gp_out = 
-    (h2 + coord_fixed(ratio = (opt$x_end - opt$x_start) / 50)) + (gp + coord_fixed()) + 
+    (h2 + ggplot2::coord_fixed(ratio = (opt$x_end - opt$x_start) / 50)) + (gp + ggplot2::coord_fixed()) + 
     patchwork::plot_layout(ncol=1)
   
   # 
