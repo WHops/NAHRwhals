@@ -257,6 +257,7 @@ liftover_coarse <-
     search_mode = 'mad'
     # If we want to get a whole chromosome (tested for chrY only), we start at 1, and
     # go as far as probes land (... thusly avoiding heterochromatin.)
+    
     whole_chr = F
     if (whole_chr){
       start_winners = 1
@@ -269,6 +270,7 @@ liftover_coarse <-
       startend = find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end)
       
     } else if (search_mode == 'mad'){
+
       startend = find_coords_mad(liftover_coords, cpaf, winner_chr, start, end)
       if (is.null(startend)){
         print('MAD failed. Going for extrapolation instead.')
@@ -427,10 +429,10 @@ read_and_prep_paf <- function(paflink) {
 find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end){
   
   # Define success thresholds
-  th_x = 0.9
+  th_x = 0.8
   th_y_low = 0.5
   th_y_high = 2
-  
+
   # And those snipplets matching to the winner chromosome - where do they fall (median)?
   liftover_coords_maxseq = liftover_coords[liftover_coords$seqname == winner_chr,]
   
@@ -444,7 +446,7 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end){
   end_winners = max(liftover_coords_maxseq$liftover_coord)
   
   
-  # ggplot(liftover_coords_maxseq) + geom_point(aes(x=pos_probe, y=liftover_coord)) + 
+  #ggplot(liftover_coords_maxseq) + geom_point(aes(x=pos_probe, y=liftover_coord)) + 
   # coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") 
   mapped_x_region_frac = abs(max(liftover_coords_maxseq$pos_probe) - min(liftover_coords_maxseq$pos_probe)) / abs(end-start)
   mapped_y_region_frac = abs(end_winners - start_winners) / abs(end-start)
@@ -562,7 +564,7 @@ find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, e
 #'
 #' @author Wolfram Hoeps
 #' @export
-mad_mask_outliers <- function(obs, th=3.5){
+mad_mask_outliers <- function(obs, th=2.5){
 
   obs_median = median(obs)
   

@@ -326,6 +326,7 @@ plot_alignments <-function(alignments, opt){
                     title = opt$input_filename) +
       ggplot2::xlab(as.character(alignments$refID[1])) +
       ggplot2::ylab(as.character(alignments$queryID[1])) +
+      ggplot2::coord_fixed() + 
       ggplot2::scale_x_continuous(labels = scales::comma) +
       ggplot2::scale_y_continuous(labels = scales::comma) +
       # ggplot2::coord_fixed(
@@ -335,13 +336,15 @@ plot_alignments <-function(alignments, opt){
       #   expand = TRUE,
       #   clip = "on"
       # ) +
-      #ggplot2::coord_fixed()+
       ggplot2::labs(title=NULL) + 
       ggplot2::theme_bw() + 
       ggplot2::theme(panel.grid.major = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank())
     
   if ((!is.null(opt$x_start)) & (!is.null(opt$x_end))){
-    gp = gp + ggplot2::xlim(c(0, opt$x_end-opt$x_start))
+    gp = gp + 
+      ggplot2::scale_x_continuous(labels = scales::comma, limits = c(0, opt$x_end-opt$x_start)) +
+      ggplot2::coord_fixed()
+    
   }
   
   # If a link is given for highlighting
@@ -356,6 +359,7 @@ plot_alignments <-function(alignments, opt){
   # If a (colored) highlight track is given...
   if (!is.null(opt$hltrack)){
     gp = highlight_region(gp, opt)
+
   }
 
   # If a (colored) block track is given...
@@ -365,6 +369,7 @@ plot_alignments <-function(alignments, opt){
     gp = add_ann_blocks(gp, opt)
   }
   
+
 
   return(gp)
   
@@ -434,27 +439,12 @@ add_ann_blocks <- function(gp, opt){
                      strip.background.x = ggplot2::element_blank(),
                      strip.text.x = ggplot2::element_blank())
     
-  
   labels = sub(".*/", "", c(opt$anntrack, 'plot'))
   gp_out = 
     (h2 + ggplot2::coord_fixed(ratio = (opt$x_start - opt$x_end) / 50)) + (gp + ggplot2::coord_fixed()) + 
     patchwork::plot_layout(ncol=1)
   
-  # 
-  # cowplot::plot_grid(h2,gp+ggplot2::theme(legend.position = "none"), 
-  #                             ncol = 1,
-  #                             rel_heights = c(2,10),
-  #                             align='hv', 
-  #                             axis='tb', 
-  #                             labels=labels) #+ coord_equal()
-    #ggplot2::xlim(c(0, opt$x_end - opt$x_start)) + 
-    # ggplot2::coord_fixed(
-    #   ratio = 1,
-    #   xlim = NULL,
-    #   ylim = NULL,
-    #   expand = TRUE,
-    #   clip = "on"
-    # )
+
   
   return(gp_out)
   
