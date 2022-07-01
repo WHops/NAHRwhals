@@ -329,10 +329,6 @@ plot_alignments <-function(alignments, opt){
       ggplot2::ylab(as.character(alignments$queryID[1])) +
       ggplot2::scale_x_continuous(labels = scales::comma) +
       ggplot2::scale_y_continuous(labels = scales::comma) +
-<<<<<<< Updated upstream
-=======
-      ggplot2::xlim(c(0, opt$x_end - opt$x_start)) + 
->>>>>>> Stashed changes
       # ggplot2::coord_fixed(
       #   ratio = 1,
       #   xlim = NULL,
