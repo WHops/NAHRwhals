@@ -427,7 +427,7 @@ read_and_prep_paf <- function(paflink) {
 find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end){
   
   # Define success thresholds
-  th_x = 0.9
+  th_x = 0.8
   th_y_low = 0.5
   th_y_high = 2
   
