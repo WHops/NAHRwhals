@@ -24,7 +24,8 @@ calc_coarse_grained_aln_score <-
   function(mat,
            old_way_of_calc = F,
            verbose = F,
-           forcecalc = F) {
+           forcecalc = F,
+           orig_symm = 1) {
     # Remove zero-pads.
     mat = matrix_remove_zero_pads(mat)
     # If matrix has no entries (no alignments), return 0
@@ -59,7 +60,7 @@ calc_coarse_grained_aln_score <-
     #   browser()
     # }
     # Run away if there are at least 5 columns, and we have less than 95% similarity
-    if ((symmetry < 0.75 & row > 5) & (forcecalc == F)) {
+    if ((symmetry < (orig_symm*0.75) & row > 5) & (forcecalc == F)) {
       return(NA)
     } else if ((dim(mat)[1] == 1) & (dim(mat)[2] == 1)) {
       return(100)
@@ -240,47 +241,6 @@ find_maxdiag <- function(m) {
 
 
 
-#' eval_mutated_seq
-#'
-#' @description Evaluation function: how similar are the input and output?
-#' This needs work still...
-#'
-#' @param bitlocus  an nxm matrix (n=gridpoints_x, m=gridpoints_y)
-#' @return numeric [0-1] with evaluation score.
-#'
-#' @author Wolfram Höps
-#' @export
-eval_mutated_seq <- function(bitlocus) {
-  # Old stuff here:
-  #coverage_x =  sum(colMax(as.data.frame(bitlocus)) > 0) / dim(bitlocus)[2]
-  #coverage_y =  sum(colMax(as.data.frame(t(bitlocus))) > 0) / dim(bitlocus)[1]
-  
-  
-  # A matrix is perfect if it has a non-zero, non-negative diagonal.
-  # We also want the matrix to be symmetrical.
-  
-  
-  symmetry = min(dim(bitlocus)) / max(dim(bitlocus))
-  # diag_filled = sum(diag(bitlocus) > 0) / min(dim(bitlocus))
-  # minusdiag_filled =
-  
-  # Implement properly here a function defining if the overall alignment is pos
-  # or negative.
-  if (symmetry > 0.9) {
-    if (sign(bitlocus[1, 1]) == 1) {
-      maxdiag = find_maxdiag(bitlocus)
-    } else if (sign(bitlocus[1, 1]) == -1) {
-      maxdiag = find_maxdiag(apply(bitlocus, 2, rev))
-    } else{
-      maxdiag = max(find_maxdiag(apply(bitlocus, 2, rev)), find_maxdiag(bitlocus))
-    }
-  } else {
-    maxdiag = 0
-  }
-  #return(maxdiag)
-  return(round(maxdiag * symmetry, 3))
-  #  return(round(maxdiag/dim(bitlocus)[2], 3))
-}
 
 
 #' add_eval
