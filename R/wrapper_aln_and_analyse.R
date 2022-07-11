@@ -119,7 +119,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
   
   # Run alignments.
   # Run REF self alignment only if it hasn't been run before.
-  if (T) {
+  if (F) {
     if (is.na(file.size(outlinks$outfile_plot_self_x))) {
       plot_self_x = make_chunked_minimap_alnment(
         outlinks$genome_x_fa_subseq,
@@ -149,26 +149,26 @@ wrapper_aln_and_analyse <- function(seqname_x,
 
     
     
-    # Run y self alignment
-    plot_self_y = make_chunked_minimap_alnment(
-      outlinks$genome_y_fa_subseq,
-      outlinks$genome_y_fa_subseq,
-      outlinks$outpaf_link_self_y,
-      chunklen = params$chunklen,
-      minsdlen = params$plot_minlen,
-      saveplot = F,
-      hllink = F,
-      hltype = F,
-      hlstart = F,#NULL,
-      hlend = F#NULL
-    )
-    save_plot_custom(plot_self_y, outlinks$outfile_plot_self_y, 'pdf')
-    save_plot_custom(plot_self_y,
-                     outlinks$outfile_plot_self_y,
-                     'png',
-                     width = 20,
-                     height = 20)
-    print(plot_self_y)
+    # # # Run y self alignment
+    # plot_self_y = make_chunked_minimap_alnment(
+    #   outlinks$genome_y_fa_subseq,
+    #   outlinks$genome_y_fa_subseq,
+    #   outlinks$outpaf_link_self_y,
+    #   chunklen = params$chunklen,
+    #   minsdlen = params$plot_minlen,
+    #   saveplot = F,
+    #   hllink = F,
+    #   hltype = F,
+    #   hlstart = F,#NULL,
+    #   hlend = F#NULL
+    # )
+    # save_plot_custom(plot_self_y, outlinks$outfile_plot_self_y, 'pdf')
+    # save_plot_custom(plot_self_y,
+    #                  outlinks$outfile_plot_self_y,
+    #                  'png',
+    #                  width = 20,
+    #                  height = 20)
+    # print(plot_self_y)
     }
   }
   #Run xy alignment
@@ -203,6 +203,8 @@ wrapper_aln_and_analyse <- function(seqname_x,
 
   if (!params$plot_only) {
     # Make an xy grid
+    #params$compression= 50000
+    #params$minlen = 50000
     grid_xy = wrapper_paf_to_bitlocus(
       outlinks$outpaf_link_x_y,
       params,
@@ -214,6 +216,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
     #gridmatrix = readRDS('~/Desktop/latest')
     #resold = explore_mutation_space(gridmatrix, depth = depth)
     res = solve_mutation(gridmatrix, depth = params$depth)
+    print(res[res$eval == max(as.numeric(res$eval)),])
     # Make a grid after applying the top res
     # print(head(res))
     # print("hi")
@@ -221,16 +224,16 @@ wrapper_aln_and_analyse <- function(seqname_x,
     # plot_all_mut = T
     # if (plot_all_mut){
     #   for (i in 1:dim(res)[1]){
-    #     grid_modified = modify_gridmatrix(gridmatrix, res[i,])
-    #     gm2 = reshape2::melt(grid_modified)
-    #     colnames(gm2) = c('x','y','z')
-    #     grid_mut_plot = plot_matrix_ggplot(gm2[gm2$z != 0,])
-    #     ggplot2::ggsave(filename = paste0(outlinks$outfile_plot_grid_mut, '-', paste0(res[i,], '.pdf', collapse='_')),
-    #                     plot = grid_mut_plot,
-    #                     width = 10,
-    #                     height = 10,
-    #                     units = 'cm',
-    #                     dpi = 300)
+        grid_modified = modify_gridmatrix(gridmatrix, res[1,])
+        gm2 = reshape2::melt(grid_modified)
+        colnames(gm2) = c('x','y','z')
+        grid_mut_plot = plot_matrix_ggplot(gm2[gm2$z != 0,])
+        ggplot2::ggsave(filename = paste0(outlinks$outfile_plot_grid_mut, '-', paste0(res[1,], '.pdf', collapse='_')),
+                        plot = grid_mut_plot,
+                        width = 10,
+                        height = 10,
+                        units = 'cm',
+                        dpi = 300)
     #   }
     # }
     # Save res table
