@@ -58,14 +58,14 @@ annotate_pairs_with_hash <- function(bitlocus, pairs){
 }
 
 
-decide_loop_continue <- function(bitl_f, symm_cutoff = 0.80){
+decide_loop_continue <- function(bitl_f, symm_cutoff = 0.80, orig_symm = 1){
 
   climb_up_cost = as.numeric(row.names(bitl_f))
   walk_right_cost = as.numeric(colnames(bitl_f))
   symmetry = min(sum(climb_up_cost), sum(walk_right_cost)) / max(sum(climb_up_cost), sum(walk_right_cost))
 
   # Run away if there are at least 5 columns, and we have less than 75% symmetry
-  if ((symmetry < symm_cutoff) & (dim(bitl_f)[1] > 5)){
+  if ((symmetry < (orig_symm * symm_cutoff)) & (dim(bitl_f)[1] > 5)){
     return(F)
   } 
   
@@ -76,13 +76,13 @@ decide_loop_continue <- function(bitl_f, symm_cutoff = 0.80){
 #' DFS workhorse function
 #' TODO: description
 #' @export
-dfsutil <- function(visited, pair, mutator, depth, maxdepth = 3, pairhistory=NULL, df_output=NULL, increase_only=NULL, last_eval=0){
+dfsutil <- function(visited, pair, mutator, depth, maxdepth = 3, pairhistory=NULL, df_output=NULL, increase_only=NULL, orig_symm=1, last_eval=0){
   
   # Calc score of a node
   if (pair$sv == 'ref'){
-    aln_score = calc_coarse_grained_aln_score(mutator, forcecalc = T)
+    aln_score = calc_coarse_grained_aln_score(mutator, forcecalc = T, orig_symm = orig_symm)
   } else {
-    aln_score = calc_coarse_grained_aln_score(mutator, forcecalc = F)
+    aln_score = calc_coarse_grained_aln_score(mutator, forcecalc = F, orig_symm = orig_symm)
     
   }
   # Make an entry to the output df. 
@@ -93,6 +93,8 @@ dfsutil <- function(visited, pair, mutator, depth, maxdepth = 3, pairhistory=NUL
   
 
   df_output = na.omit(rbind(df_output, c(pair[1,'hash'], depth, pairhistory, aln_score)))
+  #df_output = (rbind(df_output, c(pair[1,'hash'], depth, pairhistory, aln_score)))
+  
   
   # Update the visited hash to reflect that we have seen and processed that node. 
   visited[[pair$hash]] = c(depth, pairhistory, aln_score)
@@ -137,7 +139,8 @@ dfsutil <- function(visited, pair, mutator, depth, maxdepth = 3, pairhistory=NUL
         
         bitl_mut = carry_out_compressed_sv(mutator, pairs[npair,1:3])
 
-        node_passes_symmetry_crit = decide_loop_continue(bitl_mut)
+        node_passes_symmetry_crit = decide_loop_continue(bitl_mut, orig_symm = orig_symm)
+        
         if (node_passes_symmetry_crit){
           list_visit = dfsutil(visited=visited, 
                   pair=pairs[npair,], 
@@ -147,7 +150,8 @@ dfsutil <- function(visited, pair, mutator, depth, maxdepth = 3, pairhistory=NUL
                   pairhistory = paste(pairhistory, paste0(pairs[npair,1:3], collapse = '_'), sep='+'),
                   df_output = df_output,
                   increase_only = increase_only,
-                  last_eval = aln_score)
+                  last_eval = aln_score,
+                  orig_symm = orig_symm)
           visited = list_visit[[1]]
           df_output = list_visit[[2]]
         } else {
@@ -184,6 +188,12 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F){
     print('Uh oh that is a bit large. Reducing depth to 2. Try to avoid producing such large alignments.')
     maxdepth = 2
   }
+  
+  # What is the initial symmetry of the bitlocus? 
+  climb_up_cost = as.numeric(row.names(bitl))
+  walk_right_cost = as.numeric(colnames(bitl))
+  orig_symm = min(sum(climb_up_cost), sum(walk_right_cost)) / max(sum(climb_up_cost), sum(walk_right_cost))
+  
   # Initialize a hash. 
   visited = hash::hash()
   ref_mut_pair = data.frame(p1='1', p2='1', sv='ref')
@@ -196,7 +206,8 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F){
                     depth=0, 
                     maxdepth=maxdepth,
                     pairhistory=paste(ref_mut_pair[,1:3], collapse='_'), 
-                    increase_only=increase_only)
+                    increase_only=increase_only,
+                    orig_symm = orig_symm)
       
       
 
@@ -243,7 +254,7 @@ solve_mutation <- function(bitlocus, depth){
   if (is_cluttered(bitlocus)){
     print("ÜÄH disgusting locus, make frame larger.")
     res_out = data.frame(eval=0, mut1='ref')
-    
+
     return(res_out)
   }
   
@@ -265,7 +276,7 @@ solve_mutation <- function(bitlocus, depth){
       print('No very easy solution found. Continuing steepest-descent solution search.')
       # Next, try if there is a combination of individual adaptations.
         n = 1
-        vis_list = dfs(bitlocus, maxdepth = 1, increase_only = T)
+        #vis_list = dfs(bitlocus, maxdepth = 1, increase_only = T)
         res_df = vis_list[[2]]
         res_df_sort = sort_new_by_penalised(bitlocus, res_df)
         res_preferred = transform_res_new_to_old(res_df_sort)[1,]
@@ -305,14 +316,12 @@ solve_mutation <- function(bitlocus, depth){
       res_df = vis_list[[2]]
       res_df_sort = sort_new_by_penalised(bitlocus, res_df)
       res_out = transform_res_new_to_old(res_df_sort)
-      
       conclusion_found = T
       
     }
     attempt = attempt + 1  
   }
     
-
   # # Decide if a full run is necessary
   # if (max(as.numeric(res_df$eval)) == 100){
   #   print('Found an easy solution on depth=1. Not continuing the search.')
@@ -333,7 +342,9 @@ solve_mutation <- function(bitlocus, depth){
 #' Transformation block. Ugly and undocumented i don't care sue me.
 #' @export
 transform_res_new_to_old <- function(res_df_f){
-  if ((dim(res_df_f)[1] == 1) & (res_df_f$mut_path == '1_1_ref')){
+
+  print(res_df_f) 
+  if ((dim(res_df_f)[1] == 1) & (res_df_f$mut_path[1] == '1_1_ref')){
     res_out = data.frame(eval = res_df_f$eval, 
                          mut1 = 'ref')
     return(res_out)
@@ -385,14 +396,13 @@ is_cluttered <- function(bitlocus_f){
   if (!is_large){
     return(F)
   }
-  
   clutter1 = sum(bitlocus_f[1                 ,2:(dim(bitlocus_f)[2]-1)] != 0)
   clutter2 = sum(bitlocus_f[dim(bitlocus_f)[1],2:(dim(bitlocus_f)[2]-1)] != 0)
   clutter3 = sum(bitlocus_f[2:(dim(bitlocus_f)[1]-1),1] != 0)
   clutter4 = sum(bitlocus_f[2:(dim(bitlocus_f)[1]-1),dim(bitlocus_f)[2]] != 0)
   clutter_all = c(clutter1, clutter2, clutter3, clutter4)
   
-  if (any(clutter_all >= 3 )){
+  if (any(clutter_all >= 5 )){
     return(T)
   }
   
