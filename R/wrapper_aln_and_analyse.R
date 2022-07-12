@@ -72,7 +72,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
     
   # If we have a pre-computed coarse alignment, then we can use this to find out 
   # which region we are talking about. 
-  if (use_paf_library) {
+  if (!is.null(conversionpaf_link)) {
     # Pad-sequence
     start_end_pad = enlarge_interval_by_factor(start_x,
                                                end_x,
@@ -108,10 +108,9 @@ wrapper_aln_and_analyse <- function(seqname_x,
     system(paste0('cp ', genome_x_fa, ' ', outlinks$genome_x_fa_subseq))
     system(paste0('cp ', genome_y_fa, ' ', outlinks$genome_y_fa_subseq))
     
-    start_x_pad = 0
-    end_x_pad = 1
-    start_x = 0
-    end_x = 1
+    start_x_pad = start_x
+    end_x_pad = end_x
+
     system(paste0('cp ', genome_x_fa, ' ', outlinks$genome_x_fa_subseq))
     system(paste0('cp ', genome_y_fa, ' ', outlinks$genome_y_fa_subseq))
     
@@ -119,7 +118,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
   
   # Run alignments.
   # Run REF self alignment only if it hasn't been run before.
-  if (F) {
+  if (T) {
     if (is.na(file.size(outlinks$outfile_plot_self_x))) {
       plot_self_x = make_chunked_minimap_alnment(
         outlinks$genome_x_fa_subseq,
@@ -216,6 +215,9 @@ wrapper_aln_and_analyse <- function(seqname_x,
     #gridmatrix = readRDS('~/Desktop/latest')
     #resold = explore_mutation_space(gridmatrix, depth = depth)
     res = solve_mutation(gridmatrix, depth = params$depth)
+    res$eval = as.numeric(res$eval)
+    res = res[order(res$eval, decreasing = T),]
+    
     print(res[res$eval == max(as.numeric(res$eval)),])
     # Make a grid after applying the top res
     # print(head(res))
@@ -224,6 +226,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
     # plot_all_mut = T
     # if (plot_all_mut){
     #   for (i in 1:dim(res)[1]){
+    print('yier')
         grid_modified = modify_gridmatrix(gridmatrix, res[1,])
         gm2 = reshape2::melt(grid_modified)
         colnames(gm2) = c('x','y','z')
@@ -234,6 +237,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                         height = 10,
                         units = 'cm',
                         dpi = 300)
+    print('post')
     #   }
     # }
     # Save res table
@@ -296,7 +300,9 @@ determine_plot_minlen <- function(start, end){
     minlen = 1000
   } else if ((end - start) > 10000000){
     minlen = 2000
-  } else {
+  } else if ((end-start) < 5000){
+    minlen = 100
+  }else {
     minlen = 200
   }
   return(minlen)
@@ -311,7 +317,10 @@ determine_chunklen_compression <- function(start, end) {
   }
   if ((end - start) > 500 * 1000) {
     chunklen = 10000
-  } else if (((end - start)) < 50 * 1000) {
+  } else if ((end-start) < 5000){
+    chunklen = 500
+  }
+    else if (((end - start)) < 50 * 1000) {
     chunklen = 1000
   } else {
     chunklen = 1000

@@ -210,7 +210,7 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F){
                     orig_symm = orig_symm)
       
       
-
+  visited_outputdf_list[[2]]$eval = as.numeric(visited_outputdf_list[[2]]$eval)
   
   return(visited_outputdf_list)
   
@@ -238,7 +238,7 @@ solve_mutation_slimmer <- function(bitlocus, depth){
     res_df = vis_list[[2]]
     res_df_sort = sort_new_by_penalised(bitlocus, res_df)
     res_out = transform_res_new_to_old(res_df_sort)
-    
+    print('Got so far.')
   }
 
   return(res_out)
@@ -265,12 +265,14 @@ solve_mutation <- function(bitlocus, depth){
       # First, try if there is an easy solution on depth 1.
       vis_list = (dfs(bitlocus, maxdepth = 1, increase_only = T))
       res_df = vis_list[[2]]
+      res_df$eval = as.numeric(res_df$eval)
       conclusion_found = (max(as.numeric(res_df$eval)) == 100)
       print(conclusion_found)
       if (conclusion_found){
         print('Good news! Very easy solution found :) No need to continue calculating.')
         res_df_sort = sort_new_by_penalised(bitlocus, res_df)
         res_out = transform_res_new_to_old(res_df_sort)
+        res_out$eval = as.numeric(res_out$eval)
       }
     } else if (attempt == 2){
       print('No very easy solution found. Continuing steepest-descent solution search.')
@@ -290,6 +292,8 @@ solve_mutation <- function(bitlocus, depth){
         }
         res_memory = res_preferred
         res_ref = transform_res_new_to_old(res_df_sort[res_df_sort$mut_path=='1_1_ref',])
+        
+        #browser()
         while (res_preferred[2] != 'ref'){
           n = n+1
           vis_list = (dfs(bitlocus_new, maxdepth = 1, increase_only = T))
@@ -304,8 +308,9 @@ solve_mutation <- function(bitlocus, depth){
             res_memory[[paste0('mut',n)]] = res_preferred$mut1
           }
         }
-        conclusion_found = res_memory$eval >= find_threshold(bitlocus_new, dim(res_memory)[2]-1)
+        
         res_memory$eval = as.numeric(res_memory$eval)
+        conclusion_found = res_memory$eval >= find_threshold(bitlocus_new, dim(res_memory)[2]-1)
         res_out = dplyr::bind_rows(res_memory, res_ref)
         
         
@@ -317,7 +322,7 @@ solve_mutation <- function(bitlocus, depth){
       res_df_sort = sort_new_by_penalised(bitlocus, res_df)
       res_out = transform_res_new_to_old(res_df_sort)
       conclusion_found = T
-      
+      print('Got so far')
     }
     attempt = attempt + 1  
   }
@@ -329,13 +334,15 @@ solve_mutation <- function(bitlocus, depth){
   # 
   # }
   # Make an entry to the output logfile #
+  print('hi')
   if (exists('log_collection')){
     log_collection$depth <<- depth
     log_collection$mut_simulated <<- dim(res_df)[1]
     log_collection$mut_tested <<- dim(res_df)[1]
   }
-  
+  print('out')
 
+  res_out$eval = as.numeric(res_out$eval)
   return(res_out)
 }
 
