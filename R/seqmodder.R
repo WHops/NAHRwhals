@@ -25,6 +25,7 @@ mutate_seq <- function(seq_fasta, sds_tsv, sv_instr_txt, outfasta, outsd, debug=
     sv_instr_txt = "../data/svs10.txt"
   }
   
+  
   # Load both sequence
   seqf = Biostrings::readDNAStringSet(seq_fasta)
   seqname = names(seqf) #should be Biostrings too?
@@ -43,7 +44,9 @@ mutate_seq <- function(seq_fasta, sds_tsv, sv_instr_txt, outfasta, outsd, debug=
   
   # Load Mutation instructions
   svs = read.table(sv_instr_txt, sep='\t'); colnames(svs) = c('SD', 'SV')
-  
+  #browser()
+  stopifnot("Error: Specified SD pair does no (longer) exist!" = 
+              svs$SD %in% unique(sds$uid))
   
   # Make every SV
   for (n_sv in 1:dim(svs)[1]){
@@ -263,7 +266,6 @@ carry_out_del <- function(seq, sds, sv){
 #' @author Wolfram Höps
 #' @export
 sds_document_deletion <- function(sds, sv){
-  
   sds_specific = sds[sds$uid == sv$SD,]
   
   # Remove the mediator pair
@@ -444,7 +446,7 @@ carry_out_dup <- function(seq, sds, sv){
   
   # W, 16th Feb 2022:
   # [Something is wrong in this functin. Commenting it out for now.]
-  sds_revisited = sds# sds_document_duplication(sds, sv)
+  sds_revisited = sds_document_duplication(sds, sv)
   
   # W, 14th March 2022. We need to sort here. 
   # So that '1,end' and '2,start' are what they
@@ -471,92 +473,138 @@ carry_out_dup <- function(seq, sds, sv){
 #' @author Wolfram Höps
 #' @export
 sds_document_duplication <- function(sds,sv){
+  non_dup_sdname = unique(sds$uid[sds$uid != sv$SD])
   
-  sds_specific = sds[sds$uid == sv$SD,]
-  #sds_bu = sds
-  #sv_bu = sv
-  sds = sds[sds$uid %in% c("SDA", "SDB", "SDC"),]
-
-  # Remember this for later
-  uid_orig = unique(sds$uid)
-  
-  dupsize = sds_specific[2,]$chromEnd - sds_specific[1,]$chromEnd
-  
-  sds = expand_one_of_pair(sds, "SDC", 2,  dupsize)
-  
-  # Which SDs are buried inside the duplication of interest?
-  sds$buried_in_dup =   sds$chromStart >= sds_specific[1,'chromEnd'] & 
-    sds$chromEnd <= sds_specific[2,'chromStart']
-   
-  pairs_one_duplicated = 
-    unique((sds %>% group_by(uid) %>% filter(sum(buried_in_dup)==1))$uid)
-  
-  pairs_two_duplicated = 
-    unique((sds %>% group_by(uid) %>% filter(sum(buried_in_dup)==2))$uid)
-  
-  for (uid in pairs_one_duplicated){
-    sds = expand_one_of_pair(sds, uid, 2,  dupsize)
+  if (length(non_dup_sdname) == 0){
+    return(sds)
   }
   
-  for (uid in pairs_two_duplicated){
-    sds = expand_whole_pair(sds, uid, dupsize)
+  sd_duplicators = sds[sds$uid == sv$SD,]
+  sd_non_duplicators = sds[sds$uid != sv$SD,]
+  
+  dupsize = sd_duplicators[1,'otherStart'] - sd_duplicators[1,'chromStart']
+  # Simpler version
+  
+  # option 3: first SD before duplication, secoond one afterwards
+  opt3 = (sd_non_duplicators[1,'chromStart'] < min(sd_duplicators$chromStart)) &
+         (sd_non_duplicators[2,'chromStart'] > max(sd_duplicators$chromStart))
+  
+  # option 4: first SD in duplication, secoond one afterwards
+  opt4 = (sd_non_duplicators[1,'chromStart'] > min(sd_duplicators$chromStart)) &
+         (sd_non_duplicators[1,'chromStart'] < max(sd_duplicators$chromStart)) &
+         (sd_non_duplicators[2,'chromStart'] > max(sd_duplicators$chromStart))
+  
+  # option 5: both SDs after duplication
+  opt5 = (sd_non_duplicators[1,'chromStart'] > max(sd_duplicators$chromStart)) &
+         (sd_non_duplicators[2,'chromStart'] > max(sd_duplicators$chromStart))
+  
+  if (opt3){
+    sd_non_duplicators[1, 'otherStart'] = sd_non_duplicators[1, 'otherStart'] + dupsize
+    sd_non_duplicators[1, 'otherEnd'] = sd_non_duplicators[1, 'otherEnd'] + dupsize
+    sd_non_duplicators[2, 'chromStart'] = sd_non_duplicators[2, 'chromStart'] + dupsize
+    sd_non_duplicators[2, 'chromEnd'] = sd_non_duplicators[2, 'chromEnd'] + dupsize
+  } else if (opt4 | opt5){
+    sd_non_duplicators[1, 'otherStart'] = sd_non_duplicators[1, 'otherStart'] + dupsize
+    sd_non_duplicators[1, 'otherEnd'] = sd_non_duplicators[1, 'otherEnd'] + dupsize
+    sd_non_duplicators[1, 'chromStart'] = sd_non_duplicators[1, 'chromStart'] + dupsize
+    sd_non_duplicators[1, 'chromEnd'] = sd_non_duplicators[1, 'chromEnd'] + dupsize
+    
+    sd_non_duplicators[2, 'otherStart'] = sd_non_duplicators[2, 'otherStart'] + dupsize
+    sd_non_duplicators[2, 'otherEnd'] = sd_non_duplicators[2, 'otherEnd'] + dupsize
+    sd_non_duplicators[2, 'chromStart'] = sd_non_duplicators[2, 'chromStart'] + dupsize
+    sd_non_duplicators[2, 'chromEnd'] = sd_non_duplicators[2, 'chromEnd'] + dupsize
   }
   
-  
-  
-  # Everything else gets shifted upstream by the amount of deletion. 
-
-  # Chrom starts, ends
-  sds_predup = sds[sds$uid %in% uid_orig,]
-  
-  
-  sds_predup[sds_predup$chromStart > sds_specific[1,]$otherEnd,] = transform(
-    sds_predup[sds_predup$chromStart > sds_specific[1,]$otherEnd,],
-    chromStart = chromStart + dupsize,
-    chromEnd   = chromEnd + dupsize
-  )
-  
-  sds_predup[sds_predup$otherStart > sds_specific[1,]$otherEnd,] = transform(
-    sds_predup[sds_predup$otherStart > sds_specific[1,]$otherEnd,],
-    otherStart = otherStart + dupsize,
-    otherEnd   = otherEnd + dupsize
-  )
-  
-  # Adjust starts and ends of everything downstream
-  sds_predup[sds_predup$chromStart > (sds_specific[1,]$otherEnd),]$chromStart = 
-    sds_predup[sds_predup$chromStart > sds_specific[1,]$otherEnd,]$chromStart + dupsize
-  
-  sds_predup[sds_predup$chromEnd > sds_specific[1,]$otherEnd,]$chromEnd = 
-    sds_predup[sds_predup$chromEnd > sds_specific[1,]$otherEnd,]$chromEnd + dupsize
-  
-  
-  # Add the duplication itself 
-  
-  # print(sds_specific)
-  sds_dup = sds_specific
-  sds_dup[1,] = transform(
-    sds_dup[1,],
-    chromEnd = otherEnd,
-    otherEnd = otherEnd + dupsize
-  )
-  sds_dup[2,] = transform(
-    sds_dup[2,],
-    chromEnd = chromEnd + dupsize,
-    otherEnd = chromEnd
-  )
-  sds_dup$uid = paste0(sds_dup$uid, 'dup')
-  sds_dup$buried_in_dup = F
-  # print('@@########################')
-  # print(sds_dup)
-  # print('@@########################')
-  # print(sds_predup)
-  # Re-merge
-  sds_return = rbind(rbind(sds_predup, sds[!sds$uid %in% uid_orig,]), sds_dup)
-  #sds_return = rbind(sds_predup, sds[!sds$uid %in% uid_orig,])
-  
-  sds_return = sds_return[order(sds_return$uid),]
+  sds_return = rbind(sd_duplicators, sd_non_duplicators)
   
   return(sds_return)
+  # sds_specific = sds[sds$uid == sv$SD,]
+  # #sds_bu = sds
+  # #sv_bu = sv
+  # # sds = sds[sds$uid %in% c("SDA", "SDB", "SDC"),]
+  # 
+  # # Remember this for later
+  # uid_orig = unique(sds$uid)
+  # 
+  # dupsize = sds_specific[2,]$chromEnd - sds_specific[1,]$chromEnd
+  # 
+  # # Not creating new pairs, thus commenting this out. 
+  # # sds = expand_one_of_pair(sds, sv$SD, 2,  dupsize)
+  # 
+  # # Which SDs are buried inside the duplication of interest?
+  # sds$buried_in_dup =   sds$chromStart >= sds_specific[1,'chromEnd'] & 
+  #   sds$chromEnd <= sds_specific[2,'chromStart']
+  #  
+  # # pairs_one_duplicated = 
+  # #   unique((sds %>% group_by(uid) %>% filter(sum(buried_in_dup)==1))$uid)
+  # # 
+  # # pairs_two_duplicated = 
+  # #   unique((sds %>% group_by(uid) %>% filter(sum(buried_in_dup)==2))$uid)
+  # # 
+  # # for (uid in pairs_one_duplicated){
+  # #   sds = expand_one_of_pair(sds, uid, 2,  dupsize)
+  # # }
+  # # 
+  # # for (uid in pairs_two_duplicated){
+  # #   sds = expand_whole_pair(sds, uid, dupsize)
+  # # }
+  # # 
+  # 
+  # 
+  # # Everything else gets shifted downstream by the amount of duplication 
+  # 
+  # # Chrom starts, ends
+  # sds_predup = sds[sds$uid %in% uid_orig,]
+  # 
+  # 
+  # sds_predup[sds_predup$chromStart > sds_specific[1,]$otherEnd,] = transform(
+  #   sds_predup[sds_predup$chromStart > sds_specific[1,]$otherEnd,],
+  #   chromStart = chromStart + dupsize,
+  #   chromEnd   = chromEnd + dupsize
+  # )
+  # 
+  # sds_predup[sds_predup$otherStart > sds_specific[1,]$otherEnd,] = transform(
+  #   sds_predup[sds_predup$otherStart > sds_specific[1,]$otherEnd,],
+  #   otherStart = otherStart + dupsize,
+  #   otherEnd   = otherEnd + dupsize
+  # )
+  # 
+  # # Adjust starts and ends of everything downstream
+  # sds_predup[sds_predup$chromStart > (sds_specific[1,]$otherEnd),]$chromStart =
+  #   sds_predup[sds_predup$chromStart > sds_specific[1,]$otherEnd,]$chromStart + dupsize
+  # 
+  # sds_predup[sds_predup$chromEnd > sds_specific[1,]$otherEnd,]$chromEnd =
+  #   sds_predup[sds_predup$chromEnd > sds_specific[1,]$otherEnd,]$chromEnd + dupsize
+  # 
+  # 
+  # # Add the duplication itself
+  # 
+  # # print(sds_specific)
+  # sds_dup = sds_specific
+  # sds_dup[1,] = transform(
+  #   sds_dup[1,],
+  #   chromEnd = otherEnd,
+  #   otherEnd = otherEnd + dupsize
+  # )
+  # sds_dup[2,] = transform(
+  #   sds_dup[2,],
+  #   chromEnd = chromEnd + dupsize,
+  #   otherEnd = chromEnd
+  # )
+  # sds_dup$uid = paste0(sds_dup$uid, 'dup')
+  # sds_dup$buried_in_dup = F
+  # # print('@@########################')
+  # # print(sds_dup)
+  # # print('@@########################')
+  # # print(sds_predup)
+  # # Re-merge
+  # sds_return = rbind(sds_predup, sds[!sds$uid %in% uid_orig,])
+  # #sds_return = rbind(sds_predup, sds[!sds$uid %in% uid_orig,])
+  # 
+  # sds_return = sds_return[order(sds_return$uid),]
+  # 
+  # #sds_return = sds[order(sds$uid),]
+  # return(sds_return)
 }
 
 
