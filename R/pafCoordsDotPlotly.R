@@ -381,7 +381,7 @@ plot_alignments <-function(alignments, opt){
 #' @export
 add_ann_blocks <- function(gp, opt){
 
-    max_ann_blocks = 100
+    max_ann_blocks = 1000
     library(patchwork)
     
     annotation = read.table(opt$anntrack, header=F, comment.char="")
@@ -427,7 +427,7 @@ add_ann_blocks <- function(gp, opt){
       ggplot2::scale_fill_identity(guide="legend",breaks=a_int2$V5) + 
 
       ggplot2::xlim(c(0,opt$x_end - opt$x_start)) + 
-      ggplot2::ylim(c(0,2)) +
+      ggplot2::ylim(c(0,5)) +
       ggplot2::theme_void() +
       ggplot2::theme(legend.position='none',
                      axis.ticks = ggplot2::element_blank(),
@@ -436,13 +436,10 @@ add_ann_blocks <- function(gp, opt){
                      strip.background.x = ggplot2::element_blank(),
                      strip.text.x = ggplot2::element_blank())
     
-  if (dim(a_int2)[1] < 20){
     h2 = h2 + ggrepel::geom_text_repel(
-      ggplot2::aes(x= ((V3 - opt$x_start) + (V2 - opt$x_start)) / 2,y = 1, label=V4),
+      ggplot2::aes(x= ((V3 - opt$x_start) + (V2 - opt$x_start)) / 2,y = 2, label=V4),
       color=a_int2$V5,
-      max.overlaps=100
-    ) 
-  }
+      max.overlaps=10)
   labels = sub(".*/", "", c(opt$anntrack, 'plot'))
   gp_out = 
     (h2 + ggplot2::coord_fixed(ratio = (opt$x_start - opt$x_end) / 50)) + (gp + ggplot2::coord_fixed()) + 

@@ -137,7 +137,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
         anntrack = params$anntrack,
         hltrack = params$hltrack
       )
-      print(plot_self_x)
+      #print(plot_self_x)
       # Save alignment
       save_plot_custom(plot_self_x, outlinks$outfile_plot_self_x, 'pdf')
       save_plot_custom(plot_self_x,
@@ -149,24 +149,24 @@ wrapper_aln_and_analyse <- function(seqname_x,
     
     
     # # # Run y self alignment
-    # plot_self_y = make_chunked_minimap_alnment(
-    #   outlinks$genome_y_fa_subseq,
-    #   outlinks$genome_y_fa_subseq,
-    #   outlinks$outpaf_link_self_y,
-    #   chunklen = params$chunklen,
-    #   minsdlen = params$plot_minlen,
-    #   saveplot = F,
-    #   hllink = F,
-    #   hltype = F,
-    #   hlstart = F,#NULL,
-    #   hlend = F#NULL
-    # )
-    # save_plot_custom(plot_self_y, outlinks$outfile_plot_self_y, 'pdf')
-    # save_plot_custom(plot_self_y,
-    #                  outlinks$outfile_plot_self_y,
-    #                  'png',
-    #                  width = 20,
-    #                  height = 20)
+     plot_self_y = make_chunked_minimap_alnment(
+       outlinks$genome_y_fa_subseq,
+       outlinks$genome_y_fa_subseq,
+       outlinks$outpaf_link_self_y,
+       chunklen = params$chunklen,
+       minsdlen = params$plot_minlen,
+       saveplot = F,
+       hllink = F,
+       hltype = F,
+       hlstart = F,#NULL,
+       hlend = F#NULL
+     )
+     save_plot_custom(plot_self_y, outlinks$outfile_plot_self_y, 'pdf')
+     save_plot_custom(plot_self_y,
+                      outlinks$outfile_plot_self_y,
+                      'png',
+                      width = 20,
+                      height = 20)
     # print(plot_self_y)
     }
   }
@@ -218,7 +218,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
     res$eval = as.numeric(res$eval)
     res = res[order(res$eval, decreasing = T),]
     
-    print(res[res$eval == max(as.numeric(res$eval)),])
+    #print(res[res$eval == max(as.numeric(res$eval)),])
     # Make a grid after applying the top res
     # print(head(res))
     # print("hi")
@@ -226,7 +226,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
     # plot_all_mut = T
     # if (plot_all_mut){
     #   for (i in 1:dim(res)[1]){
-    print('yier')
+    #print('yier')
         grid_modified = modify_gridmatrix(gridmatrix, res[1,])
         gm2 = reshape2::melt(grid_modified)
         colnames(gm2) = c('x','y','z')
@@ -237,7 +237,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                         height = 10,
                         units = 'cm',
                         dpi = 300)
-    print('post')
+    #print('post')
     #   }
     # }
     # Save res table

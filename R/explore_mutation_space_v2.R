@@ -294,7 +294,7 @@ solve_mutation <- function(bitlocus, depth){
         res_ref = transform_res_new_to_old(res_df_sort[res_df_sort$mut_path=='1_1_ref',])
         
         #browser()
-        while (res_preferred[2] != 'ref'){
+        while ((res_preferred[2] != 'ref') & (n < 10)){
           n = n+1
           vis_list = (dfs(bitlocus_new, maxdepth = 1, increase_only = T))
           res_df = vis_list[[2]]
@@ -322,7 +322,6 @@ solve_mutation <- function(bitlocus, depth){
       res_df_sort = sort_new_by_penalised(bitlocus, res_df)
       res_out = transform_res_new_to_old(res_df_sort)
       conclusion_found = T
-      print('Got so far')
     }
     attempt = attempt + 1  
   }
@@ -334,13 +333,11 @@ solve_mutation <- function(bitlocus, depth){
   # 
   # }
   # Make an entry to the output logfile #
-  print('hi')
   if (exists('log_collection')){
     log_collection$depth <<- depth
     log_collection$mut_simulated <<- dim(res_df)[1]
     log_collection$mut_tested <<- dim(res_df)[1]
   }
-  print('out')
 
   res_out$eval = as.numeric(res_out$eval)
   return(res_out)
@@ -350,7 +347,7 @@ solve_mutation <- function(bitlocus, depth){
 #' @export
 transform_res_new_to_old <- function(res_df_f){
 
-  print(res_df_f) 
+  #print(res_df_f) 
   if ((dim(res_df_f)[1] == 1) & (res_df_f$mut_path[1] == '1_1_ref')){
     res_out = data.frame(eval = res_df_f$eval, 
                          mut1 = 'ref')

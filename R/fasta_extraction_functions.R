@@ -564,7 +564,7 @@ find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, e
 #'
 #' @author Wolfram Hoeps
 #' @export
-mad_mask_outliers <- function(obs, th=2.5){
+mad_mask_outliers <- function(obs, th=4){
 
   obs_median = median(obs)
   
