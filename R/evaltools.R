@@ -61,7 +61,7 @@ calc_coarse_grained_aln_score <-
     # }
     # Run away if there are at least 5 columns, and we have less than 95% similarity
     if ((symmetry < (orig_symm*0.75) & row > 5) & (forcecalc == F)) {
-      return(NA)
+      return(1)
     } else if ((dim(mat)[1] == 1) & (dim(mat)[2] == 1)) {
       return(100)
     } else if ((dim(mat)[1] == 1) & (dim(mat)[2] > 1)) {

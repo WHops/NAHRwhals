@@ -110,6 +110,7 @@ dfsutil <- function(visited, pair, mutator, depth, maxdepth = 3, pairhistory=NUL
     min_score = rep(c(max(score_ref, max(as.numeric(df_output[df_output$depth==depth,]$eval)))),10)
   } else {
     min_score = c(0, 
+                  0, 
                   (100-((100-score_ref)/0.6)), 
                   (100-((100-score_ref)/0.8)),
                   (100-(100-score_ref)))
@@ -139,7 +140,7 @@ dfsutil <- function(visited, pair, mutator, depth, maxdepth = 3, pairhistory=NUL
         
         bitl_mut = carry_out_compressed_sv(mutator, pairs[npair,1:3])
 
-        node_passes_symmetry_crit = decide_loop_continue(bitl_mut, orig_symm = orig_symm)
+        node_passes_symmetry_crit = T#decide_loop_continue(bitl_mut, orig_symm = orig_symm)
         
         if (node_passes_symmetry_crit){
           list_visit = dfsutil(visited=visited, 

@@ -19,7 +19,6 @@ pmsqrt_rev <- function(x){
 #' @export
 plot_matrix_ggplot <- function(data_frame_xyz) {
   
-  browser()
   p = ggplot2::ggplot(data_frame_xyz) + ggplot2::geom_tile(ggplot2::aes(
     x = x,
     y = y,
@@ -62,12 +61,12 @@ plot_matrix_ggplot <- function(data_frame_xyz) {
 #' @export
 plot_matrix_ggplot_named <- function(data_frame_xyz, colnames_f, rownames_f) {
 
+  
   trans_pmsq = scales::trans_new(
     'trans_pmsq',
     pmsqrt,
     pmsqrt_rev
   )
-  
   # Gridpoint lenghts are calculated here
   diff_rownames = paste0(as.character(diff(rownames_f)), ' (g',1:length(diff(rownames_f)), ')')
   diff_colnames = paste0(as.character(diff(colnames_f)), ' (g',1:length(diff(colnames_f)), ')')
@@ -76,26 +75,22 @@ plot_matrix_ggplot_named <- function(data_frame_xyz, colnames_f, rownames_f) {
   data_frame_xyz$x = as.factor(as.character(diff_colnames[data_frame_xyz$x]))
   data_frame_xyz$y = as.factor(as.character(diff_rownames[data_frame_xyz$y]))
   
-  
   #limit <- max(sqrt(abs(data_frame_xyz$z))) * c(-1, 1)
-  limits = unique(sort(c(sort(unique(sqrt(sort(abs(data_frame_xyz$z))))),
-                  -sort(unique(sqrt(sort(abs(data_frame_xyz$z))))))))
+  #limits = unique(sort(c(sort(unique(sqrt(sort(abs(data_frame_xyz$z))))),
+  #                -sort(unique(sqrt(sort(abs(data_frame_xyz$z))))))))
+  data_frame_xyz$z = data_frame_xyz$z / 1000
+  limits = unique(sort(c(sort(unique((sort(abs(data_frame_xyz$z))))),
+                         -sort(unique((sort(abs(data_frame_xyz$z))))))))
+  
   #limits = limits[abs(limits) > 1000]n
   # Make the plot
   p = ggplot2::ggplot(data_frame_xyz) + ggplot2::geom_tile(ggplot2::aes(
     x = x,
     y = y,
-    fill = sign(z) * sqrt(abs(z))
+    fill = z#sign(z) * sqrt(abs(z))
   )) +
-    # ggplot2::scale_fill_steps2(
-    #   low = 'red',
-    #   high = 'blue',
-    #   #midpoint = 0,
-    #   limits=c(min(limits), max(limits)),
-    #   breaks=limits,
-    #   space='Lab'
-    # ) +
     ggplot2::scale_fill_stepsn(
+      'Blocksize [kbp]',
       #colors=c('#b2182b','#ef8a62','#fddbc7',
       #         '#f7f7f7','#d1e5f0','#67a9cf','#2166ac'),
       colors=c('#b2182b','#ef8a62','#fddbc7',
@@ -103,7 +98,7 @@ plot_matrix_ggplot_named <- function(data_frame_xyz, colnames_f, rownames_f) {
       #limits = c(min(limits),max(limits)),
       n.breaks = 8,
       limits = c(min(limits), max(limits)),
-      show.limits=T,
+      show.limits=T,#,
       #labels=round(seq(limits[1], limits[length(limits)],length.out=8)),
       trans=trans_pmsq
     ) +

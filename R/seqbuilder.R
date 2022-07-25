@@ -47,7 +47,7 @@ model_sds <- function(seq_base, sds, uid){
 add_snps <- function(seq, similarity, seed=1234){
   
   bases= c('A','C','G','T')
-  set.seed(seed)
+  #set.seed(seed)
   
   # According to similarity, choose bases to mutate. 
   # Bases can mutate to self, so we add one third to bases to mutate.

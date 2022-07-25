@@ -74,6 +74,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
   # which region we are talking about. 
   if (!is.null(conversionpaf_link)) {
     # Pad-sequence
+    print('hi')
     start_end_pad = enlarge_interval_by_factor(start_x,
                                                end_x,
                                                params$xpad,
@@ -82,7 +83,6 @@ wrapper_aln_and_analyse <- function(seqname_x,
     start_x_pad = start_end_pad[1]
     end_x_pad = start_end_pad[2]
     # Get coordinates in y
-
     coords_liftover = liftover_coarse(seqname_x,
                                       start_x_pad,
                                       end_x_pad,
@@ -167,7 +167,6 @@ wrapper_aln_and_analyse <- function(seqname_x,
                       'png',
                       width = 20,
                       height = 20)
-    # print(plot_self_y)
     }
   }
   #Run xy alignment
@@ -218,6 +217,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
     res$eval = as.numeric(res$eval)
     res = res[order(res$eval, decreasing = T),]
     
+<<<<<<< HEAD
     #print(res[res$eval == max(as.numeric(res$eval)),])
     # Make a grid after applying the top res
     # print(head(res))
@@ -227,11 +227,21 @@ wrapper_aln_and_analyse <- function(seqname_x,
     # if (plot_all_mut){
     #   for (i in 1:dim(res)[1]){
     #print('yier')
+=======
+    print(res[res$eval == max(as.numeric(res$eval)),])
+    print('yier')
+>>>>>>> b1483a8158e5b650a2171cf0c863f2c322201762
         grid_modified = modify_gridmatrix(gridmatrix, res[1,])
+        modified_colnames = c(0,as.numeric(colnames(grid_modified)))
+        modified_rownames = c(0,as.numeric(row.names(grid_modified)))
+        colnames(grid_modified) = seq(1:(length(modified_colnames)-1))
+        row.names(grid_modified) = seq(1:(length(modified_rownames)-1))
+        
         gm2 = reshape2::melt(grid_modified)
         colnames(gm2) = c('x','y','z')
-        grid_mut_plot = plot_matrix_ggplot(gm2[gm2$z != 0,])
-        ggplot2::ggsave(filename = paste0(outlinks$outfile_plot_grid_mut, '-', paste0(res[1,], '.pdf', collapse='_')),
+        grid_mut_plot = plot_matrix_ggplot_named(gm2[gm2$z != 0,], modified_colnames, modified_rownames)
+        grid_mut_plot = plot_matrix_ggplot_named(gm2[gm2$z != 0,], modified_rownames, modified_colnames)
+        ggplot2::ggsave(filename = paste0(outlinks$outfile_plot_grid_mut),
                         plot = grid_mut_plot,
                         width = 10,
                         height = 10,
@@ -254,7 +264,6 @@ wrapper_aln_and_analyse <- function(seqname_x,
     save_to_logfile(get('log_collection', envir = globalenv()), res, logfile)
     
   }
-  
   if (params$clean_after_yourself) {
     if (!is.na(file.size(outlinks$genome_x_fa_subseq))) {
       system(paste0('rm ', outlinks$genome_x_fa_subseq))
@@ -400,7 +409,7 @@ define_output_files <- function(sequence_name_output, samplename){
   
   outlinks$res_table_xy =        paste0(sequence_name_output, '/diff/', samplename, '_res.tsv')
   
-  outlinks$outfile_plot_self_x = paste0(sequence_name_output, '/self/pdf/aln_ref')
+  outlinks$outfile_plot_self_x = paste0(sequence_name_output, '/self/pdf/', samplename, '_x_self')
   outlinks$outfile_plot_self_y = paste0(sequence_name_output, '/self/pdf/', samplename, '_y')
   outlinks$outfile_plot_x_y =    paste0(sequence_name_output, '/diff/pdf/', samplename, '_x_y')
   

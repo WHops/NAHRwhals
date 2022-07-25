@@ -7,7 +7,7 @@ find_minlen_compression_params_wiggle <-
     
     # (unfortunately) There is a random factor in this at the moment.
     # Would be better to go without randomness in the future.
-    set.seed(1)
+    # set.seed(1)
     
     # Which mode are we operating in?
     if (compression_params$mode == 'precise') {
@@ -128,10 +128,13 @@ run_n_tests <-
         quadrantsize = 1e5
       )
       
+      print('hi')
       # If not too many alignments, construct a grid.
       # If the grid also not too many dimensions, we are happy.
       n_alns_in_paf_ok = (dim(paf)[1] > 0) &
         (dim(paf)[1] <= n_max_alns)
+      print(dim(paf))
+
       if (n_alns_in_paf_ok) {
         gxy = make_xy_grid(paf, n_additional_bounces = 2)
         if ((length(gxy[[1]]) + length(gxy[[2]])) >= max_size_col_plus_rows) {

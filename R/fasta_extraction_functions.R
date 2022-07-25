@@ -270,7 +270,6 @@ liftover_coarse <-
       startend = find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end)
       
     } else if (search_mode == 'mad'){
-
       startend = find_coords_mad(liftover_coords, cpaf, winner_chr, start, end)
       if (is.null(startend)){
         print('MAD failed. Going for extrapolation instead.')

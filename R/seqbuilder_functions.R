@@ -383,7 +383,7 @@ rc <- function(z) {
 randDNASeq <- function(n, gcfreq, seed = 1234) {
   bases = c('A', 'C', 'G', 'T')
   
-  set.seed(seed)
+  #set.seed(seed)
   seq = sample(bases,
                n,
                replace = T,
