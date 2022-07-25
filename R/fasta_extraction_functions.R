@@ -270,7 +270,6 @@ liftover_coarse <-
       startend = find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end)
       
     } else if (search_mode == 'mad'){
-
       startend = find_coords_mad(liftover_coords, cpaf, winner_chr, start, end)
       if (is.null(startend)){
         print('MAD failed. Going for extrapolation instead.')
@@ -564,7 +563,7 @@ find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, e
 #'
 #' @author Wolfram Hoeps
 #' @export
-mad_mask_outliers <- function(obs, th=2.5){
+mad_mask_outliers <- function(obs, th=4){
 
   obs_median = median(obs)
   

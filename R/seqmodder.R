@@ -473,6 +473,7 @@ carry_out_dup <- function(seq, sds, sv){
 #' @author Wolfram Höps
 #' @export
 sds_document_duplication <- function(sds,sv){
+  
   non_dup_sdname = unique(sds$uid[sds$uid != sv$SD])
   
   if (length(non_dup_sdname) == 0){
