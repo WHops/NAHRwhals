@@ -217,20 +217,6 @@ wrapper_aln_and_analyse <- function(seqname_x,
     res$eval = as.numeric(res$eval)
     res = res[order(res$eval, decreasing = T),]
     
-<<<<<<< HEAD
-    #print(res[res$eval == max(as.numeric(res$eval)),])
-    # Make a grid after applying the top res
-    # print(head(res))
-    # print("hi")
-    # print('sup')
-    # plot_all_mut = T
-    # if (plot_all_mut){
-    #   for (i in 1:dim(res)[1]){
-    #print('yier')
-=======
-    print(res[res$eval == max(as.numeric(res$eval)),])
-    print('yier')
->>>>>>> b1483a8158e5b650a2171cf0c863f2c322201762
         grid_modified = modify_gridmatrix(gridmatrix, res[1,])
         modified_colnames = c(0,as.numeric(colnames(grid_modified)))
         modified_rownames = c(0,as.numeric(row.names(grid_modified)))
@@ -239,7 +225,6 @@ wrapper_aln_and_analyse <- function(seqname_x,
         
         gm2 = reshape2::melt(grid_modified)
         colnames(gm2) = c('x','y','z')
-        grid_mut_plot = plot_matrix_ggplot_named(gm2[gm2$z != 0,], modified_colnames, modified_rownames)
         grid_mut_plot = plot_matrix_ggplot_named(gm2[gm2$z != 0,], modified_rownames, modified_colnames)
         ggplot2::ggsave(filename = paste0(outlinks$outfile_plot_grid_mut),
                         plot = grid_mut_plot,
