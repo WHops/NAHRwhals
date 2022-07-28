@@ -198,10 +198,6 @@ find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
   if(dim(best_aln)[1] > 1){
     best_aln = best_aln[1,]
   }
-<<<<<<< HEAD
-
-=======
->>>>>>> d169cc2e9cb8bfcda76fa6f24c5f4cd121fc3a36
   # Liftover the point with that highest alignment.
   if (best_aln$strand == '+') {
     coord = best_aln$tstart + (pointcoordinate - best_aln$qstart)
