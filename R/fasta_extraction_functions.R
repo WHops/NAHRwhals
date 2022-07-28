@@ -198,7 +198,10 @@ find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
   if(dim(best_aln)[1] > 1){
     best_aln = best_aln[1,]
   }
+<<<<<<< HEAD
 
+=======
+>>>>>>> d169cc2e9cb8bfcda76fa6f24c5f4cd121fc3a36
   # Liftover the point with that highest alignment.
   if (best_aln$strand == '+') {
     coord = best_aln$tstart + (pointcoordinate - best_aln$qstart)
@@ -287,7 +290,7 @@ liftover_coarse <-
     end_winners = startend[2]
     # Make sure we don't exceed chromosome boundaries in the query.
     start_winners_cutoff = as.integer(max(0, start_winners))
-    end_winners_cutoff =   as.integer(min(cpaf[cpaf$tname == winner_chr,][1, 'tlen'], end_winners))
+    end_winners_cutoff =   as.integer(min(cpaf[cpaf$tname == winner_chr,][1, 'tlen'] - 1, end_winners - 1))
     
     
     
@@ -452,6 +455,7 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end){
   #ggplot(liftover_coords_maxseq) + geom_point(aes(x=pos_probe, y=liftover_coord)) + 
   # coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") 
   mapped_x_region_frac = abs(max(liftover_coords_maxseq$pos_probe) - min(liftover_coords_maxseq$pos_probe)) / abs(end-start)
+  
   mapped_y_region_frac = abs(end_winners - start_winners) / abs(end-start)
   
 
@@ -461,10 +465,12 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end){
     return(NULL)
   }
   
-
+  dist_between_probes = min(unique(diff(liftover_coords$pos_probe)))
+  n_probes_distance = 5
+  # If the break is very close (5_probes distance)
   # Warn if we are exceeding chromosome boundaries in the query.
-  if ((start_winners < 0) |
-      (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
+  if ((start_winners < (dist_between_probes*n_probes_distance)) |
+      (end_winners + (dist_between_probes*n_probes_distance)) > (cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
     print('Warning! Reaching the end of alignment!')
     
     # Make an entry to the output logfile #
@@ -519,7 +525,7 @@ find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, e
   # And those snipplets matching to the winner chromosome - where do they fall (median)?
   liftover_coords_maxseq = liftover_coords[liftover_coords$seqname == winner_chr,]
   
-  # Probes are sorted. 
+  # Probes are sorted. The juicer makes direction positive if in doubt. (The juicer is what you want it to be :P)
   the_juicer = 1e-5
   mapping_direction = sign(sum(sign(diff(liftover_coords_maxseq$liftover_coord))) + the_juicer)
   
@@ -532,7 +538,6 @@ find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, e
   
   extend_median_bwd = mapped_x_region_mid - start
   extend_median_fwd = end - mapped_x_region_mid
-  
   # Make sure we got any results.
   stopifnot(
     "Error: No mapping direction recognized." =
