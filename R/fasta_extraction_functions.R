@@ -195,6 +195,10 @@ find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
   # Find the alignment with the hightest nmatch value.
   best_aln = overlappers[overlappers$nmatch == max(overlappers$nmatch),]
   
+  if(dim(best_aln)[1] > 1){
+    best_aln = best_aln[1,]
+  }
+
   # Liftover the point with that highest alignment.
   if (best_aln$strand == '+') {
     coord = best_aln$tstart + (pointcoordinate - best_aln$qstart)
@@ -516,7 +520,8 @@ find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, e
   liftover_coords_maxseq = liftover_coords[liftover_coords$seqname == winner_chr,]
   
   # Probes are sorted. 
-  mapping_direction = sign(sum(sign(diff(liftover_coords_maxseq$liftover_coord))))
+  the_juicer = 1e-5
+  mapping_direction = sign(sum(sign(diff(liftover_coords_maxseq$liftover_coord))) + the_juicer)
   
   middle_median = median(liftover_coords_maxseq$liftover_coord)
   
