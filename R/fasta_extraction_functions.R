@@ -222,12 +222,30 @@ liftover_coarse <-
            conversionpaf_link,
            n_probes = 100,
            lenfactor = 1.2, #Typically 1.0, because we want to get symmetrical dotplots.
-           whole_chr = F) {
+           whole_chr = F,
+           search_mode = 'mad',
+           refine_runnr = 0) {
     
 
     cpaf = read_and_prep_paf(conversionpaf_link)
 
-    
+    if (refine_runnr == 2){
+
+      colnames_orig = colnames(cpaf)
+      cpaf = cpaf[,c(6,7,8,9,5,1,2,3,4,10,11,12)]
+      colnames(cpaf) = colnames_orig
+      
+      seqname = cpaf[1,'qname']
+      start = 0
+      end = cpaf[1,'qlen']
+      
+      # Somewhat risky here...
+      aln_start = as.numeric(names(sort(table(sub(".*:([0-9]+).*", '\\1', cpaf$tname)),decreasing=TRUE)[1]))
+      cpaf$tname = names(sort(table(sub(":[0-9]+-[0-9].*", "", cpaf$tname)),decreasing=TRUE)[1])
+      cpaf$tstart = cpaf$tstart + aln_start
+      cpaf$tend = cpaf$tend + aln_start
+      
+    } 
     # We take n_probes single points from the alignment, see where they fall, and take their median
     # as the median of our alignment.
     # Define a vector of probe positions (equally spaced between start and end)
@@ -257,10 +275,9 @@ liftover_coarse <-
     # What is the majority vote for the target chromosome?
     winner_chr = names(sort(table(liftover_coords$seqname), decreasing = TRUE)[1])
     
-    search_mode = 'mad'
+    
     # If we want to get a whole chromosome (tested for chrY only), we start at 1, and
     # go as far as probes land (... thusly avoiding heterochromatin.)
-    
     whole_chr = F
     if (whole_chr){
       start_winners = 1
@@ -273,21 +290,36 @@ liftover_coarse <-
       startend = find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end)
       
     } else if (search_mode == 'mad'){
-      startend = find_coords_mad(liftover_coords, cpaf, winner_chr, start, end)
+      startend = find_coords_mad(liftover_coords, cpaf, winner_chr, start, end, refine_runnr!=1)
       if (is.null(startend)){
         print('MAD failed. Going for extrapolation instead.')
-        startend = find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end)
+        startend = find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end, refine_runnr!=1)
         
       }
       
     }
     
-    start_winners = startend[1]
-    end_winners = startend[2]
-    # Make sure we don't exceed chromosome boundaries in the query.
-    start_winners_cutoff = as.integer(max(0, start_winners))
-    end_winners_cutoff =   as.integer(min(cpaf[cpaf$tname == winner_chr,][1, 'tlen'] - 1, end_winners - 1))
-    
+    if (refine_runnr == 1){
+      length = startend[2] - startend[1]
+      if (length < 50000){
+        shift_fact = 1.5
+      } else if (length < 200000){
+        shift_fact = 1.2
+      } else {
+        shift_fact = 1.1
+      }
+      start_winners = startend[1] - (length*((shift_fact-1) * 0.5))
+      end_winners = startend[2] + (length*((shift_fact-1) * 0.5))
+      # Make sure we don't exceed chromosome boundaries in the query.
+      start_winners_cutoff = as.integer(max(0, start_winners))
+      end_winners_cutoff =   as.integer(min(cpaf[cpaf$tname == winner_chr,][1, 'tlen'] - 1, end_winners - 1))
+    } else if (refine_runnr == 2) {
+      start_winners_cutoff = as.integer(max(0, startend[1]))
+      end_winners_cutoff = as.integer(min(max(cpaf[cpaf$tname == winner_chr,'tend']), startend[2] - 1))
+    } else {
+      start_winners_cutoff = as.integer(max(0, startend[1]))
+      end_winners_cutoff = as.integer(min(cpaf[cpaf$tname == winner_chr,][1, 'qlen'] + startend[1] - 1, startend[2] - 1))
+    }
     
     
     return(
@@ -428,56 +460,70 @@ read_and_prep_paf <- function(paflink) {
 #'
 #' @author Wolfram Hoeps
 #' @export
-find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end){
-  
+find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, liftover_run){
   # Define success thresholds
   th_x = 0.8
   th_y_low = 0.5
   th_y_high = 2
-
+  start_map_limit = 10
+  end_map_limit = 90
   # And those snipplets matching to the winner chromosome - where do they fall (median)?
   liftover_coords_maxseq = liftover_coords[liftover_coords$seqname == winner_chr,]
   
   # Filter outliers
   liftover_coords_maxseq = liftover_coords_maxseq[mad_mask_outliers(liftover_coords_maxseq$liftover_coord),]
   
-  
   # The region is now the region
   
   start_winners = min(liftover_coords_maxseq$liftover_coord)
   end_winners = max(liftover_coords_maxseq$liftover_coord)
   
-  
-  #ggplot(liftover_coords_maxseq) + geom_point(aes(x=pos_probe, y=liftover_coord)) + 
-  # coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") 
+  # library(ggplot2)
+  # p = ggplot(liftover_coords) + geom_point(aes(x=pos_probe, y=liftover_coord)) +
+  # coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on")
+  #print(p)
   mapped_x_region_frac = abs(max(liftover_coords_maxseq$pos_probe) - min(liftover_coords_maxseq$pos_probe)) / abs(end-start)
   
   mapped_y_region_frac = abs(end_winners - start_winners) / abs(end-start)
   
-
-  success = (mapped_x_region_frac > th_x) & (mapped_y_region_frac > th_y_low) & (mapped_y_region_frac < th_y_high)
-  
-  if (success == F){
+  start_pointers_arrived = min(as.numeric(row.names(liftover_coords_maxseq))) < start_map_limit
+  end_pointers_arrived = max(as.numeric(row.names(liftover_coords_maxseq))) > end_map_limit
+  success = (mapped_x_region_frac > th_x) & (mapped_y_region_frac > th_y_low) & (mapped_y_region_frac < th_y_high) &
+    (start_pointers_arrived) & (end_pointers_arrived)
+  if ((success == F) & (liftover_run == F)){
     return(NULL)
   }
   
-  dist_between_probes = min(unique(diff(liftover_coords$pos_probe)))
-  n_probes_distance = 5
-  # If the break is very close (5_probes distance)
-  # Warn if we are exceeding chromosome boundaries in the query.
-  if ((start_winners < (dist_between_probes*n_probes_distance)) |
-      (end_winners + (dist_between_probes*n_probes_distance)) > (cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
-    print('Warning! Reaching the end of alignment!')
+
+  # 
+  # if(liftover_run){
+  #   browser()
+  # }
+
+  if (liftover_run == F){
     
-    # Make an entry to the output logfile #
-    if (exists('log_collection')){
-      log_collection$exceeds_y <<- T
+    dist_between_probes = min(unique(diff(liftover_coords$pos_probe)))
+    n_probes_distance = 5
+    # If the break is very close (5_probes distance)
+    # Warn if we are exceeding chromosome boundaries in the query.
+    if ((start_winners < (dist_between_probes*n_probes_distance)) |
+        (end_winners + (dist_between_probes*n_probes_distance)) > (cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
+      print('Warning! Reaching the end of alignment!')
+      
+      # Make an entry to the output logfile #
+      if (exists('log_collection')){
+        log_collection$exceeds_y <<- T
+      }
     }
   }
-  
-  
+  # If not all of x is covered, but the contig has space into the non-covered directions, try to extrapolate. 
+  # if ((mapped_y_region_frac < 0.95) & (start_winners > (dist_between_probes*2))){
+  #   start_winners = 1
+  # } else if ( (mapped_y_region_frac < 0.95) &  ((end_winners + (dist_between_probes*2)) < (cpaf[cpaf$tname == winner_chr,][1, 'tlen']))) {
+  #   end_winners = cpaf[cpaf$tname == winner_chr,][1, 'tlen'] - 1
+  #   }  #start_winners = 1
   return(c(start_winners, end_winners))
-  
+
   
 }
 
@@ -517,18 +563,32 @@ find_coords_median_extension <- function(liftover_coords, cpaf, winner_chr, star
 #'
 #' @author Wolfram Hoeps
 #' @export
-find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, end){
+find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, end, liftover_run){
+  
   # And those snipplets matching to the winner chromosome - where do they fall (median)?
   liftover_coords_maxseq = liftover_coords[liftover_coords$seqname == winner_chr,]
   
+  # If <10% of probes are matching, there is no point in continuing this discussion
+  stopifnot("No sequence homolog found in assembly. Consider trying a larger locus window to gap potential deletions." = 
+              dim(liftover_coords_maxseq)[1] > 10)
+
   # Probes are sorted. The juicer makes direction positive if in doubt. (The juicer is what you want it to be :P)
   the_juicer = 1e-5
-  mapping_direction = sign(sum(sign(diff(liftover_coords_maxseq$liftover_coord))) + the_juicer)
   
+  start_exists = all(1:6 %in% as.numeric(row.names(liftover_coords_maxseq)))
+  end_exists = all(94:100 %in% as.numeric(row.names(liftover_coords_maxseq)))
+  
+  if (start_exists){
+    mapping_direction = sign(sum(sign(diff(liftover_coords_maxseq[as.character(seq(1,6)),]$liftover_coord))) + the_juicer)
+  } else if (end_exists){
+    mapping_direction = sign(sum(sign(diff(liftover_coords_maxseq[as.character(seq(94,100)),]$liftover_coord))) + the_juicer)
+  } else {
+    mapping_direction = sign(sum(sign(diff(liftover_coords_maxseq$liftover_coord))) + the_juicer)
+  }
   middle_median = median(liftover_coords_maxseq$liftover_coord)
   
-  #ggplot(liftover_coords_maxseq) + geom_point(aes(x=pos_probe, y=liftover_coord)) + 
-  # coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") 
+  #ggplot(liftover_coords) + geom_point(aes(x=pos_probe, y=liftover_coord))# +
+  #coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on")
   mapped_x_region = c(min(liftover_coords_maxseq$pos_probe), max(liftover_coords_maxseq$pos_probe))
   mapped_x_region_mid = median(mapped_x_region)
   
@@ -550,14 +610,16 @@ find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, e
     
   }
   
-  # Warn if we are exceeding chromosome boundaries in the query.
-  if ((start_winners < 0) |
-      (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
-    print('Warning! Reaching the end of alignment!')
-    
-    # Make an entry to the output logfile #
-    if (exists('log_collection')){
-      log_collection$exceeds_y <<- T
+  if (liftover_run == F){   
+    # Warn if we are exceeding chromosome boundaries in the query.
+    if ((start_winners < 0) |
+        (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
+      print('Warning! Reaching the end of alignment!')
+  
+      # Make an entry to the output logfile #
+      if (exists('log_collection')){
+        log_collection$exceeds_y <<- T
+      }
     }
   }
   # Log file entry done #

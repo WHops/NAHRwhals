@@ -323,6 +323,7 @@ plot_alignments <-function(alignments, opt){
           )
         )
       ) +
+
       ggplot2::labs(color = "Percent ID",
                     title = opt$input_filename) +
       ggplot2::xlab(as.character(alignments$refID[1])) +

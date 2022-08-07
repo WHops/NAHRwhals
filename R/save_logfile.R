@@ -7,6 +7,9 @@ save_to_logfile <- function(log, res, logfile){
   n_res_max = dim(res[res$eval == max(res$eval),])[1]
   maxres =  res[which.max(rowSums(is.na(res[res$eval==max(res$eval),]))),]
   
+  if (is.null(log$compression)){
+    log$compression = 0
+  }
   stopifnot(ncol(maxres) >= 2)
   
   # Find the result with the fewest steps.

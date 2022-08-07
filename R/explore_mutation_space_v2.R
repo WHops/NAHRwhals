@@ -137,7 +137,6 @@ dfsutil <- function(visited, pair, mutator, depth, maxdepth = 3, pairhistory=NUL
       # }
       node_is_novel_bool = is.null(visited[[pairs[npair, 'hash']]])
       if (node_is_novel_bool){
-        
         bitl_mut = carry_out_compressed_sv(mutator, pairs[npair,1:3])
 
         node_passes_symmetry_crit = T#decide_loop_continue(bitl_mut, orig_symm = orig_symm)
@@ -184,10 +183,16 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F){
   
   # Prepare bitlocus that we will be working on. 
   bitl = flip_bitl_y_if_needed(bitlocus)
-  
-  if ((sum(bitl !=0 ) > 200) & (maxdepth == 3) & (increase_only=F)){
+
+  n_pairs = dim(find_sv_opportunities(bitl))[1]
+  if ((n_pairs > 200) & (maxdepth == 3) & (increase_only==F)){
     print('Uh oh that is a bit large. Reducing depth to 2. Try to avoid producing such large alignments.')
     maxdepth = 2
+  }
+  
+  if ((n_pairs > 500) & (increase_only==F)){
+    print('Huge Alignment! Going for depth 1. ')
+    maxdepth = 1
   }
   
   # What is the initial symmetry of the bitlocus? 

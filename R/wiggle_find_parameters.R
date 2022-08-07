@@ -28,17 +28,16 @@ find_minlen_compression_params_wiggle <-
     # relaxed criteria. 
     nround = 0
     
-    # Do this until one round has yielded more than 3 viable grids.
+    # Do this until one round has yielded  at least 3 viable grids.
     while (dim(res_interesting)[1] < 2){
-      
+
+      # If we haven't found anything after e.g. 20 x 5 runs, return something suboptimal.
       if  (dim(res)[1] >= (compression_params$n_tests * compression_params$n_max_testchunks)){
         resp = res[res$n_rows_cols < Inf,]
         return(list(minlen=resp[resp$n_rows_cols == max(resp$n_rows_cols),]$minlen,
                     compression=resp[resp$n_rows_cols == min(resp$n_rows_cols),]$compression))
       } 
       
-      print('running...')
-
       # Increase lower cutoff with every round. We steer towards more coarse grids.
       min_ = compression_params$baseline_log_minsize_min + (2 * nround)
       max_ = max(compression_params$baseline_log_minsize_max)
@@ -107,7 +106,6 @@ run_n_tests <-
            n_max_alns,
            max_size_col_plus_rows) {
 
-    
     upper_bound_minlen = 2 ** max_
     smallest_fail_minlen = 1e10
     lower_bound_minlen = 2 ** min_

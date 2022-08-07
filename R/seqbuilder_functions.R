@@ -4,7 +4,7 @@
 #' @author Wolfram Höps
 #' @export
 query_config <- function(param) {
-  configfile = "/g/korbel/hoeps/programs/ntk/nahrchainer/conf/config.yml"
+  configfile = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/conf/config.yml"
   return(config::get(param, file = configfile))
 }
 
@@ -89,7 +89,8 @@ make_chunked_minimap_alnment <-
            x_seqname = NULL,
            x_start = NULL,
            x_end = NULL, 
-           hltrack = NULL)
+           hltrack = NULL,
+           onlypafreturn = F)
  {
     # Define intermediate files
     queryfasta_chunk = paste0(queryfasta, ".chunk.fa")
@@ -127,6 +128,9 @@ make_chunked_minimap_alnment <-
     # paf of fragmented paf gets put back together.
     compress_paf_fnct(inpaf_link = outpaf_filter, outpaf_link = outpaf, inparam_chunklen = chunklen)
     
+    if (onlypafreturn){
+      return(outpaf)
+    }
     
     print('4')
     # Make a dotplot of that final paf (and with sd highlighting).

@@ -237,6 +237,7 @@ wrapper_paf_to_bitlocus <-
         device = 'pdf'
       )
     }
+    #browser()
     p = plot_matrix_ggplot_named(grid_list, gridlines.x, gridlines.y)
     print(p)
     if (gridplot_save == F) {

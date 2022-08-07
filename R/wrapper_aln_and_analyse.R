@@ -82,28 +82,73 @@ wrapper_aln_and_analyse <- function(seqname_x,
                                                conversionpaf_f = conversionpaf_link)
     start_x_pad = start_end_pad[1]
     end_x_pad = start_end_pad[2]
+    if ((end_x_pad - start_x_pad) < params$maxlen_refine){
+      refine_runnr = 1
+    } else {
+      refine_runnr = 0
+    }
     # Get coordinates in y
     coords_liftover = liftover_coarse(seqname_x,
                                       start_x_pad,
                                       end_x_pad,
                                       conversionpaf_link,
                                       lenfactor = aln_pad_factor,
-                                      whole_chr = (start_x %in% c(0, 1)))
-    print(coords_liftover)
+                                      whole_chr = (start_x %in% c(0, 1)),
+                                      refine_runnr = refine_runnr)
 
+    
+  
     # Get subseq-fastas in x and y
     extract_subseq_bedtools(genome_x_fa,
                             seqname_x,
                             start_x_pad,
                             end_x_pad,
                             outlinks$genome_x_fa_subseq)
-    extract_subseq_bedtools(
-      genome_y_fa,
-      coords_liftover$lift_contig,
-      coords_liftover$lift_start,
-      coords_liftover$lift_end,
-      outlinks$genome_y_fa_subseq
-    )
+    
+    extract_subseq_bedtools(genome_y_fa,
+                            coords_liftover$lift_contig,
+                            coords_liftover$lift_start,
+                            coords_liftover$lift_end,
+                            outlinks$genome_y_fa_subseq)
+      
+    if (refine_runnr == 1){
+      # Special stuff
+      paf = make_chunked_minimap_alnment(
+        outlinks$genome_x_fa_subseq,
+        outlinks$genome_y_fa_subseq,
+        outlinks$outpaf_link_x_y,
+        chunklen = params$chunklen,
+        minsdlen = params$plot_minlen,
+        saveplot = F,
+        hllink = F,
+        hltype = F,
+        hlstart = F,#start_x - start_x_pad,
+        hlend = F,
+        x_start = start_x_pad,
+        x_end = end_x_pad,
+        x_seqname = seqname_x,
+        anntrack = params$anntrack,
+        hltrack = params$hltrack,
+        onlypafreturn = T
+      )
+      coords_liftover_2nd = liftover_coarse('None',
+                                        'none',
+                                        'nonepaflink', 
+                                        paf,
+                                        refine_runnr = 2)
+      
+      print(coords_liftover)
+      print(coords_liftover_2nd)
+      
+      extract_subseq_bedtools(genome_y_fa,
+                              coords_liftover_2nd$lift_contig,
+                              coords_liftover_2nd$lift_start,
+                              coords_liftover_2nd$lift_end,
+                              outlinks$genome_y_fa_subseq)
+    }
+    
+
+    
   } else {
     system(paste0('cp ', genome_x_fa, ' ', outlinks$genome_x_fa_subseq))
     system(paste0('cp ', genome_y_fa, ' ', outlinks$genome_y_fa_subseq))
@@ -118,7 +163,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
   
   # Run alignments.
   # Run REF self alignment only if it hasn't been run before.
-  if (T) {
+  if (params$self_plots) {
     if (is.na(file.size(outlinks$outfile_plot_self_x))) {
       plot_self_x = make_chunked_minimap_alnment(
         outlinks$genome_x_fa_subseq,
@@ -137,7 +182,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
         anntrack = params$anntrack,
         hltrack = params$hltrack
       )
-      #print(plot_self_x)
+      print(plot_self_x)
       # Save alignment
       save_plot_custom(plot_self_x, outlinks$outfile_plot_self_x, 'pdf')
       save_plot_custom(plot_self_x,
@@ -167,6 +212,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
                       'png',
                       width = 20,
                       height = 20)
+     print(plot_self_y)
     }
   }
   #Run xy alignment
@@ -200,41 +246,47 @@ wrapper_aln_and_analyse <- function(seqname_x,
 
 
   if (!params$plot_only) {
-    # Make an xy grid
-    #params$compression= 50000
-    #params$minlen = 50000
-    grid_xy = wrapper_paf_to_bitlocus(
-      outlinks$outpaf_link_x_y,
-      params,
-      gridplot_save = outlinks$outfile_plot_grid,
-      pregridplot_save = outlinks$outfile_plot_pre_grid
-    )
-    gridmatrix = gridlist_to_gridmatrix(grid_xy)
-    #saveRDS(gridmatrix, file='~/Desktop/latest')
-    #gridmatrix = readRDS('~/Desktop/latest')
-    #resold = explore_mutation_space(gridmatrix, depth = depth)
-    res = solve_mutation(gridmatrix, depth = params$depth)
-    res$eval = as.numeric(res$eval)
-    res = res[order(res$eval, decreasing = T),]
     
-        grid_modified = modify_gridmatrix(gridmatrix, res[1,])
-        modified_colnames = c(0,as.numeric(colnames(grid_modified)))
-        modified_rownames = c(0,as.numeric(row.names(grid_modified)))
-        colnames(grid_modified) = seq(1:(length(modified_colnames)-1))
-        row.names(grid_modified) = seq(1:(length(modified_rownames)-1))
-        
-        gm2 = reshape2::melt(grid_modified)
-        colnames(gm2) = c('x','y','z')
-        grid_mut_plot = plot_matrix_ggplot_named(gm2[gm2$z != 0,], modified_rownames, modified_colnames)
-        ggplot2::ggsave(filename = paste0(outlinks$outfile_plot_grid_mut),
-                        plot = grid_mut_plot,
-                        width = 10,
-                        height = 10,
-                        units = 'cm',
-                        dpi = 300)
-    #print('post')
-    #   }
-    # }
+    # If alignment has a contig break, we don't have to find SVs.
+    if (log_collection$exceeds_y == F){
+      # Make an xy grid
+      #params$compression= 50000
+      #params$minlen = 50000
+      grid_xy = wrapper_paf_to_bitlocus(
+        outlinks$outpaf_link_x_y,
+        params,
+        gridplot_save = outlinks$outfile_plot_grid,
+        pregridplot_save = outlinks$outfile_plot_pre_grid
+      )
+      gridmatrix = gridlist_to_gridmatrix(grid_xy)
+      res = solve_mutation(gridmatrix, depth = params$depth)
+      res$eval = as.numeric(res$eval)
+      res = res[order(res$eval, decreasing = T),]
+          grid_modified = modify_gridmatrix(gridmatrix, res[1,])
+  
+          
+          gridlines.x = cumsum(c(0,as.numeric(colnames(grid_modified))))
+          gridlines.y = cumsum(c(0,as.numeric(row.names(grid_modified))))
+          
+          colnames(grid_modified) = seq(1:dim(grid_modified)[2])
+          row.names(grid_modified) = seq(1:dim(grid_modified)[1])
+          
+          gm2 = reshape2::melt(grid_modified)
+          colnames(gm2) = c('y','x','z')
+          grid_mut_plot = plot_matrix_ggplot_named(gm2[gm2$z != 0,], gridlines.x, gridlines.y)
+          ggplot2::ggsave(filename = paste0(outlinks$outfile_plot_grid_mut),
+                          plot = grid_mut_plot,
+                          width = 10,
+                          height = 10,
+                          units = 'cm',
+                          dpi = 300)
+          plot(grid_mut_plot)
+
+      
+    } else if (log_collection$exceeds_y == T){
+      res = data.frame(eval = 0, mut1 = 'ref', mut2 = NA, mut3 = NA)
+    }
+    
     # Save res table
     write.table(
       res,

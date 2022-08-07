@@ -32,12 +32,12 @@ merge_paf_entries_intraloop <- function(inpaf, second_run=F, inparam_chunklen=NU
   # Identify alignments that border each other: same strand, and end of of is the start
   # of the other. With some tolerance
   # Take only one half of the minus matrix so pairs dont appear twice.
-  inpaf_t2 = inpaf
-  inpaf_t =  transform(
-    inpaf_t2,
-    qend = ifelse(strand == '-', qstart, qend),
-    qstart = ifelse(strand == '-', qend, qstart)
-  )
+  inpaf_t = inpaf
+  # inpaf_t =  transform(
+  #   inpaf_t2,
+  #   qend = ifelse(strand == '-', qstart, qend),
+  #   qstart = ifelse(strand == '-', qend, qstart)
+  # )
   
 
   rowpairs = data.frame(which(

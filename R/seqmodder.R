@@ -739,7 +739,10 @@ modify_gridmatrix <- function(gmx, r1){
   
   # Not ENTIRELY sure, but for some reason we have to transpose here to get the 
   # correct result back apparently? Might be wrong. Keep an eye on it. 
-  gmx = t(gmx)
+  
+  # Update W, 26th Jul 2022: 
+  # No why the hell would you transpose here? xD
+  # gmx = t(gmx)
   
   # Simple row and colnames for easy plotting. 
   colnames(gmx) = 1:ncol(gmx)
