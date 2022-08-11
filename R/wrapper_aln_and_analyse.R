@@ -261,7 +261,12 @@ wrapper_aln_and_analyse <- function(seqname_x,
       gridmatrix = gridlist_to_gridmatrix(grid_xy)
       res = solve_mutation(gridmatrix, depth = params$depth)
       res$eval = as.numeric(res$eval)
+      
+
+      
       res = res[order(res$eval, decreasing = T),]
+      res = filter_res(res, threshold = params$eval_th)
+      print(head(res))
           grid_modified = modify_gridmatrix(gridmatrix, res[1,])
   
           
@@ -433,6 +438,7 @@ make_output_folder_structure <- function(sequence_name_output){
 }
 
 #' Define a hell lot of output files. 
+#' There must be a more elegant way to do this btw 
 #' @export
 define_output_files <- function(sequence_name_output, samplename){
   
