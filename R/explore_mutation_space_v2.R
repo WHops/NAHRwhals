@@ -255,7 +255,7 @@ solve_mutation_slimmer <- function(bitlocus, depth){
 #' DFS caller function
 #' TODO: description
 #' @export
-solve_mutation <- function(bitlocus, depth){
+solve_mutation <- function(bitlocus, depth, discovery_exact){
   # reject weird stuff
   if (is_cluttered(bitlocus)){
     print("ÜÄH disgusting locus, make frame larger.")
@@ -281,8 +281,15 @@ solve_mutation <- function(bitlocus, depth){
         res_out$eval = as.numeric(res_out$eval)
       }
     } else if (attempt == 2){
-      print('No very easy solution found. Continuing steepest-descent solution search.')
-      # Next, try if there is a combination of individual adaptations.
+      
+      if (discovery_exact == T){
+        print('No very easy solution found. Skipping to exact solution search')
+        conclusion_found = F
+      } else {
+        
+      
+        print('No very easy solution found. Continuing steepest-descent solution search.')
+        # Next, try if there is a combination of individual adaptations.
         n = 1
         #vis_list = dfs(bitlocus, maxdepth = 1, increase_only = T)
         res_df = vis_list[[2]]
@@ -321,6 +328,7 @@ solve_mutation <- function(bitlocus, depth){
         
         
         print(conclusion_found)
+      }
     } else if (attempt == 3){
       print('No easy solution found. Continuing with complicated ones.')
       vis_list = (dfs(bitlocus, maxdepth = depth))

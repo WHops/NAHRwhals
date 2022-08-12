@@ -259,7 +259,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
         pregridplot_save = outlinks$outfile_plot_pre_grid
       )
       gridmatrix = gridlist_to_gridmatrix(grid_xy)
-      res = solve_mutation(gridmatrix, depth = params$depth)
+      res = solve_mutation(gridmatrix, depth = params$depth, discovery_exact = params$discovery_exact)
       res$eval = as.numeric(res$eval)
       
 
