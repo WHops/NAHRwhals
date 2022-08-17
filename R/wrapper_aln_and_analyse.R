@@ -32,18 +32,7 @@
 #'                         chunklen = 1000, sd_minlen = 100, compression = 100,
 #'                         depth = 2, xpad = 1.2)
 #' @export
-wrapper_aln_and_analyse <- function(seqname_x,
-                                    start_x,
-                                    end_x,
-                                    genome_x_fa,
-                                    genome_y_fa,
-                                    conversionpaf_link,
-                                    logfile,
-                                    params,
-                                    aln_pad_factor = 1.0,
-                                    samplename = 'test',
-                                    use_paf_library = T
-                                    ) {
+wrapper_aln_and_analyse <- function(params) {
   
   # Directly enter debug mode? 
   if (params$debug) {
@@ -60,101 +49,75 @@ wrapper_aln_and_analyse <- function(seqname_x,
                    'chunklen',
                    'samplename',
                    'depth')] <<-
-    c(seqname_x, start_x, end_x, params$xpad, params$chunklen, samplename, params$depth)
+    c(params$seqname_x, params$start_x, params$end_x, params$xpad, 
+      params$chunklen, params$samplename, params$depth)
   
 
   # Determine 'main' output name for this run
-  sequence_name_output = manufacture_output_res_name(seqname_x, start_x, end_x)
+  sequence_name_output = manufacture_output_res_name(
+    params$seqname_x, params$start_x, params$end_x
+  )
   # Create output folder tree
   make_output_folder_structure(sequence_name_output)
   # Define output files
-  outlinks = define_output_files(sequence_name_output, samplename)
-    
-  # If we have a pre-computed coarse alignment, then we can use this to find out 
-  # which region we are talking about. 
-  if (!is.null(conversionpaf_link)) {
-    # Pad-sequence
-    print('hi')
-    start_end_pad = enlarge_interval_by_factor(start_x,
-                                               end_x,
-                                               params$xpad,
-                                               seqname_f = seqname_x,
-                                               conversionpaf_f = conversionpaf_link)
-    start_x_pad = start_end_pad[1]
-    end_x_pad = start_end_pad[2]
-    if ((end_x_pad - start_x_pad) < params$maxlen_refine){
-      refine_runnr = 1
-    } else {
-      refine_runnr = 0
-    }
-    # Get coordinates in y
-    coords_liftover = liftover_coarse(seqname_x,
-                                      start_x_pad,
-                                      end_x_pad,
-                                      conversionpaf_link,
-                                      lenfactor = aln_pad_factor,
-                                      whole_chr = (start_x %in% c(0, 1)),
-                                      refine_runnr = refine_runnr)
-
+  outlinks = define_output_files(sequence_name_output, params$samplename)
     
   
-    # Get subseq-fastas in x and y
-    extract_subseq_bedtools(genome_x_fa,
-                            seqname_x,
-                            start_x_pad,
-                            end_x_pad,
-                            outlinks$genome_x_fa_subseq)
+  # If we have a pre-computed coarse alignment, then we can use this to find out 
+  # which region we are talking about. 
+  if (!is.null(params$conversionpaf_link)) {
     
-    extract_subseq_bedtools(genome_y_fa,
-                            coords_liftover$lift_contig,
-                            coords_liftover$lift_start,
-                            coords_liftover$lift_end,
-                            outlinks$genome_y_fa_subseq)
+    # Pad-sequence
+    print('hi')
+    start_end_pad = enlarge_interval_by_factor(params$start_x,
+                                               params$end_x,
+                                               params$xpad,
+                                               seqname_f = params$seqname_x,
+                                               conversionpaf_f = params$conversionpaf_link)
+    start_x_pad = start_end_pad[1]
+    end_x_pad = start_end_pad[2]
+
+    # First, write the asm y and hg38 x. 
+    write_x_y_sequences(params$seqname_x, 
+                        start_x_pad, 
+                        end_x_pad, 
+                        outlinks$genome_x_fa_subseq, 
+                        outlinks$genome_y_fa_subseq, 
+                        params$genome_y_fa,
+                        params$conversionpaf_link,
+                        outlinks, 
+                        params)   
+
+    if (params$alt_ref_sample != F){
       
-    if (refine_runnr == 1){
-      # Special stuff
-      paf = make_chunked_minimap_alnment(
-        outlinks$genome_x_fa_subseq,
-        outlinks$genome_y_fa_subseq,
-        outlinks$outpaf_link_x_y,
-        chunklen = params$chunklen,
-        minsdlen = params$plot_minlen,
-        saveplot = F,
-        hllink = F,
-        hltype = F,
-        hlstart = F,#start_x - start_x_pad,
-        hlend = F,
-        x_start = start_x_pad,
-        x_end = end_x_pad,
-        x_seqname = seqname_x,
-        anntrack = params$anntrack,
-        hltrack = params$hltrack,
-        onlypafreturn = T
-      )
-      coords_liftover_2nd = liftover_coarse('None',
-                                        'none',
-                                        'nonepaflink', 
-                                        paf,
-                                        refine_runnr = 2)
+      # Run a second time, this tome overwriting the x sequence!
       
-      print(coords_liftover)
-      print(coords_liftover_2nd)
+      print('Detected "alt_ref_sample" != F. Using an alternative sequence to plot on x-axis)')
+ 
+      # Second, search for the T2T region. 
+      new_coords = write_x_y_sequences(params$seqname_x, start_x_pad, end_x_pad, 
+                          outlinks$genome_x_fa_altref_subseq, 
+                          outlinks$genome_x_fa_subseq, 
+                          params$genome_alt_ref_fa,
+                          params$conversionpaf_alt_ref_link,
+                          outlinks, 
+                          params)    
       
-      extract_subseq_bedtools(genome_y_fa,
-                              coords_liftover_2nd$lift_contig,
-                              coords_liftover_2nd$lift_start,
-                              coords_liftover_2nd$lift_end,
-                              outlinks$genome_y_fa_subseq)
-    }
+      params$seqname_x = new_coords[['new_seqname']]
+      start_x_pad = new_coords[['new_x_start']]
+      end_x_pad = new_coords[['new_x_end']]
+      
+      #params[c('anntrack', 'hltrack') ] = NULL
+      
+     }
     
 
-    
   } else {
     system(paste0('cp ', genome_x_fa, ' ', outlinks$genome_x_fa_subseq))
     system(paste0('cp ', genome_y_fa, ' ', outlinks$genome_y_fa_subseq))
     
-    start_x_pad = start_x
-    end_x_pad = end_x
+    start_x_pad = params$start_x
+    end_x_pad = params$end_x
 
     system(paste0('cp ', genome_x_fa, ' ', outlinks$genome_x_fa_subseq))
     system(paste0('cp ', genome_y_fa, ' ', outlinks$genome_y_fa_subseq))
@@ -172,13 +135,13 @@ wrapper_aln_and_analyse <- function(seqname_x,
         chunklen = params$chunklen,
         minsdlen = params$plot_minlen,
         saveplot = F,
-        hllink = F,
-        hltype = F,
-        hlstart = start_x - start_x_pad,
-        hlend = end_x - start_x_pad,
+        hllink =   F,
+        hltype =   F,
+        hlstart = params$start_x - start_x_pad,
+        hlend =   params$end_x - start_x_pad,
         x_start = start_x_pad,
-        x_end = end_x_pad,
-        x_seqname = seqname_x,
+        x_end =   end_x_pad,
+        x_seqname = params$seqname_x,
         anntrack = params$anntrack,
         hltrack = params$hltrack
       )
@@ -229,7 +192,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
     hlend = F,
     x_start = start_x_pad,
     x_end = end_x_pad,
-    x_seqname = seqname_x,
+    x_seqname = params$seqname_x,
     anntrack = params$anntrack,
     hltrack = params$hltrack#end_x - start_x_pad
   )
@@ -303,7 +266,7 @@ wrapper_aln_and_analyse <- function(seqname_x,
     )
     
     # Save to logfile
-    save_to_logfile(get('log_collection', envir = globalenv()), res, logfile)
+    save_to_logfile(get('log_collection', envir = globalenv()), res, params$logfile)
     
   }
   if (params$clean_after_yourself) {
@@ -471,6 +434,9 @@ define_output_files <- function(sequence_name_output, samplename){
   
   outlinks$genome_x_fa_subseq = paste0(sequence_name_output, '/fasta/', samplename, '_x.fa')
   outlinks$genome_y_fa_subseq = paste0(sequence_name_output, '/fasta/', samplename, '_y.fa')
+  
+  outlinks$genome_x_fa_altref_subseq = paste0(sequence_name_output, '/fasta/', samplename, 'altref_x.fa')
+  outlinks$genome_y_fa_altref_subseq = paste0(sequence_name_output, '/fasta/', samplename, 'altref_y.fa')
   
   return(outlinks)
 }
