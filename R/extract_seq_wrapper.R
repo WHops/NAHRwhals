@@ -2,7 +2,7 @@
 #' A wrapper for extracting sequence
 #' @author Wolfram Höps
 #' @export
-extract_sequence_wrapper <- function(params, outlinks, start_x_pad, start_y_pad){
+extract_sequence_wrapper <- function(params, outlinks){
   # If we have a pre-computed coarse alignment, then we can use this to find out 
   # which region we are talking about. 
   if (!is.null(params$conversionpaf_link)) {
@@ -65,4 +65,6 @@ extract_sequence_wrapper <- function(params, outlinks, start_x_pad, start_y_pad)
     system(paste0('cp ', genome_y_fa, ' ', outlinks$genome_y_fa_subseq))
     
   }
+  
+  return(start_end_pad)
 }
