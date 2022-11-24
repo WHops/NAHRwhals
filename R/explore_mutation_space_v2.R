@@ -354,6 +354,7 @@ solve_mutation <- function(bitlocus, depth, discovery_exact){
   }
 
   res_out$eval = as.numeric(res_out$eval)
+  
   return(res_out)
 }
 

@@ -21,7 +21,6 @@
 #' @param include_grid T/F: do you want to auto-detect SDs and model mutations? [bool; T/F]
 #' @param debug debug mode used for developing (default: F) [bool; T/F]
 #' @param use_paf_library T/F: If this is off, input region is ignored, and alignment is computed on entire x vs y sequence. Use this if your input fastas contain only the region of interest. (default: F) [bool; T/F]
-#' @param aln_pad_factor Factor to enlarge the query sequence by a factor. [numeric]
 #' @param clean_all Should fastas be cleared? (default: T). Advisable for very large sequences [T/F]
 #' @examples
 #'
@@ -63,259 +62,43 @@ wrapper_aln_and_analyse <- function(params) {
   outlinks = define_output_files(sequence_name_output, params$samplename)
     
   
-  # If we have a pre-computed coarse alignment, then we can use this to find out 
-  # which region we are talking about. 
-  if (!is.null(params$conversionpaf_link)) {
-    
-    # Pad-sequence
-    print('hi')
-    start_end_pad = enlarge_interval_by_factor(params$start_x,
-                                               params$end_x,
-                                               params$xpad,
-                                               seqname_f = params$seqname_x,
-                                               conversionpaf_f = params$conversionpaf_link)
-    start_x_pad = start_end_pad[1]
-    end_x_pad = start_end_pad[2]
+  # Step 1: Get the sequences (write to disk)
+  extract_sequence_wrapper(params, outlinks, start_x_pad, start_y_pad)
+  
+  # Step 2: Run the alignments
+  plot_x_y = produce_pairwise_alignments_minimap2(params, outlinks, start_x_pad, end_x_pad)
 
-    # First, write the asm y and hg38 x. 
-    write_x_y_sequences(params$seqname_x, 
-                        start_x_pad, 
-                        end_x_pad, 
-                        outlinks$genome_x_fa_subseq, 
-                        outlinks$genome_y_fa_subseq, 
-                        params$genome_y_fa,
-                        params$conversionpaf_link,
-                        outlinks, 
-                        params)   
-
-    if (params$alt_ref_sample != F){
-      
-      # Run a second time, this tome overwriting the x sequence!
-      
-      print('Detected "alt_ref_sample" != F. Using an alternative sequence to plot on x-axis)')
- 
-      # Second, search for the T2T region. 
-      new_coords = write_x_y_sequences(params$seqname_x, start_x_pad, end_x_pad, 
-                          outlinks$genome_x_fa_altref_subseq, 
-                          outlinks$genome_x_fa_subseq, 
-                          params$genome_alt_ref_fa,
-                          params$conversionpaf_alt_ref_link,
-                          outlinks, 
-                          params)    
-      
-      params$seqname_x = new_coords[['new_seqname']]
-      start_x_pad = new_coords[['new_x_start']]
-      end_x_pad = new_coords[['new_x_end']]
-      
-      #params[c('anntrack', 'hltrack') ] = NULL
-      
-     }
-    
-
-  } else {
-    system(paste0('cp ', genome_x_fa, ' ', outlinks$genome_x_fa_subseq))
-    system(paste0('cp ', genome_y_fa, ' ', outlinks$genome_y_fa_subseq))
-    
-    start_x_pad = params$start_x
-    end_x_pad = params$end_x
-
-    system(paste0('cp ', genome_x_fa, ' ', outlinks$genome_x_fa_subseq))
-    system(paste0('cp ', genome_y_fa, ' ', outlinks$genome_y_fa_subseq))
-    
+  # Step 2.1: If plot_only, exit. No SV calls. 
+  if (params$plot_only){
+    print('Plots done. Not attemptying to produce SV calls (plot_only is set to TRUE).')
+    if (params$clean_after_yourself){
+      clean_after_yourself(outlinks)
+    }
+    return()
+  }
+  # Step 2.2: If alignment has a contig break, exit. No SV calls.
+  if (log_collection$exceeds_y){
+    print('Assembly contig is broken. Not attempting to produce SV calls')
+    res = data.frame(eval = 0, mut1 = 'ref', mut2 = NA, mut3 = NA)
+    write_results(res, outlinks, params)
+    return()
   }
   
-  # Run alignments.
-  # Run REF self alignment only if it hasn't been run before.
-  if (params$self_plots) {
-    if (is.na(file.size(outlinks$outfile_plot_self_x))) {
-      plot_self_x = make_chunked_minimap_alnment(
-        outlinks$genome_x_fa_subseq,
-        outlinks$genome_x_fa_subseq,
-        outlinks$outpaf_link_self_x,
-        chunklen = params$chunklen,
-        minsdlen = params$plot_minlen,
-        saveplot = F,
-        hllink =   F,
-        hltype =   F,
-        hlstart = params$start_x - start_x_pad,
-        hlend =   params$end_x - start_x_pad,
-        x_start = start_x_pad,
-        x_end =   end_x_pad,
-        x_seqname = params$seqname_x,
-        anntrack = params$anntrack,
-        hltrack = params$hltrack
-      )
-      print(plot_self_x)
-      # Save alignment
-      save_plot_custom(plot_self_x, outlinks$outfile_plot_self_x, 'pdf')
-      save_plot_custom(plot_self_x,
-                       outlinks$outfile_plot_self_x,
-                       'png',
-                       width = 20,
-                       height = 20)
+  # Step 3: Condense and make a condensed plot
+  gridmatrix = wrapper_consense_paf(params, outlinks)
 
+  # Step 4: Solve and make a solved plot
+  res = solve_mutation(gridmatrix, depth = params$depth, discovery_exact = params$discovery_exact)
+  make_modified_grid_plot(res, outlinks)
     
-    
-    # # # Run y self alignment
-     plot_self_y = make_chunked_minimap_alnment(
-       outlinks$genome_y_fa_subseq,
-       outlinks$genome_y_fa_subseq,
-       outlinks$outpaf_link_self_y,
-       chunklen = params$chunklen,
-       minsdlen = params$plot_minlen,
-       saveplot = F,
-       hllink = F,
-       hltype = F,
-       hlstart = F,#NULL,
-       hlend = F#NULL
-     )
-     save_plot_custom(plot_self_y, outlinks$outfile_plot_self_y, 'pdf')
-     save_plot_custom(plot_self_y,
-                      outlinks$outfile_plot_self_y,
-                      'png',
-                      width = 20,
-                      height = 20)
-     print(plot_self_y)
-    }
-  }
-  #Run xy alignment
-  plot_x_y = make_chunked_minimap_alnment(
-    outlinks$genome_x_fa_subseq,
-    outlinks$genome_y_fa_subseq,
-    outlinks$outpaf_link_x_y,
-    chunklen = params$chunklen,
-    minsdlen = params$plot_minlen,
-    saveplot = F,
-    hllink = F,
-    hltype = F,
-    hlstart = F,#start_x - start_x_pad,
-    hlend = F,
-    x_start = start_x_pad,
-    x_end = end_x_pad,
-    x_seqname = params$seqname_x,
-    anntrack = params$anntrack,
-    hltrack = params$hltrack#end_x - start_x_pad
-  )
-  # Save alignments
-  print(plot_x_y)
-  save_plot_custom(plot_x_y, outlinks$outfile_plot_x_y, 'pdf')
-  save_plot_custom(plot_x_y,
-                   outlinks$outfile_plot_x_y,
-                   'png',
-                   width = 20,
-                   height = 20)
-
-
-
-  if (!params$plot_only) {
-    
-    # If alignment has a contig break, we don't have to find SVs.
-    if (log_collection$exceeds_y == F){
-      # Make an xy grid
-      #params$compression= 50000
-      #params$minlen = 50000
-      grid_xy = wrapper_paf_to_bitlocus(
-        outlinks$outpaf_link_x_y,
-        params,
-        gridplot_save = outlinks$outfile_plot_grid,
-        pregridplot_save = outlinks$outfile_plot_pre_grid
-      )
-      gridmatrix = gridlist_to_gridmatrix(grid_xy)
-      
-      if (params$plot_xy_segmented){
-        
-        #print(gm_to_segvec(gridmatrix, groundlen = params$compression))
-        #browser()
-        browser()
-        library(ggplot2)
-        xstart = (grid_xy[[1]][1:length(grid_xy[[1]])-1])
-        xend = (grid_xy[[1]][2:length(grid_xy[[1]])])
-        ystart = (grid_xy[[2]][1:length(grid_xy[[2]])-1])
-        yend = (grid_xy[[2]][2:length(grid_xy[[2]])])
-        xmax = max(grid_xy[[1]])
-        ymax = max(grid_xy[[2]])
-        datx = data.frame(xstart = xstart, 
-                         xend = xend,
-                         xmax = xmax
-                         )
-        daty = data.frame(yend = yend,
-                         ymax = ymax,
-                         ystart = ystart
-        )
-        #plot_x_y + geom_segment(aes(x=start, xend=xend, y=0, yend=1000000))
-        
-        
-        plot_x_y_segmented = plot_x_y + 
-          geom_rect(data=datx,
-                    aes(xmin=xstart, xmax=xend-100000, ymin=0, ymax=ymax, fill=sample(rainbow(length(xstart)))),
-                    alpha=0.5)#  +
-          # geom_segment(data=daty,
-          #              aes(x=0, xend=xmax, y=ystart, yend=ystart), color='grey')
-        print(plot_x_y_segmented)
-        }
-      
-      
-      res = solve_mutation(gridmatrix, depth = params$depth, discovery_exact = params$discovery_exact)
-      res$eval = as.numeric(res$eval)
-      
-
-      
-      res = res[order(res$eval, decreasing = T),]
-      res = filter_res(res, threshold = params$eval_th)
-      print(head(res))
-          grid_modified = modify_gridmatrix(gridmatrix, res[1,])
+  # Step 5: Save
+  write_results(res, outlinks, params)
   
-          
-          gridlines.x = cumsum(c(0,as.numeric(colnames(grid_modified))))
-          gridlines.y = cumsum(c(0,as.numeric(row.names(grid_modified))))
-          
-          colnames(grid_modified) = seq(1:dim(grid_modified)[2])
-          row.names(grid_modified) = seq(1:dim(grid_modified)[1])
-          
-          gm2 = reshape2::melt(grid_modified)
-          colnames(gm2) = c('y','x','z')
-          grid_mut_plot = plot_matrix_ggplot_named(gm2[gm2$z != 0,], gridlines.x, gridlines.y)
-          ggplot2::ggsave(filename = paste0(outlinks$outfile_plot_grid_mut),
-                          plot = grid_mut_plot,
-                          width = 10,
-                          height = 10,
-                          units = 'cm',
-                          dpi = 300)
-          plot(grid_mut_plot)
 
-      
-    } else if (log_collection$exceeds_y == T){
-      res = data.frame(eval = 0, mut1 = 'ref', mut2 = NA, mut3 = NA)
-    }
-    
-    # Save res table
-    write.table(
-      res,
-      file = outlinks$res_table_xy,
-      col.names = T,
-      row.names = F,
-      quote = F,
-      sep = '\t'
-    )
-    
-    # Save to logfile
-    save_to_logfile(get('log_collection', envir = globalenv()), res, params$logfile)
-    
-  }
-  if (params$clean_after_yourself) {
-    if (!is.na(file.size(outlinks$genome_x_fa_subseq))) {
-      system(paste0('rm ', outlinks$genome_x_fa_subseq))
-    }
-    if (!is.na(file.size(outlinks$genome_y_fa_subseq))) {
-      system(paste0('rm ', outlinks$genome_y_fa_subseq))
-    }
-    if (!is.na(file.size(paste0(outlinks$genome_x_fa_subseq, '.chunk.fa')))) {
-      system(paste0('rm ', outlinks$genome_x_fa_subseq, '.chunk.fa'))
-    }
-    if (!is.na(file.size(paste0(outlinks$genome_x_fa_subseq, '.chunk.fa')))) {
-      system(paste0('rm ', outlinks$genome_y_fa_subseq, '.chunk.fa'))
-    }
-  }
+        
+
+
+
   
 }
 
@@ -474,3 +257,112 @@ define_output_files <- function(sequence_name_output, samplename){
   return(outlinks)
 }
 
+#' @export
+clean_after_yourself <- function(outlinks){
+  if (!is.na(file.size(outlinks$genome_x_fa_subseq))) {
+    system(paste0('rm ', outlinks$genome_x_fa_subseq))
+  }
+  if (!is.na(file.size(outlinks$genome_y_fa_subseq))) {
+    system(paste0('rm ', outlinks$genome_y_fa_subseq))
+  }
+  if (!is.na(file.size(paste0(outlinks$genome_x_fa_subseq, '.chunk.fa')))) {
+    system(paste0('rm ', outlinks$genome_x_fa_subseq, '.chunk.fa'))
+  }
+  if (!is.na(file.size(paste0(outlinks$genome_x_fa_subseq, '.chunk.fa')))) {
+    system(paste0('rm ', outlinks$genome_y_fa_subseq, '.chunk.fa'))
+  }
+}
+
+#' @export
+write_results <- function(res, outlinks, params){
+  # Save res table
+  write.table(
+    res,
+    file = outlinks$res_table_xy,
+    col.names = T,
+    row.names = F,
+    quote = F,
+    sep = '\t'
+  )
+  
+  # Save to logfile
+  save_to_logfile(get('log_collection', envir = globalenv()), res, params$logfile)
+  
+}
+
+#' @export
+wrapper_consense_paf <- function(params, outlinks){
+  
+  # Make the condensation
+  grid_xy = wrapper_paf_to_bitlocus(
+    outlinks$outpaf_link_x_y,
+    params,
+    gridplot_save = outlinks$outfile_plot_grid,
+    pregridplot_save = outlinks$outfile_plot_pre_grid
+  )
+  
+  # Transform notation from list to matrix
+  gridmatrix = gridlist_to_gridmatrix(grid_xy)
+  
+  # If not plot_xy_segmented is requested, then we are done here. 
+  if (!params$plot_xy_segmented){
+    return(gridmatrix)
+  }
+  
+  # Make plot_xy_segmented. 
+  # Needs debug. 
+  xstart = (grid_xy[[1]][1:length(grid_xy[[1]])-1])
+  xend = (grid_xy[[1]][2:length(grid_xy[[1]])])
+  ystart = (grid_xy[[2]][1:length(grid_xy[[2]])-1])
+  yend = (grid_xy[[2]][2:length(grid_xy[[2]])])
+  xmax = max(grid_xy[[1]])
+  ymax = max(grid_xy[[2]])
+  datx = data.frame(xstart = xstart, 
+                    xend = xend,
+                    xmax = xmax
+  )
+  daty = data.frame(yend = yend,
+                    ymax = ymax,
+                    ystart = ystart
+  )
+  
+  
+  plot_x_y_segmented = plot_x_y + 
+    geom_rect(data=datx,
+              aes(xmin=xstart, xmax=xend, ymin=0, ymax=ymax, fill=sample(rainbow(length(xstart)))),
+              alpha=0.5)#  +
+  # geom_segment(data=daty,
+  #              aes(x=0, xend=xmax, y=ystart, yend=ystart), color='grey')
+  print(plot_x_y_segmented)
+  
+  
+  return(gridmatrix)
+}
+
+#' @export
+make_modified_grid_plot <- function(res, outlinks){
+  
+  res = res[order(res$eval, decreasing = T),]
+  # res = filter_res(res, threshold = params$eval_th)
+  
+  grid_modified = modify_gridmatrix(gridmatrix, res[1,])
+  
+  
+  gridlines.x = cumsum(c(0,as.numeric(colnames(grid_modified))))
+  gridlines.y = cumsum(c(0,as.numeric(row.names(grid_modified))))
+  
+  colnames(grid_modified) = seq(1:dim(grid_modified)[2])
+  row.names(grid_modified) = seq(1:dim(grid_modified)[1])
+  
+  gm2 = reshape2::melt(grid_modified)
+  colnames(gm2) = c('y','x','z')
+  grid_mut_plot = plot_matrix_ggplot_named(gm2[gm2$z != 0,], gridlines.x, gridlines.y)
+  ggplot2::ggsave(filename = paste0(outlinks$outfile_plot_grid_mut),
+                  plot = grid_mut_plot,
+                  width = 10,
+                  height = 10,
+                  units = 'cm',
+                  dpi = 300)
+  print(grid_mut_plot)
+  
+}

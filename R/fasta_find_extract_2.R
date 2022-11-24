@@ -23,7 +23,7 @@ write_x_y_sequences <- function(seqname_x,
                                     start_x_pad,
                                     end_x_pad,
                                     conversionpaf_link,
-                                    lenfactor = params$aln_pad_factor,
+                                    lenfactor = 1, # Unneeded parameter
                                     whole_chr = (params$start_x %in% c(0, 1)),
                                     refine_runnr = refine_runnr)
   
