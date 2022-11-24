@@ -77,10 +77,14 @@ write_x_y_sequences <- function(seqname_x,
                               coords_liftover_2nd$lift_end,
                               genome_y_fa_subseq)
     
-  }
-  
   return( list(new_seqname = coords_liftover_2nd$lift_contig,
                new_x_start = coords_liftover_2nd$lift_start,
                new_x_end = coords_liftover_2nd$lift_end))
+  }
+  
+  return( list(new_seqname = coords_liftover$lift_contig,
+               new_x_start = coords_liftover$lift_start,
+               new_x_end = coords_liftover$lift_end))
+
 }
 

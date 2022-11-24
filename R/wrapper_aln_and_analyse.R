@@ -207,7 +207,6 @@ wrapper_aln_and_analyse <- function(params) {
 
 
 
-
   if (!params$plot_only) {
     
     # If alignment has a contig break, we don't have to find SVs.
@@ -222,6 +221,40 @@ wrapper_aln_and_analyse <- function(params) {
         pregridplot_save = outlinks$outfile_plot_pre_grid
       )
       gridmatrix = gridlist_to_gridmatrix(grid_xy)
+      
+      if (params$plot_xy_segmented){
+        
+        #print(gm_to_segvec(gridmatrix, groundlen = params$compression))
+        #browser()
+        browser()
+        library(ggplot2)
+        xstart = (grid_xy[[1]][1:length(grid_xy[[1]])-1])
+        xend = (grid_xy[[1]][2:length(grid_xy[[1]])])
+        ystart = (grid_xy[[2]][1:length(grid_xy[[2]])-1])
+        yend = (grid_xy[[2]][2:length(grid_xy[[2]])])
+        xmax = max(grid_xy[[1]])
+        ymax = max(grid_xy[[2]])
+        datx = data.frame(xstart = xstart, 
+                         xend = xend,
+                         xmax = xmax
+                         )
+        daty = data.frame(yend = yend,
+                         ymax = ymax,
+                         ystart = ystart
+        )
+        #plot_x_y + geom_segment(aes(x=start, xend=xend, y=0, yend=1000000))
+        
+        
+        plot_x_y_segmented = plot_x_y + 
+          geom_rect(data=datx,
+                    aes(xmin=xstart, xmax=xend-100000, ymin=0, ymax=ymax, fill=sample(rainbow(length(xstart)))),
+                    alpha=0.5)#  +
+          # geom_segment(data=daty,
+          #              aes(x=0, xend=xmax, y=ystart, yend=ystart), color='grey')
+        print(plot_x_y_segmented)
+        }
+      
+      
       res = solve_mutation(gridmatrix, depth = params$depth, discovery_exact = params$discovery_exact)
       res$eval = as.numeric(res$eval)
       
