@@ -26,8 +26,12 @@ calc_coarse_grained_aln_score <-
            verbose = F,
            forcecalc = F,
            orig_symm = 1) {
+    
     # Remove zero-pads.
     mat = matrix_remove_zero_pads(mat)
+    
+    n_eval_total <<- n_eval_total + 1
+    #mat = keep_only_diagonal_of_bitlocus(mat)
     # If matrix has no entries (no alignments), return 0
     # If matrix is only one number, report 100%.
     if (is.null(dim(mat))) {
@@ -55,12 +59,12 @@ calc_coarse_grained_aln_score <-
     walk_right_cost = as.numeric(colnames(mat))
     symmetry = min(sum(climb_up_cost), sum(walk_right_cost)) / max(sum(climb_up_cost), sum(walk_right_cost))
     
-    
+    symm_factor = 1
     # if (is.na(symmetry)){
     #   browser()
     # }
     # Run away if there are at least 5 columns, and we have less than 95% similarity
-    if ((symmetry < (orig_symm*0.75) & row > 5) & (forcecalc == F)) {
+    if ((symmetry < (orig_symm*symm_factor) & row > 5) & (forcecalc == F)) {
       return(1)
     } else if ((dim(mat)[1] == 1) & (dim(mat)[2] == 1)) {
       return(100)
@@ -183,6 +187,9 @@ calc_coarse_grained_aln_score <-
       ))
       
     }
+    
+    n_eval_calc <<- n_eval_calc+1
+    
     #print(cost_res)
     #print(round((1-(cost_res[row, col]) / sum(climb_up_cost, walk_right_cost)) * 100, 3))
     #print('##########################')

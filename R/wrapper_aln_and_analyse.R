@@ -88,7 +88,7 @@ wrapper_aln_and_analyse <- function(params) {
   grid_xy = wrapper_condense_paf(params, outlinks)
   make_segmented_pairwise_plot(grid_xy, plot_x_y, outlinks)
   gridmatrix = gridlist_to_gridmatrix(grid_xy)
-  
+  browser()
   # Step 4: Solve and make a solved plot
   res = solve_mutation(gridmatrix, depth = params$depth, discovery_exact = params$discovery_exact)
   make_modified_grid_plot(res, gridmatrix, outlinks)

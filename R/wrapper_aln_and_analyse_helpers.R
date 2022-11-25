@@ -45,8 +45,7 @@ determine_chunklen_compression <- function(start, end) {
     chunklen = 10000
   } else if ((end-start) < 5000){
     chunklen = 500
-  }
-  else if (((end - start)) < 50 * 1000) {
+  } else if (((end - start)) < 50 * 1000) {
     chunklen = 1000
   } else {
     chunklen = 1000
@@ -223,7 +222,7 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks){
                     ystart = ystart
   )
   
-  if (length(xstart) > 50){
+  if (length(xstart) > 433){
     print('Too many segments to make colored plot')
     return()
   }
@@ -238,7 +237,7 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks){
   plot_x_y_segmented = plot_x_y + 
     ggplot2::geom_rect(data=datx,
                        ggplot2::aes(xmin=xstart, xmax=xend, ymin=0, ymax=ymax, fill=col_vector[1:length(xstart)]),
-                       alpha=0.5) + 
+                       alpha=0.5,) + 
     ggplot2::guides(fill = FALSE)#  +
   # geom_segment(data=daty,
   #              aes(x=0, xend=xmax, y=ystart, yend=ystart), color='grey')

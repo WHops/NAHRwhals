@@ -3,10 +3,20 @@
 #' @author Wolfram Häps
 #' @export
 matrix_remove_zero_pads <- function(bitl_f){
+  
+  # If all outside cols and rows have entries, we dont have to cut anything...
+  if ((any(bitl_f[1,] != 0)) & 
+      (any(bitl_f[nrow(bitl_f),] != 0)) & 
+      (any(bitl_f[,1] != 0)) &
+      (any(bitl_f[,ncol(bitl_f)] != 0)) 
+  ){
+    return(bitl_f)
+  }
+  
   bitl_f = as.matrix(bitl_f)
 
-  empty_rows_bool = as.numeric(apply(as.matrix(bitl_f)==0, 1, all))
-  empty_cols_bool = as.numeric(apply(as.matrix(bitl_f)==0, 2, all))
+  empty_rows_bool = as.numeric(apply(bitl_f==0, 1, all))
+  empty_cols_bool = as.numeric(apply(bitl_f==0, 2, all))
   
   #Filter down to only intervals touching the border. 
   leading_rows_to_rm = which(cumprod(empty_rows_bool) > 0)
