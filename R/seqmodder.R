@@ -625,7 +625,9 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
   
   # Modify the matrix accordingly
   if (action == 'del') {
+    
     bitl_mut = bitl[, -c(as.numeric(pair[1]):(as.numeric(pair[2]) - 1))]
+    
   } else if (action == 'dup') {
     
     bitl_mut = cbind(bitl[, 1:as.numeric(pair[2])],
@@ -640,6 +642,7 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
         colnames(bitl_mut)[dim(bitl_mut)[2]] = colnames(bitl_mut)[dim(bitl_mut)[2]-1]
       }
     }
+    
   } else if (action == 'inv') {
     
     # W, 8th March 2022. 
@@ -652,6 +655,8 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
     } else if (pair[2] - pair[1] > 1){
       
         # A lot of bordercase handling...
+      
+        # Border case 1: The first block is part of inversion
         if ((pair[1] == 1) & (pair[2] != dim(bitl)[2])){
           bitl_mut = cbind( -bitl[, (as.numeric(pair[2])):(as.numeric(pair[1]))],
                              bitl[, as.numeric(pair[2]+1):dim(bitl)[2]])
@@ -659,7 +664,8 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
           # This is in response to an error ('error #2, may11th 2022')
           colnames(bitl_mut)[dim(bitl_mut)[2]] = colnames(bitl)[dim(bitl_mut)[2]]
           
-          # This black was added not for an error, but i realized that I think it should be in (may11th 2022)
+          
+        # Border case 2: The last block is part of inversion
         } else if ((pair[1] > 1) & (pair[2] == dim(bitl)[2])){
           bitl_mut = cbind( bitl[, 1:(as.numeric(pair[1])-1)],
                             -bitl[, (as.numeric(pair[2])):(as.numeric(pair[1]))])
@@ -667,14 +673,17 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
           # This is in response to an error ('error #2, may11th 2022')
           colnames(bitl_mut)[1] = colnames(bitl)[1]
           
+        # Border case 3: The inversion goes from first to last block
         } else if ((pair[1] == 1) & (pair[2] == dim(bitl)[2])){
           bitl_mut = -bitl[, (as.numeric(pair[2])):(as.numeric(pair[1]))]
           
+        # The standard case
         } else {
         bitl_mut = cbind(cbind(bitl[, 1:as.numeric(pair[1])],
                                -bitl[, (as.numeric(pair[2]) - 1):(as.numeric(pair[1]) + 1)]),
                          bitl[, as.numeric(pair[2]):dim(bitl)[2]])
         } 
+      
         # Border case handling. If inversion is exactly one column, 
         # (i.e. pair 3-5), then we assign the colnames manually. 
         if (pair[2] - pair[1] == 2){
@@ -702,7 +711,7 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
   # meaningful rownames and colnames. 
   #colnames(bitl_mut) = 1:dim(bitl_mut)[2]
 
-  # Turn minus-zero into zero.
+  # Turn minus-zero into zero. 
   bitl_mut[bitl_mut == 0] = 0
   return(bitl_mut)
   

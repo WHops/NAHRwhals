@@ -5,7 +5,10 @@ rep.col <- function(x, n) {
   matrix(rep(x, each = n), ncol = n, byrow = TRUE)
 }
 
-
+calculate_estimated_aln_score <- function(mat){
+  matdiag = diagnonalize(mat, 0.25)
+  return(sum(na.omit(rowMeans(replace(matdiag, matdiag == 0, NA), na.rm = TRUE))))
+}
 
 
 #' calc_coarse_aln_score
@@ -25,13 +28,14 @@ calc_coarse_grained_aln_score <-
            old_way_of_calc = F,
            verbose = F,
            forcecalc = F,
-           orig_symm = 1) {
+           orig_symm = 1,
+           est_ref = 0) {
     
     # Remove zero-pads.
     mat = matrix_remove_zero_pads(mat)
     
     n_eval_total <<- n_eval_total + 1
-    #mat = keep_only_diagonal_of_bitlocus(mat)
+    
     # If matrix has no entries (no alignments), return 0
     # If matrix is only one number, report 100%.
     if (is.null(dim(mat))) {
@@ -59,6 +63,9 @@ calc_coarse_grained_aln_score <-
     walk_right_cost = as.numeric(colnames(mat))
     symmetry = min(sum(climb_up_cost), sum(walk_right_cost)) / max(sum(climb_up_cost), sum(walk_right_cost))
     
+    
+    
+    
     symm_factor = 1
     # if (is.na(symmetry)){
     #   browser()
@@ -80,17 +87,28 @@ calc_coarse_grained_aln_score <-
       )) * 100, 3))
     }
     
+
+    # If all this, then one more chance is to throw stuff
+    est = calculate_estimated_aln_score(mat)
+    if (forcecalc){
+      est_highest <<- est
+    } 
+    
+    if (est < (est_highest)){
+      return(1)
+    } else if (est > (est_highest)){
+      est_highest <<- est
+    }
+    
+
     # Construct our three cost matrices:
     # cost_u, if you want to go 'up'
     # cost_r, if you want to go 'right'
     # cord_d, if you want to go 'diagonal'
-    if (old_way_of_calc) {
-      climb_up_cost = colMax(as.data.frame(t(abs(mat))))
-      walk_right_cost = colMax(as.data.frame(abs(mat)))
-    } else {
-      climb_up_cost = as.numeric(row.names(mat))
-      walk_right_cost = as.numeric(colnames(mat))
-    }
+
+    climb_up_cost = as.numeric(row.names(mat))
+    walk_right_cost = as.numeric(colnames(mat))
+    
     cost_u = rep.col(climb_up_cost, dim(mat)[2])
     cost_r = rep.row(walk_right_cost, dim(mat)[1])
     
@@ -123,6 +141,7 @@ calc_coarse_grained_aln_score <-
     # 1st value
     cost_res[1, 1] = min(climb_up_cost[1] + walk_right_cost[1], cost_d[1, 1])
     
+    
     # For 1st column
     for (i in 2:row) {
       if (i / row > calc_corridor_pct) {
@@ -142,23 +161,31 @@ calc_coarse_grained_aln_score <-
                              cumsum_r[j - 1] + cost_d[1, j])
       }
     }
+
+    #### Out custom speed-up #####
+    cost_res[2:row, 2:col] = Inf
+
+
+    i_mat = rep.col(  ((1:row) / row), col)
+    j_mat = rep.row(  ((1:col) / col), row)
+
+    middleval_mat = 1 - ((i_mat > (j_mat + calc_corridor_pct)) + 
+                    (j_mat > (i_mat + calc_corridor_pct)))
+    middleval_mat[1,] = 0
+    middleval_mat[,1] = 0
     
-    for (i in 2:row) {
-      for (j in 2:col) {
-        i_fraction = i / row
-        j_fraction = j / col
-        if (i_fraction > (j_fraction + calc_corridor_pct) |
-            (j_fraction > (i_fraction + calc_corridor_pct))) {
-          cost_res[i, j] = Inf
-        } else {
-          cost_res[i, j] =  (min(
-            cost_res[i - 1, j - 1] + cost_d[i, j],
-            cost_res[i - 1, j] +     cost_u[i, j],
-            cost_res[i, j - 1] +     cost_r[i, j]
-          ))
-        }
-      }
+    idxs = as.vector(t(which(t(middleval_mat) == 1, arr.ind = T)))
+
+    for (idx in seq(1,length(idxs),2)){
+      i = idxs[idx+1]
+      j = idxs[idx]
+      cost_res[i, j] =  (min(                                
+        cost_res[i - 1, j - 1] + cost_d[i, j],
+        cost_res[i - 1, j] +     cost_u[i, j],
+        cost_res[i, j - 1] +     cost_r[i, j]
+      ))
     }
+    ###### OVER ###########
     
     if (cost_res[row, col] == Inf) {
       return(NA)

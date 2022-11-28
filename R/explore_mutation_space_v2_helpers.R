@@ -65,6 +65,15 @@ annotate_pairs_with_hash <- function(bitlocus, pairs){
 }
 
 
+diagnonalize <- function(matrix, factor = 0.25){
+  return(matrix *  
+            (  
+              (abs(row(matrix) - col(matrix))) < (ncol(matrix) * factor)  
+              )    
+         )
+}
+
+
 keep_only_diagonal_of_bitlocus <- function(bitlocus_f){
   
   max_dist = max(5, 0.25 * nrow(bitlocus_f))
@@ -173,3 +182,34 @@ is_cluttered <- function(bitlocus_f, clutter_limit_per_border = 5){
   return(F)
 }
 
+# What is the initial symmetry of the bitlocus? 
+#' 
+#' @export
+calc_symm <- function(bitl){
+  climb_up_cost = as.numeric(row.names(bitl))
+  walk_right_cost = as.numeric(colnames(bitl))
+  orig_symm = min(sum(climb_up_cost), sum(walk_right_cost)) / max(sum(climb_up_cost), sum(walk_right_cost))
+  
+  return(orig_symm)
+}
+
+#' 
+#' @export
+reduce_depth_if_needed <- function(bitlocus, increase_only, maxdepth){
+  # Prepare bitlocus that we will be working on. 
+  bitl = flip_bitl_y_if_needed(bitlocus)
+  
+  # Decide if we should go forward. But it's not a good place here. 
+  n_pairs = dim(find_sv_opportunities(bitl))[1]
+  if ((n_pairs > 200) & (maxdepth == 3) & (increase_only==F)){
+    print('Uh oh that is a bit large. Reducing depth to 2. Try to avoid producing such large alignments.')
+    maxdepth = 2
+  }
+  
+  if ((n_pairs > 500) & (increase_only==F)){
+    print('Huge Alignment! Going for depth 1. ')
+    maxdepth = 1
+  }
+  
+  return(maxdepth)
+}

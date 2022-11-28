@@ -39,7 +39,7 @@ solve_mutation_slimmer <- function(bitlocus, depth){
 #' THis function is called as a standard.
 #' TODO: description
 #' @export
-solve_mutation <- function(bitlocus, depth){
+solve_mutation <- function(bitlocus, maxdepth, earlystop = Inf){
   
   n_eval_total <<- 0
   n_eval_calc <<- 0
@@ -54,23 +54,26 @@ solve_mutation <- function(bitlocus, depth){
     return(res_out)
   }
   
+  # Optional: adjust depth
+  #maxdepth = reduce_depth_if_needed(bitlocus, increase_only = F, maxdepth)
+  
   # Run iterations of increasing depth. 
   # Always run the whole thing, but also don't go 
   # deeper once a good solution is found. 
   conclusion_found = F
-  maxdepth = 1
+  current_depth = 1
   
-  while ((!conclusion_found) & (maxdepth <= depth)){
-    print(paste0('Running depth layer: ', maxdepth))
+  while ((!conclusion_found) & (current_depth <= maxdepth)){
+    print(paste0('Running depth layer: ', current_depth))
     
     # Run the dfs machinery (main work horse)
-    vis_list = (dfs(bitlocus, maxdepth = maxdepth, increase_only = F))
+    vis_list = (dfs(bitlocus, maxdepth = current_depth, increase_only = F, earlystop = earlystop))
     
     # Extract res_df
     res_df = vis_list[[2]]
 
     # Are we happy with the best result? 
-    solve_th = find_threshold(bitlocus, maxdepth)
+    solve_th = find_threshold(bitlocus, current_depth)
     conclusion_found = (max(as.numeric(res_df$eval)) >= solve_th)
     
     if (conclusion_found){
@@ -78,7 +81,7 @@ solve_mutation <- function(bitlocus, depth){
     }
     
     # Higher depth for next iteration!
-    maxdepth = maxdepth + 1  
+    current_depth = current_depth + 1  
   }
   
   # Prepare output for returns
@@ -89,7 +92,7 @@ solve_mutation <- function(bitlocus, depth){
   
   # Make an entry to the output logfile #
   if (exists('log_collection')){
-    log_collection$depth <<- depth
+    log_collection$depth <<- maxdepth
     log_collection$mut_simulated <<- dim(res_df)[1]
     log_collection$mut_tested <<- dim(res_df)[1]
   }
@@ -119,7 +122,6 @@ solve_mutation <- function(bitlocus, depth){
 
 
 #' Alternative wrapper for calling dfs several times.  
-#' THis function is called as a standard.
 #' TODO: description
 #' @export
 solve_mutation_old <- function(bitlocus, depth, discovery_exact){
