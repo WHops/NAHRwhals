@@ -37,7 +37,7 @@ determine_plot_minlen <- function(start, end){
 
 #' TODO: describe
 #' @export
-determine_chunklen_compression <- function(start, end) {
+determine_chunklen <- function(start, end) {
   if ((end - start) > 5000 * 1000) {
     chunklen = 100000
   }
@@ -53,6 +53,26 @@ determine_chunklen_compression <- function(start, end) {
   
   return(chunklen)
 }
+
+#' TODO: describe
+#' @export
+determine_compression <- function(start, end) {
+  if ((end - start) > 5000 * 1000) {
+    compression = 100000
+  }
+  if ((end - start) > 500 * 1000) {
+    compression = 10000
+  } else if ((end-start) < 5000){
+    compression = 500
+  } else if (((end - start)) < 50 * 1000) {
+    compression = 1000
+  } else {
+    compression = 1000
+  }
+  
+  return(compression)
+}
+
 
 #' TODO: describe
 #' @export

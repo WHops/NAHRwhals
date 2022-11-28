@@ -56,7 +56,8 @@ annotate_pairs_with_hash <- function(bitlocus, pairs){
   
   pairs$hash = 'NA'
   for (npair in seq_along(pairs$hash)){
-    pairs[npair, 'hash'] = rlang::hash(as.numeric(keep_only_diagonal_of_bitlocus(carry_out_compressed_sv(bitlocus, pairs[npair,1:3]))))
+    pairs[npair, 'hash'] = rlang::hash(return_diag_values_new(carry_out_compressed_sv(bitlocus, pairs[npair,1:3]), fraction = 0.05) )
+    #pairs[npair, 'hash'] = rlang::hash(carry_out_compressed_sv(bitlocus, pairs[npair,1:3]))
     #pairs[npair, 'hash'] = rlang::hash(as.numeric(carry_out_compressed_sv(bitlocus, pairs[npair,1:3])))
     
   }
@@ -65,18 +66,64 @@ annotate_pairs_with_hash <- function(bitlocus, pairs){
 }
 
 
-diagnonalize <- function(matrix, factor = 0.25){
+diagonalize <- function(matrix, factor = 0.25){
   return(matrix *  
             (  
-              (abs(row(matrix) - col(matrix))) < (ncol(matrix) * factor)  
+              (abs(row(matrix) - col(matrix))) < (ncol(matrix) * factor) 
               )    
          )
+
+}
+
+#' Document.
+#' @export
+return_diag_values_new <- function(matrix, fraction=0.05){
+  
+  max_dist = round(max(5, fraction * nrow(matrix)))
+  
+  # Bottom left to top right
+  #diag_idx = seq(1, min(dim(matrix))**2, min(dim(matrix)) + 1)
+  diag_idx = seq(1, ((dim(matrix)[1]+1) * (min(dim(matrix))-1)) + 1, dim(matrix)[1]+1)
+  
+  idxs = outer(diag_idx, seq(-max_dist, max_dist, 1), FUN = "+")
+  idxs_clean = idxs[(idxs > 0) & (idxs <= ((dim(matrix)[1]+1) * (min(dim(matrix))-1)) + 1)]
+  idxs_clean_2 = (dim(matrix)[1] * dim(matrix)[2]) - idxs_clean
+  idxs_clean_all = c(idxs_clean, idxs_clean_2)
+  
+  # Top right to bottom left
+  
+  
+  return(matrix[idxs_clean_all])
+}
+
+#' Document.
+#' @export
+return_diag_matrix_new <- function(matrix, fraction=0.05){
+  
+  max_dist = round(max(5, fraction * nrow(matrix)))
+  
+  # Bottom left to top right
+  #diag_idx = seq(1, min(dim(matrix))**2, min(dim(matrix)) + 1)
+  diag_idx = seq(1, ((dim(matrix)[1]+1) * (min(dim(matrix))-1)) + 1, dim(matrix)[1]+1)
+  
+  idxs = outer(diag_idx, seq(-max_dist, max_dist, 1), FUN = "+")
+  idxs_clean = idxs[(idxs > 0) & (idxs <= ((dim(matrix)[1]+1) * (min(dim(matrix))-1)) + 1)]
+  idxs_clean_2 = (dim(matrix)[1] * dim(matrix)[2]) - idxs_clean
+  idxs_clean_all = c(idxs_clean, idxs_clean_2)
+  
+  idxs_foul = setdiff((1:(dim(matrix)[1] * dim(matrix)[2])), idxs_clean_all)
+  matrix2 = matrix
+  matrix2[idxs_foul] = 0
+  # Top right to bottom left
+  
+  return(matrix2)
 }
 
 
-keep_only_diagonal_of_bitlocus <- function(bitlocus_f){
+#' @export
+keep_only_diagonal_of_bitlocus <- function(bitlocus_f, fraction){
   
-  max_dist = max(5, 0.25 * nrow(bitlocus_f))
+  max_dist = max(5, fraction * nrow(bitlocus_f))
   inds = which(bitlocus_f != 0, arr.ind=T)
   inds_die = inds[abs(inds[,1] - inds[,2]) > max_dist,]
   bitlocus_f[inds_die] = 0
@@ -206,7 +253,7 @@ reduce_depth_if_needed <- function(bitlocus, increase_only, maxdepth){
     maxdepth = 2
   }
   
-  if ((n_pairs > 500) & (increase_only==F)){
+  if ((n_pairs > 800) & (increase_only==F)){
     print('Huge Alignment! Going for depth 1. ')
     maxdepth = 1
   }

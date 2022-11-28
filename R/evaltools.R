@@ -6,8 +6,11 @@ rep.col <- function(x, n) {
 }
 
 calculate_estimated_aln_score <- function(mat){
-  matdiag = diagnonalize(mat, 0.25)
-  return(sum(na.omit(rowMeans(replace(matdiag, matdiag == 0, NA), na.rm = TRUE))))
+  
+  matdiag = diagonalize(mat, 0.25)
+  
+  return(sum(matrixStats::rowMaxs(matdiag))) # This replaces the previous version (next line)
+  #return(sum(na.omit(rowMeans(replace(matdiag, matdiag == 0, NA), na.rm = TRUE))))
 }
 
 
@@ -100,7 +103,8 @@ calc_coarse_grained_aln_score <-
       est_highest <<- est
     }
     
-
+    n_eval_calc <<- n_eval_calc+1
+    
     # Construct our three cost matrices:
     # cost_u, if you want to go 'up'
     # cost_r, if you want to go 'right'
@@ -188,7 +192,7 @@ calc_coarse_grained_aln_score <-
     ###### OVER ###########
     
     if (cost_res[row, col] == Inf) {
-      return(NA)
+      return(1)
     }
     # For rest of the 2d matrix
     # for (i in 2:row) {
@@ -215,7 +219,6 @@ calc_coarse_grained_aln_score <-
       
     }
     
-    n_eval_calc <<- n_eval_calc+1
     
     #print(cost_res)
     #print(round((1-(cost_res[row, col]) / sum(climb_up_cost, walk_right_cost)) * 100, 3))

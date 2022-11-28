@@ -32,6 +32,7 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F, earlystop = Inf){
                                   earlystop = earlystop)
   
   # Make sure output eval is numeric (perhaps not needed but unsure)
+  visited_outputdf_list[[2]] = na.omit(as.data.frame(visited_outputdf_list[[2]]))
   visited_outputdf_list[[2]]$eval = as.numeric(visited_outputdf_list[[2]]$eval)
   
   return(visited_outputdf_list)
@@ -50,17 +51,38 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
   # Calc score of a node. Force the calculation if we have ref (there we definitely want to know the value)
     aln_score = calc_coarse_grained_aln_score(mutator, forcecalc = (pair$sv == 'ref'), orig_symm = orig_symm, est_ref = est_ref)
 
+  # if ((depth==1) & (pair$p1 == 25) & (pair$p2 == 41)){#'25_41_inv'){
+  #   browser()
+  # }
   # Initiate an output_df if there is none
   if (is.null(df_output)){
-    df_output = data.frame(matrix(nrow = 1, ncol=4)) 
+    df_output = replicate(4, 
+                          rep(NA, 1000), 
+                          simplify=T)
     colnames(df_output) = c('hash','depth','mut_path','eval')
+    len_df_output <<- dim(df_output)[1]
+    n_res_counter <<- 1
+    
   }
+    
+  # Extend df_output when needed
+  if (n_res_counter >= (len_df_output * 0.9)){
+    print('Extending output matrix')
+    df_output_addendum = replicate(4, 
+                                   rep(NA, len_df_output), 
+                                   simplify=T)
+    df_output = rbind(df_output, 
+                      df_output_addendum)
+    len_df_output <<- dim(df_output)[1]
+
+  }  
     
   # Make an entry to the output IF there is no NA and if there is
   # a calculated output
   if (!any(is.na(c(pairhash, depth, pairhistory, aln_score)))){
     if (aln_score > 1){
-      df_output = rbind(df_output, c(pairhash, depth, pairhistory, aln_score))
+      df_output[n_res_counter,] = c(pairhash, depth, pairhistory, aln_score)
+      n_res_counter <<- n_res_counter + 1
     }
   }
   # Update the visited hash to reflect that we have seen and processed that node. 
@@ -75,31 +97,31 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
   #   4) on increasing depth, we have a cutoff crit for aln score. 
   
   # Make criterion 4:
-  score_ref = as.numeric(df_output[df_output$mut_path == '1_1_ref',]$eval)
-  if (increase_only){
-    min_score = rep(c(max(score_ref, max(as.numeric(df_output[df_output$depth==depth,]$eval)))),10)
-  } else {
-    min_score = c(0,
-                  0,
-                  (100-((100-score_ref)/0.6)),
-                  0,0,0,(100-((100-score_ref)/0.8)),
-                  (100-(100-score_ref)))
+  # score_ref = as.numeric(df_output[df_output$mut_path == '1_1_ref',]$eval)
+  # if (increase_only){
+  #   min_score = rep(c(max(score_ref, max(as.numeric(df_output[df_output$depth==depth,]$eval)))),10)
+  # } else {
+  #   min_score = c(0,
+  #                 0,
+  #                 (100-((100-score_ref)/0.6)),
+  #                 0,0,0,(100-((100-score_ref)/0.8)),
+  #                 (100-(100-score_ref)))
     #min_score = c(0, score_ref * 0.6, score_ref * 0.8, score_ref)
-  }
+  #}
   continue = ((
     (aln_score < 100) &
       !is.na(aln_score) &
-      (aln_score >= min_score[depth+1]) &
+      #(aln_score >= min_score[depth+1]) &
       (depth < maxdepth)))
 
   # continue = ((
   #     !is.na(aln_score) & 
   #     (depth < maxdepth)))
   ########################### END OF THIS PART  #######################################
-  
-  
+
   # We calculate the next batch of children
   if (!continue){
+    n_discontinued <<- n_discontinued + 1
     return(list(visited, df_output))
   }
   
@@ -125,18 +147,26 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
     bitl_mut = carry_out_compressed_sv(mutator, pairs[npair,1:3])
     
     # Add the hash of that bitl_mut to the visited
-    hash = rlang::hash(as.numeric(keep_only_diagonal_of_bitlocus(bitl_mut)))
+    hash = rlang::hash(return_diag_values_new(bitl_mut, fraction = 0.05))
     
     # Here comes the hash filter
     # Leave branch if we know the node already (?)
     node_is_novel_bool = is.null(visited[[hash]])
     if (!node_is_novel_bool){
       n_hash_excluded <<- n_hash_excluded + 1
-      df_output = (rbind(df_output, 
-                         na.omit(c(hash, 
-                                  as.numeric(depth+1), 
-                                  paste(pairhistory, paste0(pairs[npair,1:3], collapse = '_'), sep='+'),
-                                  as.numeric(visited[[hash]][3])))))
+      
+      if ((as.numeric(visited[[hash]][3])) > 1){
+      vector_to_add_to_df_out = c(hash, 
+                        as.numeric(depth+1), 
+                        paste(pairhistory, paste0(pairs[npair,1:3], collapse = '_'), sep='+'),
+                        as.numeric(visited[[hash]][3]))
+
+      
+        if  (!any(is.na(vector_to_add_to_df_out))){
+          df_output[n_res_counter,] = vector_to_add_to_df_out
+          n_res_counter <<- n_res_counter + 1
+        }
+      }
       next()
     }
     

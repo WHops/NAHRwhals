@@ -44,7 +44,7 @@ solve_mutation <- function(bitlocus, maxdepth, earlystop = Inf){
   n_eval_total <<- 0
   n_eval_calc <<- 0
   n_hash_excluded <<- 0
-  
+  n_discontinued <<- 0
   
   # reject bitloci with cut-off alignments at the borders ('clutter')
   if (is_cluttered(bitlocus)){
@@ -55,7 +55,7 @@ solve_mutation <- function(bitlocus, maxdepth, earlystop = Inf){
   }
   
   # Optional: adjust depth
-  #maxdepth = reduce_depth_if_needed(bitlocus, increase_only = F, maxdepth)
+  maxdepth = reduce_depth_if_needed(bitlocus, increase_only = F, maxdepth)
   
   # Run iterations of increasing depth. 
   # Always run the whole thing, but also don't go 
@@ -96,10 +96,12 @@ solve_mutation <- function(bitlocus, maxdepth, earlystop = Inf){
     log_collection$mut_simulated <<- dim(res_df)[1]
     log_collection$mut_tested <<- dim(res_df)[1]
   }
-  
-  print(paste0('Eval total: ', n_eval_total))
+
+  print(paste0('Nodes considered: ', n_eval_total + n_hash_excluded))  
+  print(paste0('Eval attempted: ', n_eval_total))
   print(paste0('Eval calced: ', n_eval_calc))
   print(paste0('Hash excluded: ', n_hash_excluded))
+
   return(res_out)
 
 }

@@ -157,6 +157,7 @@ wrapper_paf_to_bitlocus <-
            pregridplot_save = F,
            pregridplot_nolines = F,
            saveplot = F) {
+    
     # Load paf. If compression is too low change it automatically.
     # Compression is good if
     # 1) there are less than 50 alignments, and
@@ -177,6 +178,15 @@ wrapper_paf_to_bitlocus <-
     print(paste0('Compression: ', compression))
 
     paf = load_and_prep_paf_for_gridplot_transform(inpaf, minlen, compression)
+    while ((dim(paf)[1]) > compression_params$max_n_alns){
+      
+      print('Too many alignments. Increasing minlen conditions')
+      minlen = minlen  * 2
+      compression = compression * 2
+      paf = load_and_prep_paf_for_gridplot_transform(inpaf, minlen, compression)
+      
+    }
+    
     print(paste0('Leading to a paf of dimensions: ', dim(paf)[1]))
     gxy = make_xy_grid(paf, n_additional_bounces = 10)
     

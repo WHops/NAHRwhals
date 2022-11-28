@@ -10,10 +10,9 @@
 #' @author Wolfram Höps
 #' @export
 find_sv_opportunities <- function(sample) {
-  
   double_SD_rows = which(rowSums(sample != 0) >= 2)
   all_opportunities = replicate(3, 
-                                rep(NA, ((length(double_SD_rows)[1] ** 2))), 
+                                rep(NA, ((length(double_SD_rows)[1] ** 2) + 2)), 
                                 simplify=T)
   colnames(all_opportunities) = NULL
   all_opp_len = dim(all_opportunities)[1]
@@ -37,7 +36,6 @@ find_sv_opportunities <- function(sample) {
     # Then we get NAHR possibilities in 4-5, 4-9 and 5-9.
     # If this is only one pair, then the one pair stays the same.
     combs = combn(identical_columns, 2)
-    
     
     for (ncomb in (1:dim(combs)[2])) {
       
@@ -71,7 +69,7 @@ find_sv_opportunities <- function(sample) {
   
 
   #all_opportunities = all_opportunities[rowSums(is.na(all_opportunities)) != ncol(all_opportunities),]
-  all_opportunities = all_opportunities[1:(n_opportunity-1),] # Replaces the previous line; is faster.
+  all_opportunities = all_opportunities[1:(n_opportunity-1),, drop=F] # Replaces the previous line; is faster.
   colnames(all_opportunities) = c('p1', 'p2', 'sv')
   all_opportunities = as.data.frame(unique(all_opportunities))
   
