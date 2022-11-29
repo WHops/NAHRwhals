@@ -39,7 +39,7 @@ solve_mutation_slimmer <- function(bitlocus, depth){
 #' THis function is called as a standard.
 #' TODO: description
 #' @export
-solve_mutation <- function(bitlocus, maxdepth, earlystop = Inf){
+solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
   
   n_eval_total <<- 0
   n_eval_calc <<- 0
@@ -55,15 +55,25 @@ solve_mutation <- function(bitlocus, maxdepth, earlystop = Inf){
   }
   
   # Optional: adjust depth
-  maxdepth = reduce_depth_if_needed(bitlocus, increase_only = F, maxdepth)
-  
+  maxdepth = reduce_depth_if_needed(bitlocus, increase_only = F, maxdepth_input)
+  print(maxdepth)
   # Run iterations of increasing depth. 
   # Always run the whole thing, but also don't go 
   # deeper once a good solution is found. 
   conclusion_found = F
   current_depth = 1
   
+  # The tree is explored in an iterative manner, in which all mutations from the one depth are
+  # explored. If one depth does not yield a solution, the next depth is explored, until
+  # the largest depth (3) is reached. 
+  # In cases where >1M mutations are expected in depth 3, (corresponding to 100 mutations on depth 1),
+  # the tree is explored until depth 2, and only the 100 highest-scoring depth-2 mutations are followed up
+  # in layer three. This approach cuts computation time drastically, but may miss mutation chains behind 
+  # local minima in rare instances. Additionally, it is not guaranteed that all alternative paths to an 
+  # optimal result are identified with this. 
   while ((!conclusion_found) & (current_depth <= maxdepth)){
+    
+
     print(paste0('Running depth layer: ', current_depth))
     
     # Run the dfs machinery (main work horse)
@@ -83,6 +93,16 @@ solve_mutation <- function(bitlocus, maxdepth, earlystop = Inf){
     # Higher depth for next iteration!
     current_depth = current_depth + 1  
   }
+  
+  # OPTIONAL: THIS IS THE STEEPEST DESCENT OF LAYER 3
+  # IF max depth was reduced due to size, and if no conclusion was found, 
+  # then we go into a steepest-descent bonus round. 
+  if ((current_depth == 3) & (maxdepth < maxdepth_input) & (conclusion_found == F)){
+    
+    print('No result found until depth=2. Continuing to descent the top ten depth-2 results.')
+    res_df = run_steepest_descent_layer_three(bitlocus, res_df)
+  }
+  
   
   # Prepare output for returns
   res_df_sort = sort_new_by_penalised(bitlocus, res_df)

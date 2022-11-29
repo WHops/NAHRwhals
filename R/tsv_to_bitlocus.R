@@ -9,7 +9,7 @@
 #' @author Wolfram Hoeps
 #' @export
 load_and_prep_paf_for_gridplot_transform <-
-  function(inpaf, minlen, compression, quadrantsize = 1e5) {
+  function(inpaf, minlen, compression, quadrantsize = 1e5, inparam_chunklen = 10000) {
     paf = read.table(inpaf)
     colnames(paf) = c(
       'qname',
@@ -43,7 +43,7 @@ load_and_prep_paf_for_gridplot_transform <-
       save_outpaf = F,
       second_run = T,
       inparam_compression = compression,
-      inparam_chunklen = 10000
+      inparam_chunklen = inparam_chunklen
     )
     
     # Filter alignments by length
@@ -84,7 +84,7 @@ load_and_prep_paf_for_gridplot_transform <-
       save_outpaf = F,
       second_run = T,
       inparam_compression = compression,
-      inparam_chunklen = 10000
+      inparam_chunklen = inparam_chunklen
     )
     
 
@@ -170,36 +170,54 @@ wrapper_paf_to_bitlocus <-
       minlen = wiggled_params[[1]]
       compression = wiggled_params[[2]]
     } else {
+      print('Minlen/Compression manually chosen. Testing viability')
       minlen = compression_params$minlen
       compression = compression_params$compression
     }
+    
     print('Making the final grid with:')
     print(paste0('Minlen: ', minlen))
     print(paste0('Compression: ', compression))
 
-    paf = load_and_prep_paf_for_gridplot_transform(inpaf, minlen, compression)
-    while ((dim(paf)[1]) > compression_params$max_n_alns){
+    paf = matrix(NA, nrow=1e3, ncol=1e3)
+    gridlines.x = rep(NA, 1e4)
+    gridlines.y = rep(NA, 1e4)
+    # SUPER weird construct here. Should be re-written. 
+    # I want to re-run stuff until: 
+    # 1) The max number of alignments is kept.
+    # 2) The max size of the grid is kept.
+    while( (  (length(gridlines.x) + length(gridlines.y))  > params$max_size_col_plus_rows  ) | ((dim(paf)[1]) > compression_params$max_n_alns)   ){
       
-      print('Too many alignments. Increasing minlen conditions')
-      minlen = minlen  * 2
-      compression = compression * 2
+    
       paf = load_and_prep_paf_for_gridplot_transform(inpaf, minlen, compression)
       
+      if ((dim(paf)[1]) > compression_params$max_n_alns){
+        print('Too many alignments. Increasing minlen conditions')
+        minlen = minlen  * 5
+        compression = compression * 5
+        next()
+      }
+    
+      print(paste0('Leading to a paf of dimensions: ', dim(paf)[1]))
+      gxy = make_xy_grid(paf, n_additional_bounces = 10)
+      
+      # Make an entry to the output logfile #
+      if (exists('log_collection')) {
+        log_collection$compression <<- compression
+      }
+
+      gridlines.x = gxy[[1]]
+      gridlines.y = gxy[[2]]
+      
+      print(paste0('Gridline dimensions: ', length(gridlines.x), ' and ', length(gridlines.y)))
+      
+      if ( (length(gridlines.x) + length(gridlines.y))  > params$max_size_col_plus_rows){
+        print('Too large grids. Repeating.')
+        minlen = minlen  * 5
+        compression = compression * 5
+        next()
+      }
     }
-    
-    print(paste0('Leading to a paf of dimensions: ', dim(paf)[1]))
-    gxy = make_xy_grid(paf, n_additional_bounces = 10)
-    
-    # Make an entry to the output logfile #
-    if (exists('log_collection')) {
-      log_collection$compression <<- compression
-    }
-    # Log file entry done #
-    
-    
-    #browser()
-    gridlines.x = gxy[[1]]
-    gridlines.y = gxy[[2]]
     
     # Run bressi to fill the grid
     # 'bressi' is the bresenham algorithm. It can also handle vectors

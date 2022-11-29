@@ -46,12 +46,12 @@ calc_coarse_grained_aln_score <-
     } else if ((dim(mat)[1] == 1) & (dim(mat)[2] == 1)) {
       return(100)
     } else if ((dim(mat)[1] == 1) & (dim(mat)[2] > 1)) {
-      pos_aln = sum(mat)
+      pos_aln = sum(mat[mat>0])
       return(round((pos_aln / sum(
         as.numeric(colnames(mat))
       )) * 100, 3))
     } else if ((dim(mat)[1] > 1) & (dim(mat)[2] == 1)) {
-      pos_aln = sum(mat)
+      pos_aln = sum(mat[mat>0])
       return(round((pos_aln / sum(
         as.numeric(row.names(mat))
       )) * 100, 3))
@@ -99,7 +99,7 @@ calc_coarse_grained_aln_score <-
     
     if (est < (est_highest)){
       return(1)
-    } else if (est > (est_highest)){
+    } else if (est >= (est_highest)){
       est_highest <<- est
     }
     
@@ -141,7 +141,7 @@ calc_coarse_grained_aln_score <-
     if (forcecalc) {
       calc_corridor_pct = 1
     }
-    
+    calc_corridor_pct = 1
     # 1st value
     cost_res[1, 1] = min(climb_up_cost[1] + walk_right_cost[1], cost_d[1, 1])
     

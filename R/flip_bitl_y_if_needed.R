@@ -21,21 +21,22 @@ flip_bitl_y_if_needed <- function(bitl){
 
   # If the matrix is large enough, define a frame. 
   if ((dim(bitl)[1] >= 4) | (dim(bitl)[2] >= 4)){
-    
-    # Define frame corners: Which values do we want to consider?
-    # Minimum framesize is now 2. This is a bugfix. 
-    y_min = max(round(dim(bitl_f)[1] * (1/4)), 2)
-    y_max = min(round(dim(bitl_f)[1] * (3/4)), dim(bitl_f)[1] - 2)
-    
-    x_min = max(round(dim(bitl_f)[2] * (1/4)), 2)
-    x_max = min(round(dim(bitl_f)[2] * (3/4)), dim(bitl_f)[2] - 2)
-    
-    
-    # W, 14th March 2022. Changing that part a bit. 
-    # Alternatively: set the non-corners of the frame to 0.
-    bitl_f[y_min:y_max,] = 0
-    bitl_f[,x_min:x_max] = 0
-    
+    # But every dimension must be larger than 1.
+    if ((dim(bitl)[1] >= 2) & (dim(bitl)[2] >= 2)){
+      # Define frame corners: Which values do we want to consider?
+      # Minimum framesize is now 2. This is a bugfix. 
+      y_min = max(round(dim(bitl_f)[1] * (1/4)), 2)
+      y_max = min(round(dim(bitl_f)[1] * (3/4)), dim(bitl_f)[1] - 2)
+      
+      x_min = max(round(dim(bitl_f)[2] * (1/4)), 2)
+      x_max = min(round(dim(bitl_f)[2] * (3/4)), dim(bitl_f)[2] - 2)
+      
+      
+      # W, 14th March 2022. Changing that part a bit. 
+      # Alternatively: set the non-corners of the frame to 0.
+      bitl_f[y_min:y_max,] = 0
+      bitl_f[,x_min:x_max] = 0
+    }
 
   }
   # # Set all inner values to zero. We don't care about them. 

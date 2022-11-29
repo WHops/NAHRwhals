@@ -71,7 +71,7 @@ find_sv_opportunities <- function(sample) {
   #all_opportunities = all_opportunities[rowSums(is.na(all_opportunities)) != ncol(all_opportunities),]
   all_opportunities = all_opportunities[1:(n_opportunity-1),, drop=F] # Replaces the previous line; is faster.
   colnames(all_opportunities) = c('p1', 'p2', 'sv')
-  all_opportunities = as.data.frame(unique(all_opportunities))
+  all_opportunities = na.omit(as.data.frame(unique(all_opportunities)))
   
   
   ## INV or DEL/DUP pair? ##

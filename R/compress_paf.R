@@ -151,11 +151,11 @@ compress_paf_fnct <-
 
     # In paf, start is always smaller than end. For our slope etc calculation, it will be easier
     # to change the order of start and end, if the orientation of the alignment is negative.
-    inpaf = transform(
-      inpaf,
-      qend = ifelse(strand == '-', qstart, qend),
-      qstart = ifelse(strand == '-', qend, qstart)
-    )
+    # inpaf = transform(
+    #   inpaf,
+    #   qend = ifelse(strand == '-', qstart, qend),
+    #   qstart = ifelse(strand == '-', qend, qstart)
+    # )
     # For safety: sort entries by qstart. Reset row names so they start at 1.
     inpaf = inpaf[order(inpaf$qstart),]
     rownames(inpaf) <- NULL
@@ -274,11 +274,11 @@ compress_paf_fnct <-
     inpaf = rbind(inpaf, inpaf_short_alns)
     
     # Change orientation BACK. The 'merge_rows' functino is written in that way. 
-    inpaf = transform(
-      inpaf,
-      qend = ifelse(strand == '-', qstart, qend),
-      qstart = ifelse(strand == '-', qend, qstart)
-    )
+    # inpaf = transform(
+    #   inpaf,
+    #   qend = ifelse(strand == '-', qstart, qend),
+    #   qstart = ifelse(strand == '-', qend, qstart)
+    # )
     
     print(paste0('PAF compressed to ', dim(inpaf)[1], ' alignments.'))
     # Save

@@ -667,8 +667,8 @@ carry_out_compressed_sv <- function(bitl, input_ins) {
           
         # Border case 2: The last block is part of inversion
         } else if ((pair[1] > 1) & (pair[2] == dim(bitl)[2])){
-          bitl_mut = cbind( bitl[, 1:(as.numeric(pair[1])-1)],
-                            -bitl[, (as.numeric(pair[2])):(as.numeric(pair[1]))])
+          bitl_mut = cbind( bitl[, 1:(as.numeric(pair[1])-1), drop=F],
+                            -bitl[, (as.numeric(pair[2])):(as.numeric(pair[1])), drop=F])
           # Manually edit the last entry of the header. This is necessary if pair[1] == 2
           # This is in response to an error ('error #2, may11th 2022')
           colnames(bitl_mut)[1] = colnames(bitl)[1]
