@@ -141,7 +141,7 @@ calc_coarse_grained_aln_score <-
     if (forcecalc) {
       calc_corridor_pct = 1
     }
-    calc_corridor_pct = 1
+
     # 1st value
     cost_res[1, 1] = min(climb_up_cost[1] + walk_right_cost[1], cost_d[1, 1])
     
