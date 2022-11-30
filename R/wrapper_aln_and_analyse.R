@@ -86,9 +86,10 @@ wrapper_aln_and_analyse <- function(params) {
   
   # Step 3: Condense and make a condensed plot
   grid_xy = wrapper_condense_paf(params, outlinks)
+  browser()
+  
   make_segmented_pairwise_plot(grid_xy, plot_x_y, outlinks)
   gridmatrix = gridlist_to_gridmatrix(grid_xy)
-  
   # Step 4: Solve and make a solved plot
   #res = solve_mutation_old(gridmatrix, depth = params$depth, discovery_exact = params$discovery_exact)
   res = solve_mutation(gridmatrix, maxdepth = params$depth)#, discovery_exact = params$discovery_exact)
@@ -368,25 +369,26 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks){
                     ystart = ystart
   )
   
+  likely_stepsize = min(c(diff(datx$xstart), diff(daty$ystart)))
+  
   if (length(xstart) > 433){
     print('Too many segments to make colored plot')
     return()
   }
   
-  colors = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)]
-  
-  n <- length(xstart)
+
   qual_col_pals = RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == 'qual',]
-  col_vector = unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
-  
+  col_vector = rep(unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals))), 10)
   
   plot_x_y_segmented = plot_x_y + 
     ggplot2::geom_rect(data=datx,
                        ggplot2::aes(xmin=xstart, xmax=xend, ymin=0, ymax=ymax, fill=col_vector[1:length(xstart)]),
-                       alpha=0.5,) + 
-    ggplot2::guides(fill = FALSE)#  +
-  # geom_segment(data=daty,
-  #              aes(x=0, xend=xmax, y=ystart, yend=ystart), color='grey')
+                       alpha=0.5) + 
+    ggplot2::guides(fill = FALSE) +
+    ggplot2::xlim(c(0,xmax+likely_stepsize)) +
+    ggplot2::ylim(c(0,ymax+likely_stepsize))
+    # ggplot2::geom_segment(data=daty,
+    #             ggplot2::aes(x=0, xend=xmax, y=ystart, yend=ystart), color='grey')
   print(plot_x_y_segmented)
   
   ggplot2::ggsave(filename = paste0(outlinks$outfile_colored_segment),

@@ -94,15 +94,24 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
     current_depth = current_depth + 1  
   }
   
+  browser()
+  print('hi')
   # OPTIONAL: THIS IS THE STEEPEST DESCENT OF LAYER 3
   # IF max depth was reduced due to size, and if no conclusion was found, 
   # then we go into a steepest-descent bonus round. 
-  if ((current_depth == 3) & (maxdepth < maxdepth_input) & (conclusion_found == F)){
+  if ((current_depth == 2) & (maxdepth < maxdepth_input) & (conclusion_found == F)){
+
+    res_df = run_steepest_descent_one_layer_down(bitlocus, res_df, starting_depth = current_depth - 1)
+    res_df = run_steepest_descent_one_layer_down(bitlocus, res_df, starting_depth = current_depth)
     
-    print('No result found until depth=2. Continuing to descent the top ten depth-2 results.')
-    res_df = run_steepest_descent_layer_three(bitlocus, res_df)
-  }
+  }  
   
+  if ((current_depth == 3) & (maxdepth < maxdepth_input) & (conclusion_found == F)){
+
+    res_df = run_steepest_descent_one_layer_down(bitlocus, res_df, starting_depth = current_depth - 1)
+  } 
+  
+
   
   # Prepare output for returns
   res_df_sort = sort_new_by_penalised(bitlocus, res_df)

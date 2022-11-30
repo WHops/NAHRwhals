@@ -99,6 +99,7 @@ calc_coarse_grained_aln_score <-
     
     if (est < (est_highest)){
       return(1)
+      #print('hi')
     } else if (est >= (est_highest)){
       est_highest <<- est
     }

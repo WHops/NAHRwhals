@@ -21,7 +21,7 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F, earlystop = Inf, histor
   if (!is.null(history)){
     print('Continuing a previous run.')
     pairhistory = history$mut_path
-    depth = 2
+    depth = as.numeric(history$depth)
   } else {
     pairhistory = paste(ref_mut_pair[,1:3], collapse='_')
     depth = 0

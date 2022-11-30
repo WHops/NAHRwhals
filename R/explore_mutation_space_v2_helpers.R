@@ -222,6 +222,10 @@ is_cluttered <- function(bitlocus_f, clutter_limit_per_border = 5){
   clutter_all = c(clutter1, clutter2, clutter3, clutter4)
   
   if (any(clutter_all >= clutter_limit_per_border )){
+    print('Cluttered alignment. Adding this info output.')
+    if (exists('log_collection')){
+      log_collection$cluttered_boundaries <<- T
+    }
     return(T)
   }
   
@@ -252,7 +256,10 @@ reduce_depth_if_needed <- function(bitlocus, increase_only, maxdepth){
     maxdepth = 2
   }
   
-  if ((n_pairs > 800) & (increase_only==F)){
+  # [W, 30th Nov 2022]
+  # DELME WHEN DONE. 
+  # should be 800! Moved to 200 for testing purposes only!!
+  if ((n_pairs > 200) & (increase_only==F)){
     print('Huge Alignment! Going for depth 1. ')
     maxdepth = 1
   }
@@ -263,10 +270,56 @@ reduce_depth_if_needed <- function(bitlocus, increase_only, maxdepth){
 
 #' Steepest 
 #' @export
-run_steepest_descent_layer_three <- function(bitlocus, res_df){
+# run_steepest_descent_layer_three <- function(bitlocus, res_df){
+#   
+#   # Get the top 10 results with depth 2 and individual hashes
+#   res_df2 = res_df[(res_df$depth == 2), ]
+#   res_df2_sort = res_df2[order(res_df2$eval, decreasing = T), ]
+#   res_df2_sort = res_df2_sort[!duplicated(res_df2_sort$hash),]
+#   res_d2_top10 = na.omit(res_df2_sort[1:10,])
+#   
+#   # Keep track of maxres, which decides if a new result is worth saving.
+#   maxres = max(res_d2_top10$eval)
+#   # Iterate over all of those 'best' depth=2 results
+#   for (n_res in 1:nrow(res_d2_top10)){
+#     
+#     thisres = res_d2_top10[n_res,]
+#     mut1 = strsplit(strsplit(thisres$mut_path, '\\+')[[1]][[2]], '_')[[1]]
+#     mut2 = strsplit(strsplit(thisres$mut_path, '\\+')[[1]][[3]], '_')[[1]]
+#     mut1_df = data.frame(p1=mut1[1],p2=mut1[2],sv=mut1[3])
+#     mut2_df = data.frame(p1=mut2[1],p2=mut2[2],sv=mut2[3])
+#     
+#     # Execute the two mutations
+#     bitlocus_new = carry_out_compressed_sv(carry_out_compressed_sv(bitlocus, mut1), mut2)
+#     
+#     # Run depth = 1 run for this one. ('history' tells it that its from depth 2.)
+#     vis_list = (dfs(bitlocus_new, maxdepth = 3, increase_only = F, earlystop = 1e10, history=thisres))
+#     
+#     res_df_single = vis_list[[2]]
+#     
+#     res_df = rbind(res_df, res_df_single[res_df_single$eval >= maxres,])
+#     
+#     # Are we happy with the best result? 
+#     solve_th = find_threshold(bitlocus, 3)
+#     conclusion_found = (max(as.numeric(res_df$eval)) >= solve_th)
+#     
+#     if (conclusion_found){
+#       print("Conclusion found!!")
+#     }
+#     
+#   }
+#   
+#   return(res_df)
+#   
+# }
+
+
+#' Steepest 
+#' @export
+run_steepest_descent_one_layer_down <- function(bitlocus, res_df, starting_depth = 1){
   
   # Get the top 10 results with depth 2 and individual hashes
-  res_df2 = res_df[(res_df$depth == 2), ]
+  res_df2 = res_df[(res_df$depth == starting_depth), ]
   res_df2_sort = res_df2[order(res_df2$eval, decreasing = T), ]
   res_df2_sort = res_df2_sort[!duplicated(res_df2_sort$hash),]
   res_d2_top10 = na.omit(res_df2_sort[1:10,])
@@ -274,26 +327,34 @@ run_steepest_descent_layer_three <- function(bitlocus, res_df){
   # Keep track of maxres, which decides if a new result is worth saving.
   maxres = max(res_d2_top10$eval)
   # Iterate over all of those 'best' depth=2 results
-  for (n_res in 1:nrow(res_d2_top10)){
+  for (n_res in row.names(res_d2_top10)){
     
     thisres = res_d2_top10[n_res,]
     mut1 = strsplit(strsplit(thisres$mut_path, '\\+')[[1]][[2]], '_')[[1]]
-    mut2 = strsplit(strsplit(thisres$mut_path, '\\+')[[1]][[3]], '_')[[1]]
     mut1_df = data.frame(p1=mut1[1],p2=mut1[2],sv=mut1[3])
-    mut2_df = data.frame(p1=mut2[1],p2=mut2[2],sv=mut2[3])
     
-    # Execute the two mutations
-    bitlocus_new = carry_out_compressed_sv(carry_out_compressed_sv(bitlocus, mut1), mut2)
+    if (starting_depth == 2){
+      mut2 = strsplit(strsplit(thisres$mut_path, '\\+')[[1]][[3]], '_')[[1]]
+      mut2_df = data.frame(p1=mut2[1],p2=mut2[2],sv=mut2[3])
+      
+      # Execute the two mutations
+      bitlocus_new = carry_out_compressed_sv(carry_out_compressed_sv(bitlocus, mut1), mut2)
+    } else if (starting_depth == 1){
+      # Execute one mutation
+      bitlocus_new = carry_out_compressed_sv(bitlocus, mut1)
+    }
+    
     
     # Run depth = 1 run for this one. ('history' tells it that its from depth 2.)
-    vis_list = (dfs(bitlocus_new, maxdepth = 3, increase_only = F, earlystop = 1e10, history=thisres))
+    vis_list = (dfs(bitlocus_new, maxdepth = starting_depth + 1, increase_only = F, earlystop = 1e10, history=thisres))
+
     
     res_df_single = vis_list[[2]]
     
     res_df = rbind(res_df, res_df_single[res_df_single$eval >= maxres,])
     
     # Are we happy with the best result? 
-    solve_th = find_threshold(bitlocus, 3)
+    solve_th = find_threshold(bitlocus, starting_depth + 1)
     conclusion_found = (max(as.numeric(res_df$eval)) >= solve_th)
     
     if (conclusion_found){

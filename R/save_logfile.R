@@ -38,7 +38,8 @@ save_to_logfile <- function(log, res, logfile){
     log$exceeds_x,
     log$exceeds_y,
     log$grid_inconsistency,
-    log$flip_unsure
+    log$flip_unsure,
+    log$cluttered_boundaries
   )
   
   colnames_ = data.frame(
@@ -59,7 +60,8 @@ save_to_logfile <- function(log, res, logfile){
     'exceeds_x',
     'exceeds_y',
     'grid_inconsistency',
-    'flip_unsure'
+    'flip_unsure',
+    'cluttered_boundaries'
   )
 
   # If file doesn't exist, write colnames.
@@ -82,6 +84,7 @@ init_log_with_def_values <- function(){
   log_collection$exceeds_y = F
   log_collection$grid_inconsistency = F
   log_collection$flip_unsure = F
+  log_collection$cluttered_boundaries = F
   log_collection$mut_simulated = 0
   log_collection$mut_tested = 0
   
