@@ -386,6 +386,11 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks){
   
   likely_stepsize = min(c(diff(datx$xstart), diff(daty$ystart)))
   
+  # Introducing special case for nrow(datx) = 1
+  if (likely_stepsize == Inf){
+    likely_stepsize = 0
+  }
+  
   if (length(xstart) > 433){
     print('Too many segments to make colored plot')
     return()
