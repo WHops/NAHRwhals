@@ -63,10 +63,12 @@ wrapper_aln_and_analyse <- function(params) {
     
   
   # Step 1: Get the sequences (write to disk)
-  start_end_pad = extract_sequence_wrapper(params, outlinks)
-  
+  chr_start_end_pad_params = extract_sequence_wrapper(params, outlinks)
+  chr_start_end_pad = chr_start_end_pad_params[[1]]
+  params = chr_start_end_pad_params[[2]]
+
   # Step 2: Run the alignments
-  plot_x_y = produce_pairwise_alignments_minimap2(params, outlinks, start_end_pad[1], start_end_pad[2])
+  plot_x_y = produce_pairwise_alignments_minimap2(params, outlinks, chr_start_end_pad)
 
   # Step 2.1: If plot_only, exit. No SV calls. 
   if (params$plot_only){
@@ -76,23 +78,36 @@ wrapper_aln_and_analyse <- function(params) {
     }
     return()
   }
+  
   # Step 2.2: If alignment has a contig break, exit. No SV calls.
   if (log_collection$exceeds_y){
     print('Assembly contig is broken. Not attempting to produce SV calls')
-    res = data.frame(eval = 0, mut1 = 'ref', mut2 = NA, mut3 = NA)
-    write_results(res, outlinks, params)
+    res_empty = data.frame(eval=0, mut1='ref')
+    res_empty = annotate_res_out_with_positions_lens(res_empty, NULL)
+    
+    write_results(res_empty, outlinks, params)
     return()
   }
   
   # Step 3: Condense and make a condensed plot
   grid_xy = wrapper_condense_paf(params, outlinks)
-  browser()
+  
+  # Step 3.1: If the alignment is cluttered, exit. No SV calls.
+  if (is.null(grid_xy)){
+    res_empty = data.frame(eval=0, mut1='ref')
+    res_empty = annotate_res_out_with_positions_lens(res_empty, NULL)
+    write_results(res_empty, outlinks, params)
+    
+    return()
+  }
   
   make_segmented_pairwise_plot(grid_xy, plot_x_y, outlinks)
   gridmatrix = gridlist_to_gridmatrix(grid_xy)
+  saveRDS(gridmatrix, file='~/Desktop/first_advanced')
   # Step 4: Solve and make a solved plot
   #res = solve_mutation_old(gridmatrix, depth = params$depth, discovery_exact = params$discovery_exact)
   res = solve_mutation(gridmatrix, maxdepth = params$depth)#, discovery_exact = params$discovery_exact)
+  
   make_modified_grid_plot(res, gridmatrix, outlinks)
     
   # Step 5: Save
@@ -145,8 +160,8 @@ determine_plot_minlen <- function(start, end){
 determine_chunklen <- function(start, end) {
   
   # This is a bit poorly encoded. 
-  length_upper_cutoffs = c(50000, 1000000, 2000000, 5000000, 1e10)
-  chunklens =            c(1000,  10000,   10000,   10000,   50000)
+  length_upper_cutoffs = c(10000, 50000, 1000000, 2000000, 5000000, 1e10)
+  chunklens =            c(100, 1000,  10000,   10000,   10000,   50000)
   
   interval_len = end - start
   
@@ -332,7 +347,7 @@ write_results <- function(res, outlinks, params){
   )
   
   # Save to logfile
-  save_to_logfile(get('log_collection', envir = globalenv()), res, params$logfile)
+  save_to_logfile(get('log_collection', envir = globalenv()), res, params$logfile, params, alt_x = (params$alt_ref_sample != F))
   
 }
 

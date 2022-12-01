@@ -2,7 +2,11 @@
 #' Produce up to three minimap2 based alignments. 
 #' @author Wolfram Höps
 #' @export
-produce_pairwise_alignments_minimap2 <- function(params, outlinks, start_x_pad, end_x_pad){
+produce_pairwise_alignments_minimap2 <- function(params, outlinks, chr_start_end_pad){
+  
+  x_seqname = chr_start_end_pad[1]
+  start_x_pad = as.numeric(chr_start_end_pad[2])
+  end_x_pad = as.numeric(chr_start_end_pad[3])
   # Run alignments.
   # Run REF self alignment only if it hasn't been run before.
   if (params$self_plots) {
@@ -20,7 +24,7 @@ produce_pairwise_alignments_minimap2 <- function(params, outlinks, start_x_pad, 
         hlend =   params$end_x - start_x_pad,
         x_start = start_x_pad,
         x_end =   end_x_pad,
-        x_seqname = params$seqname_x,
+        x_seqname = x_seqname,
         anntrack = params$anntrack,
         hltrack = params$hltrack
       )
@@ -71,7 +75,7 @@ produce_pairwise_alignments_minimap2 <- function(params, outlinks, start_x_pad, 
     hlend = F,
     x_start = start_x_pad,
     x_end = end_x_pad,
-    x_seqname = params$seqname_x,
+    x_seqname = x_seqname,
     anntrack = params$anntrack,
     hltrack = params$hltrack#end_x - start_x_pad
   )

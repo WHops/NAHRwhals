@@ -50,6 +50,7 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
   if (is_cluttered(bitlocus)){
     print("Alignments overlap with borders. Make frame larger!")
     res_out = data.frame(eval=0, mut1='ref')
+    res_out = annotate_res_out_with_positions_lens(res_out, bitlocus)
     
     return(res_out)
   }
@@ -78,7 +79,6 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
     
     # Run the dfs machinery (main work horse)
     vis_list = (dfs(bitlocus, maxdepth = current_depth, increase_only = F, earlystop = earlystop))
-    
     # Extract res_df
     res_df = vis_list[[2]]
 
@@ -94,15 +94,17 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
     current_depth = current_depth + 1  
   }
   
-  browser()
-  print('hi')
+
   # OPTIONAL: THIS IS THE STEEPEST DESCENT OF LAYER 3
   # IF max depth was reduced due to size, and if no conclusion was found, 
   # then we go into a steepest-descent bonus round. 
   if ((current_depth == 2) & (maxdepth < maxdepth_input) & (conclusion_found == F)){
 
     res_df = run_steepest_descent_one_layer_down(bitlocus, res_df, starting_depth = current_depth - 1)
-    res_df = run_steepest_descent_one_layer_down(bitlocus, res_df, starting_depth = current_depth)
+    
+    if (conclusion_found == F){
+      res_df = run_steepest_descent_one_layer_down(bitlocus, res_df, starting_depth = current_depth)
+    }
     
   }  
   
@@ -112,13 +114,16 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
   } 
   
 
-  
+  print('Sorting results')
+
   # Prepare output for returns
   res_df_sort = sort_new_by_penalised(bitlocus, res_df)
   res_out = transform_res_new_to_old(res_df_sort)
   res_out$eval = as.numeric(res_out$eval)
   
+  res_out = annotate_res_out_with_positions_lens(res_out, bitlocus)
   
+
   # Make an entry to the output logfile #
   if (exists('log_collection')){
     log_collection$depth <<- maxdepth
@@ -137,7 +142,102 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
   
 
 
+#' Description...
+#' @export
+annotate_res_out_with_positions_lens <- function(res_out, bitlocus){
+  
 
+  n_mut = dim(res_out)[2] - 1
+  res_out$mut1_start = NA
+  res_out$mut1_end = NA
+  res_out$mut1_pos_pm = NA
+  res_out$mut1_len = NA
+  res_out$mut1_len_pm = NA
+  
+  res_out$mut2_len = NA
+  res_out$mut2_len_pm = NA
+  res_out$mut3_len = NA
+  res_out$mut3_len_pm = NA
+  
+  if (is.null(bitlocus)){
+    return(res_out)
+  }
+  
+  colnumbers = as.numeric(colnames(bitlocus))
+  
+  count = 1
+  # Determine location of mut #1
+  for (nrow in row.names(res_out)){
+    count = count + 1
+    
+    if (count > 2000){
+      print('Stopping to annotate results to save some time.')
+      return(res_out)
+    }
+    res_vec = res_out[nrow, ]
+    nmut = 
+      if (res_vec$mut1 == 'ref'){
+        next()
+      }
+    
+    # mut 1
+    m1_places = as.numeric(strsplit(res_vec$mut1, '_')[[1]][1:2]) 
+    start_mean = round(sum(colnumbers[1:(m1_places[1] -1)]) + (colnumbers[m1_places[1]] / 2))
+    end_mean = round(sum(colnumbers[1:(m1_places[2] -1)]) + (colnumbers[m1_places[2]] / 2))
+    
+    # PM: plus/minus. 
+    start_pm =  round((colnumbers[m1_places[1]] / 2))
+    end_pm =  round((colnumbers[m1_places[2]] / 2))
+    
+    len_range = c(
+      (end_mean-end_pm)-(start_mean+start_pm), # Shortest possible
+      (end_mean+end_pm)-(start_mean-start_pm) # Largest possible
+    )
+    
+    res_out[nrow, 'mut1_start'] = start_mean
+    res_out[nrow, 'mut1_end'] = end_mean
+    res_out[nrow, 'mut1_pos_pm'] = start_pm
+    res_out[nrow, 'mut1_len'] = mean(len_range)
+    res_out[nrow, 'mut1_len_pm'] = len_range[2] - mean(len_range)
+    
+    if ('mut2' %in% colnames(res_vec[,colSums(is.na(res_vec))<nrow(res_vec)])){
+
+      bitlocus_mut = carry_out_compressed_sv(bitlocus, strsplit(res_vec$mut1, '_')[[1]])
+      colnumbers_mut2 = as.numeric(colnames(bitlocus_mut))
+      
+      # mut 2
+      m2_places = as.numeric(strsplit(res_vec$mut2, '_')[[1]][1:2]) 
+      start_mean = round(sum(colnumbers_mut2[1:(m2_places[1] -1)]) + (colnumbers_mut2[m2_places[1]] / 2))
+      end_mean = round(sum(colnumbers_mut2[1:(m2_places[2] -1)]) + (colnumbers_mut2[m2_places[2]] / 2))
+      len_range = c(
+        (end_mean-end_pm)-(start_mean+start_pm), # Shortest possible
+        (end_mean+end_pm)-(start_mean-start_pm) # Largest possible
+      )
+      
+      res_out[nrow, 'mut2_len'] = mean(len_range)
+      res_out[nrow, 'mut2_len_pm'] = len_range[2] - mean(len_range)
+      
+      if ('mut3' %in% colnames(res_vec[,colSums(is.na(res_vec))<nrow(res_vec)])){
+        bitlocus_mut_3 = carry_out_compressed_sv(bitlocus_mut, strsplit(res_vec$mut2, '_')[[1]])
+        colnumbers_mut3 = as.numeric(colnames(bitlocus_mut_3))
+        
+        # mut 2
+        m3_places = as.numeric(strsplit(res_vec$mut3, '_')[[1]][1:2]) 
+        start_mean = round(sum(colnumbers_mut3[1:(m3_places[1] -1)]) + (colnumbers_mut3[m3_places[1]] / 2))
+        end_mean = round(sum(colnumbers_mut3[1:(m3_places[2] -1)]) + (colnumbers_mut3[m3_places[2]] / 2))
+        len_range = c(
+          (end_mean-end_pm)-(start_mean+start_pm), # Shortest possible
+          (end_mean+end_pm)-(start_mean-start_pm) # Largest possible
+        )
+        
+        res_out[nrow, 'mut3_len'] = mean(len_range)
+        res_out[nrow, 'mut3_len_pm'] = len_range[2] - mean(len_range)
+      }
+    }
+  }
+  
+  return(res_out)
+}
 
 
 

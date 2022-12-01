@@ -195,9 +195,15 @@ wrapper_paf_to_bitlocus <-
         print('Too many alignments. Increasing minlen conditions')
         minlen = minlen  * 5
         compression = compression * 5
+        
+        
         next()
       }
     
+      if (is_cluttered_paf(paf)){
+        print('This paf file seems very cluttered and/or repetitive. Abort mission. ')
+        return()
+      }
       print(paste0('Leading to a paf of dimensions: ', dim(paf)[1]))
       gxy = make_xy_grid(paf, n_additional_bounces = 10)
       
@@ -224,6 +230,7 @@ wrapper_paf_to_bitlocus <-
     # with slope != 1. This used to be common in a previous version of ntk.
     # Right now, bressi is a bit overkill but we keep it in anyway.
     grid_list = data.frame()
+    
     for (i in 1:dim(paf)[1]) {
       grid_list = rbind(grid_list, as.data.frame(
         bresenham(
@@ -235,6 +242,7 @@ wrapper_paf_to_bitlocus <-
         )
       ))
     }
+    
     
     grid_list = remove_duplicates_triple(grid_list)
     

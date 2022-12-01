@@ -201,7 +201,7 @@ find_threshold <- function(bitlocus_f, nmut){
 }
 
 
-#' Determine if a dotplot is good for use in the first place. 
+#' Determine if a BITLOCUS is good for use in the first place. 
 #' If it has many dots around its edges, it is not good and we
 #' need a larger window.  
 #' 
@@ -232,6 +232,44 @@ is_cluttered <- function(bitlocus_f, clutter_limit_per_border = 5){
   return(F)
 }
 
+
+#' Determine if a PAF DOTPLOT is good for use in the first place. 
+#' If it has many dots around its edges, it is not good and we
+#' need a larger window.  
+#' 
+#' I want to have a second look at this function... is it clean / reasonable?
+#' 
+#' @export
+is_cluttered_paf <- function(paf, clutter_limit_per_border = 5){
+  
+  clutter1 = sum(paf$qstart == 0)
+  clutter2 = sum(paf$qend == max(paf$qend))
+  clutter3 = sum(paf$tstart == 0)
+  clutter4 = sum(paf$tend == max(paf$tend))
+  clutter_all = c(clutter1, clutter2, clutter3, clutter4)
+  
+  # Second line of evidence for a cluttered alignment.
+  seems_simplistic = 
+    (length(unique(paf$qstart)) < (nrow(paf) / 2)) | 
+    (length(unique(paf$tstart)) < (nrow(paf) / 2)) | 
+    (length(unique(paf$qend))   < (nrow(paf) / 2)) | 
+    (length(unique(paf$qstart)) < (nrow(paf) / 2)) 
+    
+
+  
+  if (any(clutter_all >= clutter_limit_per_border ) & seems_simplistic){
+    print('Cluttered alignment. Adding this info output.')
+    if (exists('log_collection')){
+      log_collection$cluttered_boundaries <<- T
+    }
+    return(T)
+  }
+  
+  return(F)
+  
+}
+
+
 # What is the initial symmetry of the bitlocus? 
 #' 
 #' @export
@@ -259,7 +297,7 @@ reduce_depth_if_needed <- function(bitlocus, increase_only, maxdepth){
   # [W, 30th Nov 2022]
   # DELME WHEN DONE. 
   # should be 800! Moved to 200 for testing purposes only!!
-  if ((n_pairs > 200) & (increase_only==F)){
+  if ((n_pairs > 600) & (increase_only==F)){
     print('Huge Alignment! Going for depth 1. ')
     maxdepth = 1
   }

@@ -17,6 +17,7 @@ extract_sequence_wrapper <- function(params, outlinks){
     start_x_pad = start_end_pad[1]
     end_x_pad = start_end_pad[2]
     
+    chr_start_end_pad = c(params$seqname_x, start_x_pad, end_x_pad)
     # First, write the asm y and hg38 x. 
     write_x_y_sequences(params$seqname_x, 
                         start_x_pad, 
@@ -43,9 +44,16 @@ extract_sequence_wrapper <- function(params, outlinks){
                                        outlinks, 
                                        params)    
       
-      params$seqname_x = new_coords[['new_seqname']]
+      params$seqname_x_alt = new_coords[['new_seqname']]
+      params$start_x_alt = new_coords[['new_x_start']]
+      params$end_x_alt = new_coords[['new_x_end']]
+      
       start_x_pad = new_coords[['new_x_start']]
       end_x_pad = new_coords[['new_x_end']]
+      
+      
+      chr_start_end_pad = c(new_coords[['new_seqname']], new_coords[['new_x_start']], new_coords[['new_x_end']])
+
       
       #params[c('anntrack', 'hltrack') ] = NULL
       
@@ -60,11 +68,11 @@ extract_sequence_wrapper <- function(params, outlinks){
     
     start_x_pad = params$start_x
     end_x_pad = params$end_x
+    chr_start_end_pad = c(params$seqname_x, start_x_pad, end_x_pad)
     
     system(paste0('cp ', genome_x_fa, ' ', outlinks$genome_x_fa_subseq))
     system(paste0('cp ', genome_y_fa, ' ', outlinks$genome_y_fa_subseq))
     
   }
-  
-  return(start_end_pad)
+  return(list(chr_start_end_pad, params))
 }
