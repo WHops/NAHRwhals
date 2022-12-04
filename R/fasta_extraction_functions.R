@@ -279,10 +279,12 @@ liftover_coarse <-
     # If we want to get a whole chromosome (tested for chrY only), we start at 1, and
     # go as far as probes land (... thusly avoiding heterochromatin.)
     whole_chr = F
+
     if (whole_chr){
       start_winners = 1
       end_winners = min(28500000,max(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord))
       
+    
     } else if (search_mode == 'traditional') {
       startend = find_coords_median_extension(liftover_coords, cpaf, winner_chr, start, end, lenfactor)
 
@@ -387,7 +389,7 @@ enlarge_interval_by_factor <-
     
     # IF conversionpaf is given (recommended), it is used to check how long
     # that chromosome actually is - and if our padding exceeds boundaries.
-    if (!is.null(conversionpaf_f)) {
+    if ((!is.null(conversionpaf_f)) & (!is.na(conversionpaf_f))) {
       stopifnot("Sequence padding: chromosome name is required for QC" = !is.na(seqname_f))
       
       paf = read_and_prep_paf(conversionpaf_f)
@@ -610,10 +612,12 @@ find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, e
     
   }
   
+  pointspace = min(diff(liftover_coords_maxseq$pos_probe))
+  points_from_border_to_consider_ok = 5
   if (liftover_run == F){   
     # Warn if we are exceeding chromosome boundaries in the query.
-    if ((start_winners < 0) |
-        (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
+    if ((start_winners < (pointspace * points_from_border_to_consider_ok)) |
+       ( (end_winners + (pointspace * points_from_border_to_consider_ok))  > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
       print('Warning! Reaching the end of alignment!')
   
       # Make an entry to the output logfile #

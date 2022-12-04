@@ -38,7 +38,6 @@ wrapper_aln_and_analyse <- function(params) {
     print('Debug mode!')
     browser()
   }
-  
   # Start writing a log file. 
   log_collection <<- init_log_with_def_values()
   log_collection[c('chr',
@@ -51,7 +50,6 @@ wrapper_aln_and_analyse <- function(params) {
     c(params$seqname_x, params$start_x, params$end_x, params$xpad, 
       params$chunklen, params$samplename, params$depth)
   
-
   # Determine 'main' output name for this run
   sequence_name_output = manufacture_output_res_name(
     params$seqname_x, params$start_x, params$end_x
@@ -61,7 +59,6 @@ wrapper_aln_and_analyse <- function(params) {
   # Define output files
   outlinks = define_output_files(sequence_name_output, params$samplename)
     
-  
   # Step 1: Get the sequences (write to disk)
   chr_start_end_pad_params = extract_sequence_wrapper(params, outlinks)
   chr_start_end_pad = chr_start_end_pad_params[[1]]
@@ -94,6 +91,7 @@ wrapper_aln_and_analyse <- function(params) {
   
   # Step 3.1: If the alignment is cluttered, exit. No SV calls.
   if (is.null(grid_xy)){
+    print('Dotplot is cluttered. SV calculation is not proceeded.')
     res_empty = data.frame(eval=0, mut1='ref')
     res_empty = annotate_res_out_with_positions_lens(res_empty, NULL)
     write_results(res_empty, outlinks, params)
@@ -396,7 +394,6 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks){
     return()
   }
   
-
   qual_col_pals = RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == 'qual',]
   col_vector = rep(unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals))), 10)
   
@@ -405,8 +402,8 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks){
                        ggplot2::aes(xmin=xstart, xmax=xend, ymin=0, ymax=ymax, fill=col_vector[1:length(xstart)]),
                        alpha=0.5) + 
     ggplot2::guides(fill = FALSE) +
-    ggplot2::xlim(c(0,xmax+likely_stepsize)) +
-    ggplot2::ylim(c(0,ymax+likely_stepsize))
+    ggplot2::xlim(c(0,max(ggplot2::layer_scales(plot_x_y)$x$range$range, xmax+likely_stepsize))) + # Range is the max of previous plot and new additions. So that nothing gets cut off. 
+    ggplot2::ylim(c(0,max(ggplot2::layer_scales(plot_x_y)$y$range$range, ymax+likely_stepsize)))
     # ggplot2::geom_segment(data=daty,
     #             ggplot2::aes(x=0, xend=xmax, y=ystart, yend=ystart), color='grey')
   print(plot_x_y_segmented)

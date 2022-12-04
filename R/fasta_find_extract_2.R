@@ -11,22 +11,25 @@ write_x_y_sequences <- function(seqname_x,
                                 genome_y_fa, 
                                 conversionpaf_link, 
                                 outlinks, 
-                                params){
+                                params, 
+                                extract_only = F){
 
   if ((end_x_pad - start_x_pad) < params$maxlen_refine){
     refine_runnr = 1
   } else {
     refine_runnr = 0
   }
-  # Get coordinates in y
-  coords_liftover = liftover_coarse(seqname_x,
-                                    start_x_pad,
-                                    end_x_pad,
-                                    conversionpaf_link,
-                                    lenfactor = 1, # Unneeded parameter
-                                    whole_chr = (params$start_x %in% c(0, 1)),
-                                    refine_runnr = refine_runnr)
   
+  if (extract_only == F){
+    # Get coordinates in y
+    coords_liftover = liftover_coarse(seqname_x,
+                                      start_x_pad,
+                                      end_x_pad,
+                                      conversionpaf_link,
+                                      lenfactor = 1, # Unneeded parameter
+                                      whole_chr = (params$start_x %in% c(0, 1)),
+                                      refine_runnr = refine_runnr)
+  }
   
   
   # Get subseq-fastas in x and y
@@ -35,6 +38,19 @@ write_x_y_sequences <- function(seqname_x,
                           start_x_pad,
                           end_x_pad,
                           genome_x_fa_subseq)
+  
+  if (extract_only == T){
+    
+    extract_subseq_bedtools(params$genome_x_fa,
+                            params$seqname_x,
+                            start_x_pad,
+                            end_x_pad,
+                            genome_y_fa_subseq)
+    
+    return( list(new_seqname = seqname_x,
+                 new_x_start = start_x_pad,
+                 new_x_end = end_x_pad))
+    }
   
   extract_subseq_bedtools(genome_y_fa,
                           coords_liftover$lift_contig,
@@ -71,15 +87,15 @@ write_x_y_sequences <- function(seqname_x,
     print(coords_liftover)
     print(coords_liftover_2nd)
     
-  extract_subseq_bedtools(genome_y_fa,
-                              coords_liftover_2nd$lift_contig,
-                              coords_liftover_2nd$lift_start,
-                              coords_liftover_2nd$lift_end,
-                              genome_y_fa_subseq)
-    
-  return( list(new_seqname = coords_liftover_2nd$lift_contig,
-               new_x_start = coords_liftover_2nd$lift_start,
-               new_x_end = coords_liftover_2nd$lift_end))
+    extract_subseq_bedtools(genome_y_fa,
+                                coords_liftover_2nd$lift_contig,
+                                coords_liftover_2nd$lift_start,
+                                coords_liftover_2nd$lift_end,
+                                genome_y_fa_subseq)
+      
+    return( list(new_seqname = coords_liftover_2nd$lift_contig,
+                 new_x_start = coords_liftover_2nd$lift_start,
+                 new_x_end = coords_liftover_2nd$lift_end))
   }
   
   return( list(new_seqname = coords_liftover$lift_contig,
