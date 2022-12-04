@@ -38,6 +38,20 @@ wrapper_aln_and_analyse <- function(params) {
     print('Debug mode!')
     browser()
   }
+  
+  
+  # Work out some reference genome things...
+  if (params$reference_genome == 'hg38'){
+    params$alt_ref_sample = F
+  } else if (params$reference_genome == 'T2T'){
+    print('T2T chosen. Translating reference coodinates...')
+    params$alt_ref_sample = 'T2T'
+  } else {
+    print('Error: reference_genome must be "hg38" or "T2T".')
+    return()
+  }
+
+  
   # Start writing a log file. 
   log_collection <<- init_log_with_def_values()
   log_collection[c('chr',

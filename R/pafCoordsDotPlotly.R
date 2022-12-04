@@ -296,11 +296,18 @@ dotplotly_dotplot_return_aln <- function(opt) {
 #' @export
 plot_alignments <-function(alignments, opt){
   ### Plot ###
-  
+  browser()
   print(opt$x_end)
   print(opt$x_start)
   yTickMarks = tapply(alignments$queryEnd, alignments$queryID, max)
 
+  # Make y name
+  stringlist = (lapply(stringr::str_split(as.character(alignments[,'queryID']), '_'), head, -1))
+  all_y_names = unlist(lapply(stringlist, paste, collapse=''))
+  common_y_name = names(which.max(table(all_y_names))) 
+    
+    
+    
   gp = 
     ggplot2::ggplot(alignments) +
       ggplot2::geom_segment(
@@ -326,8 +333,21 @@ plot_alignments <-function(alignments, opt){
 
       ggplot2::labs(color = "Percent ID",
                     title = opt$input_filename) +
-      ggplot2::xlab(as.character(alignments$refID[1])) +
-      ggplot2::ylab(as.character(alignments$queryID[1])) +
+    
+      ggplot2::ylab(paste0('[',
+                           params$samplename_y, 
+                           '] ', 
+                           common_y_name)) + 
+      ggplot2::xlab(paste0('[',
+                           params$reference_genome, 
+                           '] ', 
+                           paste0(translate_t2t_chr_to_readable(stringr::str_split(as.character(alignments$refID[1]), 
+                                                                                   ':')[[1]][1]), 
+                                  ':', 
+                                  stringr::str_split(as.character(alignments$refID[1]), ':')[[1]][2])
+                           
+                           )) +
+      #ggplot2::ylab(as.character(alignments$queryID[1])) +
       ggplot2::coord_fixed() + 
       ggplot2::scale_x_continuous(labels = scales::comma) +
       ggplot2::scale_y_continuous(labels = scales::comma) +
