@@ -296,7 +296,6 @@ dotplotly_dotplot_return_aln <- function(opt) {
 #' @export
 plot_alignments <-function(alignments, opt){
   ### Plot ###
-  browser()
   print(opt$x_end)
   print(opt$x_start)
   yTickMarks = tapply(alignments$queryEnd, alignments$queryID, max)

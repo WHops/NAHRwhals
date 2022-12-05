@@ -114,35 +114,47 @@ bounce_point <- function(vectors, point) {
   newpoints[1, ] = point
   colnames(newpoints) = c('x', 'y')
   
-  # vertical overlaps
-  y_overlap_vecs = vectors[((vectors$tstart < as.numeric(point[1])) &
-                              (vectors$tend > as.numeric(point[1]))),]
+
   
+  if (!(point[1] %in% x_orig_visited)){
+    
+    # vertical overlaps
+    y_overlap_vecs = vectors[((vectors$tstart < as.numeric(point[1])) &
+                                (vectors$tend > as.numeric(point[1]))),]
+    
+    # If there is overlap, calculate overlap of point with every overlapper
+    if (dim(y_overlap_vecs)[1] > 0) {
+      for (i in 1:dim(y_overlap_vecs)[1]) {
+        newpoints = rbind(newpoints, 
+                          data.frame(x=point[1], y=((y_overlap_vecs$slope) * as.numeric(point[1])) + y_overlap_vecs$y_intercept))
+        #y_i = (point[1] + vec$x_intercept) / vec$slope_inv
+      }
+    }
+    
+    x_orig_visited <<- c(x_orig_visited, point[1])
+  }
+  
+  if (!(point[2] %in% y_orig_visited)){
+    
   # horizontal overlaps
-  
-  
   x_overlap_vecs = vectors[((vectors$qlow < as.numeric(point[2])) &
                               (vectors$qhigh > as.numeric(point[2]))),]
   
-  
-  
-  # If there is overlap, calculate overlap of point with every overlapper
-  if (dim(y_overlap_vecs)[1] > 0) {
-    for (i in 1:dim(y_overlap_vecs)[1]) {
-      vec = y_overlap_vecs[i,]
-      newpoints = rbind(newpoints, c(point[1], ((vec$slope) * as.numeric(point[1])) + vec$y_intercept))
-      #y_i = (point[1] + vec$x_intercept) / vec$slope_inv
-    }
-  }
-  
   if (dim(x_overlap_vecs)[1] > 0) {
     for (i in 1:dim(x_overlap_vecs)[1]) {
-      vec = x_overlap_vecs[i,]
       newpoints = rbind(newpoints,
-                        c(((point[2] - vec$y_intercept) / vec$slope
-                        ), point[2]))
+                        data.frame(x=(point[2] - x_overlap_vecs$y_intercept) / x_overlap_vecs$slope, y=point[2] )
+      )
     }
   }
+  
+    y_orig_visited <<- c(y_orig_visited, point[2])
+  
+  }
+  
+  
+  
+  
   return(newpoints)
 }
 
@@ -193,8 +205,8 @@ wrapper_paf_to_bitlocus <-
       
       if ((dim(paf)[1]) > compression_params$max_n_alns){
         print('Too many alignments. Increasing minlen conditions')
-        minlen = minlen  * 5
-        compression = compression * 5
+        minlen = minlen  * 2
+        compression = compression * 2
         
         
         next()
@@ -205,7 +217,7 @@ wrapper_paf_to_bitlocus <-
         return()
       }
       print(paste0('Leading to a paf of dimensions: ', dim(paf)[1]))
-      gxy = make_xy_grid(paf, n_additional_bounces = 10)
+      gxy = make_xy_grid(paf, n_additional_bounces = 50)
       
       # Make an entry to the output logfile #
       if (exists('log_collection')) {
@@ -219,8 +231,8 @@ wrapper_paf_to_bitlocus <-
       
       if ( (length(gridlines.x) + length(gridlines.y))  > params$max_size_col_plus_rows){
         print('Too large grids. Repeating.')
-        minlen = minlen  * 5
-        compression = compression * 5
+        minlen = minlen  * 2
+        compression = compression * 2
         next()
       }
     }
@@ -321,13 +333,17 @@ enforce_slope_one <- function(df) {
 #' @export
 make_xy_grid <- function(paf, n_additional_bounces = 10) {
   grid_successful = T
-  
   # Points is 'gridpoints'
   points_overall = data.frame()
   
   # Bounce points a couple of times. For the bouncing algorithm,
   # see separate description.
+  
+  x_orig_visited <<- c()
+  y_orig_visited <<- c()
+  
   for (i in 1:dim(paf)[1]) {
+
     # Bounce start once
     # p1_bounced = bounce_point(paf, c(paf[i,]$tstart, paf[i,]$qlow))
     # # Bounce end once
@@ -348,59 +364,96 @@ make_xy_grid <- function(paf, n_additional_bounces = 10) {
       points_overall = rbind(points_overall, bounce_point(paf, as.numeric(p2_bounced[k, ])))
     }
     
+    points_overall = unique(points_overall[order(points_overall$x), ])
+    
   }
   
   # Unique and sort
   points_overall = unique(points_overall[order(points_overall$x), ])
+  plot_helper_debug(paf, points_overall)
+  #browser()
   
+  points_last_iteration = points_overall
   # # bounce some more
   for (j in (1:n_additional_bounces)) {
-    for (i in 1:dim(points_overall)[1]) {
-      points_overall = rbind(points_overall, bounce_point(paf, as.numeric(points_overall[i, ])))
-      
-      points_overall = unique((points_overall))
-    }
+    print(paste0('Additional bounce: ', j, ' out of ', n_additional_bounces))
     
-    # Here we check if the grid is still changing after the first 'bounce'.
-    # If it is, this means that the grid is not converging due to incongruencies
-    # in the alignment. Not much we can do about it, but we write a warning.
-    if (j == 1) {
-      points_overall_1st_bounce = points_overall
-    } else if ((j == 2) &
-               (!all(points_overall %in% points_overall_1st_bounce))) {
-      print(
-        "WARNING. Grid has not converged. Small alignment incongruencies are likely, results may not be reliable. Consider re-running with larger conversion-factor (typically >100)"
-      )
-      grid_successful = F
-      # Make an entry to the output logfile #
-      if (exists('log_collection')) {
-        log_collection$grid_inconsistency <<- T
-      }
-      # Log file entry done #
+    # If we have converged after 1st iteration, exit here. 
+    if ((j == 2) & (all(points_overall %in% points_last_iteration))){
       
-    } else if ((j == 2) &
-               (all(points_overall %in% points_overall_1st_bounce))) {
       print('Grid has converged. All fine.')
       # Make an entry to the output logfile #
       if (exists('log_collection')) {
         log_collection$grid_inconsistency <<- F
       }
-      # Log file entry done #
+      
+      gridlines.y = unique(round(sort(c(0, points_overall$y ))))
+      gridlines.x = unique(round(sort(c(0, points_overall$x ))))
+      
+      return(list(gridlines.x, gridlines.y, T))
       
     }
     
+    if ((j > 2) & (all(points_overall %in% points_last_iteration))){
+      
+      print(paste0('Grid has converged after ', j-1, ' additional bounces.'))
+      grid_successful = F
+      # Make an entry to the output logfile #
+      if (exists('log_collection')) {
+        log_collection$grid_inconsistency <<- T
+      }
+      
+      plot_helper_debug(paf, points_overall)
+      
+      gridlines.y = unique(round(sort(c(0, points_overall$y ))))
+      gridlines.x = unique(round(sort(c(0, points_overall$x ))))
+      
+      return(list(gridlines.x, gridlines.y, F))
+      
+    }
+    
+    # Run one more bounding point. 
+    if (j == 1){
+      points_for_consideration = points_overall
+    } else {
+      points_for_consideration = dplyr::anti_join(points_overall, points_last_iteration)
+    }
+    points_last_iteration = points_overall
+    #browser()
+    
+    # Bounce every point once
+    # [note: we could def constrict this to *new* points (last generation)]
+    for (i in 1:nrow(points_for_consideration)) {
+      
+      points_overall = unique(rbind(points_overall, bounce_point(paf, as.numeric(points_for_consideration[i, ]))))
+
+    }
+  }
+    
+  print(
+    "WARNING. Grid has not converged. Small alignment incongruencies are likely, results may not be reliable. Consider re-running with larger conversion-factor (typically >100)"
+  )
+  
+  if (exists('log_collection')) {
+    log_collection$grid_inconsistency <<- F
   }
   
-  gridlines.y = unique(round(sort(c(
-    0, points_overall$y
-  ))))
-  gridlines.x = unique(round(sort(c(
-    0, points_overall$x
-  ))))
+  gridlines.y = unique(round(sort(c(0, points_overall$y ))))
+  gridlines.x = unique(round(sort(c(0, points_overall$x ))))
   
-  return(list(gridlines.x, gridlines.y, grid_successful))
+  return(list(gridlines.x, gridlines.y, F))
 }
 
-
+#' @export
+plot_helper_debug <- function(paf, points_overall){
+  
+  pp=plot_paf(paf, unique(round(sort(c(
+    0, points_overall$x
+  )))), unique(round(sort(c(
+    0, points_overall$y
+  )))), linewidth = 0.5)
+  print(pp)
+  
+}
 
 #ggplot2::ggplot(as.data.frame(grid)) + ggplot2::geom_tile()

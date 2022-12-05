@@ -7,6 +7,7 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F, earlystop = Inf, histor
   
   # Prepare initial bitlocus bit
   bitl = flip_bitl_y_if_needed(bitlocus)
+  print('hi')
   bitl = matrix_remove_zero_pads(bitl)
   # Get the orig_symmm value
   orig_symm = calc_symm(bitl)
@@ -61,7 +62,6 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
 
   # Calc score of a node. Force the calculation if we have ref (there we definitely want to know the value)
   aln_score = calc_coarse_grained_aln_score(mutator, forcecalc = (pair$sv == 'ref'), orig_symm = orig_symm, est_ref = est_ref)
-
   # if ((depth==2)){#} & (pair$p1 == 25) & (pair$p2 == 41)){#'25_41_inv'){
   #   browser()
   # }
@@ -122,7 +122,7 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
         # min_score = c(0, score_ref * 0.6, score_ref * 0.8, score_ref)
   }
   continue = ((
-    (aln_score < 100) &
+    #(aln_score < 100) &
       !is.na(aln_score) &
       (aln_score >= min_score[depth+1]) &
       (depth < maxdepth)))
@@ -148,6 +148,9 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
   
   for (npair in seq_along(row.names(pairs))){
     
+    # if (npair == 57){
+    #   browser()
+    # }
     # Be verbose 
     if (depth == 0){
       print(paste0('Processing branch ', npair, ' of ', dim(pairs)[1]))

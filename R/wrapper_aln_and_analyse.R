@@ -113,9 +113,10 @@ wrapper_aln_and_analyse <- function(params) {
     return()
   }
   
+  
   make_segmented_pairwise_plot(grid_xy, plot_x_y, outlinks)
   gridmatrix = gridlist_to_gridmatrix(grid_xy)
-  saveRDS(gridmatrix, file='~/Desktop/first_advanced')
+  #saveRDS(gridmatrix, file='~/Desktop/sec_advanced')
   # Step 4: Solve and make a solved plot
   #res = solve_mutation_old(gridmatrix, depth = params$depth, discovery_exact = params$discovery_exact)
   res = solve_mutation(gridmatrix, maxdepth = params$depth)#, discovery_exact = params$discovery_exact)
@@ -417,7 +418,9 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks){
                        alpha=0.5) + 
     ggplot2::guides(fill = FALSE) +
     ggplot2::xlim(c(0,max(ggplot2::layer_scales(plot_x_y)$x$range$range, xmax+likely_stepsize))) + # Range is the max of previous plot and new additions. So that nothing gets cut off. 
-    ggplot2::ylim(c(0,max(ggplot2::layer_scales(plot_x_y)$y$range$range, ymax+likely_stepsize)))
+    ggplot2::ylim(c(0,max(ggplot2::layer_scales(plot_x_y)$y$range$range, ymax+likely_stepsize))) +
+    ggplot2::scale_x_continuous(labels = scales::comma) +
+    ggplot2::scale_y_continuous(labels = scales::comma) 
     # ggplot2::geom_segment(data=daty,
     #             ggplot2::aes(x=0, xend=xmax, y=ystart, yend=ystart), color='grey')
   print(plot_x_y_segmented)

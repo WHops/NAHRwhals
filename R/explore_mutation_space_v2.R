@@ -94,7 +94,6 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
     current_depth = current_depth + 1  
   }
   
-
   # OPTIONAL: THIS IS THE STEEPEST DESCENT OF LAYER 3
   # IF max depth was reduced due to size, and if no conclusion was found, 
   # then we go into a steepest-descent bonus round. 
