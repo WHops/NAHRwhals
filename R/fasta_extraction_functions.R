@@ -268,7 +268,7 @@ liftover_coarse <-
     # Make sure we got any results.
     stopifnot(
       "Error: Unsuccessful liftover of the input sequence: Sequence not found on query" =
-        dim(liftover_coords)[1] > 0
+        dim(liftover_coords)[1] > 1 # We need at least two points to go ANY further. 
     )
     
     
@@ -492,6 +492,7 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
   end_pointers_arrived = max(as.numeric(row.names(liftover_coords_maxseq))) > end_map_limit
   success = (mapped_x_region_frac > th_x) & (mapped_y_region_frac > th_y_low) & (mapped_y_region_frac < th_y_high) &
     (start_pointers_arrived) & (end_pointers_arrived)
+  
   if ((success == F) & (liftover_run == F)){
     return(NULL)
   }
