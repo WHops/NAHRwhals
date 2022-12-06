@@ -76,18 +76,7 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
     
   }
     
-  # Extend df_output when needed
-  if (n_res_counter >= (len_df_output * 0.9)){
-    print('Extending output matrix')
-    df_output_addendum = replicate(4, 
-                                   rep(NA, len_df_output), 
-                                   simplify=T)
-    df_output = rbind(df_output, 
-                      df_output_addendum)
-    len_df_output <<- dim(df_output)[1]
 
-  }  
-    
   # Make an entry to the output IF there is no NA and if there is
   # a calculated output
   if (!any(is.na(c(pairhash, depth, pairhistory, aln_score)))){
@@ -148,9 +137,18 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
   
   for (npair in seq_along(row.names(pairs))){
     
-    # if (npair == 57){
-    #   browser()
-    # }
+    # Extend df_output when needed
+    if (n_res_counter >= (len_df_output * 0.9)){
+      print('Extending output matrix')
+      df_output_addendum = replicate(4, 
+                                     rep(NA, len_df_output), 
+                                     simplify=T)
+      df_output = rbind(df_output, 
+                        df_output_addendum)
+      len_df_output <<- dim(df_output)[1]
+      
+    } 
+    
     # Be verbose 
     if (depth == 0){
       print(paste0('Processing branch ', npair, ' of ', dim(pairs)[1]))
