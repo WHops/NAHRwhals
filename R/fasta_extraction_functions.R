@@ -266,10 +266,14 @@ liftover_coarse <-
     
     
     # Make sure we got any results.
-    stopifnot(
-      "Error: Unsuccessful liftover of the input sequence: Sequence not found on query" =
-        dim(liftover_coords)[1] > 1 # We need at least two points to go ANY further. 
-    )
+    if (nrow(liftover_coords) <= 1){
+      print("Error: Unsuccessful liftover of the input sequence: Sequence not found on query.")
+      return(NULL)
+    }
+    # stopifnot(
+    #   "Error: Unsuccessful liftover of the input sequence: Sequence not found on query" =
+    #     dim(liftover_coords)[1] > 1 # We need at least two points to go ANY further. 
+    # )
     
     
     # What is the majority vote for the target chromosome?

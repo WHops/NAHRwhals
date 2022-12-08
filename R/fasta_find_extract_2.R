@@ -29,6 +29,9 @@ write_x_y_sequences <- function(seqname_x,
                                       lenfactor = 1, # Unneeded parameter
                                       whole_chr = (params$start_x %in% c(0, 1)),
                                       refine_runnr = refine_runnr)
+    if (is.null(coords_liftover)){
+      return(NULL)
+    }
   }
   
   
@@ -83,6 +86,10 @@ write_x_y_sequences <- function(seqname_x,
                                           'nonepaflink', 
                                           paf,
                                           refine_runnr = 2)
+    if (is.null(coords_liftover_2nd)){
+      return(NULL)
+    }
+    
     
     print(coords_liftover)
     print(coords_liftover_2nd)

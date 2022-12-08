@@ -51,7 +51,6 @@ wrapper_aln_and_analyse <- function(params) {
     return()
   }
 
-  
   # Start writing a log file. 
   log_collection <<- init_log_with_def_values()
   log_collection[c('chr',

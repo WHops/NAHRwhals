@@ -34,17 +34,18 @@ extract_sequence_wrapper <- function(params, outlinks){
                           params, 
                           extract_only = T) 
     } else {
-    write_x_y_sequences(params$seqname_x, 
-                        start_x_pad, 
-                        end_x_pad, 
-                        outlinks$genome_x_fa_subseq, # hg38 seq goes here
-                        outlinks$genome_y_fa_subseq, # asm seq goes here
-                        params$genome_y_fa,
-                        params$conversionpaf_link,
-                        outlinks, 
-                        params)   
+      write_x_y_sequences(params$seqname_x, 
+                          start_x_pad, 
+                          end_x_pad, 
+                          outlinks$genome_x_fa_subseq, # hg38 seq goes here
+                          outlinks$genome_y_fa_subseq, # asm seq goes here
+                          params$genome_y_fa,
+                          params$conversionpaf_link,
+                          outlinks, 
+                          params)   
     }
     
+      # If something 
       if (params$alt_ref_sample != F){
       
       # Run a second time, this tome overwriting the x sequence!
