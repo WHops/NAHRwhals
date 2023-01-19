@@ -1,8 +1,8 @@
-<img src="https://github.com/WHops/nahrchainer/blob/main/ntk_logo-01.png?raw=true">
+<img src="https://github.com/WHops/nahrchainer/NAHRwhals.png?raw=true">
 
 =========================================================================
 
-# nahrToolkiT (NTK)
+# NAHRwhals (NAHR-directed Workflow for catcHing seriAL Structural Variations)
 An R package providing tools for simulation, detection and visualization of complex, NAHR-driven rearrangements. This includes:
 		- Liftover of coordinates between arbitrary human DNA assemblies
 		- Accurate sequence alignments of multi-MB DNA sequences
@@ -41,7 +41,7 @@ To install NTK from Github, follow the steps below:
 7. Run an example run
 
     `cd nahrchainer`
-    `Rscript run_a_locus.R --example T`
+    `Rscript run_a_list.R --example T`
 
 8. Prepare running your own stuff. Whenever we run an assembly, we need to pre-compute an alignment with minimap2. Runtime for two whole human assemblies can be 30m - 2h.
 
