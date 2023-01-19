@@ -1,6 +1,6 @@
 <img src="https://github.com/WHops/NAHRwhals/blob/main/NAHRwhals.png?raw=true">
 
-=========================================================================
+======================================================================================
 
 # NAHRwhals (NAHR-directed Workflow for catcHing seriAL Structural Variations)
 An R package providing tools for simulation, detection and visualization of complex, NAHR-driven rearrangements. This includes:
