@@ -1,4 +1,4 @@
-<img src="https://github.com/WHops/nahrchainer/NAHRwhals.png?raw=true">
+<img src="https://github.com/WHops/NAHRwhals/blob/main/NAHRwhals.png?raw=true">
 
 =========================================================================
 
