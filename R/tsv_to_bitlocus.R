@@ -199,8 +199,7 @@ wrapper_paf_to_bitlocus <-
     # 1) The max number of alignments is kept.
     # 2) The max size of the grid is kept.
     while( (  (length(gridlines.x) + length(gridlines.y))  > params$max_size_col_plus_rows  ) | ((dim(paf)[1]) > compression_params$max_n_alns)   ){
-      
-    
+      # Stop here and find out why with comp/minlen 200, the big piece gets lost. 
       paf = load_and_prep_paf_for_gridplot_transform(inpaf, minlen, compression)
       
       if ((dim(paf)[1]) > compression_params$max_n_alns){

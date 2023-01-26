@@ -26,18 +26,22 @@ merge_rows <- function(paffile, pairs) {
     nl1 = (pairs[i,1])
     nl2 = (pairs[i,2])
     paf_work = paffile[c(nl1,nl2),]
-    # paffile = inpaf
-    # nl1 = rowpairs[1,1]
-    # nl2 = rowpairs[1,2]
-    # query name
-    
     if (paf_work[1,'strand'] == '+'){
       paf_work[1,]$qname = paste0(sub("_.*", "", paf_work[1,]$qname),
                                    "_",
                                   paf_work[1,]$qstart,
                                    "-",
                                   paf_work[2,]$qend - 1)
-
+      
+      paf_work_bu = paf_work
+      # query coordinates
+      paf_work[1,]$qend = max(paf_work_bu[1,]$qend, paf_work_bu[2,]$qend)
+      paf_work[1,]$qstart = min(paf_work_bu[1,]$qstart, paf_work_bu[2,]$qstart)
+      
+      # target coordinates
+      paf_work[1,]$tend = max(paf_work_bu[1,]$tend, paf_work_bu[2,]$tend)
+      paf_work[1,]$tstart = min(paf_work_bu[1,]$tstart, paf_work_bu[2,]$tstart)
+      
 
 
     } else if (paf_work[1,'strand'] == '-'){
@@ -48,15 +52,18 @@ merge_rows <- function(paffile, pairs) {
                                   paf_work[2,]$qend,
                                   "-",
                                   paf_work[2,]$qstart)
+      paf_work_bu = paf_work
+      # query coordinates
+      paf_work[1,]$qend = min(paf_work_bu[1,]$qend, paf_work_bu[2,]$qend)
+      paf_work[1,]$qstart = max(paf_work_bu[1,]$qstart, paf_work_bu[2,]$qstart)
+      
+      # target coordinates
+      paf_work[1,]$tend = max(paf_work_bu[1,]$tend, paf_work_bu[2,]$tend)
+      paf_work[1,]$tstart = min(paf_work_bu[1,]$tstart, paf_work_bu[2,]$tstart)
 
     }
     
-    # query coordinates
-    paf_work[1,]$qend = paf_work[2,]$qend
-    
-    # target coordinates
-    paf_work[1,]$tend = paf_work[2,]$tend
-    
+
     # nmatch
     paf_work[1,]$nmatch = paf_work[1,]$nmatch + paf_work[2,]$nmatch
     # alen
@@ -136,8 +143,13 @@ compress_paf_fnct <-
       )
       colnames(inpaf)[1:length(colnames_paf)] = colnames_paf
       
-
+      inpaf = transform(
+        inpaf,
+        qend = ifelse(strand == '-', qstart, qend),
+        qstart = ifelse(strand == '-', qend, qstart)
+      )
       
+      inpaf = inpaf[order(inpaf$qstart),]
       #inpaf = inpaf[(inpaf$tstart > 809000) & (inpaf$qstart > 809000),]
       # # debug input:
       # inpaf = inpaf[abs((inpaf$tstart + inpaf$qstart) -  950000) < 50000,]
@@ -207,11 +219,14 @@ compress_paf_fnct <-
     n_steps = length(tsteps) * length(qsteps)
     rowpairs = data.frame()
     count = 0
+    library(ggplot2)
+
     for (tstep in tsteps[1:length(tsteps)-1]) {
       for (qstep in qsteps[1:length(qsteps)-1]) {
         # Input: we take any alignment that touches our box.
 
 
+        
          inpaf_q = inpaf[(
           (inpaf$tstart >= tstep) & (inpaf$tstart <= tstep + tstepsize) &
             (inpaf$qstart >= qstep) &
@@ -222,6 +237,10 @@ compress_paf_fnct <-
               (inpaf$qend >= qstep) &
               (inpaf$qend <= qstep + qstepsize)
           )   ,] 
+         
+         # print(ggplot() + geom_segment(data=inpaf, aes(x=tstart, xend=tend, y=qstart, yend=qend)) + 
+         #   geom_segment(data=inpaf_q, aes(x=tstart, xend=tend, y=qstart, yend=qend), color='red') + 
+         #   geom_rect(aes(xmin=tstep, xmax=tstep+tstepsize, ymin=qstep, ymax=qstep+qstepsize), alpha=0.5))
          
 
         rowpairs = rbind(rowpairs,merge_paf_entries_intraloop(inpaf_q, second_run, inparam_chunklen, inparam_compression))
@@ -259,8 +278,8 @@ compress_paf_fnct <-
         group_by(col) %>% top_n(1, combined_matchlen)
     )
     
-
     
+
     # Go through each pair, make the merge. We go through the lines backwards,
     # so that previous merges don't disturb later ones.
     # old_len = sum(inpaf$tend - inpaf$tstart) + sum(inpaf$qend - inpaf$qstart)
@@ -283,6 +302,12 @@ compress_paf_fnct <-
     print(paste0('PAF compressed to ', dim(inpaf)[1], ' alignments.'))
     # Save
     if (save_outpaf) {
+      
+      inpaf = transform(
+        inpaf,
+        qend = ifelse(strand == '-', qstart, qend),
+        qstart = ifelse(strand == '-', qend, qstart)
+      )
       write.table(
         inpaf,
         file = outpaf_link,
