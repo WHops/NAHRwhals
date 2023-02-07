@@ -40,11 +40,11 @@ solve_mutation_slimmer <- function(bitlocus, depth){
 #' TODO: description
 #' @export
 solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
-  
-  browser()
-  bitlocus = readRDS('bitme_large')
-  maxdepth_input = 3
-  earlystop = Inf
+  # 
+  # browser()
+  # bitlocus = readRDS('bitme_large')
+  # maxdepth_input = 3
+  # earlystop = Inf
   #ref_mut_pair = data.frame(p1='12', p2='25', sv='inv')
   #bitlocus = carry_out_compressed_sv(bitlocus, ref_mut_pair)
   est_highest <<- 0
