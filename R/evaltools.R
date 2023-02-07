@@ -8,8 +8,16 @@ rep.col <- function(x, n) {
 calculate_estimated_aln_score <- function(mat){
   
   matdiag = diagonalize(mat, 0.25)
+  sum_of_rows_with_pos_aln_bp = sum(matrixStats::rowMaxs(matdiag))
+  alt_seq_len_bp = sum(as.numeric(rownames(mat)))
   
-  return(sum(matrixStats::rowMaxs(matdiag))) # This replaces the previous version (next line)
+  sum_of_cols_with_pos_aln_bp = sum(matrixStats::colMaxs(matdiag))
+  ref_seq_len_bp = sum(as.numeric(colnames(mat)))
+  
+  pct_covered = ((sum_of_rows_with_pos_aln_bp + sum_of_cols_with_pos_aln_bp) / 
+                   (alt_seq_len_bp + ref_seq_len_bp)) * 100 
+  
+  return(pct_covered) # This replaces the previous version (next line)
   #return(sum(na.omit(rowMeans(replace(matdiag, matdiag == 0, NA), na.rm = TRUE))))
 }
 
@@ -31,8 +39,7 @@ calc_coarse_grained_aln_score <-
            old_way_of_calc = F,
            verbose = F,
            forcecalc = F,
-           orig_symm = 1,
-           est_ref = 0) {
+           orig_symm = 1) {
     
     # Remove zero-pads.
     mat = matrix_remove_zero_pads(mat)
@@ -92,13 +99,14 @@ calc_coarse_grained_aln_score <-
     
 
     # If all this, then one more chance is to throw stuff
+
     est = calculate_estimated_aln_score(mat)
     if (forcecalc){
       est_highest <<- est
     } 
     
     if (est < (est_highest)){
-      return(1)
+      return(1)#est)
       #print('hi')
     } else if (est >= (est_highest)){
       est_highest <<- est

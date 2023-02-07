@@ -104,7 +104,6 @@ wrapper_aln_and_analyse <- function(params) {
     return()
   }
   
-  browser()
   # Step 3: Condense and make a condensed plot
   grid_xy = wrapper_condense_paf(params, outlinks)
   

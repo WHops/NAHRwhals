@@ -11,7 +11,6 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F, earlystop = Inf, histor
   bitl = matrix_remove_zero_pads(bitl)
   # Get the orig_symmm value
   orig_symm = calc_symm(bitl)
-  est_ref = calculate_estimated_aln_score(bitl)
   # Initialize a hash. 
   visited = hash::hash()
   ref_mut_pair = data.frame(p1='1', p2='1', sv='ref')
@@ -39,7 +38,6 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F, earlystop = Inf, histor
                                   pairhistory=pairhistory, 
                                   increase_only=increase_only,
                                   orig_symm = orig_symm,
-                                  est_ref = est_ref,
                                   earlystop = earlystop)
   
   # Make sure output eval is numeric (perhaps not needed but unsure)
@@ -57,11 +55,31 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F, earlystop = Inf, histor
 #' DFS workhorse function
 #' TODO: description
 #' @export
-dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairhistory=NULL, df_output=NULL, increase_only=NULL, orig_symm=1, est_ref = 0, last_eval=0, earlystop=Inf){
+dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairhistory=NULL, df_output=NULL, increase_only=NULL, orig_symm=1, last_eval=0, earlystop=Inf){
   
-
+  # if(pairhistory == '1_1_ref+9_28_inv+2_15_dup+22_41_inv'){
+  #   browser()
+  # }
+  
+  # if (pairhistory == '1_1_ref+2_56_inv+47_90_dup+2_99_inv'){
+  #   browser()
+  # }
+  # 
+  # if (pairhistory == '1_1_ref+2_56_inv+47_90_dup'){
+  #   browser()
+  # }
+  
+  # if (pairhistory == '1_1_ref+11_90_inv+2_45_dup'){
+  #   browser()
+  # }
+  
+  #1_1_ref+11_90_inv+2_45_dup+54_133_inv
+  
+  # if (pairhistory == '1_1_ref+8_10_inv'){
+  #   browser()
+  # }
   # Calc score of a node. Force the calculation if we have ref (there we definitely want to know the value)
-  aln_score = calc_coarse_grained_aln_score(mutator, forcecalc = (pair$sv == 'ref'), orig_symm = orig_symm, est_ref = est_ref)
+  aln_score = calc_coarse_grained_aln_score(mutator, forcecalc = (pair$sv == 'ref'), orig_symm = orig_symm)
   # if ((depth==2)){#} & (pair$p1 == 25) & (pair$p2 == 41)){#'25_41_inv'){
   #   browser()
   # }
@@ -80,7 +98,7 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
   # Make an entry to the output IF there is no NA and if there is
   # a calculated output
   if (!any(is.na(c(pairhash, depth, pairhistory, aln_score)))){
-    if ((aln_score > 1) | (pairhistory == '1_1_ref')){
+    if ((aln_score > (0.9 * as.numeric(df_output[1,'eval']))) | (pairhistory == '1_1_ref')){
       df_output[n_res_counter,] = c(pairhash, depth, pairhistory, aln_score)
       n_res_counter <<- n_res_counter + 1
     }
@@ -96,6 +114,7 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
   #   3) If our node returns NA, we are somewhere weird
   #   4) on increasing depth, we have a cutoff crit for aln score. 
   
+
   # Make criterion 4:
   score_ref = as.numeric(df_output[1,'eval'])
   if (increase_only){
@@ -103,7 +122,7 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
         max(score_ref, max( as.numeric(df_output[which(df_output[,'depth'] == '0'),'eval'] ))),10
         )
   } else {
-    min_score = c(0,0,score_ref) # The second iteration has to come back to score_ref, otherwise we discontinue.
+    min_score = c(0,0,0,0) # The second iteration has to come back to 75% of score_ref, otherwise we discontinue.
         # The rest here is usually not used...
         # (100-((100-score_ref)/0.6)), 
         # 0,0,0,(100-((100-score_ref)/0.8)),
@@ -170,18 +189,19 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
     if (!node_is_novel_bool){
       n_hash_excluded <<- n_hash_excluded + 1
       
-      if ((as.numeric(visited[[hash]][3])) > 1){
-      vector_to_add_to_df_out = c(hash, 
-                        as.numeric(depth+1), 
-                        paste(pairhistory, paste0(pairs[npair,1:3], collapse = '_'), sep='+'),
-                        as.numeric(visited[[hash]][3]))
+      # The value of this hash has been computed
+    if ((as.numeric(visited[[hash]][3])) > 1){
+    vector_to_add_to_df_out = c(hash, 
+                      as.numeric(depth+1), 
+                      paste(pairhistory, paste0(pairs[npair,1:3], collapse = '_'), sep='+'),
+                      as.numeric(visited[[hash]][3]))
 
-      
-        if  (!any(is.na(vector_to_add_to_df_out))){
-          df_output[n_res_counter,] = vector_to_add_to_df_out
-          n_res_counter <<- n_res_counter + 1
-        }
+    
+      if  (!any(is.na(vector_to_add_to_df_out))){
+        df_output[n_res_counter,] = vector_to_add_to_df_out
+        n_res_counter <<- n_res_counter + 1
       }
+    }
       next()
     }
     
@@ -203,8 +223,7 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
                          df_output = df_output,
                          increase_only = increase_only,
                          last_eval = aln_score,
-                         orig_symm = orig_symm,
-                         est_ref = est_ref)
+                         orig_symm = orig_symm)
     
     visited = list_visit[[1]]
     df_output = list_visit[[2]]

@@ -41,6 +41,13 @@ solve_mutation_slimmer <- function(bitlocus, depth){
 #' @export
 solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
   
+  browser()
+  bitlocus = readRDS('bitme_large')
+  maxdepth_input = 3
+  earlystop = Inf
+  #ref_mut_pair = data.frame(p1='12', p2='25', sv='inv')
+  #bitlocus = carry_out_compressed_sv(bitlocus, ref_mut_pair)
+  est_highest <<- 0
   n_eval_total <<- 0
   n_eval_calc <<- 0
   n_hash_excluded <<- 0
@@ -56,7 +63,7 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
   }
   
   # Optional: adjust depth
-  maxdepth = reduce_depth_if_needed(bitlocus, increase_only = F, maxdepth_input)
+  maxdepth = 3#reduce_depth_if_needed(bitlocus, increase_only = F, maxdepth_input)
   print(maxdepth)
   # Run iterations of increasing depth. 
   # Always run the whole thing, but also don't go 
