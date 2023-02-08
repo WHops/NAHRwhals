@@ -98,7 +98,7 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
   # Make an entry to the output IF there is no NA and if there is
   # a calculated output
   if (!any(is.na(c(pairhash, depth, pairhistory, aln_score)))){
-    if ((aln_score > (0.9 * as.numeric(df_output[1,'eval']))) | (pairhistory == '1_1_ref')){
+    if ((aln_score > 90) | (all(is.na(df_output))) |  (pairhistory == '1_1_ref')){
       df_output[n_res_counter,] = c(pairhash, depth, pairhistory, aln_score)
       n_res_counter <<- n_res_counter + 1
     }

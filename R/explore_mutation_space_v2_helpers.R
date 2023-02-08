@@ -289,7 +289,7 @@ reduce_depth_if_needed <- function(bitlocus, increase_only, maxdepth){
   
   # Decide if we should go forward. 
   n_pairs = dim(find_sv_opportunities(bitl))[1]
-  if ((n_pairs > 100) & (maxdepth == 3) & (increase_only==F)){
+  if ((n_pairs > 200) & (maxdepth == 3) & (increase_only==F)){
     print('Uh oh that is a bit large. Reducing depth to 2. Try to avoid producing such large alignments.')
     maxdepth = 2
   }

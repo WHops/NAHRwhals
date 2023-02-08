@@ -5,7 +5,19 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F){
   res_ref = res[res$mut1=='ref','eval']
   res_max = res[1,'eval']
   n_res_max = dim(res[res$eval == max(res$eval),])[1]
-  maxres =  res[which.max(rowSums(is.na(res[res$eval==max(res$eval),]))),]
+  
+  
+  maxres =  res[
+    which.max(
+      rowSums(
+        is.na(
+          res[
+            res$eval==max(res$eval),names(res) %in% c('mut1','mut2', 'mut3'), drop=F
+            ]
+          )
+        )
+      )
+    ,]
   
   if (is.null(log$compression)){
     log$compression = 0

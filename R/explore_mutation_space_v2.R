@@ -63,7 +63,7 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
   }
   
   # Optional: adjust depth
-  maxdepth = 3#reduce_depth_if_needed(bitlocus, increase_only = F, maxdepth_input)
+  maxdepth = reduce_depth_if_needed(bitlocus, increase_only = F, maxdepth_input)
   print(maxdepth)
   # Run iterations of increasing depth. 
   # Always run the whole thing, but also don't go 
@@ -90,7 +90,7 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
     res_df = vis_list[[2]]
 
     # Are we happy with the best result? 
-    solve_th = find_threshold(bitlocus, current_depth)
+    solve_th = params$eval_th# find_threshold(bitlocus, current_depth)
     conclusion_found = (max(as.numeric(res_df$eval)) >= solve_th)
     
     if (conclusion_found){
