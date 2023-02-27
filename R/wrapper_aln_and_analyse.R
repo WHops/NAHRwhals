@@ -126,9 +126,8 @@ wrapper_aln_and_analyse <- function(params) {
   # Step 4: Solve and make a solved plot
   #res = solve_mutation_old(gridmatrix, depth = params$depth, discovery_exact = params$discovery_exact)
   res = solve_mutation(gridmatrix, maxdepth = params$depth)#, discovery_exact = params$discovery_exact)
-  
+
   make_modified_grid_plot(res, gridmatrix, outlinks)
-    
   # Step 5: Save
   write_results(res, outlinks, params)
   

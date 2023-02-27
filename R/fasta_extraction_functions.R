@@ -149,7 +149,6 @@ extract_subseq_bedtools <-
                     "\t",
                     format(end, scientific = F))
     system(paste0('echo "', region, '" > ', tmp_bedfile))
-    
     # Run bedtools
     system(paste0(
       bedtoolsloc,

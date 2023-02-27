@@ -114,7 +114,7 @@ make_chunked_minimap_alnment <-
     # Single-sequence query fasta gets chopped into pieces.
 
     
-    shred_seq(queryfasta, queryfasta_chunk, chunklen)
+    shred_seq_bedtools(queryfasta, queryfasta_chunk, chunklen)
     print('1')
     print(queryfasta_chunk)
     # Self explanatory
@@ -208,6 +208,43 @@ shred_seq <- function(infasta,
     )
   )
 }
+
+shred_seq_bedtools <- function(infasta,
+                               outfasta_chunk,
+                               chunklen){
+  
+  bedtoolsloc = query_config("bedtools")
+  fasta_awk_script = query_config("awk_on_fasta")
+  
+  # Write a temporary bedfile
+  bed_tmp_file = paste0('tmpbed_deleteme_', sprintf("%.0f",runif(1, 1e13, 1e14)), '.bed')
+  fasta_awk_tmp_file = paste0('tmpinfo_deleteme_', sprintf("%.0f",runif(1, 1e13, 1e14)), '.bed')
+  
+  system(paste0(fasta_awk_script, ' ', infasta, ' ', fasta_awk_tmp_file))
+  
+  name_len_df = read.table(fasta_awk_tmp_file)
+  contigname = sub('>', '', (name_len_df)[1,])
+  contiglen = as.numeric((name_len_df)[2,])
+  
+  bed_df = data.frame(
+    seqnames = contigname, 
+               start = sprintf("%d",seq(0, contiglen - (contiglen %% chunklen), by=chunklen)),
+               end =   sprintf("%d",pmin(seq(0, contiglen - (contiglen %% chunklen), by=chunklen) + (chunklen - 1), contiglen))
+  )
+  
+  write.table(bed_df, file=bed_tmp_file, sep='\t', quote=F, row.names=F, col.names = F)
+  
+  browser()
+  
+  sedcmd = "sed -r 's/(.*):/\\1_/'\\n"
+  system(paste0(bedtoolsloc, ' getfasta -fi ', infasta, ' -bed ', bed_tmp_file, ' | ', sedcmd, ' > ', outfasta_chunk))
+  
+  
+  
+  
+  
+}
+
 
 #' Submit a system command to run minimap2
 #'
