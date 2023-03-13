@@ -15,7 +15,7 @@ An R package providing tools for simulation, detection and visualization of comp
 
 ## Report Errors
 
-Nahrtoolkit is still in early stages of development, and errors in usage are to be expected. 
+NAHRwhals is still in development, and errors in usage are to be expected. 
 Please help improve the code by [reporting](https://github.com/WHops/nahrchainer/issues/new) issues you encounter.
 
 ## Correspondence
