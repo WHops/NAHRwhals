@@ -1,7 +1,10 @@
 
+#' remove_duplicates_triple
+#' 
 #' Remove duplicates TRIPLE. First, remove obvious duplicates (all 3 same)
 #' Then, identify those with same x/y but different z. The get 0.
 #' Finally, the second step has produced new duplicates, so be mean again.
+#' Used to 'purify' / 'simplify' a grid_list
 #' @author Wolfram Hoeps
 #' @export
 remove_duplicates_triple <- function(grid_list_f){

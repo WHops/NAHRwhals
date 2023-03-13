@@ -3,33 +3,9 @@
 
 
 #' wrapper_aln_and_analyse
-#' @description The main wrapper function for running nahrtoolkit.
+#' @description The main wrapper function for running NAHRwhals.
 #' This is where all the information flow together.
-#' @param seqname_x region of interest on ref: seqname [character]
-#' @param start_x region of interest on ref: start coord [numeric]
-#' @param end_x region of interest on ref: end coord [numeric]
-#' @param genome_x_fa link to genome assembly fasta file serving as 'reference' (Typically hg38) [character/link]
-#' @param genome_y_fa link to fasta file serving as 'query'. Typically a genome assembly [character/link]
-#' @param conversionpaf_link link to paf containing a genome-wide alignment between genome_x_fa and genome_y_fa [character/link]
-#' @param logfile link to output 'log'-file [character/link]
-#' @param chunklen Length of sequence chunks used in fine alignment. Typically between 100 and 50k. Increase chunklen for faster runtime, sacrificing fine alignment details. [numeric]
-#' @param sd_minlen Auto SD-detection: shortest alignment to consider for SD detection. Typically same number as compression parameter. [numeric]
-#' @param compression Auto SD-detection: Round SD locations by maximum this number of basepairs. Typically same as sd_minlen. Should be magnitudes smaller than event size. [numeric]
-#' @param depth Maximum number of chained mutations to model. Current maximum is 3. Has a big impact on runtime. [numeric]
-#' @param xpad enlarge input sequence by a factor. e.g. region chr1:1000-2000 will turn to 500 - 2500 with xpad=2 (region is twice as large afterwards.) [numeric]
-#' @param samplename Name of the sample/run. Used in the output filenames. [character]
-#' @param include_grid T/F: do you want to auto-detect SDs and model mutations? [bool; T/F]
-#' @param debug debug mode used for developing (default: F) [bool; T/F]
-#' @param use_paf_library T/F: If this is off, input region is ignored, and alignment is computed on entire x vs y sequence. Use this if your input fastas contain only the region of interest. (default: F) [bool; T/F]
-#' @param clean_all Should fastas be cleared? (default: T). Advisable for very large sequences [T/F]
-#' @examples
-#'
-#' Extract region chr1:500k-600k in hg38, find the respective region in the assembly,
-#' make an alignment and print the results to res/chr1-500000-6000000/
-#' wrapper_aln_and_analyse('chr1', 500000, 600000, 'my/genomes/hg38.fa', 'my/assembly.fa',
-#'                         'my/conversionpaf.fa', samplename='testsample',
-#'                         chunklen = 1000, sd_minlen = 100, compression = 100,
-#'                         depth = 2, xpad = 1.2)
+#' @param params a single list containing all input information.
 #' @export
 wrapper_aln_and_analyse <- function(params) {
   
@@ -70,12 +46,23 @@ wrapper_aln_and_analyse <- function(params) {
   make_output_folder_structure(sequence_name_output)
   # Define output files
   outlinks = define_output_files(sequence_name_output, params$samplename)
-  if (params$use_paf_library){
+  if (params$use_paf_library == T){
       
     # Step 1: Get the sequences (write to disk)
     chr_start_end_pad_params = extract_sequence_wrapper(params, outlinks)
     chr_start_end_pad = chr_start_end_pad_params[[1]]
     params = chr_start_end_pad_params[[2]]
+    
+  } else if (params$use_paf_library == 'auto'){
+    
+    create_mmi_if_doesnt_exists(params)
+    # params$conversionpaf_link ; this is what we need. 
+    params = make_params_conversionpaf(params, outlinks)
+    chr_start_end_pad_params = extract_sequence_wrapper(params, outlinks)
+    chr_start_end_pad = chr_start_end_pad_params[[1]]
+    params = chr_start_end_pad_params[[2]]
+    system(paste0('rm ', params$conversionpaf_link))
+    
   } else {
     chr_start_end_pad = list(chr='seqname', start='1', end=as.numeric(nchar(read.table(params$genome_x_fa))))
     system(paste0('cp ', params$genome_x_fa, ' ', outlinks$genome_x_fa_subseq))
@@ -192,34 +179,13 @@ determine_chunklen <- function(start, end) {
 }
 
 
-#' TODO: describe
+#' determine_compression
+#' 
+#' Compression parameter for segmenting the dotplot. 
+#' We choose this based on the length of the sequence. 
 #' @export
 determine_compression <- function(start, end) {
   
-  
-  # if ((end - start) > 5000 * 1000) {
-  #   compression = 100000
-  # }
-  # if ((end - start) > 500 * 1000) {
-  #   compression = 10000
-  # } else if ((end-start) < 5000){
-  #   compression = 500
-  # } else if (((end - start)) < 50 * 1000) {
-  #   compression = 1000
-  # } else {
-  #   compression = 1000
-  # }
-  
-  
-  # Compression is chosen to be 500 bp for short stretches (< 5000 bp),
-  # 1 kbp for medium sized (10 kbp - 100 kbp), 10 kbp for long (100 kbp - 1 Mbp) 
-  # and 20 kbp for very long (> 1)
-  
-  
-  # This is a bit poorly encoded. 
-  # length_upper_cutoffs = c(5000, 500000, 1000000, 2000000, 5000000, 1e10)
-  # compressions =         c(500,  1000,   10000,   20000,   50000,   100000)
-  # 
   length_upper_cutoffs = c(50000, 500000, 5000000, 1e10)
   compressions =         c(100,  1000,   10000,   20000)
   
@@ -228,13 +194,15 @@ determine_compression <- function(start, end) {
   dists = length_upper_cutoffs - interval_len
   dists[dists<0] = Inf
   
-  compression = compressions[which.min(dists[dists>0])]
+  compression_parameter_bp = compressions[which.min(dists[dists>0])]
   
-  return(compression)
+  return(compression_parameter_bp)
 }
 
 
-#' TODO: describe
+#' save_plot_custom
+#' 
+#' Quick helperfunction for saving a ggplot plot. 
 #' @export
 save_plot_custom <-
   function(inplot,
@@ -258,6 +226,8 @@ save_plot_custom <-
 
 
 #' manufacture_output_res_name
+#' 
+#' Creates an output file name that will be used by other functions.
 #' @export
 manufacture_output_res_name <- function(seqname_x, start_x, end_x){
   
@@ -273,7 +243,9 @@ manufacture_output_res_name <- function(seqname_x, start_x, end_x){
   return(sequence_name_output)
 }
 
-#' manufacture_output_res_name
+#' make_output_folder_structure
+#' 
+#' Create empty output folders that can be filled with data later. 
 #' @export
 make_output_folder_structure <- function(sequence_name_output){
   
@@ -336,6 +308,10 @@ define_output_files <- function(sequence_name_output, samplename){
   return(outlinks)
 }
 
+#' clean_after_yourself
+#' 
+#' This function, if invoked, deletes intermediate fasta sequences created by NAHRwhals. 
+#' By default, this is not invoked. 
 #' @export
 clean_after_yourself <- function(outlinks){
   if (!is.na(file.size(outlinks$genome_x_fa_subseq))) {
@@ -352,6 +328,9 @@ clean_after_yourself <- function(outlinks){
   }
 }
 
+#' write_results
+#' 
+#' Write results of a tree search to an output file. Uses the global 'log' variable.
 #' @export
 write_results <- function(res, outlinks, params){
   # Save res table
@@ -369,6 +348,9 @@ write_results <- function(res, outlinks, params){
   
 }
 
+#' wrapper_condense_paf
+#' 
+#' Wrapper around a wrapper ... consider to simplify / remove. 
 #' @export 
 wrapper_condense_paf <- function(params, outlinks){
   
@@ -381,88 +363,4 @@ wrapper_condense_paf <- function(params, outlinks){
   )
   
   return(grid_xy)
-}
-
-
-make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks){
-  # Make plot_xy_segmented. 
-  # Needs debug. 
-  xstart = (grid_xy[[1]][1:length(grid_xy[[1]])-1])
-  xend = (grid_xy[[1]][2:length(grid_xy[[1]])])
-  ystart = (grid_xy[[2]][1:length(grid_xy[[2]])-1])
-  yend = (grid_xy[[2]][2:length(grid_xy[[2]])])
-  xmax = max(grid_xy[[1]])
-  ymax = max(grid_xy[[2]])
-  datx = data.frame(xstart = xstart, 
-                    xend = xend,
-                    xmax = xmax
-  )
-  daty = data.frame(yend = yend,
-                    ymax = ymax,
-                    ystart = ystart
-  )
-  
-  likely_stepsize = min(c(diff(datx$xstart), diff(daty$ystart)))
-  
-  # Introducing special case for nrow(datx) = 1
-  if (likely_stepsize == Inf){
-    likely_stepsize = 0
-  }
-  
-  if (length(xstart) > 433){
-    print('Too many segments to make colored plot')
-    return()
-  }
-  
-  qual_col_pals = RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == 'qual',]
-  col_vector = rep(unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals))), 10)
-  
-  plot_x_y_segmented = plot_x_y + 
-    ggplot2::geom_rect(data=datx,
-                       ggplot2::aes(xmin=xstart, xmax=xend, ymin=0, ymax=ymax, fill=col_vector[1:length(xstart)]),
-                       alpha=0.5) + 
-    ggplot2::guides(fill = FALSE) +
-    ggplot2::xlim(c(0,max(ggplot2::layer_scales(plot_x_y)$x$range$range, xmax+likely_stepsize))) + # Range is the max of previous plot and new additions. So that nothing gets cut off. 
-    ggplot2::ylim(c(0,max(ggplot2::layer_scales(plot_x_y)$y$range$range, ymax+likely_stepsize))) +
-    ggplot2::scale_x_continuous(labels = scales::comma) +
-    ggplot2::scale_y_continuous(labels = scales::comma) 
-    # ggplot2::geom_segment(data=daty,
-    #             ggplot2::aes(x=0, xend=xmax, y=ystart, yend=ystart), color='grey')
-  print(plot_x_y_segmented)
-  
-  ggplot2::ggsave(filename = paste0(outlinks$outfile_colored_segment),
-                  plot = plot_x_y_segmented,
-                  width = 15,
-                  height = 15,
-                  units = 'cm',
-                  dpi = 300)
-  
-}
-
-#' @export
-make_modified_grid_plot <- function(res, gridmatrix, outlinks){
-  
-  res = res[order(res$eval, decreasing = T),]
-  # res = filter_res(res, threshold = params$eval_th)
-  
-  grid_modified = modify_gridmatrix(gridmatrix, res[1,])
-  
-  
-  gridlines.x = cumsum(c(0,as.numeric(colnames(grid_modified))))
-  gridlines.y = cumsum(c(0,as.numeric(row.names(grid_modified))))
-  
-  colnames(grid_modified) = seq(1:dim(grid_modified)[2])
-  row.names(grid_modified) = seq(1:dim(grid_modified)[1])
-  
-  gm2 = reshape2::melt(grid_modified)
-  colnames(gm2) = c('y','x','z')
-  grid_mut_plot = plot_matrix_ggplot_named(gm2[gm2$z != 0,], gridlines.x, gridlines.y)
-  ggplot2::ggsave(filename = paste0(outlinks$outfile_plot_grid_mut),
-                  plot = grid_mut_plot,
-                  width = 10,
-                  height = 10,
-                  units = 'cm',
-                  dpi = 300)
-  print(grid_mut_plot)
-  
 }

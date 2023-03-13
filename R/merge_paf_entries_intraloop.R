@@ -1,4 +1,4 @@
-#' Tiny undocumented helperfunction.
+#' Undocumented helperfunction. Called in the process of stitching together chunked alignments. 
 #' @author Wolfram Höps
 #' @export
 merge_paf_entries_intraloop <- function(inpaf, second_run=F, inparam_chunklen=NULL, inparam_compression=NULL) {
@@ -7,7 +7,7 @@ merge_paf_entries_intraloop <- function(inpaf, second_run=F, inparam_chunklen=NU
   # For safety: sort entries by qstart. Reset row names so they start at 1.
   inpaf = inpaf[order(inpaf$qstart),]
   rownames(inpaf) <- NULL
-  #browser()
+
   # We consider alignments as 'potential neighbours' if their distance in any direction
   # (+-x, +-y) is less than 5% of their alignment length.
   #tolerance_bp = 10 #
@@ -24,10 +24,7 @@ merge_paf_entries_intraloop <- function(inpaf, second_run=F, inparam_chunklen=NU
   } else {
     # On second thought, let's have this cap on the length of the input chunklen. 
     tolerance_bp = 0.05 * inparam_chunklen
-    
-    # # I want to cap this, so e.g. a 1MB stretch can not just acquire everything in 50kbp distance. 
-    # tolerance_bp_unlimited = 0.05 * (outer(inpaf$alen, inpaf$alen, '+') / 2)
-    # tolerance_bp = min(tolerance_bp_unlimited, )
+
   }
   # Identify alignments that border each other: same strand, and end of of is the start
   # of the other. With some tolerance

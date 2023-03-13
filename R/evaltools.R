@@ -1,10 +1,37 @@
+
+#' rep.row
+#' 
+#' Tiny helperfunction to repeat rows in a matrix
+#' @author  Wolfram Hoeps
+#' @export
 rep.row <- function(x, n) {
   matrix(rep(x, each = n), nrow = n)
 }
+
+#' rep.col
+#' 
+#' Tiny helperfunction to repeat columns in a matrix
+#' @author  Wolfram Hoeps
+#' @export
 rep.col <- function(x, n) {
   matrix(rep(x, each = n), ncol = n, byrow = TRUE)
 }
 
+#' absmin
+#' 
+#' Tiny helperfuction to return the absolute minimum
+#' @author  Wolfram Hoeps
+#' @export
+absmin <- function(x) { x[which.min( abs(x) )]}
+
+#' calculate_estimated_aln_score
+#' 
+#' Quick & Dirty estimation of the score of a condensed dotplot. 
+#' Is used to filter out hopeless cases. 
+#' @param mat A matrix object representing a condensed dotplot
+#' @output a percentage estimate for the score
+#' @author  Wolfram Hoeps
+#' @export
 calculate_estimated_aln_score <- function(mat){
   
   matdiag = diagonalize(mat, 0.25)
@@ -32,7 +59,7 @@ calculate_estimated_aln_score <- function(mat){
 #' adapting the algorithm.
 #'
 #' @param mat matrix. Bitlocus / Gridmatrix.
-#' @author  geeksforgeeks.org
+#' @author  geeksforgeeks.org; Wolfram Hoeps
 #' @export
 calc_coarse_grained_aln_score <-
   function(mat,
@@ -240,107 +267,3 @@ calc_coarse_grained_aln_score <-
 
 
 
-
-
-#' find_maxdiag
-#'
-#' Scan a matrix for the length of the longest (positive) diagonal. This is part
-#' of the 'eval' method.
-#' @param m A matrix
-#' @author Unknown (https://stackoverflow.com/questions/47330812/find-the-longest-diagonal-of-an-element-in-a-matrix-python)
-#' @export
-find_maxdiag <- function(m) {
-  # Pre-compute dimension, because we need this often.
-  dim_m = dim(m)
-  dim_m_1 = dim_m[1]
-  dim_m_2 = dim_m[2]
-  
-  maxdiag = 0
-  for (i in 1:(dim_m_1 + 1)) {
-    # Iterate x points
-    for (j in 1:(dim_m_2 + 1)) {
-      # Iterate y points
-      k = 0 # k = current diag size
-      
-      while ((i + k < dim_m_1) &
-             # make sure i+k is not out of bounds
-             (j + k < dim_m_2)) {
-        # make sure j+k is not out of bonds
-        direction = sign(m[i, j])
-        
-        if ((direction != 0) &
-            (sign(m[i + k, j + k]) == direction)) {
-          # that next point is not zero
-          k = k + 1 # Diag has become longer
-          if (k > maxdiag) {
-            maxdiag = k
-          }
-        } else {
-          k = k + 1e10
-        }
-        
-      }
-    }
-  }
-  return(maxdiag + 1)
-}
-
-
-
-
-
-#' add_eval
-#' CRITICAL: NEEDS IMPROVEMENTS
-#' @description A helperfunction, wrapping the evaluation function.
-#' @param bitlocus matrix, nxm
-#' @param depth How many SVs in sequence should be simulated?
-#' @return evaluation matrix
-#'
-#' @author Wolfram Höps
-#' @export
-add_eval <-
-  function(res,
-           m,
-           layer,
-           pair_level1,
-           pair_level2,
-           pair_level3) {
-    # Ich kotz.
-    
-    if (layer == 1) {
-      res_add = unlist(c(
-        calc_coarse_grained_aln_score(m),
-        paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_')
-      ))
-      
-      
-    } else if (layer == 2) {
-      res_add = unlist(c(
-        calc_coarse_grained_aln_score(m),
-        paste(pair_level1$p1, pair_level1$p2, pair_level1$sv, sep = '_'),
-        paste(pair_level2$p1, pair_level2$p2, pair_level2$sv, sep =
-                '_')
-      ))
-      
-    } else if (layer == 3) {
-      # add
-      res_add = unlist(c(
-        calc_coarse_grained_aln_score(m),
-        paste(pair_level1$p1,
-              pair_level1$p2,
-              pair_level1$sv,
-              sep = '_'),
-        paste(pair_level2$p1,
-              pair_level2$p2,
-              pair_level2$sv,
-              sep = '_'),
-        paste(pair_level3$p1,
-              pair_level3$p2,
-              pair_level3$sv,
-              sep = '_')
-      ))
-      
-    }
-    
-    return(res_add)
-  }

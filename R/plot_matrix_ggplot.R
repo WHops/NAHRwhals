@@ -130,3 +130,91 @@ plot_matrix_ggplot_named <- function(data_frame_xyz, colnames_f, rownames_f) {
   
 }
 
+
+#' make_segmented_pairwise_plot
+#' 
+#' give me a grid_xy and a plot. I will add segments and save. 
+#' This is a bit a quick-and-dirty function; consider to improve. 
+#' @export 
+make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks){
+  # Make plot_xy_segmented. 
+  # Needs debug. 
+  xstart = (grid_xy[[1]][1:length(grid_xy[[1]])-1])
+  xend = (grid_xy[[1]][2:length(grid_xy[[1]])])
+  ystart = (grid_xy[[2]][1:length(grid_xy[[2]])-1])
+  yend = (grid_xy[[2]][2:length(grid_xy[[2]])])
+  xmax = max(grid_xy[[1]])
+  ymax = max(grid_xy[[2]])
+  datx = data.frame(xstart = xstart, 
+                    xend = xend,
+                    xmax = xmax
+  )
+  daty = data.frame(yend = yend,
+                    ymax = ymax,
+                    ystart = ystart
+  )
+  
+  likely_stepsize = min(c(diff(datx$xstart), diff(daty$ystart)))
+  
+  # Introducing special case for nrow(datx) = 1
+  if (likely_stepsize == Inf){
+    likely_stepsize = 0
+  }
+  
+  if (length(xstart) > 433){
+    print('Too many segments to make colored plot')
+    return()
+  }
+  
+  qual_col_pals = RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == 'qual',]
+  col_vector = rep(unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals))), 10)
+  
+  plot_x_y_segmented = plot_x_y + 
+    ggplot2::geom_rect(data=datx,
+                       ggplot2::aes(xmin=xstart, xmax=xend, ymin=0, ymax=ymax, fill=col_vector[1:length(xstart)]),
+                       alpha=0.5) + 
+    ggplot2::guides(fill = FALSE) +
+    ggplot2::xlim(c(0,max(ggplot2::layer_scales(plot_x_y)$x$range$range, xmax+likely_stepsize))) + # Range is the max of previous plot and new additions. So that nothing gets cut off. 
+    ggplot2::ylim(c(0,max(ggplot2::layer_scales(plot_x_y)$y$range$range, ymax+likely_stepsize))) +
+    ggplot2::scale_x_continuous(labels = scales::comma) +
+    ggplot2::scale_y_continuous(labels = scales::comma) 
+    # ggplot2::geom_segment(data=daty,
+    #             ggplot2::aes(x=0, xend=xmax, y=ystart, yend=ystart), color='grey')
+  print(plot_x_y_segmented)
+  
+  ggplot2::ggsave(filename = paste0(outlinks$outfile_colored_segment),
+                  plot = plot_x_y_segmented,
+                  width = 15,
+                  height = 15,
+                  units = 'cm',
+                  dpi = 300)
+  
+}
+
+#' @export
+make_modified_grid_plot <- function(res, gridmatrix, outlinks){
+  
+  res = res[order(res$eval, decreasing = T),]
+  # res = filter_res(res, threshold = params$eval_th)
+  
+  grid_modified = modify_gridmatrix(gridmatrix, res[1,])
+  
+  
+  gridlines.x = cumsum(c(0,as.numeric(colnames(grid_modified))))
+  gridlines.y = cumsum(c(0,as.numeric(row.names(grid_modified))))
+  
+  colnames(grid_modified) = seq(1:dim(grid_modified)[2])
+  row.names(grid_modified) = seq(1:dim(grid_modified)[1])
+  
+  gm2 = reshape2::melt(grid_modified)
+  colnames(gm2) = c('y','x','z')
+  grid_mut_plot = plot_matrix_ggplot_named(gm2[gm2$z != 0,], gridlines.x, gridlines.y)
+  ggplot2::ggsave(filename = paste0(outlinks$outfile_plot_grid_mut),
+                  plot = grid_mut_plot,
+                  width = 10,
+                  height = 10,
+                  units = 'cm',
+                  dpi = 300)
+  print(grid_mut_plot)
+  
+}

@@ -13,10 +13,6 @@
 #' @export
 merge_rows <- function(paffile, pairs) {
   
-  # paf_mergers = paffile[row.names(paffile) %in% unique(c(rowpairs$row, rowpairs$col)),]
-  # paf_nonmergers = paffile[!(row.names(paffile) %in% unique(c(rowpairs$row, rowpairs$col))),]
-  # 
-  # 
   
   count = 0
   for (i in dim(pairs)[1]:1){
@@ -87,9 +83,6 @@ merge_rows <- function(paffile, pairs) {
 
 
 
-
-
-
 #' Melt the alignment pieces back together after chunkifying them earlier.
 #'
 #' @description This is a crucial module for finding the SDs later, and poses
@@ -111,7 +104,7 @@ compress_paf_fnct <-
            second_run = F, 
            inparam_chunklen = NULL,
            inparam_compression = NULL) {
-    library(dplyr)
+
     debug = F
     if (debug) {
       inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/teppich/res_500k/paf/run_1024_1024_0.90_+_chunked.paf.chunk"
@@ -271,6 +264,7 @@ compress_paf_fnct <-
     # Remove very short stuff
     rowpairs = rowpairs[rowpairs$combined_matchlen > (inparam_chunklen/5),]
 
+    library(dplyr)
     # Cut down redundant pairs
     rowpairs_singular = as.data.frame(
       rowpairs %>%
@@ -278,7 +272,7 @@ compress_paf_fnct <-
         group_by(col) %>% top_n(1, combined_matchlen)
     )
     
-    
+
 
     # Go through each pair, make the merge. We go through the lines backwards,
     # so that previous merges don't disturb later ones.
@@ -321,13 +315,3 @@ compress_paf_fnct <-
       return(inpaf)
     }
   }
-
-
-# # runs only when script is run by itself
-# if (sys.nframe() == 0) {
-#   # Define input
-#   inpaf_link = commandArgs(trailingOnly = TRUE)[1]
-#   outpaf_link = commandArgs(trailingOnly = TRUE)[2]
-#   
-#   compress_paf_fnct(inpaf_link, outpaf_link)
-# }

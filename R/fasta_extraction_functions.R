@@ -1,132 +1,3 @@
-#' filter_paf_to_main_region
-#' Script to filter down a whole-genome paf to the 'best matching' region.
-#' query should be short sequence fragments (1kb, 10kb, ...) of the roi.
-
-#' @author Wolfram Hoeps
-#' @export
-filter_paf_to_main_region <- function(paflink, outpaflink) {
-  # Read in paf
-  paf = read.table(paflink,
-                   sep = '\t',
-                   fill = T,
-                   row.names = NULL)
-  
-  colnames_paf = c(
-    'qname',
-    'qlen',
-    'qstart',
-    'qend',
-    'strand',
-    'tname',
-    'tlen',
-    'tstart',
-    'tend',
-    'nmatch',
-    'alen',
-    'mapq'
-  )
-  colnames(paf)[1:length(colnames_paf)] = colnames_paf
-  
-  # Sum of lengths of the sniplets. Group by sniplets (qname), take one per group
-  # sum their qlen.
-  insequence_len = sum(na.omit(as.numeric(
-    dplyr::slice(dplyr::group_by(paf, qname), 1)$qlen
-  )))
-  
-  # For every snipplet, find the alignment with the largest number of matches.
-  paf_winners = dplyr::filter(dplyr::group_by(paf, qname), nmatch == max(nmatch))
-  
-  # Of these winning alignments, which is the most frequent target contig/sequence/chr?
-  chr_winners = tail(names(sort(table(
-    paf_winners$tname
-  ))), 1)
-  # And those snipplets matching to the winner chromosome - where do they fall (median)?
-  middle_median = median(((
-    paf_winners[paf_winners$tname == chr_winners,]$tend +
-      paf_winners[paf_winners$tname == chr_winners,]$tstart
-  ) / 2))
-  
-  # Now simply extend from median towards front and back.
-  start_winners = middle_median - (1.5 * (insequence_len / 2))
-  end_winners = middle_median + (1.5 * (insequence_len / 2))
-  
-  # Here we cut, but I am not sure if this is really the way to go?
-  paf_cut = paf[((paf$tname == chr_winners) &
-                   (paf$tstart >= start_winners) &
-                   (paf$tend <= end_winners)),]
-  
-  
-  aln_containing = cpaf_i[(cpaf_i$qstart <= start) &
-                            (cpaf_i$qend >= end),]
-  
-  
-  
-  write.table(
-    paf_cut,
-    file = outpaflink,
-    sep = '\t',
-    row.names = F,
-    col.names = F,
-    quote = F
-  )
-  
-  
-}
-
-#' flip_query_target
-#'
-#' Not entirely sure this is still in use. Might be obsolete.
-#' @author Wolfram Höps
-#' @export
-flip_query_target <- function(inpaf, outpaf) {
-  # Read in paf
-  paf = read.table(inpaf,
-                   sep = '\t',
-                   fill = T,
-                   row.names = NULL)
-  
-  colnames_paf = c(
-    'qname',
-    'qlen',
-    'qstart',
-    'qend',
-    'strand',
-    'tname',
-    'tlen',
-    'tstart',
-    'tend',
-    'nmatch',
-    'alen',
-    'mapq'
-  )
-  colnames(paf)[1:length(colnames_paf)] = colnames_paf
-  
-  # Transform
-  paf_transform = transform(
-    paf,
-    qname = tname,
-    tname = qname,
-    qlen = tlen,
-    tlen = qlen,
-    qstart = tstart,
-    tstart = qstart,
-    qend = tend,
-    tend = qend
-  )
-  
-  write.table(
-    paf_transform,
-    file = outpaf,
-    sep = '\t',
-    row.names = F,
-    col.names = F,
-    quote = F
-  )
-  
-}
-
-
-
 #' extract_subseq_bedtools
 #' Give me an input fasta link, chromosome coordinates and an
 #' output destionation file. I will extract the sequence of that
@@ -135,9 +6,13 @@ flip_query_target <- function(inpaf, outpaf) {
 #' @export
 extract_subseq_bedtools <-
   function(infasta, seqname, start, end, outfasta) {
+
+    print(infasta)
+    print(seqname)
+    print(outfasta)
     # Where is bedtools?
     bedtoolsloc = query_config("bedtools")
-    
+    print(bedtoolsloc)
     # we need to create a temporary bedfile that will be deleted in a few lines.
     random_tag = as.character(runif(1, 1e10, 1e11))
     tmp_bedfile = paste0('region2_', random_tag, '.bed')
@@ -150,6 +25,17 @@ extract_subseq_bedtools <-
                     format(end, scientific = F))
     system(paste0('echo "', region, '" > ', tmp_bedfile))
     # Run bedtools
+
+    print(paste0(
+      bedtoolsloc,
+      " getfasta -fi ",
+      infasta,
+      " -bed ",
+      tmp_bedfile,
+      " > ",
+      outfasta
+    ))
+
     system(paste0(
       bedtoolsloc,
       " getfasta -fi ",
@@ -206,6 +92,7 @@ find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
   
   return(data.frame(seqname = best_aln$tname, liftover_coord = coord))
 }
+
 
 #' liftover_coarse
 #'
@@ -269,32 +156,24 @@ liftover_coarse <-
       print("Error: Unsuccessful liftover of the input sequence: Sequence not found on query.")
       return(NULL)
     }
-    # stopifnot(
-    #   "Error: Unsuccessful liftover of the input sequence: Sequence not found on query" =
-    #     dim(liftover_coords)[1] > 1 # We need at least two points to go ANY further. 
-    # )
-    
     
     # What is the majority vote for the target chromosome?
     winner_chr = names(sort(table(liftover_coords$seqname), decreasing = TRUE)[1])
     
-    
     # If we want to get a whole chromosome (tested for chrY only), we start at 1, and
     # go as far as probes land (... thusly avoiding heterochromatin.)
-    whole_chr = F
+    # whole_chr = F
 
-    if (whole_chr){
-      start_winners = 1
-      end_winners = min(28500000,max(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord))
+    # if (whole_chr){
+    #   start_winners = 1
+    #   end_winners = min(28500000,max(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord))
       
     
-    } else if (search_mode == 'traditional') {
-      startend = find_coords_median_extension(liftover_coords, cpaf, winner_chr, start, end, lenfactor)
-
-    } else if (search_mode == 'extrapolation') {
+    
+  if (search_mode == 'extrapolation') {
       startend = find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end)
       
-    } else if (search_mode == 'mad'){
+    } else if (search_mode == 'mad'){ # mad = mean absolute deviation.
       startend = find_coords_mad(liftover_coords, cpaf, winner_chr, start, end, refine_runnr!=1)
       if (is.null(startend)){
         print('MAD failed. Going for extrapolation instead.')
@@ -340,6 +219,8 @@ liftover_coarse <-
 
 #' enlarge_interval_by_factor
 #'
+#' input start and end coordinates and a factor by which to enlarge. E.g. 40-50 (len 10) and factor 2 will result in 35-55 (len 20).
+#' Makes sure no negative values are created. 
 #' @author Wolfram Höps
 #' @export
 enlarge_interval_by_factor <-
@@ -466,12 +347,14 @@ read_and_prep_paf <- function(paflink) {
 #' @author Wolfram Hoeps
 #' @export
 find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, liftover_run){
-  # Define success thresholds
+
+  # Hardcode success thresholds
   th_x = 0.8
   th_y_low = 0.5
   th_y_high = 2
   start_map_limit = 10
   end_map_limit = 90
+
   # And those snipplets matching to the winner chromosome - where do they fall (median)?
   liftover_coords_maxseq = liftover_coords[liftover_coords$seqname == winner_chr,]
   
@@ -500,12 +383,6 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
     return(NULL)
   }
   
-
-  # 
-  # if(liftover_run){
-  #   browser()
-  # }
-
   if (liftover_run == F){
     
     dist_between_probes = min(unique(diff(liftover_coords$pos_probe)))
@@ -522,46 +399,11 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
       }
     }
   }
-  # If not all of x is covered, but the contig has space into the non-covered directions, try to extrapolate. 
-  # if ((mapped_y_region_frac < 0.95) & (start_winners > (dist_between_probes*2))){
-  #   start_winners = 1
-  # } else if ( (mapped_y_region_frac < 0.95) &  ((end_winners + (dist_between_probes*2)) < (cpaf[cpaf$tname == winner_chr,][1, 'tlen']))) {
-  #   end_winners = cpaf[cpaf$tname == winner_chr,][1, 'tlen'] - 1
-  #   }  #start_winners = 1
+
+
   return(c(start_winners, end_winners))
 
   
-}
-
-
-
-
-#' find_coords_median_extension
-#'
-#' @author Wolfram Hoeps
-#' @export
-find_coords_median_extension <- function(liftover_coords, cpaf, winner_chr, start, end, lenfactor){
-  # And those snipplets matching to the winner chromosome - where do they fall (median)?
-  middle_median = median(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord)
-  
-  # Now  extend from median towards front and back.
-  insequence_len = end - start
-  start_winners = middle_median - (lenfactor * (insequence_len / 2))
-  end_winners =   middle_median +   (lenfactor * (insequence_len / 2))
-  
-  # Warn if we are exceeding chromosome boundaries in the query.
-  if ((start_winners < 0) |
-      (end_winners > cpaf[cpaf$tname == winner_chr,][1, 'tlen'])) {
-    print('Warning! Reaching the end of alignment!')
-    
-    # Make an entry to the output logfile #
-    if (exists('log_collection')){
-      log_collection$exceeds_y <<- T
-    }
-    # Log file entry done #
-  }
-  
-  return(c(start_winners, end_winners))
 }
 
 

@@ -8,6 +8,7 @@ query_config <- function(param) {
   return(config::get(param, file = configfile))
 }
 
+
 #' Simple helperfunction to extract part of a fasta into a character.
 #'
 #' @description Simple helperfunction to extract part of a fasta into a character.
@@ -30,17 +31,17 @@ get_subseq <- function(input_fasta, range = NULL) {
 }
 
 
-#' A testfunction to see if nahrtoolkit is loaded
+#' A testfunction to see if nahrwhals is loaded
 #' @author Wolfram Höps
 #' @export
-confirm_loaded_nahr <- function() {
-  print('The NAHRtoolkit is loaded and ready to go.')
+confirm_loaded_nw <- function() {
+  print('NAHRwhals loaded and ready to go.')
 }
 
 #' Print version number.
 #' @author Wolfram Höps
 #' @export
-version_nahr <- function() {
+version_nw <- function() {
   print('This is version 0.95 from Feb 14th, 2022.')
 }
 
@@ -169,59 +170,36 @@ make_chunked_minimap_alnment <-
     
   }
 
+
+
 #' Chunkify query fasta
 #'
-#' @description This is a helperfunction calling an external script to
+#' @description This is a helperfunction calling bedtools to
 #' chop a query sequence into chunks.
 #'
 #' @param infasta [character/link] single-seq fasta to be chopped
 #' @param outfasta_chunk [character/link] output chopped multi-seq fasta.
 #' @param chunklen [numeric] length of sequence chunks in bp
-#' @param scriptloc [character/link] link to shred.ss from bbmap.
-#' @return nothing. Only output files written.
+#' @return nothing. But output files written.
 #'
 #' @author Wolfram Höps
 #' @export
-shred_seq <- function(infasta,
-                      outfasta_chunk,
-                      chunklen) {
-  scriptloc = query_config("shred")
-  print(paste0(
-    scriptloc,
-    " in=",
-    infasta,
-    " out=",
-    outfasta_chunk,
-    " length=",
-    chunklen
-  ))
-  system(
-    paste0(
-      scriptloc,
-      " in=",
-      infasta,
-      " out=",
-      outfasta_chunk,
-      " length=",
-      chunklen,
-      " overwrite=true"
-    )
-  )
-}
-
 shred_seq_bedtools <- function(infasta,
                                outfasta_chunk,
                                chunklen){
   
+
   bedtoolsloc = query_config("bedtools")
   fasta_awk_script = query_config("awk_on_fasta")
   
-  # Write a temporary bedfile
+  # Write a temporary bedfile that will be removed at the end of the function
   bed_tmp_file = paste0('tmpbed_deleteme_', sprintf("%.0f",runif(1, 1e13, 1e14)), '.bed')
   fasta_awk_tmp_file = paste0('tmpinfo_deleteme_', sprintf("%.0f",runif(1, 1e13, 1e14)), '.bed')
-  
+
   system(paste0(fasta_awk_script, ' ', infasta, ' ', fasta_awk_tmp_file))
   
+  # Collect information about the fasta we want to chop. This info is needed for bedtools getfasta
+  # To work well. 
   name_len_df = read.table(fasta_awk_tmp_file)
   contigname = sub('>', '', (name_len_df)[1,])
   contiglen = as.numeric((name_len_df)[2,])
@@ -234,14 +212,14 @@ shred_seq_bedtools <- function(infasta,
   
   write.table(bed_df, file=bed_tmp_file, sep='\t', quote=F, row.names=F, col.names = F)
   
-  browser()
+
+  system(paste0('rm ', infasta, '.fai'))
   
-  sedcmd = "sed -r 's/(.*):/\\1_/'\\n"
+  sedcmd = "sed -r \'s/(.*):/\\1_/'"
   system(paste0(bedtoolsloc, ' getfasta -fi ', infasta, ' -bed ', bed_tmp_file, ' | ', sedcmd, ' > ', outfasta_chunk))
   
-  
-  
-  
+  system(paste0('rm ', bed_tmp_file))
+  system(paste0('rm ', fasta_awk_tmp_file))
   
 }
 
@@ -296,15 +274,7 @@ run_minimap2 <-
     stopifnot("Alignment error: Minimap2 has not reported any significant alignment. 
               Check if your input sequence is sufficiently long." = 
                 file.size(outpaf) != 0)
-    
-    #pbmm2: CCS/HIFI
-    #system(paste0(minimap2loc," -k 19 -w 10 -u -o 5 -O 56 -e 4 -E 1 -A 2 -B 5 -z 400 -Z 50 -r 2000 -L 0.5 -g 5000", targetfasta, " ", queryfasta, " > ", outpaf))
-    
-    # W, 23rd Dec 2021. Since the dev of pbmm2, the minimap2 parameters have changed. I adapted everything to the new notation.
-    # the -L paramter (formerly Long join flank ratio) is no longer existing, so I'm leaving it out.
-    #system(paste0(minimap2loc," -k 19 -w 10 -O 5,56 -E 4,1 -A 2 -B 5 -z 400,50 -r 2000 -g 5000 ", targetfasta, " ", queryfasta, " > ", outpaf))
-    
-    
+
   }
 
 
@@ -411,107 +381,6 @@ rc <- function(z) {
 }
 ################################################################################
 
-#' Create a simple random sequence.
-#'
-#' @description Simple function to create a random string of ACGT.
-#'
-#' @param n [numeric] length of desired sequence (bp)
-#' @param gcfreq [character/link] desired GC frequency.
-#' @return A character vector of a random DNA sequence.
-#'
-#' @author Wolfram Höps
-#' @export
-randDNASeq <- function(n, gcfreq, seed = 1234) {
-  bases = c('A', 'C', 'G', 'T')
-  
-  #set.seed(seed)
-  seq = sample(bases,
-               n,
-               replace = T,
-               prob = c((1 - gcfreq) / 2, gcfreq / 2, gcfreq / 2, (1 - gcfreq) /
-                          2))
-  return(paste(seq, collapse = ''))
-}
-
-
-
-wrapper_dotplot_with_alignment <-
-  function(seqname,
-           start,
-           end,
-           genome_x_fa,
-           genome_y_fa,
-           limitfasta_x,
-           limitfasta_y,
-           outpaf_link,
-           chunklen = 1000) {
-    extract_subseq(genome_x_fa, seqname, start, end, limitfasta_x)
-    plot = make_chunked_minimap_alnment(
-      genome_y_fa,
-      limitfasta_x,
-      outpaf_link,
-      chunklen = 1000,
-      minsdlen = 2000,
-      saveplot = F,
-      hllink = F,
-      hltype = F,
-      wholegenome = T
-    )
-    return(plot)
-    
-  }
-
-
-#' General purpose wrapper
-#'
-#' @description Simple function to create a random string of ACGT.
-#'
-#' @param n [numeric] length of desired sequence (bp)
-#' @param gcfreq [character/link] desired GC frequency.
-#' @return A character vector of a random DNA sequence.
-#'
-#' @author Wolfram Höps
-#' @export
-wrapper_dotplot_with_alignment_fast <-
-  function(seqname,
-           start,
-           end,
-           genome_x_fa,
-           genome_y_fa,
-           subseqfasta_x,
-           subseqfasta_y,
-           conversionpaf_link,
-           outpaf_link,
-           chunklen = 10000,
-           factor = 0.5) {
-    # Get coords in assembly
-    coords_liftover = liftover_coarse(seqname, start, end, conversionpaf_link, lenfactor = 1)
-    
-    # Gimme fasta
-    extract_subseq_bedtools(genome_x_fa, seqname, start, end, subseqfasta_x)
-    extract_subseq_bedtools(
-      genome_y_fa,
-      coords_liftover$lift_contig,
-      coords_liftover$lift_start,
-      coords_liftover$lift_end,
-      subseqfasta_y
-    )
-    print("##############################")
-    #outpaf_link = as.character(runif(1,1e10, 1e11))
-    plot = make_chunked_minimap_alnment(
-      subseqfasta_x,
-      subseqfasta_y,
-      outpaf_link,
-      chunklen = chunklen,
-      minsdlen = 2000,
-      saveplot = T,
-      hllink = F,
-      hltype = F,
-      wholegenome = F
-    )
-    return(plot)
-    
-  }
 
 
 
@@ -522,5 +391,3 @@ wrapper_dotplot_with_alignment_fast <-
 colMax <- function(data)
   sapply(data, max, na.rm = TRUE)
 
-
-# Hi we are in a feature adding branch.

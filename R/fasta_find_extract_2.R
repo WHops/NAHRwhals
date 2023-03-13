@@ -1,4 +1,5 @@
 #' write_x_y_sequences
+#' 
 #' This was previously part of the wrapper_aln_and_analyse. 
 #' However, over time, this grew into more and more complex code, 
 #' So it is for sure worth its own function by now. 
@@ -34,7 +35,7 @@ write_x_y_sequences <- function(seqname_x,
     }
   }
   
-  
+
   # Get subseq-fastas in x and y
   extract_subseq_bedtools(params$genome_x_fa,
                           params$seqname_x,

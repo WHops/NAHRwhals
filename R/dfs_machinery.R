@@ -7,7 +7,6 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F, earlystop = Inf, histor
   
   # Prepare initial bitlocus bit
   bitl = flip_bitl_y_if_needed(bitlocus)
-  print('hi')
   bitl = matrix_remove_zero_pads(bitl)
   # Get the orig_symmm value
   orig_symm = calc_symm(bitl)
@@ -57,27 +56,7 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F, earlystop = Inf, histor
 #' @export
 dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairhistory=NULL, df_output=NULL, increase_only=NULL, orig_symm=1, last_eval=0, earlystop=Inf){
   
-  # if(pairhistory == '1_1_ref+9_28_inv+2_15_dup+22_41_inv'){
-  #   browser()
-  # }
-  
-  # if (pairhistory == '1_1_ref+2_56_inv+47_90_dup+2_99_inv'){
-  #   browser()
-  # }
-  # 
-  # if (pairhistory == '1_1_ref+2_56_inv+47_90_dup'){
-  #   browser()
-  # }
-  
-  # if (pairhistory == '1_1_ref+11_90_inv+2_45_dup'){
-  #   browser()
-  # }
-  
-  #1_1_ref+11_90_inv+2_45_dup+54_133_inv
-  
-  # if (pairhistory == '1_1_ref+8_10_inv'){
-  #   browser()
-  # }
+
   # Calc score of a node. Force the calculation if we have ref (there we definitely want to know the value)
   aln_score = calc_coarse_grained_aln_score(mutator, forcecalc = (pair$sv == 'ref'), orig_symm = orig_symm)
   # if ((depth==2)){#} & (pair$p1 == 25) & (pair$p2 == 41)){#'25_41_inv'){
@@ -228,17 +207,6 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
     visited = list_visit[[1]]
     df_output = list_visit[[2]]
   
-      # If node is NOT novel, BUT has only been seen at higher depth,
-      # update the path and depth. 
-    # } else if (visited[[pairs[npair, 'hash']]][1] > (depth + 1)){
-    #   #browser()
-    #   visited[[pairs[npair, 'hash']]][c(1,2)] = c(
-    #     depth, 
-    #     paste(pairhistory, paste0(pairs[npair,1:3], collapse = '_'), sep='+'))
-    #   df_output[df_output$hash == pairs[npair, 'hash'],c(2,3,4)] =  c(depth+1, 
-    #                                                                   paste(pairhistory, paste0(pairs[npair,1:3], collapse = '_'), sep='+'), 
-    #                                                                   visited[[pairs[npair, 'hash']]][3])
-     
 
     
   }

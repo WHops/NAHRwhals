@@ -1,14 +1,16 @@
 
 #' A wrapper for extracting sequence
+#' 
+#' Needs more documentation.
 #' @author Wolfram Höps
 #' @export
 extract_sequence_wrapper <- function(params, outlinks){
+
   # If we have a pre-computed coarse alignment, then we can use this to find out 
   # which region we are talking about. 
   if (!is.null(params$conversionpaf_link)) {
     
     # Pad-sequence
-    print('hi')
     start_end_pad = enlarge_interval_by_factor(params$start_x,
                                                params$end_x,
                                                params$xpad,

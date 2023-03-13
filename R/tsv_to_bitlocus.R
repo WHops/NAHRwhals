@@ -455,4 +455,33 @@ plot_helper_debug <- function(paf, points_overall){
   
 }
 
-#ggplot2::ggplot(as.data.frame(grid)) + ggplot2::geom_tile()
+
+#' add_slope_intercept_info
+
+#' @author Wolfram Hoeps
+#' @export
+add_slope_intercept_info <- function(vector_df,
+                                     xstart = 'tstart',
+                                     xend = 'tend',
+                                     ystart = 'qstart',
+                                     yend = 'qend') {
+  dx = vector_df[xend] - vector_df[xstart]
+  dy = vector_df[yend] - vector_df[ystart]
+  
+  # Slope
+  m = dy / dx
+  
+  # m_inv explicitly
+  m_inv = 1 / m
+  
+  # y = mx + c    -->    c = y - mx
+  y_intercept = vector_df[ystart] - (m * vector_df[xstart])
+  
+  # x intercept
+  x_intercept = y_intercept / m
+  
+  slope_df = data.frame(m, m_inv, y_intercept, x_intercept)
+  colnames(slope_df) = c('slope', 'slope_inv', 'y_intercept', 'x_intercept')
+  
+  return(slope_df)
+}

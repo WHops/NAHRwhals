@@ -1,4 +1,6 @@
 #' Find parameters by wiggling.
+#' This produces unstable and unpredictable results; use is discouraged but
+#' we are leaving the function alive for now. Is called when compression_params$auto_find is set to True (default: False)
 #'
 #' @export
 find_minlen_compression_params_wiggle <-
