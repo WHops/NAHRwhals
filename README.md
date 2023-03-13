@@ -9,8 +9,6 @@ An R package providing tools for simulation, detection and visualization of comp
 		- BitLocus - condensed dotplots
 		- A tree-based caller for complex, nested NAHR-mediated rearrangements. 
 
-Authors: Wolfram Höps
-
 ## Installation & Usage
 
 [Mon, 13th March 2023] NAHRwhals is currently undergoing code streamlining and will be fully available in few days. Thanks for your patience. 
