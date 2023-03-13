@@ -1,2 +1,0 @@
-awk '{FS=OFS="\t"} {print $1}' sds.txt > sds2.txt
-sed -e 's/^/"/g' sds2.txt | sed -e 's/$/",/g' > format.txt

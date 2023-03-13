@@ -1,4 +1,0 @@
-simcontig	500	1000	simcontig:500	0	-	simcontig	1700	2200	0	SDA	0	N/A	N/A	N/A	N/A	N/A	500	0	0	500	495	5	0	0	0.99	0.99	0	0
-simcontig	1700	2200	simcontig:1700	0	-	simcontig	500	1000	0	SDA	0	N/A	N/A	N/A	N/A	N/A	500	0	0	500	495	5	0	0	0.99	0.99	0	0
-simcontig	750	1750	simcontig:750	0	-	simcontig	2500	3500	0	SDB	0	N/A	N/A	N/A	N/A	N/A	1000	0	0	1000	990	10	0	0	0.99	0.99	0	0
-simcontig	2500	3500	simcontig:2500	0	-	simcontig	750	1750	0	SDB	0	N/A	N/A	N/A	N/A	N/A	1000	0	0	1000	990	10	0	0	0.99	0.99	0	0
