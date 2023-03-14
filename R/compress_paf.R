@@ -105,14 +105,7 @@ compress_paf_fnct <-
            inparam_chunklen = NULL,
            inparam_compression = NULL) {
 
-    debug = F
-    if (debug) {
-      inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/teppich/res_500k/paf/run_1024_1024_0.90_+_chunked.paf.chunk"
-      inpaf_link = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf.awked"
-      inpaf_link = 'blub.awked'
-      inpaf_link = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf13.awked"
-    }
-    #inpaf_link = "/Users/hoeps/phd/projects/nahrcall/nahrchainer/seqbuilder/res/outpaf136.awked"
+
     
     if (is.null(inpaf_df)) {
       # Read and col-annotate the input paf

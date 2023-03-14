@@ -1,8 +1,7 @@
 # [1] Paths to files and binaries
 
-minimap2_bin = '/Users/hoeps/Programs/minimap2-v2/minimap2-2.24/minimap2'
-bedtools_bin = default
-
+minimap2_bin = '/path/to/minimap2'
+bedtools_bin = '/path/to/bedtools'
 
 genome_x_fa = 'testdata/assemblies/hg38_partial.fa'
 genome_y_fa = 'testdata/assemblies/assembly_partial.fa'

@@ -10,7 +10,7 @@ create_mmi_if_doesnt_exists <- function(params){
   }
   
 
-  print('No minimap2 index ".mmi" file of the assembly fasta found. Creating one now (takes around 1 minute.)')
+  print('No minimap2 index ".mmi" file of the assembly fasta found. Creating one now (takes around 1 minute for a whole genome assembly.)')
   
   minimap2_indexing_command = paste0(params$minimap2_bin , ' -k 28 -w 255 --idx-no-seq -H -d ', params$genome_y_fa_mmi, ' ', params$genome_y_fa) 
   system(minimap2_indexing_command)

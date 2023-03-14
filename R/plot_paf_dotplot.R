@@ -132,14 +132,7 @@ dotplotly_dotplot_return_aln <- function(opt) {
   }
   #opt$output_filename = unlist(strsplit(opt$output_filename, "/"))[length(unlist(strsplit(opt$output_filename, "/")))]
   
-  debug = F
-  if (debug) {
-    opt = list()
-    opt$min_query_aln = 0
-    opt$min_align = 0
-    opt$on_target = T
-    opt$input_filename = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/seqbuilder/res/paf/invs_mut_self.paf'
-  }
+  
   # read in alignments
   alignments = read.table(
     opt$input_filename,
