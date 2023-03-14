@@ -56,7 +56,7 @@ as.data.frame.hash <- function(x, ..., key="key", value="value" ){
 #' which we save and can use for comparisons later. 
 #' 
 #' @param bitlocus input bitlocus; a matrix
-#' @pairs a data frame (?) containing known hashes. 
+#' @param pairs a data frame (?) containing known hashes. 
 #' @export
 annotate_pairs_with_hash <- function(bitlocus, pairs){
   
@@ -261,7 +261,7 @@ is_cluttered_paf <- function(paf, clutter_limit_per_border = 5){
 
 # What is the initial symmetry of the bitlocus? 
 #' 
-#' @params bitl matrix representing a bitlocus
+#' @param bitl matrix representing a bitlocus
 #' @export
 calc_symm <- function(bitl){
   climb_up_cost = as.numeric(row.names(bitl))

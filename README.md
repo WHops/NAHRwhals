@@ -24,3 +24,15 @@ Please direct any correspondence to:
 Wolfram Höps
 wolfram.hoeps@embl.de
 
+
+## Example runs
+
+# Two assemblies and coordinates on one of them
+Rscript nahrwhals.R --params genome_x_fa=testdata/assemblies/hg38_partial.fa genome_y_fa=testdata/assemblies/assembly_partial.fa seqname_x=chr1_partial start_x=1700000 end_x=3300000 hltrack=testdata/assemblies/hg38_partial_genes.bed anntrack=testdata/assemblies/hg38_partial_genes.bed
+
+
+
+# Two fastas with each other
+Rscript nahrwhals.R --params genome_x_fa=testdata/extracted_fastas/sequence1.fa genome_y_fa=testdata/extracted_fastas/sequence2.fa compare_full_fastas=T
+
+

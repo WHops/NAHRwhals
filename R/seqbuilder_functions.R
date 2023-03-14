@@ -1,14 +1,4 @@
 
-
-#' A wrapper for extracting values from the config.
-#' @author Wolfram Höps
-#' @export
-query_config <- function(param) {
-  configfile = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/conf/config.yml"
-  return(config::get(param, file = configfile))
-}
-
-
 #' Simple helperfunction to extract part of a fasta into a character.
 #'
 #' @description Simple helperfunction to extract part of a fasta into a character.
@@ -69,7 +59,8 @@ version_nw <- function() {
 #' @author Wolfram Höps
 #' @export
 make_chunked_minimap_alnment <-
-  function(targetfasta,
+  function(params, 
+           targetfasta,
            queryfasta,
            outpaf,
            #outplot,
@@ -86,7 +77,7 @@ make_chunked_minimap_alnment <-
            hlend = NULL,
            targetrange = NULL,
            queryrange = NULL, 
-           anntrack = NULL,
+           anntrack = F,
            x_seqname = NULL,
            x_start = NULL,
            x_end = NULL, 
@@ -115,17 +106,16 @@ make_chunked_minimap_alnment <-
     # Single-sequence query fasta gets chopped into pieces.
 
     
-    shred_seq_bedtools(queryfasta, queryfasta_chunk, chunklen)
-    print('1')
-    print(queryfasta_chunk)
+    shred_seq_bedtools(queryfasta, queryfasta_chunk, chunklen, params)
+
     # Self explanatory
-    run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk)
+    run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk, params)
     
 
     
     # Awk is used to correct the sequence names. This is because I know only there
     # how to use regex...
-    awk_edit_paf(outpaf_chunk, outpaf_filter)
+    awk_edit_paf(outpaf_chunk, outpaf_filter, params)
     # paf of fragmented paf gets put back together.
     compress_paf_fnct(inpaf_link = outpaf_filter, outpaf_link = outpaf, inparam_chunklen = chunklen)
     
@@ -150,7 +140,7 @@ make_chunked_minimap_alnment <-
       x_start = x_start, 
       x_end = x_end,
       x_seqname = x_seqname,
-      hltrack = hltrack
+      hltrack = params$hltrack
     )
     print('5')
     if (saveplot == F) {
@@ -186,11 +176,11 @@ make_chunked_minimap_alnment <-
 #' @export
 shred_seq_bedtools <- function(infasta,
                                outfasta_chunk,
-                               chunklen){
+                               chunklen,
+                               params){
   
-
-  bedtoolsloc = query_config("bedtools")
-  fasta_awk_script = query_config("awk_on_fasta")
+  bedtoolsloc = params$bedtools_bin
+  fasta_awk_script = params$awkscript_fasta
   
   # Write a temporary bedfile that will be removed at the end of the function
   bed_tmp_file = paste0('tmpbed_deleteme_', sprintf("%.0f",runif(1, 1e13, 1e14)), '.bed')
@@ -251,10 +241,11 @@ run_minimap2 <-
   function(targetfasta,
            queryfasta,
            outpaf,
+           params,
            nthreads = 4) {
     #system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
     
-    minimap2loc = query_config("minimap2")
+    minimap2loc = params$minimap2_bin
     
     # Some self-defined parameters
     system(
@@ -289,11 +280,11 @@ run_minimap2 <-
 #'
 #' @author Wolfram Höps
 #' @export
-awk_edit_paf <- function(inpaf, outpaf) {
-  print(inpaf)
-  print(outpaf)
+awk_edit_paf <- function(inpaf, outpaf, params) {
+
   
-  scriptlink = query_config("awkscript")
+  scriptlink = params$awkscript_paf 
+
   print(scriptlink)
   system(paste0(scriptlink, " ", inpaf, " ", outpaf))
 }

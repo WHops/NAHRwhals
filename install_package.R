@@ -1,5 +1,9 @@
 #!/usr/bin/env Rscript
 
-library(devtools)
-devtools::document()
+# Install devtools if not installed.
+if(!require(devtools)){
+    install.packages("devtools")
+}
+
+# Use devtools to install the package. 
 devtools::install()

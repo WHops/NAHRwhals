@@ -12,6 +12,7 @@ produce_pairwise_alignments_minimap2 <- function(params, outlinks, chr_start_end
   if (params$self_plots) {
     if (is.na(file.size(outlinks$outfile_plot_self_x))) {
       plot_self_x = make_chunked_minimap_alnment(
+        params,
         outlinks$genome_x_fa_subseq,
         outlinks$genome_x_fa_subseq,
         outlinks$outpaf_link_self_x,
@@ -41,6 +42,7 @@ produce_pairwise_alignments_minimap2 <- function(params, outlinks, chr_start_end
       
       # # # Run y self alignment
       plot_self_y = make_chunked_minimap_alnment(
+        params,
         outlinks$genome_y_fa_subseq,
         outlinks$genome_y_fa_subseq,
         outlinks$outpaf_link_self_y,
@@ -63,6 +65,7 @@ produce_pairwise_alignments_minimap2 <- function(params, outlinks, chr_start_end
   }
   #Run xy alignment
   plot_x_y = make_chunked_minimap_alnment(
+    params,
     outlinks$genome_x_fa_subseq,
     outlinks$genome_y_fa_subseq,
     outlinks$outpaf_link_x_y,

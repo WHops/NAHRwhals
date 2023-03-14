@@ -29,7 +29,7 @@ absmin <- function(x) { x[which.min( abs(x) )]}
 #' Quick & Dirty estimation of the score of a condensed dotplot. 
 #' Is used to filter out hopeless cases. 
 #' @param mat A matrix object representing a condensed dotplot
-#' @output a percentage estimate for the score
+#' @param output a percentage estimate for the score
 #' @author  Wolfram Hoeps
 #' @export
 calculate_estimated_aln_score <- function(mat){

@@ -16,15 +16,15 @@ wrapper_aln_and_analyse <- function(params) {
   }
   
   # Work out some reference genome things...
-  if (params$reference_genome == 'hg38'){
-    params$alt_ref_sample = F
-  } else if (params$reference_genome == 'T2T'){
-    print('T2T chosen. Translating reference coodinates...')
-    params$alt_ref_sample = 'T2T'
-  } else {
-    print('Error: reference_genome must be "hg38" or "T2T".')
-    return()
-  }
+  #if (params$reference_genome == 'hg38'){
+  #  params$alt_ref_sample = F
+  #} else if (params$reference_genome == 'T2T'){
+  #  print('T2T chosen. Translating reference coodinates...')
+  #  params$alt_ref_sample = 'T2T'
+  #} else {
+  #  print('Error: reference_genome must be "hg38" or "T2T".')
+  #  return()
+  #}
 
   # Start writing a log file. 
   log_collection <<- init_log_with_def_values()
@@ -37,7 +37,7 @@ wrapper_aln_and_analyse <- function(params) {
                    'depth')] <<-
     c(params$seqname_x, params$start_x, params$end_x, params$xpad, 
       params$chunklen, params$samplename, params$depth)
-  
+
   # Determine 'main' output name for this run
   sequence_name_output = manufacture_output_res_name(
     params$seqname_x, params$start_x, params$end_x
@@ -46,32 +46,35 @@ wrapper_aln_and_analyse <- function(params) {
   make_output_folder_structure(sequence_name_output)
   # Define output files
   outlinks = define_output_files(sequence_name_output, params$samplename)
-  if (params$use_paf_library == T){
+
+  if (params$compare_full_fastas == T) {
+    
+    print('Option pairwise_fasta_direct recognized. Comparing entire fasta files.')
+    chr_start_end_pad = list(chr='seqname', start='1', end=as.numeric(nchar(read.table(params$genome_x_fa))))
+    system(paste0('cp ', params$genome_x_fa, ' ', outlinks$genome_x_fa_subseq))
+    system(paste0('cp ', params$genome_y_fa, ' ', outlinks$genome_y_fa_subseq))
+
+    
+  } else if (params$use_paf_library == T){
       
     # Step 1: Get the sequences (write to disk)
     chr_start_end_pad_params = extract_sequence_wrapper(params, outlinks)
     chr_start_end_pad = chr_start_end_pad_params[[1]]
     params = chr_start_end_pad_params[[2]]
     
-  } else if (params$use_paf_library == 'auto'){
-    
+  } else if (params$use_paf_library == F){
     create_mmi_if_doesnt_exists(params)
-    # params$conversionpaf_link ; this is what we need. 
     params = make_params_conversionpaf(params, outlinks)
     chr_start_end_pad_params = extract_sequence_wrapper(params, outlinks)
     chr_start_end_pad = chr_start_end_pad_params[[1]]
     params = chr_start_end_pad_params[[2]]
     system(paste0('rm ', params$conversionpaf_link))
     
-  } else {
-    chr_start_end_pad = list(chr='seqname', start='1', end=as.numeric(nchar(read.table(params$genome_x_fa))))
-    system(paste0('cp ', params$genome_x_fa, ' ', outlinks$genome_x_fa_subseq))
-    system(paste0('cp ', params$genome_y_fa, ' ', outlinks$genome_y_fa_subseq))
-
-  }
+  } 
   # Step 2: Run the alignments
   plot_x_y = produce_pairwise_alignments_minimap2(params, outlinks, chr_start_end_pad)
-
+  print('4')
+  
   # Step 2.1: If plot_only, exit. No SV calls. 
   if (params$plot_only){
     print('Plots done. Not attemptying to produce SV calls (plot_only is set to TRUE).')
@@ -165,7 +168,7 @@ determine_plot_minlen <- function(start, end){
 determine_chunklen <- function(start, end) {
   
   # This is a bit poorly encoded. 
-  length_upper_cutoffs = c(10000, 50000, 1000000, 2000000, 5000000, 1e10)
+  length_upper_cutoffs = c(10000, 500000, 1000000, 2000000, 5000000, 1e10)
   chunklens =            c(100, 1000,  10000,   10000,   10000,   50000)
   
   interval_len = end - start
@@ -344,7 +347,7 @@ write_results <- function(res, outlinks, params){
   )
   
   # Save to logfile
-  save_to_logfile(get('log_collection', envir = globalenv()), res, params$logfile, params, alt_x = (params$alt_ref_sample != F))
+  save_to_logfile(get('log_collection', envir = globalenv()), res, params$logfile, params, alt_x = F)
   
 }
 

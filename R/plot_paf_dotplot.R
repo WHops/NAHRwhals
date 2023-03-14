@@ -334,10 +334,7 @@ plot_alignments <-function(alignments, opt){
                            params$samplename_y, 
                            '] ', 
                            common_y_name)) + 
-      ggplot2::xlab(paste0('[',
-                           params$reference_genome, 
-                           '] ', 
-                           paste0(translate_t2t_chr_to_readable(stringr::str_split(as.character(alignments$refID[1]), 
+      ggplot2::xlab(paste0( paste0(translate_t2t_chr_to_readable(stringr::str_split(as.character(alignments$refID[1]), 
                                                                                    ':')[[1]][1]), 
                                   ':', 
                                   stringr::str_split(as.character(alignments$refID[1]), ':')[[1]][2])
@@ -381,7 +378,7 @@ plot_alignments <-function(alignments, opt){
   }
 
   # If a (colored) block track is given...
-  if (!is.null(opt$anntrack)){
+  if (opt$anntrack != F){
 
     
     gp = add_ann_blocks(gp, opt)
@@ -574,13 +571,14 @@ pafdotplot_make <-
            hlend = NULL,
            save = T,
            minsdlen = 5000,
-           anntrack = NULL,
+           anntrack = F,
            x_seqname = NULL,
            x_start = NULL,
            x_end = NULL,
            hltrack = NULL) {
     
-    # I deserve death penalty for this :)
+    # I deserve a lifelong ban from computers for this :)
+
     opt = list(
       input_filename = inpaf_link,
       output_filename = outplot_link,

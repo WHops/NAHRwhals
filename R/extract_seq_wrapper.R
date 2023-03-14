@@ -23,6 +23,8 @@ extract_sequence_wrapper <- function(params, outlinks){
     
     # First, write the asm y and hg38 x. 
     
+    # First, write the asm y and hg38 x. 
+    
     if (params$samplename_y == 'hg38'){
       # If we have hg38 as y, we write hg38 into the 'x' and 'y' fasta. 
       write_x_y_sequences(params$seqname_x, 
@@ -46,41 +48,7 @@ extract_sequence_wrapper <- function(params, outlinks){
                           outlinks, 
                           params)   
     }
-    
-      # If something 
-      if (params$alt_ref_sample != F){
-      
-      # Run a second time, this tome overwriting the x sequence!
-      
-      print('Detected "alt_ref_sample" != F. Using an alternative sequence to plot on x-axis)')
-      
-      # Second, search for the T2T region. 
-      new_coords = write_x_y_sequences(params$seqname_x, 
-                                       start_x_pad, 
-                                       end_x_pad, 
-                                       outlinks$genome_x_fa_altref_subseq, # This is never used again
-                                       outlinks$genome_x_fa_subseq, # T2T is written into x file
-                                       params$genome_alt_ref_fa,
-                                       params$conversionpaf_alt_ref_link,
-                                       outlinks, 
-                                       params)    
-      
-      params$seqname_x_alt = new_coords[['new_seqname']]
-      params$start_x_alt = new_coords[['new_x_start']]
-      params$end_x_alt = new_coords[['new_x_end']]
-      
-      start_x_pad = new_coords[['new_x_start']]
-      end_x_pad = new_coords[['new_x_end']]
-      
-      # return T2T coordinates. 
-      chr_start_end_pad = c(new_coords[['new_seqname']], new_coords[['new_x_start']], new_coords[['new_x_end']])
 
-      
-      #params[c('anntrack', 'hltrack') ] = NULL
-      
-    }
-    
-    
   } else if (is.null(params$conversionpaf_link)){
     
     # Huh? 
@@ -94,6 +62,6 @@ extract_sequence_wrapper <- function(params, outlinks){
     system(paste0('cp ', genome_x_fa, ' ', outlinks$genome_x_fa_subseq))
     system(paste0('cp ', genome_y_fa, ' ', outlinks$genome_y_fa_subseq))
     
-  }
+    }
   return(list(chr_start_end_pad, params))
 }

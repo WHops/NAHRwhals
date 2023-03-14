@@ -5,14 +5,11 @@
 #' @author Wolfram Hoeps
 #' @export
 extract_subseq_bedtools <-
-  function(infasta, seqname, start, end, outfasta) {
+  function(infasta, seqname, start, end, outfasta, params) {
 
-    print(infasta)
-    print(seqname)
-    print(outfasta)
+
     # Where is bedtools?
-    bedtoolsloc = query_config("bedtools")
-    print(bedtoolsloc)
+    bedtoolsloc = params$bedtools_bin
     # we need to create a temporary bedfile that will be deleted in a few lines.
     random_tag = as.character(runif(1, 1e10, 1e11))
     tmp_bedfile = paste0('region2_', random_tag, '.bed')
@@ -112,7 +109,9 @@ liftover_coarse <-
            search_mode = 'mad',
            refine_runnr = 0) {
     
-
+  
+    
+    
     cpaf = read_and_prep_paf(conversionpaf_link)
 
     if (refine_runnr == 2){
@@ -168,7 +167,6 @@ liftover_coarse <-
     #   start_winners = 1
     #   end_winners = min(28500000,max(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord))
       
-    
     
   if (search_mode == 'extrapolation') {
       startend = find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end)

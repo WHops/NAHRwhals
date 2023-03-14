@@ -175,17 +175,17 @@ wrapper_paf_to_bitlocus <-
     # 1) there are less than 50 alignments, and
     # 2) There are no incongruencies in the grid.
     
-    if (compression_params$auto_find == T) {
-      wiggled_params = find_minlen_compression_params_wiggle(
-        inpaf, compression_params
-      )
-      minlen = wiggled_params[[1]]
-      compression = wiggled_params[[2]]
-    } else {
-      print('Minlen/Compression manually chosen. Testing viability')
-      minlen = compression_params$minlen
-      compression = compression_params$compression
-    }
+    #if (compression_params$auto_find == T) {
+    #  wiggled_params = find_minlen_compression_params_wiggle(
+    #    inpaf, compression_params
+    #  )
+    #  minlen = wiggled_params[[1]]
+    #  compression = wiggled_params[[2]]
+    #} else {
+    print('Minlen/Compression manually chosen. Testing viability')
+    minlen = compression_params$minlen
+    compression = compression_params$compression
+    #}
     
     print('Making the final grid with:')
     print(paste0('Minlen: ', minlen))

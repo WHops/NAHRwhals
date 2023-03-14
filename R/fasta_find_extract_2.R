@@ -28,7 +28,7 @@ write_x_y_sequences <- function(seqname_x,
                                       end_x_pad,
                                       conversionpaf_link,
                                       lenfactor = 1, # Unneeded parameter
-                                      whole_chr = (params$start_x %in% c(0, 1)),
+                                      whole_chr = F,#(params$start_x %in% c(0, 1)),
                                       refine_runnr = refine_runnr)
     if (is.null(coords_liftover)){
       return(NULL)
@@ -41,7 +41,8 @@ write_x_y_sequences <- function(seqname_x,
                           params$seqname_x,
                           start_x_pad,
                           end_x_pad,
-                          genome_x_fa_subseq)
+                          genome_x_fa_subseq,
+                          params)
   
   if (extract_only == T){
     
@@ -49,7 +50,8 @@ write_x_y_sequences <- function(seqname_x,
                             params$seqname_x,
                             start_x_pad,
                             end_x_pad,
-                            genome_y_fa_subseq)
+                            genome_y_fa_subseq,
+                            params)
     
     return( list(new_seqname = seqname_x,
                  new_x_start = start_x_pad,
@@ -60,11 +62,13 @@ write_x_y_sequences <- function(seqname_x,
                           coords_liftover$lift_contig,
                           coords_liftover$lift_start,
                           coords_liftover$lift_end,
-                          genome_y_fa_subseq)
+                          genome_y_fa_subseq,
+                          params)
   
   if (refine_runnr == 1){
     # Special stuff
     paf = make_chunked_minimap_alnment(
+      params,
       genome_x_fa_subseq,
       genome_y_fa_subseq,
       outlinks$outpaf_link_x_y,
@@ -99,7 +103,8 @@ write_x_y_sequences <- function(seqname_x,
                                 coords_liftover_2nd$lift_contig,
                                 coords_liftover_2nd$lift_start,
                                 coords_liftover_2nd$lift_end,
-                                genome_y_fa_subseq)
+                                genome_y_fa_subseq,
+                                params)
       
     return( list(new_seqname = coords_liftover_2nd$lift_contig,
                  new_x_start = coords_liftover_2nd$lift_start,
