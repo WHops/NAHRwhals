@@ -22,9 +22,16 @@ NAHRwhals requires installed versions of:
 
 
 ### (0) Install dependencies
+
+
+ 
 Make sure [minimap2](https://github.com/lh3/minimap2), [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html) and [gawk](https://formulae.brew.sh/formula/gawk) are installed on your system. (It is sufficient if you have access to working binaries, but more convenient if they are in your $PATH; see step 3).
 
-
+One option for this is to use conda:
+```
+conda create -n nahrwhals -c bioconda -c conda-forge minimap2 bedtools gawk r-base
+conda activate nahrwhals
+```
 ### (1) Clone the NAHRwhals repository
 
 
