@@ -1,0 +1,79 @@
+# [1] Paths to files and binaries
+
+minimap2_bin = '/Users/hoeps/Programs/minimap2-v2/minimap2-2.24/minimap2'
+bedtools_bin = default
+
+
+genome_x_fa = 'testdata/assemblies/hg38_partial.fa'
+genome_y_fa = 'testdata/assemblies/assembly_partial.fa'
+genome_y_fa_mmi = default
+
+logfile = 'res/unittest.tsv'
+
+
+# [2] Sequence to look at
+
+seqname_x = 'chr1_partial'
+start_x = 1700000
+end_x = 3300000
+samplename_y = 'Fasta_y'
+compare_full_fastas = F
+
+
+### [3] Details on run (typically unchanged) ###
+
+# What should be plotted?
+plot_only = F
+self_plots = T
+plot_xy_segmented = T
+
+# How should the SV search go?
+eval_th = 98
+depth = 3
+chunklen = default
+minlen = default
+compression = default
+max_size_col_plus_rows = 250
+max_n_alns = 150
+
+
+
+
+# [4] Misc, this and that. (Usually untouched unless you are a developer)
+
+use_paf_library = F
+conversionpaf_link = F
+
+# Extract and aln parameters
+xpad = 1
+plot_minlen = 350
+maxlen_refine = 1e10
+
+# Compression parameters
+minlen = default
+compression = default
+n_tests = 10
+n_max_testchunks = 5
+baseline_log_minsize_min = 8
+baseline_log_minsize_max = F
+
+discovery_exact = F 
+
+# Additional data tracks
+hltrack = F 
+hllink = F
+anntrack = F
+
+# Typically unchanged; misc
+aln_pad_factor = 1.0 
+debug = F
+clean_after_yourself = F
+
+awkscript_fasta = 'scripts/awk_on_fasta.sh'
+awkscript_paf = 'scripts/awk_on_paf.sh'
+
+# samplename = paste0(interval$sample, '-', interval$category, '-', nrun)
+# genome_alt_ref_fa = assembly_fastas[['T2T']]
+# conversionpaf_alt_ref_link = conversion_pafs[['T2T']]
+
+

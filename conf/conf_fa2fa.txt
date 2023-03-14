@@ -4,8 +4,8 @@ minimap2_bin = '/Users/hoeps/Programs/minimap2-v2/minimap2-2.24/minimap2'
 bedtools_bin = default
 
 
-genome_x_fa = '/Users/hoeps/PhD/projects/huminvs/genomes/hg38/centro_lab/hg38_masked.fa'
-genome_y_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/alns/HG00513_hgsvc_pbsq2-ccs_1000-hifiasm.h1-un.fasta'
+genome_x_fa = 'testdata/extracted_fastas/sequence1.fa'
+genome_y_fa = 'testdata/extracted_fastas/sequence2.fa'
 genome_y_fa_mmi = default
 
 logfile = 'res/unittest.tsv'
@@ -13,12 +13,11 @@ logfile = 'res/unittest.tsv'
 
 # [2] Sequence to look at
 
-seqname_x = 'chr1'
-start_x = 10000000
-end_x = 10300000
+seqname_x = 'chr'
+start_x = 1
+end_x = 200000
 samplename_y = 'Fasta_y'
-compare_full_fastas = F
-
+compare_full_fastas = T
 
 
 ### [3] Details on run (typically unchanged) ###
