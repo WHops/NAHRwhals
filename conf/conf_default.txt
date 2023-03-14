@@ -1,26 +1,45 @@
-# [1] Paths to files and binaries
+################################################
+############# Basic parameters  ################
+################################################
 
-minimap2_bin = '/path/to/minimap2'
-bedtools_bin = '/path/to/bedtools'
+### [1] Paths to files and binaries ############
+################################################
+
+minimap2_bin = default
+bedtools_bin = default
 
 genome_x_fa = 'testdata/assemblies/hg38_partial.fa'
 genome_y_fa = 'testdata/assemblies/assembly_partial.fa'
 genome_y_fa_mmi = default
 
+anntrack = F
+
 logfile = 'res/unittest.tsv'
 
+# Set a samplename for y to appear in the results
+samplename_y = 'Fasta_y'
 
-# [2] Sequence to look at
 
+### [2] Sequence coordinates ###################
+################################################
+# Set compare_full_fastas to 'T' to compare directly fasta to fasta.
+compare_full_fastas = F
+
+# If compare_full_fastas = F (default), then specify x coordinates of interest.
 seqname_x = 'chr1_partial'
 start_x = 1700000
 end_x = 3300000
-samplename_y = 'Fasta_y'
-compare_full_fastas = F
 
+
+
+
+
+################################################
+############# Advanced parameters  #############
+################################################
 
 ### [3] Details on run (typically unchanged) ###
-
+################################################
 # What should be plotted?
 plot_only = F
 self_plots = T
@@ -36,10 +55,8 @@ max_size_col_plus_rows = 250
 max_n_alns = 150
 
 
-
-
 # [4] Misc, this and that. (Usually untouched unless you are a developer)
-
+################################################
 use_paf_library = F
 conversionpaf_link = F
 
@@ -49,8 +66,6 @@ plot_minlen = 350
 maxlen_refine = 1e10
 
 # Compression parameters
-minlen = default
-compression = default
 n_tests = 10
 n_max_testchunks = 5
 baseline_log_minsize_min = 8
