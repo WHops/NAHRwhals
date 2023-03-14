@@ -22,10 +22,10 @@ NAHRwhals requires installed versions of:
 
 
 ### (0) Install dependencies
-Make sure [minimap2](https://github.com/lh3/minimap2), [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html) and [gawk](https://formulae.brew.sh/formula/gawk) are installed on your system.
+Make sure [minimap2](https://github.com/lh3/minimap2), [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html) and [gawk](https://formulae.brew.sh/formula/gawk) are installed on your system. (It is sufficient if you have access to working binaries)
 
 
-### (1) Clone the repository
+### (1) Clone the NAHRwhals repository
 
 ```
 git clone https://github.com/WHops/NAHRwhals.git
@@ -33,7 +33,7 @@ cd NAHRwhals
 ```
 ### (2) Install 
 
-You can install with the following command, which uses devtools::install to resolve R dependencies. 
+You can install with the following command, which uses devtools::install to resolve R dependencies. This typically takes a few minutes. (Consider running in a new conda environment)
 
 `Rscript install_package.R`
 
@@ -45,8 +45,8 @@ R
 >
 ```
 
-### (3) Specify minimap2 / bedtools paths
-NAHRwhals uses `minimap2` and `bedtools`. Specify your paths to the binaries in `conf/conf_default.txt` and `conf/conf_fa2fa.txt`. 
+### (3) Specify location of minimap2 / bedtools binaries
+NAHRwhals internally calls `minimap2` and `bedtools`. Specify your paths to the binaries in `conf/conf_default.txt` and `conf/conf_fa2fa.txt`. 
 
 Typically, you can find the binaries using:
 ``` 
