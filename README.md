@@ -14,15 +14,15 @@ An R package providing tools for visualization and automatic detection of comple
 # Dependencies
 
 NAHRwhals requires installed versions of: 
-- minimap2 (link)
-- bedtools (link)
-- gawk (link)
-- R >= 4.1.0
+- [minimap2](https://github.com/lh3/minimap2) >= 2.24
+- [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html) <= 2.30.0
+- [gawk](ttps://formulae.brew.sh/formula/gawk) >= 5.2.0
+- [R](https://www.r-project.org/) >= 4.1.0
 #  Installation
 
 
 ### (0) Install dependencies
-Make sure [minimap2](https://github.com/lh3/minimap2), [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html) and [gawk](https://formulae.brew.sh/formula/gawk) are installed on your system. (It is sufficient if you have access to working binaries).
+Make sure [minimap2](https://github.com/lh3/minimap2), [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html) and [gawk](https://formulae.brew.sh/formula/gawk) are installed on your system. (It is sufficient if you have access to working binaries, but more convenient if they are in your $PATH; see step 3).
 
 
 ### (1) Clone the NAHRwhals repository
