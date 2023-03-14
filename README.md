@@ -50,22 +50,14 @@ R
 > quit()
 ```
 
-### (3) Specify location of minimap2 / bedtools binaries
-NAHRwhals internally calls `minimap2` and `bedtools`. Specify your paths to the binaries in `conf/conf_default.txt` and `conf/conf_fa2fa.txt`. 
+### (3) [OPTIONAL] specify minimap2 / bedtools paths
+In case minimap2 or bedtools are not part of your $PATH (i.e. can not be called from the commandline via `minimap2` and `bedtools`), specify your paths in conf/config.txt: (otherwise, leave them as 'default')
 
-Typically, you can find the binaries using:
-``` 
-which bedtools
-> /your/path/to/bedtools
-which minimap2
-> /your/path/to/minimap2
-```
-
-Edit the config files as follows:
 ```
 minimap2_bin = '/your/path/to/minimap2'
 bedtools_bin = '/your/path/to/bedtools'
 ```
+
 
 
 #  Test & Example runs
@@ -81,13 +73,13 @@ NAHRwhals can also skip the initial search for sub-sequences, and call SVs direc
 ```Rscript nahrwhals.R --config conf/conf_fa2fa.txt```
 
 
-# Basic Usage
+# Use cases
 
 To run your own data, exchange genome_x_fa (typically a reference, e.g. hg38), genome_y_fa (typically a genome assembly) and your coordinates of interest (seqname_x, start_x, end_x) in the config file.  
 
-Parameters in the config file can be overwritten from the commandline, e.g. to add a gene annotation track to the plots:
+For convenience, parameters in the config file can also be overwritten from the commandline. We can use thise.g. to add a gene annotation track to the plots:
 
-```Rscript nahrwhals.R --config conf/config_examplerun.txt --params anntrack='testdata/assemblies/hg38_partial_genes.bed'```
+```Rscript nahrwhals.R --config conf/conf_default.txt --params anntrack='testdata/assemblies/hg38_partial_genes.bed'```
 
 
 # Report Errors
