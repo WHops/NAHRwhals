@@ -39,7 +39,7 @@ bedtools_bin = '/your/path/to/bedtools'
 ```
 
 
-#  Usage
+#  Test & Example runs
 
 To confirm that NAHRwhals has been correctly installed, run a testrun which should produce output files and plots in the `./res` folder: 
 
@@ -47,39 +47,34 @@ To confirm that NAHRwhals has been correctly installed, run a testrun which shou
 
 
 
-Parameters in the config file can be overwritten from the commandline, e.g. to add a gene annotation track to the plots:
-
-```Rscript nahrwhals.R --config conf/config_examplerun.txt --params anntrack='testdata/assemblies/hg38_partial_genes.bed'```
-
 NAHRwhals can also skip the initial search for sub-sequences, and call SVs directly on two regional fasta files by setting `compare_full_fastas = TRUE'. Run an example via: 
 
 ```Rscript nahrwhals.R --config conf/conf_fa2fa.txt```
 
 
+# Basic Usage
+
+To run your own data, exchange genome_x_fa (typically a reference, e.g. hg38), genome_y_fa (typically a genome assembly) and your coordinates of interest (seqname_x, start_x, end_x) in the config file.  
+
+Parameters in the config file can be overwritten from the commandline, e.g. to add a gene annotation track to the plots:
+
+```Rscript nahrwhals.R --config conf/config_examplerun.txt --params anntrack='testdata/assemblies/hg38_partial_genes.bed'```
 
 
-To run your own data, exchange genome_x_fa (typically a reference, e.g. hg38) and genome_y_fa (typically a genome assembly) with your own links. 
-
-## Report Errors
+# Report Errors
 
 NAHRwhals is still in development, and errors in usage are to be expected. 
 Please help improve the code by [reporting](https://github.com/WHops/nahrchainer/issues/new) issues you encounter.
 
-## Correspondence
+# Citation
 
-Please direct any correspondence to: 
-Wolfram Höps
-wolfram.hoeps@embl.de
+If you find NAHRwhals useful, please cite:
 
-
-## Example runs
-
-# Two assemblies and coordinates on one of them
-Rscript nahrwhals.R --params genome_x_fa=testdata/assemblies/hg38_partial.fa genome_y_fa=testdata/assemblies/assembly_partial.fa seqname_x=chr1_partial start_x=1700000 end_x=3300000 hltrack=testdata/assemblies/hg38_partial_genes.bed anntrack=testdata/assemblies/hg38_partial_genes.bed
+`https://www.biorxiv.org/content/10.1101/2023.03.09.531868v1`
 
 
 
-# Two fastas with each other
-Rscript nahrwhals.R --params genome_x_fa=testdata/extracted_fastas/sequence1.fa genome_y_fa=testdata/extracted_fastas/sequence2.fa compare_full_fastas=T
+# Correspondence
 
 
+Please direct any correspondence to: Wolfram Höps (wolfram.hoeps@embl.de)
