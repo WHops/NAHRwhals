@@ -38,9 +38,9 @@ conda activate nahrwhals
 ```
 git clone https://github.com/WHops/NAHRwhals.git
 cd NAHRwhals
-git checkout main
 ```
 
+Depending on git version, this folder may appear empty. In this case, switch to the main branch with `git checkout main`.
 
 
 ### (2) Install 
