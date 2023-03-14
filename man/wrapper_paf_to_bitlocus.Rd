@@ -6,11 +6,11 @@
 \usage{
 wrapper_paf_to_bitlocus(
   inpaf,
-  realplot = T,
-  bitlocusplot = T,
-  saveplot = F,
-  minlen = 1000,
-  compression = 1000
+  compression_params,
+  gridplot_save = F,
+  pregridplot_save = F,
+  pregridplot_nolines = F,
+  saveplot = F
 )
 }
 \description{

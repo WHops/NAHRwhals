@@ -6,6 +6,7 @@
 an output paf and a dotplot pdf.}
 \usage{
 make_chunked_minimap_alnment(
+  params,
   targetfasta,
   queryfasta,
   outpaf,
@@ -18,9 +19,16 @@ make_chunked_minimap_alnment(
   quadrantsize = 1e+05,
   hllink = F,
   hltype = F,
+  hlstart = NULL,
+  hlend = NULL,
   targetrange = NULL,
   queryrange = NULL,
-  wholegenome = F
+  anntrack = F,
+  x_seqname = NULL,
+  x_start = NULL,
+  x_end = NULL,
+  hltrack = NULL,
+  onlypafreturn = F
 )
 }
 \arguments{

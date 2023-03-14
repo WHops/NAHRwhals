@@ -4,7 +4,7 @@
 \alias{run_minimap2}
 \title{Submit a system command to run minimap2}
 \usage{
-run_minimap2(targetfasta, queryfasta, outpaf, nthreads = 4)
+run_minimap2(targetfasta, queryfasta, outpaf, params, nthreads = 4)
 }
 \arguments{
 \item{targetfasta}{\link{character/link} link to the 'target' single-sequence fasta (sometimes reference, e.g. chm13.)}

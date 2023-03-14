@@ -4,7 +4,7 @@
 \alias{merge_rows}
 \title{Helperfunction (1/1) of compress_paf_fnct}
 \usage{
-merge_rows(paffile, nl1, nl2)
+merge_rows(paffile, pairs)
 }
 \arguments{
 \item{paffile}{\link{data frame} loaded paffile with colnames}

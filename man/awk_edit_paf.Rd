@@ -4,7 +4,7 @@
 \alias{awk_edit_paf}
 \title{Submit a system command to run awk to change sequence chunk names}
 \usage{
-awk_edit_paf(inpaf, outpaf)
+awk_edit_paf(inpaf, outpaf, params)
 }
 \arguments{
 \item{inpaf}{\link{character/link} input paf}

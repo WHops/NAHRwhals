@@ -4,14 +4,21 @@
 \alias{compress_paf_fnct}
 \title{Melt the alignment pieces back together after chunkifying them earlier.}
 \usage{
-compress_paf_fnct(inpaf_link, outpaf_link, quadrantsize = 1e+05)
+compress_paf_fnct(
+  inpaf_link = NULL,
+  outpaf_link = NULL,
+  inpaf_df = NULL,
+  save_outpaf = T,
+  n_quadrants_per_axis = NULL,
+  second_run = F,
+  inparam_chunklen = NULL,
+  inparam_compression = NULL
+)
 }
 \arguments{
 \item{inpaf_link}{\link{character/link} link to the chunked paf}
 
-\item{outpaf_link}{\link{character/link} link to the molten output paf}
-
-\item{quadrantsize}{\link{numeric} size of alignments being merged in one piece.
+\item{outpaf_link}{\link{character/link} link to the molten output paf
 Set to larger values (e.g. 250k) for very large alignments (>5Mb).}
 }
 \description{
