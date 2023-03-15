@@ -1,16 +1,15 @@
 #!/bin/Rscript
 
-# Load nahrwhals and 
-library(devtools)
-devtools::load_all()
-#library(nahrwhals)
+#library(devtools)
+#devtools::load_all()
+library(nahrwhals)
 library(argparse)
 
 ###### INPUT: CONFIG plus CMDLINE-OVERWRITING ########
 
 # Define command line arguments
 parser <- ArgumentParser()
-parser$add_argument("--config-file", default="conf/config.txt", help="Configuration file path")
+parser$add_argument("--config-file", default="conf/conf_default.txt", help="Configuration file path")
 parser$add_argument("--params", nargs="*", help="Overwrite configuration parameters")
 args <- parser$parse_args()
 
@@ -76,7 +75,7 @@ if (params$baseline_log_minsize_max %in% default_param_values){
 }
 
 # For better reporting of results in fasta_direct
-if (params$compare_full_fastas){
+if (params$compare_full_fastas == T){
   params$seqname_x = 'manual'
   params$start_x = 1
   params$end_x = Inf
