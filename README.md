@@ -29,7 +29,7 @@ Make sure [minimap2](https://github.com/lh3/minimap2), [bedtools](https://bedtoo
 
 One option for this is to use conda:
 ```
-conda create -n nahrwhals -c bioconda -c conda-forge minimap2 bedtools gawk r-base
+conda create -n nahrwhals3 -c bioconda bioconductor-biostrings -c conda-forge minimap2 bedtools gawk r-base r-devtools r-argparse r-colorspace r-lattice r-viridisLite r-RColorBrewer r-munsell r-labeling r-farver r-Matrix r-nlme r-scales r-mgcv r-MASS r-isoband r-gtable, r-ggplot2 r-tidyselect r-generics r-getopt r-hash r-patchwork r--ggrepel r-matrixStats r-dplyr r-bitops r-zlibbioc r-RCurl r-GenomeInfoDbData r-BiocGenerics r-S4Vectors r-IRanges r-XVector r-GenomeInfoDb
 conda activate nahrwhals
 ```
 ### (1) Clone the NAHRwhals repository
@@ -45,7 +45,7 @@ Depending on git version, this folder may appear empty. In this case, switch to 
 
 ### (2) Install 
 
-You can install with the following command, which uses devtools::install to resolve R dependencies. This typically takes a few minutes. (Consider running in a new conda environment)
+You can install with the following command, which uses devtools::install to resolve R dependencies. This typically takes a few minutes. NOTE: In case this fails, it might be an option to install dependencies manually (in this case, please report an issue so we can improve accessibility for future users!).
 
 `Rscript install_package.R`
 
@@ -58,7 +58,7 @@ R
 ```
 
 ### (3) [OPTIONAL] specify minimap2 / bedtools paths
-In case minimap2 or bedtools are not part of your $PATH (i.e. can not be called from the commandline via `minimap2` and `bedtools`), specify your paths in conf/config.txt: (otherwise, leave them as 'default')
+In case minimap2 or bedtools are not part of your $PATH (i.e. can not be called from the commandline via `minimap2` and `bedtools`), specify your paths in conf/conf_default.txt: (otherwise, leave them as 'default')
 
 ```
 minimap2_bin = '/your/path/to/minimap2'
@@ -84,7 +84,7 @@ NAHRwhals can also skip the initial search for sub-sequences, and call SVs direc
 
 To run your own data, exchange genome_x_fa (typically a reference, e.g. hg38), genome_y_fa (typically a genome assembly) and your coordinates of interest (seqname_x, start_x, end_x) in the config file.  
 
-For convenience, parameters in the config file can also be overwritten from the commandline. We can use thise.g. to add a gene annotation track to the plots:
+For convenience, parameters in the config file can also be overwritten from the commandline. We can use this e.g. to add a gene annotation track to our plots:
 
 ```Rscript nahrwhals.R --config conf/conf_default.txt --params anntrack='testdata/assemblies/hg38_partial_genes.bed'```
 
@@ -100,29 +100,29 @@ NAHRwhals comes with a variety of parameters specified in a config file and/or v
 - **genome_x_fa** Multi- or single-contig genome sequence in fasta format, typically a genome assembly used as reference, such as hg38 or T2T. ['testdata/assemblies/hg38_partial.fa']
 - **genome_y_fa** Multi- or single-contig genome sequence in fasta format, typically a genome assembly to be analysed, such as a de-novo assembled haplotype. ['testdata/assemblies/assembly_partial.fa']
 - **genome_y_fa_mmi** Link to minimap2 index mmi file of genome_y_fa, which is needed for fast alignments. If the mmi does not exist, NAHRwhals will invoke minimap2 to creat it at the link location. By default, it is created in the same directly as genome_y_fa. [default]
-- **anntrack** You can supply a bedfile (seqname, start, end, featurename) for annotations to appear in the dotplot. Typically used to indicate e.g. genes in a dotplot. [F]
+- **anntrack** You can supply a .bed file (seqname, start, end, featurename) for annotations to appear in the dotplot. Typically used to indicate e.g. genes in a dotplot. [F]
 - **logfile** Output file to which sSV calls will be written ['res/unittest.tsv']
 
-## Basic parameters
+## Basic parameters: region of interest
 
-- **compare_full_fastas** If True, seqname_x, start_x and end_x are ignored, and instead the whole genome_x_fa is aligned to the whole genome_y_fa. Use this if you have two regional fasta files that you want to compare. Do NOT use this when dealing with whole genome assemblies [F].
-- **seqname_x** Contigname of region of interest on genome_x ['chr1_partial']
-- **start_x** Start of region of interest on seqname_x [1700000]
-- **end_x** End of region of interest on seqname_x [3300000]
-- **samplename_y** Set a name for the genome_y sequence (e.g., samplename) to appear in the results. ['Fasta_y']
+- **compare_full_fastas** If TRUE, seqname_x, start_x and end_x are ignored, and instead the whole genome_x_fa is aligned to the whole genome_y_fa. Use this if you have two regional fasta files that you want to compare. Do NOT use this when dealing with whole genome assemblies. [F]
+- **seqname_x** Contigname of region of interest on genome_x. ['chr1_partial']
+- **start_x** Start of region of interest on seqname_x. [1700000]
+- **end_x** End of region of interest on seqname_x. [3300000]
   
 ## Advanced parameters
 
+- **samplename_y** Set a name for the genome_y sequence (e.g., samplename) to appear in the results. ['Fasta_y']
 - **plot_only** If TRUE, NAHRwhals creates only dotplots but does not attempt SV calling. [F]
 - **self_plots** If TRUE, NAHRwhals automatically creates a self-dotplot (aligning sequence to itself) of both the reference and homologous region of interest. Will be saved in res/chrX-start-end/self. [T]
-- **plot_xy_segmented** If TRUE, NAHRwhals outputs a plot indicating obtained segmentation [T]
+- **plot_xy_segmented** If TRUE, NAHRwhals outputs a plot indicating obtained segmentation. [T]
 - **eval_th** Set the threshold (in percent) for when NAHRwhals considers two sequences equal. Lower thresholds lead to missed SVs, higher thresholds to more 'unexplained' loci. Consider lowering to e.g. 95% for cross-species analyses. [98]
-- **depth** Maximum number of consecutive SVs to model [3]
-- **chunklen** Lenght of sequence chunks which are separately aligned to each other. By default, this is a function of the total sequence length and typically 1000 bp or 10.000 bp. It is typically not necessary to touch this parameter, as pairwise alignments are robust [auto]
+- **depth** Maximum number of consecutive SVs to model. [3]
+- **chunklen** Lenght of sequence chunks which are separately aligned to each other. By default, this is a function of the total sequence length and typically 1000 bp or 10.000 bp. It is typically not necessary to touch this parameter, as pairwise alignments are robust. [auto]
 - **minlen** Minimum alignment length to consider when searching for sSVs. By default, this is a function of the total sequence length and typically 1000 bp or 10.000 bp. Lower values can lead to finer alignments but high computation times and false positive calls. [auto]
 - **compression** Minimum segment length to consider when segmenting a dotplot. By default, this is a function of the total sequence length and typically 1000 bp or 10.000 bp. Lower values can lead to finer segmented dotplots but high computation times and false positive calls. [auto]
-- **max_size_col_plus_rows** Maximum acceptable size for the segmented dotplot (rows + columns). Is set to prevent computation / memory overflow. If this value is overstepped, minlen and chunklen are doubled until the resulting segmented dotplot [250]
-- **max_n_alns** Maximum  [150]
+- **max_size_col_plus_rows** Maximum acceptable size for the segmented dotplot (rows + columns). Is set to prevent computation / memory overflow. If this value is overstepped, minlen and chunklen are doubled until the resulting segmented dotplot its in the maximum dimensions. [250]
+- **max_n_alns** Maximum number of individual alignments that can participate in dotplot segmentation. If this value is overstepped, minlen and chunklen are doubled until the resulting segmented dotplot its in the maximum dimensions. [150]
 
 
 
