@@ -25,11 +25,11 @@ NAHRwhals requires installed versions of:
 
 
  
-Make sure [minimap2](https://github.com/lh3/minimap2), [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html) and [gawk](https://formulae.brew.sh/formula/gawk) are installed on your system. (It is sufficient if you have access to working binaries, but more convenient if they are in your $PATH; see step 3).
+NAHRwhals has a number of dependencies, including [minimap2](https://github.com/lh3/minimap2), [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html), [gawk](https://formulae.brew.sh/formula/gawk) and a number of R packages. The easiest way to install all is by using the provided conda/mamba environment. Conda takes a while to execute this, so we recommend using mamba, which is an accelerated version. 
 
-One option for this is to use conda:
 ```
-conda create -n nahrwhals3 -c bioconda bioconductor-biostrings -c conda-forge minimap2 bedtools gawk r-base r-devtools r-argparse r-colorspace r-lattice r-viridisLite r-RColorBrewer r-munsell r-labeling r-farver r-Matrix r-nlme r-scales r-mgcv r-MASS r-isoband r-gtable, r-ggplot2 r-tidyselect r-generics r-getopt r-hash r-patchwork r--ggrepel r-matrixStats r-dplyr r-bitops r-zlibbioc r-RCurl r-GenomeInfoDbData r-BiocGenerics r-S4Vectors r-IRanges r-XVector r-GenomeInfoDb
+conda config --set channel_priority flexible
+mamba env create --file env_nahrwhals.yml
 conda activate nahrwhals
 ```
 ### (1) Clone the NAHRwhals repository
@@ -57,7 +57,7 @@ R
 > quit()
 ```
 
-### (3) [OPTIONAL] specify minimap2 / bedtools paths
+### (3) [OPTIONAL] NOT NEEDED WITH CONDA/MAMBA: specify minimap2 / bedtools paths; 
 In case minimap2 or bedtools are not part of your $PATH (i.e. can not be called from the commandline via `minimap2` and `bedtools`), specify your paths in conf/conf_default.txt: (otherwise, leave them as 'default')
 
 ```
