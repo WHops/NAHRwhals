@@ -107,7 +107,7 @@ NAHRwhals comes with a variety of parameters specified in a config file and/or v
 
 - **compare_full_fastas** If TRUE, seqname_x, start_x and end_x are ignored, and instead the whole genome_x_fa is aligned to the whole genome_y_fa. Use this if you have two regional fasta files that you want to compare. Do NOT use this when dealing with whole genome assemblies. [F]
 - **seqname_x** Contigname of region of interest on genome_x. ['chr1_partial']
-- **start_x** Start of region of interest on seqname_x. [1700000]
+- **start_x** Start of region of interest on seqname_x. (Region of interest should typically be in a range of ~20kbp to ~5-10Mbp and not contain centromeric regions, which drive up computation time significantly.) [1700000]
 - **end_x** End of region of interest on seqname_x. [3300000]
   
 ## Advanced parameters
