@@ -21,7 +21,7 @@ NAHRwhals requires installed versions of:
 #  Installation
 
 
-### (0) Install dependencies
+### (1) Install dependencies
 
 
  
@@ -32,7 +32,7 @@ conda config --set channel_priority flexible
 mamba env create --file env_nahrwhals.yml
 conda activate nahrwhals
 ```
-### (1) Clone the NAHRwhals repository
+### (2) Clone the NAHRwhals repository
 
 
 ```
@@ -43,9 +43,9 @@ cd NAHRwhals
 Depending on git version, this folder may appear empty. In this case, switch to the main branch with `git checkout main`.
 
 
-### (2) Install 
+### (3) Install 
 
-You can install with the following command, which uses devtools::install to resolve R dependencies. This typically takes a few minutes. NOTE: In case this fails, it might be an option to install dependencies manually (in this case, please report an issue so we can improve accessibility for future users!).
+You can install with the following command, which simply calls devtools::install. 
 
 `Rscript install_package.R`
 
@@ -57,7 +57,7 @@ R
 > quit()
 ```
 
-### (3) [OPTIONAL] NOT NEEDED WITH CONDA/MAMBA: specify minimap2 / bedtools paths; 
+### (4) [OPTIONAL] NOT NEEDED WITH CONDA/MAMBA: specify minimap2 / bedtools paths; 
 In case minimap2 or bedtools are not part of your $PATH (i.e. can not be called from the commandline via `minimap2` and `bedtools`), specify your paths in conf/conf_default.txt: (otherwise, leave them as 'default')
 
 ```
