@@ -327,7 +327,10 @@ plot_alignments <-function(alignments, opt){
                            params$samplename_y, 
                            '] ', 
                            common_y_name)) + 
-      ggplot2::xlab(paste0( paste0(translate_t2t_chr_to_readable(stringr::str_split(as.character(alignments$refID[1]), 
+     ggplot2::xlab(paste0('[',
+                           params$samplename_x, 
+                           '] ', 
+                           paste0(translate_t2t_chr_to_readable(stringr::str_split(as.character(alignments$refID[1]), 
                                                                                    ':')[[1]][1]), 
                                   ':', 
                                   stringr::str_split(as.character(alignments$refID[1]), ':')[[1]][2])

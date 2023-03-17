@@ -17,8 +17,8 @@ anntrack = F
 logfile = 'res/unittest.tsv'
 
 # Set a samplename for y to appear in the results
+samplename_x = 'Fasta_x'
 samplename_y = 'Fasta_y'
-
 
 ### [2] Sequence coordinates ###################
 ################################################

@@ -112,6 +112,7 @@ NAHRwhals comes with a variety of parameters specified in a config file and/or v
   
 ## Advanced parameters
 
+- **samplename_x** Set a name for the genome_x sequence (e.g., samplename) to appear in the results. ['Fasta_x']
 - **samplename_y** Set a name for the genome_y sequence (e.g., samplename) to appear in the results. ['Fasta_y']
 - **plot_only** If TRUE, NAHRwhals creates only dotplots but does not attempt SV calling. [F]
 - **self_plots** If TRUE, NAHRwhals automatically creates a self-dotplot (aligning sequence to itself) of both the reference and homologous region of interest. Will be saved in res/chrX-start-end/self. [T]
