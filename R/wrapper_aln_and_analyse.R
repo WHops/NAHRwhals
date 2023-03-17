@@ -36,7 +36,7 @@ wrapper_aln_and_analyse <- function(params) {
                    'samplename',
                    'depth')] <<-
     c(params$seqname_x, params$start_x, params$end_x, params$xpad, 
-      params$chunklen, params$samplename, params$depth)
+      params$chunklen, paste0(params$samplename_x, '_', params$samplename_y), params$depth)
 
   # Determine 'main' output name for this run
   sequence_name_output = manufacture_output_res_name(
@@ -45,7 +45,7 @@ wrapper_aln_and_analyse <- function(params) {
   # Create output folder tree
   make_output_folder_structure(sequence_name_output)
   # Define output files
-  outlinks = define_output_files(sequence_name_output, params$samplename)
+  outlinks = define_output_files(sequence_name_output, paste0(params$samplename_x, '_', params$samplename_y))
 
   if (params$compare_full_fastas == T) {
     
