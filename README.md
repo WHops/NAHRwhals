@@ -18,6 +18,7 @@ NAHRwhals requires installed versions of:
 - [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html) <= 2.30.0
 - [gawk](ttps://formulae.brew.sh/formula/gawk) >= 5.2.0
 - [R](https://www.r-project.org/) >= 4.1.0
+
 #  Installation
 
 
