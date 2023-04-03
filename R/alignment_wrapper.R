@@ -86,7 +86,7 @@ produce_pairwise_alignments_minimap2 <- function(params, outlinks, chr_start_end
     x_seqname = x_seqname,
     anntrack = params$anntrack,
     hltrack = params$hltrack,
-     aln_type_xx_yy_xy = 'yy'#end_x - start_x_pad
+     aln_type_xx_yy_xy = 'xy'#end_x - start_x_pad
   )
   # Save alignments
   print(plot_x_y)
