@@ -296,7 +296,17 @@ plot_alignments <-function(alignments, opt){
   common_y_name = names(which.max(table(all_y_names))) 
     
     
-    
+  if (opt$aln_type_xx_yy_xy == 'xx'){
+    samplename_x = params$samplename_x
+    samplename_y = params$samplename_x
+  } else if (opt$aln_type_xx_yy_xy == 'yy'){
+    samplename_x = params$samplename_y
+    samplename_y = params$samplename_y
+  } else if (opt$aln_type_xx_yy_xy == 'xy'){
+    samplename_x = params$samplename_x
+    samplename_y = params$samplename_y
+  } 
+
   gp = 
     ggplot2::ggplot(alignments) +
       ggplot2::geom_segment(
@@ -324,11 +334,11 @@ plot_alignments <-function(alignments, opt){
                     title = opt$input_filename) +
     
       ggplot2::ylab(paste0('[',
-                           params$samplename_y, 
+                           samplename_y, 
                            '] ', 
                            common_y_name)) + 
       ggplot2::xlab(paste0('[',
-                           params$samplename_x, 
+                           samplename_x, 
                            '] ', 
                            paste0(translate_t2t_chr_to_readable(stringr::str_split(as.character(alignments$refID[1]), 
                                                                                    ':')[[1]][1]), 
@@ -571,7 +581,8 @@ pafdotplot_make <-
            x_seqname = NULL,
            x_start = NULL,
            x_end = NULL,
-           hltrack = NULL) {
+           hltrack = NULL,
+           aln_type_xx_yy_xy = 'xy') {
     
     # I deserve a lifelong ban from computers for this :)
 
@@ -597,7 +608,8 @@ pafdotplot_make <-
       x_start = x_start,
       x_end = x_end,
       anntrack = anntrack,
-      hltrack = hltrack
+      hltrack = hltrack,
+      aln_type_xx_yy_xy = aln_type_xx_yy_xy
     )
     
     alignments = dotplotly_dotplot_return_aln(opt)

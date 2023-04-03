@@ -82,8 +82,10 @@ make_chunked_minimap_alnment <-
            x_start = NULL,
            x_end = NULL, 
            hltrack = NULL,
-           onlypafreturn = F)
+           onlypafreturn = F,
+           aln_type_xx_yy_xy = 'xy')
  {
+
     # Define intermediate files
     queryfasta_chunk = paste0(queryfasta, ".chunk.fa")
     outpaf_chunk = paste0(outpaf, '.chunk')
@@ -140,7 +142,8 @@ make_chunked_minimap_alnment <-
       x_start = x_start, 
       x_end = x_end,
       x_seqname = x_seqname,
-      hltrack = params$hltrack
+      hltrack = params$hltrack,
+      aln_type_xx_yy_xy = aln_type_xx_yy_xy
     )
     print('5')
     if (saveplot == F) {

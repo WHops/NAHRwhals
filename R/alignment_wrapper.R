@@ -7,9 +7,12 @@ produce_pairwise_alignments_minimap2 <- function(params, outlinks, chr_start_end
   x_seqname = chr_start_end_pad[1]
   start_x_pad = as.numeric(chr_start_end_pad[2])
   end_x_pad = as.numeric(chr_start_end_pad[3])
+
+
   # Run alignments.
   # Run REF self alignment only if it hasn't been run before.
   if (params$self_plots) {
+
     if (is.na(file.size(outlinks$outfile_plot_self_x))) {
       plot_self_x = make_chunked_minimap_alnment(
         params,
@@ -27,7 +30,8 @@ produce_pairwise_alignments_minimap2 <- function(params, outlinks, chr_start_end
         x_end =   end_x_pad,
         x_seqname = x_seqname,
         anntrack = params$anntrack,
-        hltrack = params$hltrack
+        hltrack = params$hltrack,
+        aln_type_xx_yy_xy = 'xx'
       )
       print(plot_self_x)
       # Save alignment
@@ -52,7 +56,8 @@ produce_pairwise_alignments_minimap2 <- function(params, outlinks, chr_start_end
         hllink = F,
         hltype = F,
         hlstart = F,#NULL,
-        hlend = F#NULL
+        hlend = F,#NULL
+        aln_type_xx_yy_xy = 'yy'
       )
       save_plot_custom(plot_self_y, outlinks$outfile_plot_self_y, 'pdf')
       save_plot_custom(plot_self_y,
@@ -80,7 +85,8 @@ produce_pairwise_alignments_minimap2 <- function(params, outlinks, chr_start_end
     x_end = end_x_pad,
     x_seqname = x_seqname,
     anntrack = params$anntrack,
-    hltrack = params$hltrack#end_x - start_x_pad
+    hltrack = params$hltrack,
+     aln_type_xx_yy_xy = 'yy'#end_x - start_x_pad
   )
   # Save alignments
   print(plot_x_y)
