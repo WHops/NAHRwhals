@@ -89,6 +89,11 @@ For convenience, parameters in the config file can also be overwritten from the 
 
 ```Rscript nahrwhals.R --config conf/conf_default.txt --params anntrack='testdata/assemblies/hg38_partial_genes.bed'```
 
+Resulting in pairwise alignments plots with gene annotations overlaid on the top: 
+
+<img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" width="500" height="500">
+
+
 # Parameters
 
 NAHRwhals comes with a variety of parameters specified in a config file and/or via commandline. Default values are denoted in [brackets].
