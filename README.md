@@ -58,7 +58,7 @@ bedtools_bin = '/your/path/to/bedtools'
 
 
 
-#  Test & Example runs
+#  Test & Example runs (runtime: <1 min)
 
 To confirm that NAHRwhals has been correctly installed, run a testrun which should produce output files and plots in the `./res` folder: 
 
@@ -71,7 +71,7 @@ NAHRwhals can also skip the initial search for sub-sequences, and call SVs direc
 ```Rscript nahrwhals.R --config conf/conf_fa2fa.txt```
 
 
-# Use cases
+# Use cases (runtime: <1 min)
 
 To run your own data, exchange genome_x_fa (typically a reference, e.g. hg38), genome_y_fa (typically a genome assembly) and your coordinates of interest (seqname_x, start_x, end_x) in the config file.  
 
@@ -83,6 +83,8 @@ Resulting in pairwise alignments plots with gene annotations overlaid on the top
 
 <img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" width="500" height="500">
 
+
+Figures and results from the NAHRwhals manuscript can be replicated by querying coordinates of interest (see supp. Tables) against assembly fastas (see https://doi.org/10.5281/zenodo.7635935). Note that in the majority of cases, T2T is used as reference.
 
 # Parameters
 
