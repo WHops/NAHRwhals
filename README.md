@@ -84,7 +84,7 @@ Resulting in pairwise alignments plots with gene annotations overlaid on the top
 <img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" width="500" height="500">
 
 
-Figures and results from the NAHRwhals manuscript can be replicated by querying coordinates of interest (see supp. Tables) against assembly fastas (see https://doi.org/10.5281/zenodo.7635935). Note that in the majority of cases, T2T is used as reference.
+Figures and results from the NAHRwhals manuscript can be replicated by querying coordinates of interest (see supp. Tables) on a reference (parameter: genome_x_fa) against assembly fastas (parameter: genome_y_fa) (see https://doi.org/10.5281/zenodo.7635935). Note that in the majority of cases, T2T is used as reference.
 
 # Parameters
 
