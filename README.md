@@ -34,7 +34,7 @@ conda activate nahrwhals
 
 ### (3) Install NAHRwhals
 
-You can install with the following command, which calls devtools::install.  
+You can finally install NAHRwhals with the following command. 
 
 ```
 Rscript install_package.R
