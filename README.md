@@ -2,7 +2,7 @@
 
 
 # NAHRwhals (NAHR-directed Workflow for catcHing seriAL Structural Variations)
-An R package providing tools for visualization and automatic detection of complex, NAHR-driven rearrangements (few kbp to multiple Mbp) using genome assemblies. Modules include:
+NAHRwhals is an R package providing tools for visualization and automatic detection of complex, NAHR-driven rearrangements (few kbp to multiple Mbp) using genome assemblies. Modules include:
 
 - Liftover of coordinates between arbitrary human DNA assemblies
 - Accurate sequence alignments of multi-MB DNA sequences
@@ -11,44 +11,34 @@ An R package providing tools for visualization and automatic detection of comple
 - A tree-based caller for complex, nested NAHR-mediated rearrangements. 
 
 
-# Dependencies
 
-NAHRwhals requires installed versions of: 
-- [minimap2](https://github.com/lh3/minimap2) >= 2.24
-- [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html) <= 2.30.0
-- [gawk](ttps://formulae.brew.sh/formula/gawk) >= 5.2.0
-- [R](https://www.r-project.org/) >= 4.1.0
+#  Installation (total time: ca 10 minutes)
 
-#  Installation
+### (1) Clone the NAHRwhals repository
 
 
-### (1) Install dependencies
-
-
+```
+git clone https://github.com/WHops/NAHRwhals.git
+cd NAHRwhals; git checkout main
+```
+### (2) Install dependencies
  
-NAHRwhals has a number of dependencies, including [minimap2](https://github.com/lh3/minimap2), [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html), [gawk](https://formulae.brew.sh/formula/gawk) and a number of R packages. The easiest way to install all is by using the provided conda/mamba environment. Conda takes a while to execute this, so we recommend using mamba, which is an accelerated version. 
+NAHRwhals has a number of dependencies, including [minimap2](https://github.com/lh3/minimap2), [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html), [gawk](https://formulae.brew.sh/formula/gawk) and a number of R packages. The easiest way to install all is by using the provided conda/mamba environment. Conda takes a while to execute this, so we recommend using mamba, which is an accelerated version. Installation/Download time: 5-10 minutes. 
 
 ```
 conda config --set channel_priority flexible
 mamba env create --file env_nahrwhals.yml
 conda activate nahrwhals
 ```
-### (2) Clone the NAHRwhals repository
 
+
+### (3) Install NAHRwhals
+
+You can install with the following command, which calls devtools::install.  
 
 ```
-git clone https://github.com/WHops/NAHRwhals.git
-cd NAHRwhals
+Rscript install_package.R
 ```
-
-Depending on git version, this folder may appear empty. In this case, switch to the main branch with `git checkout main`.
-
-
-### (3) Install 
-
-You can install with the following command, which simply calls devtools::install. 
-
-`Rscript install_package.R`
 
 Confirm successful installation using
 
