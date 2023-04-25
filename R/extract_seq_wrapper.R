@@ -1,9 +1,16 @@
 
 #' A wrapper for extracting sequence
 #' 
-#' Needs more documentation.
+#' This function extracts a sequence from the reference genome and the assembly genome based on the input parameters. 
+#' 
+#' @param params A list containing parameters for the sequence extraction
+#' @param outlinks A list containing links for the output files
+#' 
+#' @return A list containing the start and end positions of the extracted sequence and the parameters for the sequence extraction
+#' 
 #' @author Wolfram Höps
 #' @export
+#' @TODO Add more detailed description
 extract_sequence_wrapper <- function(params, outlinks){
 
   # If we have a pre-computed coarse alignment, then we can use this to find out 

@@ -1,7 +1,14 @@
 
-#' Produce up to three minimap2 based alignments. 
-#' @author Wolfram Höps
+#' Run minimap2 pairwise alignment on two genome sequences and generate plot
+#'
+#' This function produces up to three pairwise alignments between two genome sequences using minimap2 and generates a plot of the alignments.
+#'
+#' @param params A list containing all input information.
+#' @param outlinks A list containing output file paths.
+#' @param chr_start_end_pad A list containing the chromosome, start, end, and padding information.
+#' @return A plot of the alignment between two genome sequences.
 #' @export
+#' @author Wolfram Höps
 produce_pairwise_alignments_minimap2 <- function(params, outlinks, chr_start_end_pad){
   
   x_seqname = chr_start_end_pad[1]

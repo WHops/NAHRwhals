@@ -1,12 +1,18 @@
-#' little stuff
+#' Compute the signed square root
+#'
+#' @param x [numeric] A numeric value or vector
+#' @return The signed square root of the input value(s)
 #' @export
-pmsqrt <- function(x){
-  return (sign(x) * sqrt(abs(x)))
+pmsqrt <- function(x) {
+  return(sign(x) * sqrt(abs(x)))
 }
 
-#' little stuff
+#' Compute the reverse signed square root
+#'
+#' @param x [numeric] A numeric value or vector
+#' @return The reverse signed square root of the input value(s)
 #' @export
-pmsqrt_rev <- function(x){
+pmsqrt_rev <- function(x) {
   return(sign(x) * (x**2))
 }
 
@@ -53,10 +59,12 @@ plot_matrix_ggplot <- function(data_frame_xyz) {
 }
 
 
-#' plot_matrix_ggplot_named
+#' Plot a matrix of data
 #'
-#' Make a plot of a dataframe matrix.
-#' @param data_frame_xyz a dataframe with three coordinate columns (x,y,z)
+#' @param data_frame_xyz A dataframe with three coordinate columns (x, y, z)
+#' @param colnames_f A vector of column names
+#' @param rownames_f A vector of row names
+#' @return A ggplot2 object representing the matrix plot
 #' @author Wolfram Hoeps
 #' @export
 plot_matrix_ggplot_named <- function(data_frame_xyz, colnames_f, rownames_f) {
@@ -131,11 +139,16 @@ plot_matrix_ggplot_named <- function(data_frame_xyz, colnames_f, rownames_f) {
 }
 
 
-#' make_segmented_pairwise_plot
-#' 
-#' give me a grid_xy and a plot. I will add segments and save. 
-#' This is a bit a quick-and-dirty function; consider to improve. 
-#' @export 
+#' Create a segmented pairwise plot with grid lines
+#'
+#' This function takes a grid_xy and a plot, and adds segments to the plot based on the grid lines. The resulting plot is saved to a file. This function is considered quick-and-dirty and may need to be improved in the future.
+#'
+#' @param grid_xy A list containing two vectors of x and y values that represent the grid lines
+#' @param plot_x_y A ggplot2 object to which the grid segments will be added
+#' @param outlinks A list of output file paths
+#'
+#' @author Wolfram Höps
+#' @export
 make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks){
   # Make plot_xy_segmented. 
   # Needs debug. 
@@ -191,30 +204,43 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks){
   
 }
 
+#' Create a modified grid plot
+#'
+#' @param res A data frame with results
+#' @param gridmatrix A matrix representing the grid
+#' @param outlinks A list containing output links
 #' @export
-make_modified_grid_plot <- function(res, gridmatrix, outlinks){
+make_modified_grid_plot <- function(res, gridmatrix, outlinks) {
   
-  res = res[order(res$eval, decreasing = T),]
-  # res = filter_res(res, threshold = params$eval_th)
+  # Sort results by 'eval' in descending order
+  res = res[order(res$eval, decreasing = TRUE),]
   
+  # Modify the grid matrix using the first row of results
   grid_modified = modify_gridmatrix(gridmatrix, res[1,])
   
+  # Calculate gridlines for x and y axis
+  gridlines.x = cumsum(c(0, as.numeric(colnames(grid_modified))))
+  gridlines.y = cumsum(c(0, as.numeric(row.names(grid_modified))))
   
-  gridlines.x = cumsum(c(0,as.numeric(colnames(grid_modified))))
-  gridlines.y = cumsum(c(0,as.numeric(row.names(grid_modified))))
+  # Update column and row names of the modified grid
+  colnames(grid_modified) = seq(1, dim(grid_modified)[2])
+  row.names(grid_modified) = seq(1, dim(grid_modified)[1])
   
-  colnames(grid_modified) = seq(1:dim(grid_modified)[2])
-  row.names(grid_modified) = seq(1:dim(grid_modified)[1])
-  
+  # Melt the modified grid matrix
   gm2 = reshape2::melt(grid_modified)
-  colnames(gm2) = c('y','x','z')
+  colnames(gm2) = c('y', 'x', 'z')
+  
+  # Create the modified grid plot using non-zero values
   grid_mut_plot = plot_matrix_ggplot_named(gm2[gm2$z != 0,], gridlines.x, gridlines.y)
+  
+  # Save the grid_mut_plot to a file
   ggplot2::ggsave(filename = paste0(outlinks$outfile_plot_grid_mut),
                   plot = grid_mut_plot,
                   width = 10,
                   height = 10,
                   units = 'cm',
                   dpi = 300)
-  print(grid_mut_plot)
   
+  # Print the grid_mut_plot
+  print(grid_mut_plot)
 }

@@ -38,7 +38,7 @@ decide_loop_continue_symmetry <- function(bitl_f, symm_cutoff = 0.80, orig_symm 
 #'                
 #' @examples 
 #' 
-#'  h <- hash( a=1, b=1:2, c=1:3)
+#'  h <- rlang::hash( a=1, b=1:2, c=1:3)
 #'  as.data.frame(h)
 #'  
 #' @export
@@ -69,10 +69,7 @@ annotate_pairs_with_hash <- function(bitlocus, pairs){
   
   pairs$hash = 'NA'
   for (npair in seq_along(pairs$hash)){
-    pairs[npair, 'hash'] = rlang::hash(return_diag_values_new(carry_out_compressed_sv(bitlocus, pairs[npair,1:3]), fraction = 0.05) )
-    #pairs[npair, 'hash'] = rlang::hash(carry_out_compressed_sv(bitlocus, pairs[npair,1:3]))
-    #pairs[npair, 'hash'] = rlang::hash(as.numeric(carry_out_compressed_sv(bitlocus, pairs[npair,1:3])))
-    
+    pairs[npair, 'hash'] = hash(return_diag_values_new(carry_out_compressed_sv(bitlocus, pairs[npair,1:3]), fraction = 0.05) ) # Whoeps, 25th April: removing rlang from the has command. 
   }
   
   return(pairs)
@@ -119,8 +116,12 @@ return_diag_values_new <- function(matrix, fraction=0.05){
 
 #' transform_res_new_to_old
 #' 
-#' This is a helperfunction transforming between different ways of representing the results of a tree search.
-#' Further documentation required - for now, just don't touch it :). 
+#' This function transforms between different ways of representing the results of a tree search.
+#' 
+#' @param res_df_f The results of the tree search in the new format.
+#' 
+#' @return The results of the tree search in the old format.
+#' 
 #' @export
 transform_res_new_to_old <- function(res_df_f){
   #print(res_df_f) 
@@ -171,11 +172,14 @@ sort_new_by_penalised <- function(bitlocus_f, res_df_f){
 
 
 
-#' Which percentage do we call 'solved'? 
-#' To account for alignment incongruencies, we say that a puzzle is solved
-#' If it deviates at most by 1 'unit'. 
+#' find_threshold
 #' 
-#' I want to have a second look at this funciton... is it clean / reasonable?
+#' This function calculates the alignment threshold for determining when a bitlocus is considered "solved".
+#' 
+#' @param bitlocus_f The matrix representing the bitlocus.
+#' @param nmut The number of mutations.
+#' 
+#' @return The threshold.
 #' 
 #' @export
 find_threshold <- function(bitlocus_f, nmut){
@@ -189,11 +193,14 @@ find_threshold <- function(bitlocus_f, nmut){
 }
 
 
-#' Determine if a bitlocus is good for use in the first place. 
-#' If it has many dots around its edges, it is not good and we
-#' need a larger window.  
+#' is_cluttered
 #' 
-#' I want to have a second look at this function... is it clean / reasonable?
+#' This function determines if a bitlocus is too cluttered to be analysed/considered further
+#' 
+#' @param bitlocus_f The matrix representing the bitlocus.
+#' @param clutter_limit_per_border The maximum number of dots allowed per border.
+#' 
+#' @return TRUE if the bitlocus is cluttered, FALSE otherwise.
 #' 
 #' @export
 is_cluttered <- function(bitlocus_f, clutter_limit_per_border = 5){
@@ -226,8 +233,9 @@ is_cluttered <- function(bitlocus_f, clutter_limit_per_border = 5){
 #' If it has many dots around its edges, it is not good and we
 #' need a larger window.  
 #' 
-#' I want to have a second look at this function... is it clean / reasonable?
-#' 
+#' @param paf A PAF file with the alignments
+#' @param clutter_limit_per_border The number of dots allowed per border before we consider it cluttered
+#' @return A boolean indicating whether the DOTPLOT is cluttered or not
 #' @export
 is_cluttered_paf <- function(paf, clutter_limit_per_border = 5){
   
@@ -259,24 +267,36 @@ is_cluttered_paf <- function(paf, clutter_limit_per_border = 5){
 }
 
 
-# What is the initial symmetry of the bitlocus? 
-#' 
-#' @param bitl matrix representing a bitlocus
+#' Calculate the initial symmetry of a bitlocus
+#'
+#' @param bitl A data frame representing a bitlocus
+#' @return The initial symmetry of the bitlocus
 #' @export
-calc_symm <- function(bitl){
+calc_symm <- function(bitl) {
+  # Calculate the cost of climbing up and walking right
   climb_up_cost = as.numeric(row.names(bitl))
   walk_right_cost = as.numeric(colnames(bitl))
+  
+  # Calculate the initial symmetry
   orig_symm = min(sum(climb_up_cost), sum(walk_right_cost)) / max(sum(climb_up_cost), sum(walk_right_cost))
   
   return(orig_symm)
 }
 
 
-#' reduce_depth_if_needed
-#' 
+#' Reduces the maximum search depth if the dotplot is unreasonably large
+#'
 #' Called at the beginning of a tree search. If the dotplot is unreasonably large, 
 #' we pragmatically reduce the search depth here to prevent overly long runtimes. 
+#'
+#' @param bitlocus A bit locus to be worked on
+#' @param increase_only A logical value indicating if the maximum search depth should only be increased
+#' @param maxdepth An integer indicating the maximum search depth
+#' 
+#' @return An integer indicating the updated maximum search depth
+#' 
 #' @export
+#' @author Wolfram Höps
 reduce_depth_if_needed <- function(bitlocus, increase_only, maxdepth){
   # Prepare bitlocus that we will be working on. 
   bitl = flip_bitl_y_if_needed(bitlocus)
@@ -301,10 +321,20 @@ reduce_depth_if_needed <- function(bitlocus, increase_only, maxdepth){
 
 
 
-#' run_steepest_descent_one_layer_down
+#' Runs a tree search in steepest_descent mode with a maximum search depth of one less than the starting depth.
+#'
+#' This function is a helper function for running a tree search in steepest_descent mode. 
+#' It searches for the best results of the given starting depth and applies one more mutation to each result to 
+#' start a new search with one less maximum search depth. 
 #' 
-#' Helperfunction to run a tree search in steepest_descent mode. 
+#' @param bitlocus A bit locus to be worked on
+#' @param res_df A data frame that stores the search results
+#' @param starting_depth An integer indicating the starting search depth
+#' 
+#' @return A data frame that stores the updated search results
+#' 
 #' @export
+#' @author Wolfram Höps
 run_steepest_descent_one_layer_down <- function(bitlocus, res_df, starting_depth = 1){
   
   # Get the top 10 results with depth 2 and individual hashes
@@ -358,11 +388,15 @@ run_steepest_descent_one_layer_down <- function(bitlocus, res_df, starting_depth
 }
 
 
-#' annotate_res_out_with_positions_lens
-#' 
-#' A helper function that takes a results dataframe and an original bitlocus, 
-#' and translates the results (e.g. '4-10-inv') into coordinates (e.g. 450000 - 600000 - inv).
-#' This is quite limited and rudimentary at this point. 
+#' @title Annotate Result DataFrame with Position and Length Information
+#'
+#' @description This helper function takes a results dataframe and an original bitlocus,
+#' and translates the results (e.g., '4-10-inv') into coordinates (e.g., 450000 - 600000 - inv).
+#' Note that the function is limited and rudimentary at this point.
+#'
+#' @param res_out DataFrame: Results dataframe to be annotated.
+#' @param bitlocus DataFrame: Original bitlocus dataframe.
+#' @return DataFrame: Annotated results dataframe with position and length information.
 #' @export
 annotate_res_out_with_positions_lens <- function(res_out, bitlocus){
   

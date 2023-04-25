@@ -1,8 +1,15 @@
-# T2T is denoted with cryptic chromsome names. I'm sure there are good reasons
-# to do that, but for readability, I prefer to display simple chromosome names
-# in output plots involving T2T. This function helps with that. Give it a cryptic
-# name and it returns a simple one. If cryptic name is unknown, return the original
-# name. String in, string out. 
+#' @title Translate T2T Chromosome Names to Readable Format
+#' @description This function translates cryptic chromosome names in the
+#' T2T dataset to more readable and user-friendly names. If a given chromosome
+#' name is not found in the T2T dataset, the function returns the original input name.
+#'
+#' @param chrname A character string representing the cryptic chromosome name
+#' to be translated.
+#'
+#' @return A character string with the translated chromosome name in a more
+#' readable format. If the input name is not found in the T2T dataset, it
+#' returns the original input name.
+#'
 #' @export
 translate_t2t_chr_to_readable <- function(chrname){
   

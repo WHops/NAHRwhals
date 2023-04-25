@@ -1,7 +1,14 @@
 #' extract_subseq_bedtools
-#' Give me an input fasta link, chromosome coordinates and an
-#' output destionation file. I will extract the sequence of that
-#' coordinates from the fasta, and output it into the outfasta.
+#'
+#' Extracts a subsequence from a fasta file using bedtools getfasta.
+#'
+#' @param infasta (character): A link to the input fasta file.
+#' @param seqname (character): The name of the sequence/chromosome to extract from the fasta file.
+#' @param start (integer): The starting position (1-based) of the sequence to extract.
+#' @param end (integer): The ending position (1-based) of the sequence to extract.
+#' @param outfasta (character): The destination file to write the extracted subsequence in fasta format.
+#' @param params (list): A list containing the path to the bedtools binary (bedtools_bin).
+#'
 #' @author Wolfram Hoeps
 #' @export
 extract_subseq_bedtools <-
@@ -59,8 +66,18 @@ extract_subseq_bedtools <-
 
 
 #' find_punctual_liftover
-#' Translates a single point from one assembly to another.
-#' Uses the pre-computed conversion-paf.
+#'
+#' Translates a single point from one genome assembly to another using a pre-computed conversion-paf.
+#'
+#' @param cpaf (data.frame): A data frame containing the conversion-paf.
+#' @param pointcoordinate (integer): The coordinate of the point to be lifted over.
+#' @param chrom (character): The chromosome of the point to be lifted over.
+#'
+#' @return A data frame with two columns: seqname and liftover_coord.
+#' seqname gives the name of the sequence to which the point was lifted over, and liftover_coord
+#' gives the lifted-over coordinate.
+#'
+#' @author Wolfram Höps 
 #' @export
 find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
   # Find all alignments overlapping with the pointcoordinate
@@ -93,9 +110,36 @@ find_punctual_liftover <- function(cpaf, pointcoordinate, chrom) {
 
 #' liftover_coarse
 #'
-#' Wrapperfunction to find a liftover sequence from one assembly to the other.
-#' Better description TBD.
+#' This function lifts over a genomic region from one assembly to another.
+#' The function extracts subregions of the input sequence, and then 
+#' calculates the lift-over positions by aligning these subregions
+#' to the target assembly. By default, the function uses a mean absolute 
+#' deviation (MAD) based approach to calculate the lifted-over region.
+#' However, it can also be set to use an extrapolation-based approach
+#' to calculate the lifted-over region. The result of the function is a 
+#' list containing the lifted-over contig name, the start position, and the
+#' end position.
 #'
+#' @param seqname (character): The name of the contig/chromosome to lift-over.
+#' @param start (integer): The starting position (1-based) of the region to lift-over.
+#' @param end (integer): The ending position (1-based) of the region to lift-over.
+#' @param conversionpaf_link (character): A link to the precomputed PAF file containing 
+#' the conversion information between the two genome assemblies.
+#' @param n_probes (integer): The number of subregions to use for calculating the lifted-over
+#' position. Defaults to 100.
+#' @param lenfactor (numeric): The length factor used to calculate the length of the subregions.
+#' A higher lenfactor will result in longer subregions, which may improve the quality of the lifted-over
+#' position. Defaults to 1.2.
+#' @param whole_chr (logical): Whether to lift-over the entire chromosome/contig. By default, this is set to 
+#' FALSE, and only the region specified by the start and end coordinates is lifted-over.
+#' @param search_mode (character): The search mode to use for finding the lifted-over position.
+#' Can be set to "mad" (default), or "extrapolation".
+#' @param refine_runnr (integer): The number of times to refine the lifted-over position. Can be set to
+#' 0 (default), 1, or 2. A higher number will result in a more accurate lifted-over position, but will 
+#' also increase the runtime.
+#'
+#' @return A list containing the lifted-over contig name, the start position, and the end position.
+#' 
 #' @author Wolfram Höps
 #' @export
 liftover_coarse <-
@@ -216,9 +260,16 @@ liftover_coarse <-
 
 
 #' enlarge_interval_by_factor
-#'
-#' input start and end coordinates and a factor by which to enlarge. E.g. 40-50 (len 10) and factor 2 will result in 35-55 (len 20).
-#' Makes sure no negative values are created. 
+#' 
+#' Given a start coordinate, an end coordinate and a factor, the function returns new start and end coordinates after padding the original interval. The padding factor can be greater than 1, in which case the function increases the length of the input interval by that factor. The padding is applied symmetrically on both ends. The function makes sure that negative values are not created and that the output interval does not exceed the length of the chromosome. A log file can also be created to keep track of the operation. 
+#' 
+#' @param start start coordinate of the input interval
+#' @param end end coordinate of the input interval
+#' @param factor factor by which to increase the length of the input interval
+#' @param seqname_f (optional) chromosome name, used for quality control
+#' @param conversionpaf_f (optional) path to PAF file, used for quality control
+#' @param log_collection (optional) log file to keep track of the operation
+#' @return A vector of length 2, containing the new start and end coordinates.
 #' @author Wolfram Höps
 #' @export
 enlarge_interval_by_factor <-
@@ -308,6 +359,8 @@ enlarge_interval_by_factor <-
 
 #' read_and_prep_paf
 #'
+#' Reads in a PAF file and renames the columns to match the PAF standard column names.
+#' @param paflink The path to the PAF file to read.
 #' @author Wolfram Hoeps
 #' @export
 read_and_prep_paf <- function(paflink) {
@@ -341,7 +394,14 @@ read_and_prep_paf <- function(paflink) {
 
 
 #' find_coords_mad
-#'
+#' This function finds the coordinates of a region given a set of liftover coordinates and other parameters.
+#' @param liftover_coords A data frame containing liftover coordinates
+#' @param cpaf A data frame containing cpaf information
+#' @param winner_chr The chromosome with the highest number of matching sequences
+#' @param start The start position of the region
+#' @param end The end position of the region
+#' @param liftover_run A logical value indicating whether this is a liftover run
+#' @return A numeric vector containing the start and end coordinates of the region
 #' @author Wolfram Hoeps
 #' @export
 find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, liftover_run){
@@ -364,7 +424,6 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
   start_winners = min(liftover_coords_maxseq$liftover_coord)
   end_winners = max(liftover_coords_maxseq$liftover_coord)
   
-  # library(ggplot2)
   # p = ggplot(liftover_coords) + geom_point(aes(x=pos_probe, y=liftover_coord)) +
   # coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on")
   #print(p)
@@ -406,7 +465,14 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
 
 
 #' find_coords_extrapolated
-#'
+#' This function finds the coordinates of a region given a set of liftover coordinates and other parameters.
+#' @param liftover_coords A data frame containing liftover coordinates
+#' @param cpaf A data frame containing cpaf information
+#' @param winner_chr The chromosome with the highest number of matching sequences
+#' @param start The start position of the region
+#' @param end The end position of the region
+#' @param liftover_run A logical value indicating whether this is a liftover run
+#' @return A numeric vector containing the start and end coordinates of the region
 #' @author Wolfram Hoeps
 #' @export
 find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, end, liftover_run){
@@ -476,7 +542,10 @@ find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, e
 }
 
 #' mad_mask_outliers
-#'
+#' This function masks outliers in a vector using the median absolute deviation (MAD) method.
+#' @param obs A numeric vector
+#' @param th A numeric threshold (default 4)
+#' @return A logical vector indicating which values in obs are not outliers
 #' @author Wolfram Hoeps
 #' @export
 mad_mask_outliers <- function(obs, th=4){

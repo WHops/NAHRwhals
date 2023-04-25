@@ -1,4 +1,14 @@
-#' Undocumented helperfunction. Called in the process of stitching together chunked alignments. 
+#' Merge neighboring alignments in a PAF file for stitching together chunked alignments
+#'
+#' This function identifies alignments in a PAF file that are potential neighbors by checking if their distance in any direction (+-x, +-y) is less than 5% of their alignment length. Alignments are considered as neighbors if they have the same strand and the end of one is the start of the other. The function returns a data.frame of row pairs that are considered neighbors based on the above criteria. This function is called in the process of stitching together chunked alignments.
+#'
+#' @param inpaf A PAF file containing alignments
+#' @param second_run A logical indicating if this is the second run of the stitching process
+#' @param inparam_chunklen An optional parameter to specify the length of the input chunks
+#' @param inparam_compression An optional parameter to specify the compression factor to be used in the merging process
+#' 
+#' @return A data.frame of row pairs that are considered neighbors
+#' 
 #' @author Wolfram Höps
 #' @export
 merge_paf_entries_intraloop <- function(inpaf, second_run=F, inparam_chunklen=NULL, inparam_compression=NULL) {

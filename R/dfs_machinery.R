@@ -1,6 +1,18 @@
 #' DFS caller function
-#' This is the gateway into entering the dfs. 
+#' 
+#' This function serves as the gateway to entering the DFS process. It calls the dfsutil function recursively
+#' to explore possible paths within the search space.
+#'
+#' @param bitlocus A matrix representing the search space.
+#' @param maxdepth The maximum depth of the search tree.
+#' @param increase_only A boolean indicating whether only increasing mutations are allowed.
+#' @param earlystop The maximum number of evaluations before the search is terminated.
+#' @param history An optional argument representing previous search history.
+#' 
+#' @return A list containing the search history and the evaluation results.
+#' 
 #' @export
+#' @author Wolfram Höps
 dfs <- function(bitlocus, maxdepth = 3, increase_only=F, earlystop = Inf, history = NULL){
   
 
@@ -50,9 +62,26 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only=F, earlystop = Inf, histor
 
 
 
-
 #' DFS workhorse function
-#' TODO: description
+#' 
+#' This function recursively explores possible paths within the search space and returns a list containing
+#' the search history and the evaluation results.
+#'
+#' @param visited A hash table containing the visited nodes.
+#' @param pair A data frame representing a pair of points to be mutated.
+#' @param pairhash A hash value representing the mutated pair.
+#' @param mutator A matrix representing the mutated search space.
+#' @param depth The current depth of the search tree.
+#' @param maxdepth The maximum depth of the search tree.
+#' @param pairhistory The search history up to the current pair.
+#' @param df_output A data frame representing the evaluation results.
+#' @param increase_only A boolean indicating whether only increasing mutations are allowed.
+#' @param orig_symm The original symmetry value of the search space.
+#' @param last_eval The score of the previous evaluation.
+#' @param earlystop The maximum number of evaluations before the search is terminated.
+#' 
+#' @return A list containing the search history and the evaluation results.
+#' 
 #' @export
 dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairhistory=NULL, df_output=NULL, increase_only=NULL, orig_symm=1, last_eval=0, earlystop=Inf){
   

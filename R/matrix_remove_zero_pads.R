@@ -1,5 +1,9 @@
-#" matrix_remove_zero_pads
-#' Quick and dirty way of getting rid of padding zero columns or rows. 
+#' matrix_remove_zero_pads
+#' 
+#' This function removes padding zero columns or rows from a matrix. If all outside columns and rows have entries, the function returns the original matrix.
+#' 
+#' @param bitl_f a matrix containing the data to be processed.
+#' @return A matrix with zero-padding columns and rows removed. If the resulting matrix is empty, the function returns NULL.
 #' @author Wolfram Häps
 #' @export
 matrix_remove_zero_pads <- function(bitl_f){

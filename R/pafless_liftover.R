@@ -1,6 +1,6 @@
-# Pafless liftover tools
 
-#' Doc pending
+#' Creates a minimap2 index (.mmi) file for a genome assembly if it doesn't exist.
+#' @param params A list containing parameters for the function.
 #' @export
 create_mmi_if_doesnt_exists <- function(params){
   
@@ -18,7 +18,13 @@ create_mmi_if_doesnt_exists <- function(params){
 }
 
 
-#' Doc pending
+#' DOC PENDING. 
+#' @param params A list of parameters specifying the input and output file paths and other options
+#' @param outlinks A list of output file paths
+#' 
+#' @return params, a list. 
+#' 
+#' @author Wolfram Höps
 #' @export
 make_params_conversionpaf <- function(params, outlinks){
   

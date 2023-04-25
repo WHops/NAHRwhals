@@ -1,13 +1,12 @@
 #!/usr/local/bin/Rscript
 
-#' Helperfunction (1/1) of compress_paf_fnct
+#' Merge paired alignment rows in PAF file
 #'
-#' @description Melt two alignment entries into one.
+#' @description Merges paired alignment rows in the provided PAF file.
 #'
-#' @param paffile [data frame] loaded paffile with colnames
-#' @param nl1 [character/link] line number of first-of-pair
-#' @param nl2 [character/link] line number of second-of-pair
-#' @return paffile with one row less (bc a pair has been merged)
+#' @param paffile [data.frame] PAF file data frame with column names
+#' @param pairs [data.frame] Data frame with columns representing row numbers of paired alignments
+#' @return PAF file data frame with merged rows
 #'
 #' @author Wolfram Höps
 #' @export
@@ -83,16 +82,22 @@ merge_rows <- function(paffile, pairs) {
 
 
 
-#' Melt the alignment pieces back together after chunkifying them earlier.
+#' Melt Alignment Chunks Back Together
 #'
-#' @description This is a crucial module for finding the SDs later, and poses
-#' the last part of the chunk-minimap2-edit-melt workflow. This might need more
-#' work in the future, because melting is not so straight forward.
+#' @description This function is a crucial part of the process of identifying synteny blocks (SDs)
+#' and is the last step of the chunk-minimap2-edit-melt workflow. It takes the chunked PAF file
+#' produced earlier in the pipeline and "melts" the alignment pieces back together.
+#' Note that improvements may be needed in the future, as the melting process is not
+#' entirely straightforward.
 #'
-#' @param inpaf_link [character/link] link to the chunked paf
-#' @param outpaf_link [character/link] link to the molten output paf
-#' Set to larger values (e.g. 250k) for very large alignments (>5Mb).
-#'
+#' @param inpaf_link [character/link] A file path or link to the input chunked PAF file.
+#' @param outpaf_link [character/link] A file path or link to the output "molten" PAF file.
+#' @param inpaf_df [data.frame] An optional input PAF dataframe.
+#' @param save_outpaf [logical] Whether to save the output PAF file (default: TRUE).
+#' @param n_quadrants_per_axis [numeric] The number of quadrants per axis (determines chunking).
+#' @param second_run [logical] Whether this is the second run of the function (default: FALSE).
+#' @param inparam_chunklen [numeric] The input parameter for chunk length.
+#' @param inparam_compression [numeric] The input parameter for compression.
 #' @author Wolfram Höps
 #' @export
 compress_paf_fnct <-
@@ -205,7 +210,6 @@ compress_paf_fnct <-
     n_steps = length(tsteps) * length(qsteps)
     rowpairs = data.frame()
     count = 0
-    library(ggplot2)
 
     for (tstep in tsteps[1:length(tsteps)-1]) {
       for (qstep in qsteps[1:length(qsteps)-1]) {
@@ -257,7 +261,6 @@ compress_paf_fnct <-
     # Remove very short stuff
     rowpairs = rowpairs[rowpairs$combined_matchlen > (inparam_chunklen/5),]
 
-    library(dplyr)
     # Cut down redundant pairs
     rowpairs_singular = as.data.frame(
       rowpairs %>%

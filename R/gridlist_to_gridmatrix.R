@@ -1,7 +1,7 @@
 #' gridlist_to_gridmatrix
 #' 
 #' Convert gridlist to grimatrix
-#' @param grid_list a dataframe, columns (x,y,z).
+#' @param grid a dataframe, columns (x,y,z).
 #' @return A matrix of the bitplot
 #' @author Wolfram Höps
 #' @export

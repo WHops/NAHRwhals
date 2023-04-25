@@ -1,10 +1,12 @@
 
-#' remove_duplicates_triple
-#' 
-#' Remove duplicates TRIPLE. First, remove obvious duplicates (all 3 same)
-#' Then, identify those with same x/y but different z. The get 0.
-#' Finally, the second step has produced new duplicates, so be mean again.
-#' Used to 'purify' / 'simplify' a grid_list
+#' Remove duplicate values from a triple data frame
+#'
+#' This function takes a triple data frame containing columns x, y, and z, and removes duplicate values. First, obvious duplicates (where all three values are the same) are removed. Then, values with the same x/y but different z are identified and set to 0. Finally, the second step may produce new duplicates, so the function removes those again. This function is typically used to simplify a grid_list.
+#'
+#' @param grid_list_f A data frame containing columns x, y, and z
+#'
+#' @return A data frame with duplicate values removed
+#'
 #' @author Wolfram Hoeps
 #' @export
 remove_duplicates_triple <- function(grid_list_f){

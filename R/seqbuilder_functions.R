@@ -4,7 +4,7 @@
 #' @description Simple helperfunction to extract part of a fasta into a character.
 #' Can be useful e.g. to visualize part of a fasta with an exact dotplot.
 #'
-#' @param inputfasta [character/link] link to a single-sequence fasta
+#' @param input_fasta [character/link] link to a single-sequence fasta
 #' @param range [numeric 2x1 vctor] Sequence range to extract. E.g. range=c(10,100) extracts bases 10 to 100.
 #' @return A DNA sequence as a character
 #'
@@ -32,29 +32,37 @@ confirm_loaded_nw <- function() {
 #' @author Wolfram Höps
 #' @export
 version_nw <- function() {
-  print('This is version 0.95 from Feb 14th, 2022.')
+  print('This is version 1.0 from Apr 25, 2023.')
 }
 
-#' A core wrapper function. Give me two fasta files and I'll give you
-#' an output paf and a dotplot pdf.
+#' Perform Chunked Minimap2 Alignment and Generate Dotplot
 #'
-#' @description This is sitting at the core of the nahrchainer module. It ties
-#' together core modules, such as query-sequence chunking, minimap2 alignment,
-#' paf recombination and plotting. s
+#' This function performs a chunked minimap2 alignment of two single-sequence FASTA files, generates a PAF file, and creates a dotplot PDF. It utilizes helper functions for sequence chunking, minimap2 alignment, PAF recombination, and dotplot generation.
 #'
-#' @param targetfasta [character/link] link to the 'target' single-sequence fasta (sometimes reference, e.g. chm13.)
-#' @param queryfasta [character/link] link to the 'query' single-sequence fasta.
-#' @param chunklen [numeric] length of sequence chunks to split the query to (default = 1000 bp.)
-#' @param hllink [character/link] link to an SD annotation file (bed, tsv or paf) to include as
-#' highlights in the plot.
-#' @param hltype [character] filetype of hllink. Can be 'NULL', 'bed', 'tsv', 'paf'.
-#' @param outpaf [character/link] Path to the output paffile to be written.
-#' @param outplot [character/link] Path to the output plot to be written.
+#' @param targetfasta A character string containing the path to the 'target' single-sequence FASTA file (e.g., chm13).
+#' @param queryfasta A character string containing the path to the 'query' single-sequence FASTA file.
+#' @param chunklen A numeric value indicating the length of sequence chunks to split the query into (default = 1000 bp).
+#' @param hllink A character string containing the path to an SD annotation file (BED, TSV, or PAF) to include as highlights in the plot (default = FALSE).
+#' @param hltype A character string indicating the filetype of hllink. Can be 'NULL', 'bed', 'tsv', or 'paf' (default = FALSE).
+#' @param outpaf A character string containing the path to the output PAF file to be written.
+#' @param keep_ref A numeric value indicating the number of alignments to keep for plotting (default = 10000).
+#' @param plot_size A numeric value indicating the plot size in inches (default = 10).
+#' @param saveplot A logical value indicating whether or not to save the plot (default = TRUE).
+#' @param savepaf A logical value indicating whether or not to save the PAF file (default = TRUE).
+#' @param quadrantsize A numeric value indicating the quadrant size (default = 100000).
+#' @param hlstart An integer value indicating the start position of the highlight region (default = NULL).
+#' @param hlend An integer value indicating the end position of the highlight region (default = NULL).
+#' @param targetrange A numeric vector containing the start and end positions of the target sequence to use (default = NULL).
+#' @param queryrange A numeric vector containing the start and end positions of the query sequence to use (default = NULL).
+#' @param anntrack A logical value indicating whether or not to include an annotation track (default = FALSE).
+#' @param x_seqname A character string indicating the name of the reference sequence for the annotation track (default = NULL).
+#' @param x_start A numeric value indicating the start position of the reference sequence for the annotation track (default = NULL).
+#' @param x_end A numeric value indicating the end position of the reference sequence for the annotation track (default = NULL).
+#' @param hltrack A numeric value indicating the track number to use for highlighting (default = NULL).
+#' @param onlypafreturn A logical value indicating whether or not to only return the PAF file (default = FALSE).
+#' @param aln_type_xx_yy_xy A character string indicating the orientation of the alignment (default = 'xy').
 #'
-#' @param keep_ref [numeric] Number of alignments to keep or something. Plotting parameter.
-#' @param plot_size [numeric] Plot size in inch.
-#' @param outsd [character/link] Outputfile for the modified SD tsv file.
-#' @return nothing. But output files written.
+#' @return This function has no return value. Output files are written to the specified paths.
 #'
 #' @author Wolfram Höps
 #' @export
@@ -173,6 +181,7 @@ make_chunked_minimap_alnment <-
 #' @param infasta [character/link] single-seq fasta to be chopped
 #' @param outfasta_chunk [character/link] output chopped multi-seq fasta.
 #' @param chunklen [numeric] length of sequence chunks in bp
+#' @param params a list with all NAHRwhals parameters
 #' @return nothing. But output files written.
 #'
 #' @author Wolfram Höps
@@ -234,8 +243,8 @@ shred_seq_bedtools <- function(infasta,
 #' @param targetfasta [character/link] link to the 'target' single-sequence fasta (sometimes reference, e.g. chm13.)
 #' @param queryfasta [character/link] link to the 'query' fasta. Can be single or multi-fasta
 #' @param outpaf [character/link] Path to the output paffile to be written.
-#' @param minimap2loc [character/link] link to minimap2 binary.
-
+#' @param params a list with all NAHRwhals parameters
+#' @param nthreads number of threads to use with Minimap2
 #' @return nothing. Only output files written.
 #'
 #' @author Wolfram Höps
@@ -274,23 +283,28 @@ run_minimap2 <-
 
 #' Submit a system command to run awk to change sequence chunk names
 #'
-#' @description This is a helperfunction to run awk
+#' This is a helper function that submits a system command to run awk to change sequence chunk names in a PAF file.
+#' 
+#' @param inpaf [character/link] Input PAF file name or link.
+#' @param outpaf [character/link] Output PAF file name or link.
+#' @param params [list] A named list containing the parameters for running the awk command. The list must contain an element
+#' named `awkscript_paf` that specifies the path to the awk script file to be used.
 #'
-#' @param inpaf [character/link] input paf
-#' @param outpaf [character/link] output paf
+#' @return Nothing. The function only writes the output file.
 #'
-#' @return nothing. Only output files written.
-#'
-#' @author Wolfram Höps
+#' @author Wolfram Hoeps
 #' @export
 awk_edit_paf <- function(inpaf, outpaf, params) {
-
   
   scriptlink = params$awkscript_paf 
-
+  
+  # Print the path to the script for debugging purposes
   print(scriptlink)
+  
+  # Submit a system command to run awk
   system(paste0(scriptlink, " ", inpaf, " ", outpaf))
 }
+
 
 #' Helperfunction to save a fasta file.
 #'
@@ -316,7 +330,14 @@ writeFasta <- function(data, filename) {
   close(fileConn)
 }
 
-#' helperfunction to shorten a fasta file.
+#' Shorten a FASTA file.
+#'
+#' This function reads in a FASTA file and writes a shortened version of it to a new file. The shortened version contains only the sequence specified by the start and stop positions passed in the range argument. The new file is written to the location specified by outfasta.
+#'
+#' @param infasta Character/link: Path to input FASTA file.
+#' @param outfasta Character/link: Path to output shortened FASTA file.
+#' @param range Numeric vector of length 2 specifying the start and stop positions of the sequence to extract.
+#'
 #' @author Nicholas Hathaway
 #' @export
 shorten_fasta <- function(infasta, outfasta, range) {
@@ -342,10 +363,7 @@ shorten_fasta <- function(infasta, outfasta, range) {
 #' @param z a vector of DNA sequences in upper case character string format.
 #' @return a vector of DNA sequences as upper case character strings.
 #' @details This function accepts only DNA sequences in concatenated character
-#'   string format, see \code{\link[ape]{complement}} in the \code{\link[ape]{ape}}
-#'   package for "DNAbin" input objects, and \code{\link[seqinr]{comp}} in the
-#'   \code{\link[seqinr]{seqinr}} package for when the input object is a character
-#'   vector.
+#'   string format.
 #' @author Shaun Wilkinson
 #' @examples rc("TATTG")
 ################################################################################
@@ -378,9 +396,12 @@ rc <- function(z) {
 
 
 
-#' ColMax function
+#' colMax function
 #'
-#' From Stackoverflow. Does what you expect it to do.
+#' Computes the maximum value for each column of a matrix or data frame.
+#'
+#' @param data a matrix or data frame.
+#' @return a numeric vector containing the maximum value for each column of \code{data}.
 #' @export
 colMax <- function(data)
   sapply(data, max, na.rm = TRUE)

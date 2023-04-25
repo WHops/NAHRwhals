@@ -1,35 +1,42 @@
 
-#' rep.row
+#' repeat_row_in_matrix
 #' 
 #' Tiny helperfunction to repeat rows in a matrix
 #' @author  Wolfram Hoeps
 #' @export
-rep.row <- function(x, n) {
+repeat_row_in_matrix <- function(x, n) {
   matrix(rep(x, each = n), nrow = n)
 }
 
-#' rep.col
+#' repeat_col_in_matrix
 #' 
 #' Tiny helperfunction to repeat columns in a matrix
 #' @author  Wolfram Hoeps
 #' @export
-rep.col <- function(x, n) {
+repeat_col_in_matrix <- function(x, n) {
   matrix(rep(x, each = n), ncol = n, byrow = TRUE)
 }
 
-#' absmin
-#' 
-#' Tiny helperfuction to return the absolute minimum
-#' @author  Wolfram Hoeps
+#' Return the absolute minimum of a numeric vector
+#'
+#' This function returns the absolute minimum of a numeric vector.
+#'
+#' @param x A numeric vector.
+#' @return The absolute minimum value of `x`.
+#'
+#' @author Wolfram Hoeps
 #' @export
-absmin <- function(x) { x[which.min( abs(x) )]}
+absmin <- function(x) {
+  x[which.min(abs(x))]
+}
+
+
 
 #' calculate_estimated_aln_score
 #' 
 #' Quick & Dirty estimation of the score of a condensed dotplot. 
 #' Is used to filter out hopeless cases. 
 #' @param mat A matrix object representing a condensed dotplot
-#' @param output a percentage estimate for the score
 #' @author  Wolfram Hoeps
 #' @export
 calculate_estimated_aln_score <- function(mat){
@@ -49,18 +56,21 @@ calculate_estimated_aln_score <- function(mat){
 }
 
 
-#' calc_coarse_aln_score
+#' Calculate a coarse-grained alignment score for a condensed dotplot
 #'
-#' A function assigning an alignment score to a condensed dotplot.
-#' we are using a base-function from geeksforgeeks.org, which is
-#' essentially like needleman-wunsch.
-#' Since in our case the costs for traversing a node 'vertically' or
-#' 'horizontally' are different, we had to work around this a bit by
-#' adapting the algorithm.
+#' This function assigns an alignment score to a condensed dotplot using a variation of the needleman-wunsch algorithm. 
+#' It is adapted to work with a condensed dotplot in which the costs for traversing a node 'vertically' or 'horizontally' are different.
 #'
-#' @param mat matrix. Bitlocus / Gridmatrix.
-#' @author  geeksforgeeks.org; Wolfram Hoeps
+#' @param mat A matrix representing the condensed dotplot.
+#' @param old_way_of_calc Deprecated parameter.
+#' @param verbose If TRUE, the function prints the cost matrix and the percentage of unmatching base pairs along the alignments.
+#' @param forcecalc If TRUE, the function forces the calculation of the alignment score.
+#' @param orig_symm Deprecated parameter.
+#'
+#' @author Wolfram Hoeps, based on the geeksforgeeks.org base-function
 #' @export
+#' 
+#' @return The percentage of basepairs not crossed along alignments.
 calc_coarse_grained_aln_score <-
   function(mat,
            old_way_of_calc = F,
@@ -149,8 +159,8 @@ calc_coarse_grained_aln_score <-
     climb_up_cost = as.numeric(row.names(mat))
     walk_right_cost = as.numeric(colnames(mat))
     
-    cost_u = rep.col(climb_up_cost, dim(mat)[2])
-    cost_r = rep.row(walk_right_cost, dim(mat)[1])
+    cost_u = repeat_col_in_matrix(climb_up_cost, dim(mat)[2])
+    cost_r = repeat_row_in_matrix(walk_right_cost, dim(mat)[1])
     
     cumsum_u = cumsum(climb_up_cost)
     cumsum_r = cumsum(walk_right_cost)
@@ -206,8 +216,8 @@ calc_coarse_grained_aln_score <-
     cost_res[2:row, 2:col] = Inf
 
 
-    i_mat = rep.col(  ((1:row) / row), col)
-    j_mat = rep.row(  ((1:col) / col), row)
+    i_mat = repeat_col_in_matrix(  ((1:row) / row), col)
+    j_mat = repeat_row_in_matrix(  ((1:col) / col), row)
 
     middleval_mat = 1 - ((i_mat > (j_mat + calc_corridor_pct)) + 
                     (j_mat > (i_mat + calc_corridor_pct)))

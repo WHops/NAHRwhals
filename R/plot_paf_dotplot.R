@@ -1,14 +1,15 @@
+#' Add file-based highlights to a ggplot object
+#'
+#' @param gp A ggplot object to add file-based highlights to
+#' @param opt A list containing necessary options for the highlighting
+#' @return A ggplot object with file-based highlights added
 #' @export
-add_file_highlight <- function(gp, opt){
-  # if sdlink links to sd file (e.g. because it is a groundtruth):
-  # Format to bed (... why exactly?)
-  # sd_simple = sd_to_bed(opt$sdlink)
-  
-  # Load in the annotation file. Can be different formats.
+add_file_highlight <- function(gp, opt) {
+  # Load in the annotation file based on the specified format
   if (opt$hltype == 'bed') {
-    print('Taking a bedfile as highlighting input')
-    sd_simple = read.table(opt$hllink, sep = '\t')
-    colnames(sd_simple) =  c(
+    cat('Taking a bedfile as highlighting input\n')
+    highlight_data = read.table(opt$hllink, sep = '\t')
+    colnames(highlight_data) =  c(
       'chrom',
       'chromStart',
       'chromEnd',
@@ -20,17 +21,14 @@ add_file_highlight <- function(gp, opt){
       'fracMatch'
     )
   } else if (opt$hltype == 'sd') {
-    print('Taking an sdfile as highlighting input')
-    sd_simple = sd_to_bed(opt$hllink, outbedfile = NULL)
+    cat('Taking an sdfile as highlighting input\n')
+    highlight_data = sd_to_bed(opt$hllink, outbedfile = NULL)
   } else if (opt$hltype == 'paf') {
-    print('Taking a paffile as highlighting input')
-    print(opt$hltype)
-    sd_simple = paf_write_bed(opt$hllink, outsdbed_link = NULL)
+    cat('Taking a paffile as highlighting input\n')
+    highlight_data = paf_write_bed(opt$hllink, outsdbed_link = NULL)
     
-    # [W] playing around with colnames a bit here. We want to plot
-    # target on X, and query on Y. The paf format has
-    # first query, and then target.
-    colnames(sd_simple) = c(
+    # Modify column names to plot target on X-axis and query on Y-axis
+    colnames(highlight_data) = c(
       'otherName',
       'otherStart',
       'otherEnd',
@@ -42,12 +40,15 @@ add_file_highlight <- function(gp, opt){
       'id'
     )
   }
-  sd_simple = sd_simple[((sd_simple$chromEnd - sd_simple$chromStart) > opt$minsdlen),]
   
-  print(paste0('Printing a final thing with ', dim(sd_simple)[1], ' entries.'))
-  # Assumes sd_simple is in BED format - each SD only once. (?)
+  # Filter out rows with length less than the specified minimum length
+  highlight_data = highlight_data[((highlight_data$chromEnd - highlight_data$chromStart) > opt$minsdlen),]
+  
+  cat(paste0('Printing a final thing with ', nrow(highlight_data), ' entries.\n'))
+  
+  # Add geom_rect layers to the ggplot object for the file-based highlights
   gp = gp + ggplot2::geom_rect(
-    data = sd_simple,
+    data = highlight_data,
     ggplot2::aes(
       xmin = chromStart,
       xmax = chromEnd,
@@ -58,7 +59,7 @@ add_file_highlight <- function(gp, opt){
     fill = 'orange'
   ) +
     ggplot2::geom_rect(
-      data = sd_simple,
+      data = highlight_data,
       ggplot2::aes(
         xmin = chromStart,
         xmax = chromEnd,
@@ -69,7 +70,7 @@ add_file_highlight <- function(gp, opt){
       fill = 'grey'
     ) +
     ggplot2::geom_rect(
-      data = sd_simple,
+      data = highlight_data,
       ggplot2::aes(
         xmin = chromStart,
         xmax = otherEnd,
@@ -80,8 +81,8 @@ add_file_highlight <- function(gp, opt){
       fill = 'grey'
     )
   
+  return(gp)
 }
-
 
 
 
@@ -283,340 +284,341 @@ dotplotly_dotplot_return_aln <- function(opt) {
 
 
 
+#' Plot alignments
+#'
+#' @param alignments A data frame containing alignment information
+#' @param opt A list of options for the plot
 #' @export
-plot_alignments <-function(alignments, opt){
-  ### Plot ###
+plot_alignments <- function(alignments, opt) {
+  # Print x_end and x_start
   print(opt$x_end)
   print(opt$x_start)
+
+  # Calculate yTickMarks
   yTickMarks = tapply(alignments$queryEnd, alignments$queryID, max)
 
   # Make y name
-  stringlist = (lapply(stringr::str_split(as.character(alignments[,'queryID']), '_'), head, -1))
-  all_y_names = unlist(lapply(stringlist, paste, collapse=''))
-  common_y_name = names(which.max(table(all_y_names))) 
-    
-    
-  if (opt$aln_type_xx_yy_xy == 'xx'){
+  stringlist = (lapply(stringr::str_split(as.character(alignments[, 'queryID']), '_'), head, -1))
+  all_y_names = unlist(lapply(stringlist, paste, collapse = ''))
+  common_y_name = names(which.max(table(all_y_names)))
+
+  # Set samplename_x and samplename_y based on aln_type_xx_yy_xy
+  if (opt$aln_type_xx_yy_xy == 'xx') {
     samplename_x = params$samplename_x
     samplename_y = params$samplename_x
-  } else if (opt$aln_type_xx_yy_xy == 'yy'){
+  } else if (opt$aln_type_xx_yy_xy == 'yy') {
     samplename_x = params$samplename_y
     samplename_y = params$samplename_y
-  } else if (opt$aln_type_xx_yy_xy == 'xy'){
+  } else if (opt$aln_type_xx_yy_xy == 'xy') {
     samplename_x = params$samplename_x
     samplename_y = params$samplename_y
-  } 
+  }
 
-  gp = 
-    ggplot2::ggplot(alignments) +
-      ggplot2::geom_segment(
-        ggplot2::aes(
-          y = queryStart,
-          yend = queryEnd,
-          x = refStart,
-          xend = refEnd,
-          color = percentID,
-          #sign(queryEnd-queryStart),
-          text = sprintf(
-            'Query ID: %s<br>Query Start Pos: %s<br>Query End Pos: %s<br>Target ID: %s<br>Target Start Pos: %s<br>Target End Pos: %s<br>Length: %s kb',
-            queryID,
-            queryStart,
-            queryEnd,
-            refID,
-            refStart,
-            refEnd,
-            round(lenAln / 1000, 1)
-          )
+  # Create the ggplot object
+  gp = ggplot2::ggplot(alignments) +
+    ggplot2::geom_segment(
+      ggplot2::aes(
+        y = queryStart,
+        yend = queryEnd,
+        x = refStart,
+        xend = refEnd,
+        color = percentID,
+        text = sprintf(
+          'Query ID: %s<br>Query Start Pos: %s<br>Query End Pos: %s<br>Target ID: %s<br>Target Start Pos: %s<br>Target End Pos: %s<br>Length: %s kb',
+          queryID,
+          queryStart,
+          queryEnd,
+          refID,
+          refStart,
+          refEnd,
+          round(lenAln / 1000, 1)
         )
-      ) +
+      )
+    ) +
+    ggplot2::labs(color = "Percent ID",
+                  title = opt$input_filename) +
+    ggplot2::ylab(paste0('[', samplename_y, '] ', common_y_name)) +
+    ggplot2::xlab(paste0('[', samplename_x, '] ',
+                         paste0(translate_t2t_chr_to_readable(stringr::str_split(as.character(alignments$refID[1]), ':')[[1]][1]), ':', stringr::str_split(as.character(alignments$refID[1]), ':')[[1]][2]))) +
+    ggplot2::coord_fixed() +
+    ggplot2::scale_x_continuous(labels = scales::comma) +
+    ggplot2::scale_y_continuous(labels = scales::comma) +
+    ggplot2::labs(title = NULL) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(panel.grid.major = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank())
 
-      ggplot2::labs(color = "Percent ID",
-                    title = opt$input_filename) +
-    
-      ggplot2::ylab(paste0('[',
-                           samplename_y, 
-                           '] ', 
-                           common_y_name)) + 
-      ggplot2::xlab(paste0('[',
-                           samplename_x, 
-                           '] ', 
-                           paste0(translate_t2t_chr_to_readable(stringr::str_split(as.character(alignments$refID[1]), 
-                                                                                   ':')[[1]][1]), 
-                                  ':', 
-                                  stringr::str_split(as.character(alignments$refID[1]), ':')[[1]][2])
-                           
-                           )) +
-      #ggplot2::ylab(as.character(alignments$queryID[1])) +
-      ggplot2::coord_fixed() + 
-      ggplot2::scale_x_continuous(labels = scales::comma) +
-      ggplot2::scale_y_continuous(labels = scales::comma) +
-      # ggplot2::coord_fixed(
-      #   ratio = 1,
-      #   xlim = NULL,
-      #   ylim = NULL,
-      #   expand = TRUE,
-      #   clip = "on"
-      # ) +
-      ggplot2::labs(title=NULL) + 
-      ggplot2::theme_bw() + 
-      ggplot2::theme(panel.grid.major = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank())
-    
-  if ((!is.null(opt$x_start)) & (!is.null(opt$x_end))){
-    gp = gp + 
-      ggplot2::scale_x_continuous(labels = scales::comma, limits = c(0, opt$x_end-opt$x_start)) +
+  # Set x-axis scale and limits if x_start and x_end are not null
+  if ((!is.null(opt$x_start)) & (!is.null(opt$x_end))) {
+    gp = gp + ggplot2::scale_x_continuous(labels = scales::comma, limits = c(0, opt$x_end - opt$x_start)) +
       ggplot2::coord_fixed()
-    
   }
-  
+
   # If a link is given for highlighting
-  if (opt$hllink != F) {
-    
+  if (opt$hllink != FALSE) {
     gp = add_file_highlight(gp, opt)
-    
   }
-  
 
-
-  # If a (colored) highlight track is given...
-  if (opt$hltrack !=F){
+  # If a (colored) highlight track is given
+  if (opt$hltrack != FALSE) {
     gp = highlight_region(gp, opt)
-
   }
 
-  # If a (colored) block track is given...
-  if (opt$anntrack != F){
-
-    
+  # If a (colored) block track is given
+  if (opt$anntrack != FALSE) {
     gp = add_ann_blocks(gp, opt)
   }
-  
-
 
   return(gp)
-  
 }
 
 
-
+#' Add annotation blocks to a given ggplot object
+#'
+#' @param gp A ggplot object to add annotation blocks to
+#' @param opt A list containing necessary options for the annotation
+#' @return A ggplot object with annotation blocks added
 #' @export
-add_ann_blocks <- function(gp, opt){
-
-    max_ann_blocks = 1000
-    library(patchwork)
-    
-    annotation = read.table(opt$anntrack, header=F, comment.char="")
-    a_int = annotation[annotation$V1 == opt$x_seqname,]
-    
-    
-    a_int2 = a_int[(a_int$V2 > opt$x_start &
-                      a_int$V2 < opt$x_end) | # Start is Embedded
-                     (a_int$V3 > opt$x_start &
-                        a_int$V3 < opt$x_end) | # End is embedded
-                     (a_int$V2 < opt$x_start &
-                        a_int$V3 > opt$x_end)  ,] # Annotation spans whole region
-    
-    cond1 = dim(a_int2)[1] == 0
-    cond2 = dim(a_int2)[1] > max_ann_blocks
-    
-    if (cond1 | cond2){
-      return(gp)
-    }
-    
-    a_int2$plotstart = (a_int2$V2 - opt$x_start)
-    a_int2$plotend = (a_int2$V3 - opt$x_start)
-    a_int2$plotstart[a_int2$plotstart <= 0] = 1
-    a_int2$plotend[a_int2$plotend > (opt$x_end - opt$x_start)] = (opt$x_end - opt$x_start) - 1
-    
-    if (is.null(a_int2$V5)) {
-      a_int2$V5 = rainbow(dim(a_int2)[1])
-    }
-    
-    if (sum(!areColors(a_int2$V5)) > 0) {
-      a_int2[!areColors(a_int2$V5), ]$V5 = rainbow(length(a_int2[!areColors(a_int2$V5), ]$V5))
-    }
-    
-    h2 = ggplot2::ggplot(a_int2) + 
-         ggplot2::geom_rect(
-         ggplot2::aes(xmin= plotstart,
-                     xmax= plotend,
-                     ymin = 0,
-                     ymax = 1,#0 + runif(dim(a_int2)[1], 0.75, 1.25),
-                     fill = V5),
-        alpha = 0.5
-      ) + 
-      ggplot2::scale_fill_identity(guide="legend",breaks=a_int2$V5) + 
-
-      ggplot2::xlim(c(0,opt$x_end - opt$x_start)) + 
-      ggplot2::ylim(c(0,5)) +
-      ggplot2::theme_void() +
-      ggplot2::theme(legend.position='none',
-                     axis.ticks = ggplot2::element_blank(),
-                     panel.spacing.x = ggplot2::unit(1, "mm"),
-                     axis.title.x = ggplot2::element_blank(),
-                     strip.background.x = ggplot2::element_blank(),
-                     strip.text.x = ggplot2::element_blank())
-    
-    h2 = h2 + ggrepel::geom_text_repel(
-      ggplot2::aes(x= ((V3 - opt$x_start) + (V2 - opt$x_start)) / 2,y = 2, label=V4),
-      color=a_int2$V5,
-      max.overlaps=10)
-  labels = sub(".*/", "", c(opt$anntrack, 'plot'))
-  gp_out = 
-    (h2 + ggplot2::coord_fixed(ratio = (opt$x_start - opt$x_end) / 50)) + (gp + ggplot2::coord_fixed()) + 
-    patchwork::plot_layout(ncol=1)
+add_annotation_blocks <- function(gp, opt) {
+  max_annotation_blocks = 1000
   
-
+  # Read annotation data
+  annotation = read.table(opt$anntrack, header = FALSE, comment.char = "")
+  annotation_interval = annotation[annotation$V1 == opt$x_seqname,]
   
-  return(gp_out)
+  # Filter annotation data based on given options
+  filtered_annotation = annotation_interval[
+    (annotation_interval$V2 > opt$x_start & annotation_interval$V2 < opt$x_end) | # Start is embedded
+      (annotation_interval$V3 > opt$x_start & annotation_interval$V3 < opt$x_end) | # End is embedded
+      (annotation_interval$V2 < opt$x_start & annotation_interval$V3 > opt$x_end), # Annotation spans the whole region
+    ]
   
-  # Filter annotation to interesting loci
-  # annotation_int = 
+  no_annotations = nrow(filtered_annotation) == 0
+  too_many_annotations = nrow(filtered_annotation) > max_annotation_blocks
   
-}
-
-#' @export
-highlight_region <- function(gp, opt){
-  
-  #
-  stopifnot(class(opt$hltrack) == 'character')
-  annotation = read.table(opt$hltrack, header=F, comment.char="")
-  a_int = annotation[annotation$V1 == opt$x_seqname, ]
-  
-  a_int2 = a_int[(a_int$V2 > opt$x_start &
-                    a_int$V2 < opt$x_end) | # Start is Embedded
-                 (a_int$V3 > opt$x_start &
-                    a_int$V3 < opt$x_end) | # End is embedded
-                 (a_int$V2 < opt$x_start &
-                    a_int$V3 > opt$x_end)  ,] # Annotation spans whole region
-  
-  if (dim(a_int2)[1] == 0){
+  if (no_annotations | too_many_annotations) {
     return(gp)
   }
-  if (is.null(a_int2$V5)) {
-    a_int2$V5 = rainbow(dim(a_int2)[1])
+  
+  # Calculate start and end positions for the plot
+  filtered_annotation$plot_start = (filtered_annotation$V2 - opt$x_start)
+  filtered_annotation$plot_end = (filtered_annotation$V3 - opt$x_start)
+  filtered_annotation$plot_start[filtered_annotation$plot_start <= 0] = 1
+  filtered_annotation$plot_end[filtered_annotation$plot_end > (opt$x_end - opt$x_start)] = (opt$x_end - opt$x_start) - 1
+  
+  if (is.null(filtered_annotation$V5)) {
+    filtered_annotation$V5 = rainbow(nrow(filtered_annotation))
   }
   
-  if (sum(!areColors(a_int2$V5)) > 0) {
-    a_int2[!areColors(a_int2$V5), ]$V5 = rainbow(length(a_int2[!areColors(a_int2$V5), ]$V5))
+  if (sum(!areColors(filtered_annotation$V5)) > 0) {
+    filtered_annotation[!areColors(filtered_annotation$V5), ]$V5 = rainbow(length(filtered_annotation[!areColors(filtered_annotation$V5), ]$V5))
   }
   
-  a_int2$plotstart = (a_int2$V2 - opt$x_start)
-  a_int2$plotend = (a_int2$V3 - opt$x_start)
-  a_int2$plotstart[a_int2$plotstart <= 0] = 1
-  a_int2$plotend[a_int2$plotend > (opt$x_end - opt$x_start)] = (opt$x_end - opt$x_start) - 1
+  # Create the annotation plot
+  annotation_plot = ggplot2::ggplot(filtered_annotation) +
+    ggplot2::geom_rect(
+      ggplot2::aes(xmin = plot_start,
+                   xmax = plot_end,
+                   ymin = 0,
+                   ymax = 1,
+                   fill = V5),
+      alpha = 0.5
+    ) +
+    ggplot2::scale_fill_identity(guide = "legend", breaks = filtered_annotation$V5) +
+    ggplot2::xlim(c(0, opt$x_end - opt$x_start)) +
+    ggplot2::ylim(c(0, 5)) +
+    ggplot2::theme_void() +
+    ggplot2::theme(legend.position = 'none',
+                   axis.ticks = ggplot2::element_blank(),
+                   panel.spacing.x = ggplot2::unit(1, "mm"),
+                   axis.title.x = ggplot2::element_blank(),
+                   strip.background.x = ggplot2::element_blank(),
+                   strip.text.x = ggplot2::element_blank())
   
+  # Add text labels to the annotation plot
+  annotation_plot = annotation_plot + ggrepel::geom_text_repel(
+    ggplot2::aes(x = ((V3 - opt$x_start) + (V2 - opt$x_start)) / 2, y = 2, label = V4),
+    color = filtered_annotation$V5,
+    max.overlaps = 10
+  )
   
+  labels = sub(".*/", "", c(opt$anntrack, 'plot'))
+  
+  # Combine the annotation plot with the input ggplot object (gp) using patchwork
+  gp_out = (annotation_plot + ggplot2::coord_fixed(ratio = (opt$x_start - opt$x_end) / 50)) +
+    (gp + ggplot2::coord_fixed()) +
+    patchwork::plot_layout(ncol = 1)
+  
+  return(gp_out)
+}
+
+
+#' Highlight a specific region in a given ggplot object
+#'
+#' @param gp A ggplot object to highlight a specific region in
+#' @param opt A list containing necessary options for the highlighting
+#' @return A ggplot object with the specified region highlighted
+#' @export
+highlight_region <- function(gp, opt) {
+  # Check if the hltrack option is of the required class
+  stopifnot(class(opt$hltrack) == 'character')
+  
+  # Read annotation data
+  annotation = read.table(opt$hltrack, header = FALSE, comment.char = "")
+  annotation_interval = annotation[annotation$V1 == opt$x_seqname, ]
+  
+  # Filter annotation data based on given options
+  filtered_annotation = annotation_interval[
+    (annotation_interval$V2 > opt$x_start & annotation_interval$V2 < opt$x_end) | # Start is embedded
+      (annotation_interval$V3 > opt$x_start & annotation_interval$V3 < opt$x_end) | # End is embedded
+      (annotation_interval$V2 < opt$x_start & annotation_interval$V3 > opt$x_end), # Annotation spans the whole region
+    ]
+  
+  # Check if there are no annotations
+  if (nrow(filtered_annotation) == 0) {
+    return(gp)
+  }
+  
+  if (is.null(filtered_annotation$V5)) {
+    filtered_annotation$V5 = rainbow(nrow(filtered_annotation))
+  }
+  
+  if (sum(!areColors(filtered_annotation$V5)) > 0) {
+    filtered_annotation[!areColors(filtered_annotation$V5), ]$V5 = rainbow(length(filtered_annotation[!areColors(filtered_annotation$V5), ]$V5))
+  }
+  
+  # Calculate start and end positions for the plot
+  filtered_annotation$plot_start = (filtered_annotation$V2 - opt$x_start)
+  filtered_annotation$plot_end = (filtered_annotation$V3 - opt$x_start)
+  filtered_annotation$plot_start[filtered_annotation$plot_start <= 0] = 1
+  filtered_annotation$plot_end[filtered_annotation$plot_end > (opt$x_end - opt$x_start)] = (opt$x_end - opt$x_start) - 1
+  
+  # Add a geom_rect layer to highlight the specified region in the ggplot object
   gp = gp + ggplot2::geom_rect(
-    data = a_int2,
+    data = filtered_annotation,
     ggplot2::aes(
-      xmin = plotstart,
-      xmax = plotend,
+      xmin = plot_start,
+      xmax = plot_end,
       ymin = -0.5,
       ymax = Inf,
       fill = V5
     ),
     alpha = 0.5
-  ) + ggplot2::scale_fill_identity(guide = "legend", breaks = a_int2$V5) +
-      ggplot2::theme(legend.position = 'none')
-  
+  ) + ggplot2::scale_fill_identity(guide = "legend", breaks = filtered_annotation$V5) +
+    ggplot2::theme(legend.position = 'none')
   
   return(gp)
-  
-  
 }
 
+#' Check if given character vector elements are valid color representations
+#'
+#' This function checks if the given input is a valid color name, hex code or RGB value.
+#'
+#' @param x A character vector of color names, hex codes or RGB values.
+#' @return A logical vector of the same length as `x`, indicating whether each element is a valid color representation.
+#'
+#' @details The function replaces missing values with 'none' and tries to convert each element to an RGB matrix using `col2rgb`.
+#' If successful, the element is considered a valid color representation.
+#'
+#' @examples
+#' areColors(c("red", "#FF0000", "rgb(255, 0, 0)", "blue", "invalid"))
+#' areColors(c("green", "#00FF00", "rgb(0, 255, 0)", NA))
+#'
 #' @export
 areColors <- function(x) {
-  x[is.na(x)] = 'none'
+  x[is.na(x)] <- 'none'
   sapply(x, function(X) {
-    tryCatch(is.matrix(col2rgb(X)), 
-             error = function(e) FALSE)
+    tryCatch(is.matrix(col2rgb(X)), error = function(e) FALSE)
   })
 }
 
 
 
-
-#' Wrapperfunction for turning a paf (and an SD highlight annotation) into a dotplot pdf.
+#' @title Generate a Dotplot from a PAF File with Optional SD Highlight Annotation
+#' @description This function generates a dotplot from a PAF file and saves it as a PDF.
+#' It can also include an optional SD highlight annotation file for enhanced visualization.
 #'
-#' @description T
-#'
-#' @param inpaf_link [character/link] a link to the paf to be plotted
-#' @param outplot_link [character/link] a link to where the output pdf will be saved
-#' @param min_align not sure. set to 11, keep it there.
-#' @param min_query_aln not sure. set to 11, keep it there.
-#' @param keep_ref number of sequences to keep or something. Dont touch.
-#' @param similarity [T/F] indicate sequence similarity by color code (default: T)
-#' @param h_lines [T/F] plot horizontal lines (default: T)
-#' @param interactive [T/F] unsure. Dotplotly? Untested, keep at F.
-#' @param plot_size [numeric] plot size in inch.
-#' @param on_target [T/F] dont remember. default: T
-#' @param v [T/F] unsure. default: F
-#' @param hllink [character/link] link to an SD annotation file (bed, tsv or paf) to include as
-#' highlights in the plot.
-#' @param hltype [character] filetype of hllink. Can be 'NULL', 'bed', 'tsv', 'paf'.
-#' @return Nothing, but writes a pdf with a dotplot.
-#'
+#' @param inpaf_link Character/link: Path to the PAF file to be plotted.
+#' @param outplot_link Character/link: Path to the output dotplot PDF to be saved.
+#' @param min_align Numeric: Minimum alignment length (default: 11).
+#' @param min_query_aln Numeric: Minimum query alignment length (default: 11).
+#' @param keep_ref Numeric: Number of sequences to keep for plotting.
+#' @param similarity Logical: Indicate sequence similarity by color code (default: TRUE).
+#' @param h_lines Logical: Plot horizontal lines (default: TRUE).
+#' @param interactive Logical: Use interactive dotplot (Dotplotly)? Untested, keep at FALSE.
+#' @param plot_size Numeric: Plot size in inches.
+#' @param on_target Logical: Unknown parameter, default: TRUE.
+#' @param v Logical: Unknown parameter, default: FALSE.
+#' @param hllink Character/link: Path to an SD annotation file (BED, TSV, or PAF) to include as highlights in the plot.
+#' @param hltype Character: Filetype of hllink. Can be 'NULL', 'bed', 'tsv', 'paf'.
+#' @param hlstart Numeric: Optional start position for highlights.
+#' @param hlend Numeric: Optional end position for highlights.
+#' @param save Logical: Save the dotplot to the specified output path (default: TRUE).
+#' @param minsdlen Numeric: Minimum length for SD annotations (default: 5000).
+#' @param anntrack Logical: Include annotation tracks (default: FALSE).
+#' @param x_seqname Character: Sequence name for X-axis.
+#' @param x_start Numeric: Start position for X-axis.
+#' @param x_end Numeric: End position for X-axis.
+#' @param hltrack Logical: Include highlight track (default: NULL).
+#' @param aln_type_xx_yy_xy Character: Alignment type (default: 'xy').
+#' @return The generated dotplot. If 'save' is TRUE, the dotplot is saved as a PDF.
 #' @author Wolfram Höps
 #' @export
-pafdotplot_make <-
-  function(inpaf_link,
-           outplot_link,
-           min_align = 11,
-           min_query_aln = 11,
-           keep_ref = 10000,
-           similarity = T,
-           h_lines = T,
-           interactive = F,
-           plot_size = 10,
-           on_target = T,
-           v = F,
-           hllink = F,
-           hltype = F,
-           hlstart = NULL,
-           hlend = NULL,
-           save = T,
-           minsdlen = 5000,
-           anntrack = F,
-           x_seqname = NULL,
-           x_start = NULL,
-           x_end = NULL,
-           hltrack = NULL,
-           aln_type_xx_yy_xy = 'xy') {
-    
-    # I deserve a lifelong ban from computers for this :)
+pafdotplot_make <- function(inpaf_link,
+                            outplot_link,
+                            min_align = 11,
+                            min_query_aln = 11,
+                            keep_ref = 10000,
+                            similarity = TRUE,
+                            h_lines = TRUE,
+                            interactive = FALSE,
+                            plot_size = 10,
+                            on_target = TRUE,
+                            v = FALSE,
+                            hllink = FALSE,
+                            hltype = FALSE,
+                            hlstart = NULL,
+                            hlend = NULL,
+                            save = TRUE,
+                            minsdlen = 5000,
+                            anntrack = FALSE,
+                            x_seqname = NULL,
+                            x_start = NULL,
+                            x_end = NULL,
+                            hltrack = NULL,
+                            aln_type_xx_yy_xy = 'xy') {
+  
+  options <- list(
+    input_filename = inpaf_link,
+    output_filename = outplot_link,
+    min_align = min_align,
+    min_query_aln = min_query_aln,
+    keep_ref = keep_ref,
+    similarity = similarity,
+    h_lines = h_lines,
+    interactive = interactive,
+    plot_size = plot_size,
+    on_target = on_target,
+    v = v,
+    hllink = hllink,
+    hltype = hltype,
+    hlstart = hlstart,
+    hlend = hlend,
+    save = save,
+    minsdlen = minsdlen,
+    x_seqname = x_seqname,
+    x_start = x_start,
+    x_end = x_end,
+    anntrack = anntrack,
+    hltrack = hltrack,
+    aln_type_xx_yy_xy = aln_type_xx_yy_xy
+  )
+  # Obtain alignments using the provided options
+  alignments = dotplotly_dotplot_return_aln(opt)
+  # Generate the dotplot from the alignments
+  plot = plot_alignments(alignments, opt)
 
-    opt = list(
-      input_filename = inpaf_link,
-      output_filename = outplot_link,
-      min_align = min_align,
-      min_query_aln = min_query_aln,
-      keep_ref = keep_ref,
-      similarity = similarity,
-      h_lines = h_lines,
-      interactive = interactive,
-      plot_size = plot_size,
-      on_target = on_target,
-      v = v,
-      hllink = hllink,
-      hltype = hltype,
-      hlstart = hlstart,
-      hlend = hlend,
-      save = save,
-      minsdlen = minsdlen,
-      x_seqname = x_seqname,
-      x_start = x_start,
-      x_end = x_end,
-      anntrack = anntrack,
-      hltrack = hltrack,
-      aln_type_xx_yy_xy = aln_type_xx_yy_xy
-    )
-    
-    alignments = dotplotly_dotplot_return_aln(opt)
-    plot = plot_alignments(alignments, opt)
-    return(plot)
-  }
-
+  return(plot)
+                            }
 
 #' plot_paf
 #' This is another, MUCH simplified version of plotting a paf. 

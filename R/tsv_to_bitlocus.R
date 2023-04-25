@@ -1,11 +1,15 @@
-#' load_and_prep_paf_for_gridplot_transform
-#' Called (exclusively) by wrapper_paf_to_bitlocus
-#' Loads and prepares the input paf. Preparations:
-#' Length filter
-#' Start/Endpoint rounding ('compression')
-#' Slope = 1
-#' Transform start / end in negative alignments
-#' Append qmin qmax columns.
+#' Load and Prepare PAF File for Gridplot Transformation
+#'
+#' This function loads and prepares the input PAF file. The preparations include filtering alignments by length, rounding start and endpoint to the nearest multiple of the compression factor, enforcing slope = 1 for all alignments, and transforming start/end in negative alignments. Finally, it adds qlow and qhigh columns to the PAF file.
+#'
+#' @param inpaf Character/link: Path to the input PAF file.
+#' @param minlen Numeric: Minimum length of alignments to keep.
+#' @param compression Numeric: Compression factor to round the start and endpoint to the nearest multiple of the compression factor.
+#' @param quadrantsize Numeric: Size of the quadrant used to group alignments.
+#' @param inparam_chunklen Numeric: Length of sequence chunks.
+#'
+#' @return The modified PAF file.
+#'
 #' @author Wolfram Hoeps
 #' @export
 load_and_prep_paf_for_gridplot_transform <-
@@ -105,29 +109,32 @@ load_and_prep_paf_for_gridplot_transform <-
   }
 
 
-#' bounce point. Algorithm for making the grid.
-#' Description TBD.
+#' Calculate the "bounced" points of a vector given a point
+#'
+#' This function calculates the "bounced" points of a vector given a point, where the bounced points are the points where the vector intersects the x- and y-axes.
+#' The function returns a data frame containing the bounced points.
+#'
+#' @param vectors A data frame containing the start and end points of each vector, as well as slope and intercept information.
+#' @param point A numeric vector containing the x- and y-coordinates of the point.
+#'
+#' @return A data frame containing the bounced points of the vector.
+#'
 #' @author Wolfram Hoeps
 #' @export
 bounce_point <- function(vectors, point) {
   newpoints = data.frame(matrix(ncol = 2, nrow = 0))
   newpoints[1, ] = point
   colnames(newpoints) = c('x', 'y')
-  
 
-  
   if (!(point[1] %in% x_orig_visited)){
-    
-    # vertical overlaps
+    # Check for vertical overlaps
     y_overlap_vecs = vectors[((vectors$tstart < as.numeric(point[1])) &
                                 (vectors$tend > as.numeric(point[1]))),]
-    
     # If there is overlap, calculate overlap of point with every overlapper
     if (dim(y_overlap_vecs)[1] > 0) {
       for (i in 1:dim(y_overlap_vecs)[1]) {
         newpoints = rbind(newpoints, 
                           data.frame(x=point[1], y=((y_overlap_vecs$slope) * as.numeric(point[1])) + y_overlap_vecs$y_intercept))
-        #y_i = (point[1] + vec$x_intercept) / vec$slope_inv
       }
     }
     
@@ -135,32 +142,42 @@ bounce_point <- function(vectors, point) {
   }
   
   if (!(point[2] %in% y_orig_visited)){
-    
-  # horizontal overlaps
-  x_overlap_vecs = vectors[((vectors$qlow < as.numeric(point[2])) &
+    # Check for horizontal overlaps
+    x_overlap_vecs = vectors[((vectors$qlow < as.numeric(point[2])) &
                               (vectors$qhigh > as.numeric(point[2]))),]
-  
-  if (dim(x_overlap_vecs)[1] > 0) {
-    for (i in 1:dim(x_overlap_vecs)[1]) {
-      newpoints = rbind(newpoints,
+    # If there is overlap, calculate overlap of point with every overlapper
+    if (dim(x_overlap_vecs)[1] > 0) {
+      for (i in 1:dim(x_overlap_vecs)[1]) {
+        newpoints = rbind(newpoints,
                         data.frame(x=(point[2] - x_overlap_vecs$y_intercept) / x_overlap_vecs$slope, y=point[2] )
-      )
+        )
+      }
     }
-  }
-  
+    
     y_orig_visited <<- c(y_orig_visited, point[2])
-  
   }
-  
-  
-  
   
   return(newpoints)
 }
 
-#' wrapper_paf_to_bitlocus
-#' @author Wolfram Hoeps
+#' Generate a bitlocus plot from a PAF file.
 #' 
+#' This function takes a PAF file, and generates a bitlocus plot from it. 
+#' The generated bitlocus plot is based on a grid of x and y coordinates that are 
+#' calculated from the PAF file. The x and y coordinates of each alignment in the PAF 
+#' file are then calculated, and the corresponding positions in the grid are marked 
+#' with a "1". The resulting grid is then plotted as a bitlocus plot.
+#'
+#' @param inpaf A PAF file to be plotted.
+#' @param compression_params A list of parameters used to control the compression of the bitlocus plot.
+#' @param gridplot_save If set to TRUE, the resulting bitlocus plot is saved to a file.
+#' @param pregridplot_save If set to TRUE, the resulting pre-bitlocus plot is saved to a file.
+#' @param pregridplot_nolines If set to TRUE, the resulting pre-bitlocus plot is displayed without grid lines.
+#' @param saveplot If set to TRUE, the resulting bitlocus plot is saved to a file.
+#' 
+#' @return A list containing the x and y coordinates of the grid, and the coordinates of the alignments.
+#' 
+#' @author Wolfram Hoeps
 #' @export
 wrapper_paf_to_bitlocus <-
   function(inpaf,
@@ -305,7 +322,19 @@ wrapper_paf_to_bitlocus <-
   }
 
 
-#' enforce_slope_one
+#' Ensure that the slope of each alignment is equal to one.
+#' 
+#' This function takes a data frame of alignments, and ensures that the slope of each 
+#' alignment is equal to one. This is done by first calculating the length of the 
+#' alignment along the query and target sequences, and then setting the length along 
+#' the query and target sequences to be equal to the negative of the maximum of these 
+#' two lengths. The resulting alignment is then returned, with the length of the alignment 
+#' along the query and target sequences, and the squaresize, removed.
+#' 
+#' @param df A data frame containing alignments.
+#' 
+#' @return A modified data frame containing alignments, with the slope of each alignment equal to one.
+#' 
 #' @author Wolfram Hoeps
 #' @export
 enforce_slope_one <- function(df) {
@@ -327,7 +356,19 @@ enforce_slope_one <- function(df) {
 }
 
 
-#' make_xy_grid
+#' Generate a grid of x and y coordinates for a bitlocus plot.
+#' 
+#' This function takes a PAF file, and generates a grid of x and y coordinates for a 
+#' bitlocus plot. The grid is generated by first bouncing the start and end points of 
+#' each alignment in the PAF file, and then bouncing the resulting points a few more 
+#' times. The bounced points are then collected, and the unique points are returned 
+#' as the x and y coordinates of the grid.
+#' 
+#' @param paf a dataframe of alignments which is in paf-like format. 
+#' @param n_additional_bounces The number of additional times the points are bounced.
+#' 
+#' @return A list containing the x and y coordinates of the grid, and a logical indicating whether the grid was successfully generated or not.
+#' 
 #' @author Wolfram Hoeps
 #' @export
 make_xy_grid <- function(paf, n_additional_bounces = 10) {
@@ -443,41 +484,55 @@ make_xy_grid <- function(paf, n_additional_bounces = 10) {
   return(list(gridlines.x, gridlines.y, F))
 }
 
+#' Debugging function for plotting points and PAF data
+#'
+#' This function takes a data frame of alignments in .paf-like format, and a data frame 
+#' of points, and generates a plot to help with debugging.
+#' 
+#' @param paf A data frame of alignments in .paf-like format.
+#' @param points_overall A data frame of points.
+#' 
 #' @export
 plot_helper_debug <- function(paf, points_overall){
-  
-  pp=plot_paf(paf, unique(round(sort(c(
-    0, points_overall$x
-  )))), unique(round(sort(c(
-    0, points_overall$y
-  )))), linewidth = 0.5)
+  pp = plot_paf(
+    paf,
+    unique(round(sort(c(0, points_overall$x)))),
+    unique(round(sort(c(0, points_overall$y)))),
+    linewidth = 0.5
+  )
   print(pp)
-  
 }
 
 
-#' add_slope_intercept_info
-
+#' Add slope and intercept information to a data frame of vectors
+#'
+#' This function calculates the slope, inverse slope, y-intercept, and x-intercept of a vector given its start and end points.
+#' The resulting slope and intercept values are added to the input data frame as additional columns.
+#'
+#' @param vector_df A data frame containing the start and end points of each vector.
+#' @param xstart The name of the column in `vector_df` containing the x-coordinate of the start point.
+#' @param xend The name of the column in `vector_df` containing the x-coordinate of the end point.
+#' @param ystart The name of the column in `vector_df` containing the y-coordinate of the start point.
+#' @param yend The name of the column in `vector_df` containing the y-coordinate of the end point.
+#'
+#' @return A data frame containing the slope, inverse slope, y-intercept, and x-intercept of each vector.
+#'
 #' @author Wolfram Hoeps
 #' @export
-add_slope_intercept_info <- function(vector_df,
-                                     xstart = 'tstart',
-                                     xend = 'tend',
-                                     ystart = 'qstart',
-                                     yend = 'qend') {
+add_slope_intercept_info <- function(vector_df, xstart = 'tstart', xend = 'tend', ystart = 'qstart', yend = 'qend') {
   dx = vector_df[xend] - vector_df[xstart]
   dy = vector_df[yend] - vector_df[ystart]
   
   # Slope
   m = dy / dx
   
-  # m_inv explicitly
+  # Inverse slope
   m_inv = 1 / m
   
-  # y = mx + c    -->    c = y - mx
+  # y-intercept
   y_intercept = vector_df[ystart] - (m * vector_df[xstart])
   
-  # x intercept
+  # x-intercept
   x_intercept = y_intercept / m
   
   slope_df = data.frame(m, m_inv, y_intercept, x_intercept)

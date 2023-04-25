@@ -2,15 +2,16 @@
 #'
 #' Generate integer x,y points between vertices by Bresenham's algorithm.
 #'
-#' @param x,y the x and y coordinates a points to be joined where y can
-#'  can be missing and the argument x is processed by \code{\link{xy.coords}}.
-#' @param close \code{logical} value indicating if the points form a closed
-#'  polygon (without duplicating the first and last points)
+#' @param x numeric vector of the x coordinates of the points to be joined.
+#' @param y numeric vector of the y coordinates of the points to be joined.
+#' @param gridpoints_x numeric vector of the x coordinates of the grid points.
+#' @param gridpoints_y numeric vector of the y coordinates of the grid points.
+#' @param close logical value indicating if the points form a closed polygon.
+#' @param debug logical value indicating whether to enter debugging mode or not.
 #'
-#' @return
-#'
-#' A list of length 2 with \code{integer} \code{x,y} coordinates connecting
+#' @return A list of length 2 with \code{integer} \code{x,y} coordinates connecting
 #'   the vertices
+#'
 #' @examples
 #' # simple line
 #'   bresenham(x = c(1, 4), y = c(1, 12))
@@ -47,7 +48,7 @@ bresenham <-
     
     # These are coordinates.
     # We adjust the ends to cling to the nearest corner.
-    v$x = c(gridpoints_x[abs(gridpoints_x - x[1]) == min(abs(gridpoints_x - x[1]))],
+    v$x = c(gridpoints_x[abs(gridpoints_x - x[1]) == min(abs(gridpoin     ts_x - x[1]))],
             gridpoints_x[abs(gridpoints_x - x[2]) == min(abs(gridpoints_x - x[2]))])
     v$y = c(gridpoints_y[abs(gridpoints_y - y[1]) == min(abs(gridpoints_y - y[1]))],
             gridpoints_y[abs(gridpoints_y - y[2]) == min(abs(gridpoints_y - y[2]))])

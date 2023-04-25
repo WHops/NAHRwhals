@@ -6,7 +6,7 @@
 #' 25% edge of the plot (assuming that SVs are mainly confined to the middle),
 #' and determine if this outer part has more positive or negative alignments. 
 #' If there are more negative, then we flip the y-axis. 
-#' @param bitl_f a gridmatrix / bitlocus. 
+#' @param bitl a gridmatrix / bitlocus. 
 #' @return the same gridmatrix, flipped or unflipped. 
 #' @author  Wolfram Hoeps
 #' @export

@@ -1,9 +1,16 @@
 #' write_x_y_sequences
 #' 
-#' This was previously part of the wrapper_aln_and_analyse. 
-#' However, over time, this grew into more and more complex code, 
-#' So it is for sure worth its own function by now. 
+#' This function extracts subsequence of genome_x_fa and genome_y_fa 
+#' based on the given coordinates and parameters. It also converts 
+#' the coordinates from genome_x_fa to genome_y_fa using a liftover_coarse 
+#' function. The function returns the new start and end coordinates 
+#' of the regions on genome_x_fa and genome_y_fa as a list. If extract_only 
+#' is set to true, it only extracts the subsequence of genome_x_fa and 
+#' returns the new start and end coordinates of the subsequence
+#' 
 #' @export
+#' @author Wolfram Höps
+#' 
 write_x_y_sequences <- function(seqname_x, 
                                 start_x_pad, 
                                 end_x_pad, 

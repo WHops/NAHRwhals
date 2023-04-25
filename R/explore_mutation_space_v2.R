@@ -1,14 +1,17 @@
-# Whoeps, 24th Nov 2022
-# This file harbours second-level wrapper functions. The 
-# solving 'workhorse' fonctions dfs and dfs_utils are found 
-# in a seaprate script, dfs_utils.R
-
-
-
 #' Alternative wrapper for calling dfs several times.  
-#' THis function is called as a standard.
-#' TODO: description
+#' 
+#' This function runs a tree search with varying depths to find the best mutation for the given bit locus. 
+#' If the dotplot is unreasonably large, it reduces the search depth to prevent long runtimes. 
+#' If a conclusion is not found, it runs a steepest descent bonus round. 
+#' 
+#' @param bitlocus A bit locus to be worked on
+#' @param maxdepth_input An integer indicating the maximum search depth
+#' @param earlystop A number indicating the maximum evaluations
+#' 
+#' @return A data frame that stores the search results
+#' 
 #' @export
+#' @TODO Add more detailed description
 solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
   # 
   # browser()

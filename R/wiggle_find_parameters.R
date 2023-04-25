@@ -1,7 +1,30 @@
 #' Find parameters by wiggling.
-#' This produces unstable and unpredictable results; use is discouraged but
-#' we are leaving the function alive for now. Is called when compression_params$auto_find is set to True (default: False)
+#' 
+#' Finds optimal parameters for compression by performing n tests for each candidate 
+#' minlen and compression value in a range defined by the input parameters. The 
+#' optimal values are the ones that yield the lowest collapse penalty and are 
+#' successful (no incongruencies), and the size of the grid is not larger than the
+#' value specified by the max_size_col_plus_rows parameter. If the function cannot 
+#' find at least 2 viable grids, it raises the criteria (max_n_alns and 
+#' max_size_col_plus_rows) and retries up to n rounds. If the function cannot find 
+#' any viable grids after n rounds, it returns the suboptimal values with the 
+#' smallest number of rows and columns. 
 #'
+#' @param inpaf a string representing the path to a PAF file.
+#' @param compression_params a list containing parameters for the compression.
+#'   - mode: character string, either "precise" or "compressed".
+#'   - baseline_log_minsize_min: integer representing the minimum value of the log2
+#'     of the candidate minlen values.
+#'   - baseline_log_minsize_max: integer representing the maximum value of the log2
+#'     of the candidate minlen values.
+#'   - n_tests: integer representing the number of tests to run for each candidate
+#'     minlen and compression value.
+#'   - max_n_alns: integer representing the maximum number of alignments that 
+#'     should be included in a grid.
+#'   - max_size_col_plus_rows: integer representing the maximum number of columns 
+#'     plus the maximum number of rows that a grid should have.
+#' @return a list with the optimal minlen and compression values.
+#' @export
 #' @export
 find_minlen_compression_params_wiggle <-
   function(inpaf,
@@ -97,7 +120,28 @@ find_minlen_compression_params_wiggle <-
 
 
 
-#' TODO: describe
+#' Runs n_tests tests for each candidate minlen and compression value in a range
+#' defined by the input parameters. Returns a dataframe with the results of each 
+#' test, including the minlen, compression, success (TRUE if no incongruencies, 
+#' FALSE otherwise), the number of alignments in the paf file, the number of rows 
+#' plus the number of columns of the resulting grid, and the collapse penalty. 
+#'
+#' @param inpaf a string representing the path to a PAF file.
+#' @param min_ integer representing the minimum value of the log2 of the candidate
+#'   minlen values.
+#' @param max_ integer representing the maximum value of the log2 of the candidate
+#'   minlen values.
+#' @param res a dataframe to append the results of each test to.
+#' @param n_tests integer representing the number of tests to run for each candidate
+#'   minlen and compression value.
+#' @param n_max_alns integer representing the maximum number of alignments that 
+#'   should be included in a grid.
+#' @param max_size_col_plus_rows integer representing the maximum number of columns 
+#'   plus the maximum number of rows that a grid should have.
+#' @return a dataframe with the results of each test, including the minlen, 
+#'   compression, success (TRUE if no incongruencies, FALSE otherwise), the number 
+#'   of alignments in the paf file, the number of rows plus the number of columns 
+#'   of the resulting grid, and the collapse penalty.
 #' @export
 run_n_tests <-
   function(inpaf,

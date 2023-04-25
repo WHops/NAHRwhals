@@ -1,5 +1,15 @@
-# Save logfile
-#' I apologize for the existence of this terrible function. 
+#' Save results to logfile.
+#'
+#' @description
+#' This function saves the results and parameters to a log file, in a tab-separated format.
+#'
+#' @param log A named list containing the metadata of the region analyzed, including the chromosome, start and end positions, the name of the sample, the width of the original region, the padding added to the x-axis, and several binary flags indicating whether certain tests were performed or not.
+#' @param res A data frame containing the results of the analysis, including the evaluated score for each mutation and its position.
+#' @param logfile The file path to which the results should be appended.
+#' @param params A named list containing the parameters used for the analysis, including the name of the chromosome, the start and end positions, the name of the sample, the compression factor, and the mutations that were simulated and tested.
+#' @param alt_x A logical indicating whether to include the alternative x-axis coordinates in the log file.
+#'
+#' @author Wolfram Hoeps
 #' @export
 save_to_logfile <- function(log, res, logfile, params, alt_x = F){
   res_ref = res[res$mut1=='ref','eval']
@@ -116,7 +126,14 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F){
 }
 
 
-#' init_log_with_def_values
+#' Initialize log with default values.
+#'
+#' @description
+#' This function initializes a named list with the default values for the flags and counters used in the analysis.
+#'
+#' @return A named list containing the initialized flags and counters.
+#'
+#' @author Wolfram Hoeps
 #' @export
 init_log_with_def_values <- function(){
   
