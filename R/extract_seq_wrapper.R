@@ -10,7 +10,6 @@
 #' 
 #' @author Wolfram Höps
 #' @export
-#' @TODO Add more detailed description
 extract_sequence_wrapper <- function(params, outlinks){
 
   # If we have a pre-computed coarse alignment, then we can use this to find out 

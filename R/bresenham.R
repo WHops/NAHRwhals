@@ -12,15 +12,6 @@
 #' @return A list of length 2 with \code{integer} \code{x,y} coordinates connecting
 #'   the vertices
 #'
-#' @examples
-#' # simple line
-#'   bresenham(x = c(1, 4), y = c(1, 12))
-#' # closed and open polygon
-#'   verts <- list(x = c(1, 9, 6, 4, 2), y = c(9, 9, 2, 3, 1))
-#'   plot(verts, type = "l", ylim = c(0, 10), xlim = c(0, 10))
-#'   points(bresenham(verts)) # closed
-#'   points(bresenham(verts, close = FALSE), col = 2, pch = 16)
-#'
 #' @export
 #'
 bresenham <-
@@ -48,7 +39,7 @@ bresenham <-
     
     # These are coordinates.
     # We adjust the ends to cling to the nearest corner.
-    v$x = c(gridpoints_x[abs(gridpoints_x - x[1]) == min(abs(gridpoin     ts_x - x[1]))],
+    v$x = c(gridpoints_x[abs(gridpoints_x - x[1]) == min(abs(gridpoints_x - x[1]))],
             gridpoints_x[abs(gridpoints_x - x[2]) == min(abs(gridpoints_x - x[2]))])
     v$y = c(gridpoints_y[abs(gridpoints_y - y[1]) == min(abs(gridpoints_y - y[1]))],
             gridpoints_y[abs(gridpoints_y - y[2]) == min(abs(gridpoints_y - y[2]))])

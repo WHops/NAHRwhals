@@ -39,6 +39,7 @@ version_nw <- function() {
 #'
 #' This function performs a chunked minimap2 alignment of two single-sequence FASTA files, generates a PAF file, and creates a dotplot PDF. It utilizes helper functions for sequence chunking, minimap2 alignment, PAF recombination, and dotplot generation.
 #'
+#' @param params a list of NAHRwhals paramters
 #' @param targetfasta A character string containing the path to the 'target' single-sequence FASTA file (e.g., chm13).
 #' @param queryfasta A character string containing the path to the 'query' single-sequence FASTA file.
 #' @param chunklen A numeric value indicating the length of sequence chunks to split the query into (default = 1000 bp).
@@ -46,6 +47,7 @@ version_nw <- function() {
 #' @param hltype A character string indicating the filetype of hllink. Can be 'NULL', 'bed', 'tsv', or 'paf' (default = FALSE).
 #' @param outpaf A character string containing the path to the output PAF file to be written.
 #' @param keep_ref A numeric value indicating the number of alignments to keep for plotting (default = 10000).
+#' @param minsdlen A numeric value; purpose not entirely clear. 
 #' @param plot_size A numeric value indicating the plot size in inches (default = 10).
 #' @param saveplot A logical value indicating whether or not to save the plot (default = TRUE).
 #' @param savepaf A logical value indicating whether or not to save the PAF file (default = TRUE).

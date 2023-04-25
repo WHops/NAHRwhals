@@ -11,7 +11,6 @@
 #' @return A data frame that stores the search results
 #' 
 #' @export
-#' @TODO Add more detailed description
 solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
   # 
   # browser()

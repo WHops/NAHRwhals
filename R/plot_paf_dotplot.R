@@ -612,6 +612,7 @@ pafdotplot_make <- function(inpaf_link,
     hltrack = hltrack,
     aln_type_xx_yy_xy = aln_type_xx_yy_xy
   )
+
   # Obtain alignments using the provided options
   alignments = dotplotly_dotplot_return_aln(opt)
   # Generate the dotplot from the alignments
@@ -620,9 +621,19 @@ pafdotplot_make <- function(inpaf_link,
   return(plot)
                             }
 
-#' plot_paf
-#' This is another, MUCH simplified version of plotting a paf. 
-#' Optionally, gridlines can be plotted, too. 
+#' Plot a pairwise alignment format (PAF) data frame.
+#'
+#' This function creates a plot of a pairwise alignment format (PAF) data frame, showing the alignment between two sequences.
+#'
+#' @param paf_df a data frame containing PAF data. Required columns are: "tname", "tstart", "tend", "qname", "qstart", "qend", and "strand".
+#' @param gridlines.x numeric vector of positions along the x-axis where vertical gridlines should be drawn. Default is NULL.
+#' @param gridlines.y numeric vector of positions along the y-axis where horizontal gridlines should be drawn. Default is NULL.
+#' @param wiggle numeric value indicating the amount of random jitter to add to the gridlines. Default is 0.
+#' @param plot_gridlines logical value indicating whether or not to plot the gridlines. Default is TRUE.
+#' @param linewidth numeric value indicating the width of the plotted gridlines. Default is 1.
+#'
+#' @return a ggplot object containing the alignment plot.
+#'
 #' @author Wolfram Hoeps
 #' @export
 plot_paf <- function(paf_df,

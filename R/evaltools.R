@@ -1,20 +1,30 @@
 
 #' repeat_row_in_matrix
 #' 
-#' Tiny helperfunction to repeat rows in a matrix
-#' @author  Wolfram Hoeps
+#' This function takes a row and repeats it n times in a matrix.
+#' @param x_val The row to be repeated.
+#' @param n_val The number of times the row should be repeated.
+#' 
+#' @return A matrix with the repeated rows.
+#' 
+#' @author Wolfram Hoeps
 #' @export
-repeat_row_in_matrix <- function(x, n) {
-  matrix(rep(x, each = n), nrow = n)
+repeat_row_in_matrix <- function(x_val, n_val) {
+  matrix(rep(x_val, each = n_val), nrow = n_valn)
 }
 
 #' repeat_col_in_matrix
 #' 
-#' Tiny helperfunction to repeat columns in a matrix
-#' @author  Wolfram Hoeps
+#' This function takes a column and repeats it n times in a matrix.
+#' @param x_val The column to be repeated.
+#' @param n_val The number of times the column should be repeated.
+#' 
+#' @return A matrix with the repeated columns.
+#' 
+#' @author Wolfram Hoeps
 #' @export
-repeat_col_in_matrix <- function(x, n) {
-  matrix(rep(x, each = n), ncol = n, byrow = TRUE)
+repeat_col_in_matrix <- function(x_val, n_val) {
+  matrix(rep(x_val, each = n_val), ncol = n_val, byrow = TRUE)
 }
 
 #' Return the absolute minimum of a numeric vector
