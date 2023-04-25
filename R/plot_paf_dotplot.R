@@ -275,7 +275,7 @@ dotplotly_dotplot_return_aln <- function(opt) {
   alignments = alignments[(abs(alignments$refEnd - alignments$refStart) > opt$minsdlen),]
 
   # and a filter for artifacts... :) 
-  alignments = alignments[  between((abs(alignments$refEnd - alignments$refStart) / 
+  alignments = alignments[  dplyr::between((abs(alignments$refEnd - alignments$refStart) / 
                             abs(alignments$queryEnd - alignments$queryStart)), 0.5, 2),  ]
   
   
@@ -614,9 +614,9 @@ pafdotplot_make <- function(inpaf_link,
   )
 
   # Obtain alignments using the provided options
-  alignments = dotplotly_dotplot_return_aln(opt)
+  alignments = dotplotly_dotplot_return_aln(options)
   # Generate the dotplot from the alignments
-  plot = plot_alignments(alignments, opt)
+  plot = plot_alignments(alignments, options)
 
   return(plot)
                             }

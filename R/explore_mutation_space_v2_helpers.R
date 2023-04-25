@@ -35,12 +35,6 @@ decide_loop_continue_symmetry <- function(bitl_f, symm_cutoff = 0.80, orig_symm 
 #' a data.frame with as many row as elements in `x` and two columns one for the
 #' keys (always character) and value a list column
 #'      
-#'                
-#' @examples 
-#' 
-#'  h <- rlang::hash( a=1, b=1:2, c=1:3)
-#'  as.data.frame(h)
-#'  
 #' @export
 as.data.frame.hash <- function(x, ..., key="key", value="value" ){
   df <- as.data.frame( list( keys(x) ), col.names=key )
@@ -69,7 +63,7 @@ annotate_pairs_with_hash <- function(bitlocus, pairs){
   
   pairs$hash = 'NA'
   for (npair in seq_along(pairs$hash)){
-    pairs[npair, 'hash'] = hash(return_diag_values_new(carry_out_compressed_sv(bitlocus, pairs[npair,1:3]), fraction = 0.05) ) # Whoeps, 25th April: removing rlang from the has command. 
+    pairs[npair, 'hash'] = rlang::hash(return_diag_values_new(carry_out_compressed_sv(bitlocus, pairs[npair,1:3]), fraction = 0.05) ) 
   }
   
   return(pairs)

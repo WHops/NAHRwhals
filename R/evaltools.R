@@ -10,7 +10,7 @@
 #' @author Wolfram Hoeps
 #' @export
 repeat_row_in_matrix <- function(x_val, n_val) {
-  matrix(rep(x_val, each = n_val), nrow = n_valn)
+  matrix(rep(x_val, each = n_val), nrow = n_val)
 }
 
 #' repeat_col_in_matrix

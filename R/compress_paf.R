@@ -73,7 +73,7 @@ merge_rows <- function(paffile, pairs) {
   paffile = paffile[!(row.names(paffile) %in% pairs$col),]
   
   #Filter
-  paffile = paffile[  between((abs(paffile$tend - paffile$tstart) / 
+  paffile = paffile[  dplyr::between((abs(paffile$tend - paffile$tstart) / 
                           abs(paffile$qend - paffile$qstart)), 0.5, 2),  ]
   
   return(paffile)
@@ -261,11 +261,13 @@ compress_paf_fnct <-
     # Remove very short stuff
     rowpairs = rowpairs[rowpairs$combined_matchlen > (inparam_chunklen/5),]
 
+   '%>%' <- magrittr::'%>%'
+
     # Cut down redundant pairs
     rowpairs_singular = as.data.frame(
       rowpairs %>%
-        group_by(row) %>% top_n(1, combined_matchlen) %>%
-        group_by(col) %>% top_n(1, combined_matchlen)
+        dplyr::group_by(row) %>% dplyr::top_n(1, combined_matchlen) %>%
+        dplyr::group_by(col) %>% dplyr::top_n(1, combined_matchlen)
     )
     
 
