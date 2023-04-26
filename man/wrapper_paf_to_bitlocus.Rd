@@ -2,19 +2,39 @@
 % Please edit documentation in R/tsv_to_bitlocus.R
 \name{wrapper_paf_to_bitlocus}
 \alias{wrapper_paf_to_bitlocus}
-\title{wrapper_paf_to_bitlocus}
+\title{Generate a bitlocus plot from a PAF file.}
 \usage{
 wrapper_paf_to_bitlocus(
   inpaf,
-  compression_params,
+  params,
   gridplot_save = F,
   pregridplot_save = F,
   pregridplot_nolines = F,
   saveplot = F
 )
 }
+\arguments{
+\item{inpaf}{A PAF file to be plotted.}
+
+\item{params}{A list of parameters used to control the compression of the bitlocus plot.}
+
+\item{gridplot_save}{If set to TRUE, the resulting bitlocus plot is saved to a file.}
+
+\item{pregridplot_save}{If set to TRUE, the resulting pre-bitlocus plot is saved to a file.}
+
+\item{pregridplot_nolines}{If set to TRUE, the resulting pre-bitlocus plot is displayed without grid lines.}
+
+\item{saveplot}{If set to TRUE, the resulting bitlocus plot is saved to a file.}
+}
+\value{
+A list containing the x and y coordinates of the grid, and the coordinates of the alignments.
+}
 \description{
-wrapper_paf_to_bitlocus
+This function takes a PAF file, and generates a bitlocus plot from it.
+The generated bitlocus plot is based on a grid of x and y coordinates that are
+calculated from the PAF file. The x and y coordinates of each alignment in the PAF
+file are then calculated, and the corresponding positions in the grid are marked
+with a "1". The resulting grid is then plotted as a bitlocus plot.
 }
 \author{
 Wolfram Hoeps

@@ -2,15 +2,22 @@
 % Please edit documentation in R/plot_matrix_ggplot.R
 \name{plot_matrix_ggplot_named}
 \alias{plot_matrix_ggplot_named}
-\title{plot_matrix_ggplot_named}
+\title{Plot a matrix of data}
 \usage{
 plot_matrix_ggplot_named(data_frame_xyz, colnames_f, rownames_f)
 }
 \arguments{
-\item{data_frame_xyz}{a dataframe with three coordinate columns (x,y,z)}
+\item{data_frame_xyz}{A dataframe with three coordinate columns (x, y, z)}
+
+\item{colnames_f}{A vector of column names}
+
+\item{rownames_f}{A vector of row names}
+}
+\value{
+A ggplot2 object representing the matrix plot
 }
 \description{
-Make a plot of a dataframe matrix.
+Plot a matrix of data
 }
 \author{
 Wolfram Hoeps

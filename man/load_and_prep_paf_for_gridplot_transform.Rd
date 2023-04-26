@@ -2,14 +2,7 @@
 % Please edit documentation in R/tsv_to_bitlocus.R
 \name{load_and_prep_paf_for_gridplot_transform}
 \alias{load_and_prep_paf_for_gridplot_transform}
-\title{load_and_prep_paf_for_gridplot_transform
-Called (exclusively) by wrapper_paf_to_bitlocus
-Loads and prepares the input paf. Preparations:
-Length filter
-Start/Endpoint rounding ('compression')
-Slope = 1
-Transform start / end in negative alignments
-Append qmin qmax columns.}
+\title{Load and Prepare PAF File for Gridplot Transformation}
 \usage{
 load_and_prep_paf_for_gridplot_transform(
   inpaf,
@@ -19,15 +12,22 @@ load_and_prep_paf_for_gridplot_transform(
   inparam_chunklen = 10000
 )
 }
+\arguments{
+\item{inpaf}{Character/link: Path to the input PAF file.}
+
+\item{minlen}{Numeric: Minimum length of alignments to keep.}
+
+\item{compression}{Numeric: Compression factor to round the start and endpoint to the nearest multiple of the compression factor.}
+
+\item{quadrantsize}{Numeric: Size of the quadrant used to group alignments.}
+
+\item{inparam_chunklen}{Numeric: Length of sequence chunks.}
+}
+\value{
+The modified PAF file.
+}
 \description{
-load_and_prep_paf_for_gridplot_transform
-Called (exclusively) by wrapper_paf_to_bitlocus
-Loads and prepares the input paf. Preparations:
-Length filter
-Start/Endpoint rounding ('compression')
-Slope = 1
-Transform start / end in negative alignments
-Append qmin qmax columns.
+This function loads and prepares the input PAF file. The preparations include filtering alignments by length, rounding start and endpoint to the nearest multiple of the compression factor, enforcing slope = 1 for all alignments, and transforming start/end in negative alignments. Finally, it adds qlow and qhigh columns to the PAF file.
 }
 \author{
 Wolfram Hoeps

@@ -8,6 +8,16 @@ need a larger window.}
 \usage{
 is_cluttered_paf(paf, clutter_limit_per_border = 5)
 }
+\arguments{
+\item{paf}{A PAF file with the alignments}
+
+\item{clutter_limit_per_border}{The number of dots allowed per border before we consider it cluttered}
+}
+\value{
+A boolean indicating whether the DOTPLOT is cluttered or not
+}
 \description{
-I want to have a second look at this function... is it clean / reasonable?
+Determine if a PAF DOTPLOT is good for use in the first place.
+If it has many dots around its edges, it is not good and we
+need a larger window.
 }

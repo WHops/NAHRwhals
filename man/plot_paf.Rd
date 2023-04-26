@@ -2,9 +2,7 @@
 % Please edit documentation in R/plot_paf_dotplot.R
 \name{plot_paf}
 \alias{plot_paf}
-\title{plot_paf
-This is another, MUCH simplified version of plotting a paf.
-Optionally, gridlines can be plotted, too.}
+\title{Plot a pairwise alignment format (PAF) data frame.}
 \usage{
 plot_paf(
   paf_df,
@@ -15,10 +13,24 @@ plot_paf(
   linewidth = 1
 )
 }
+\arguments{
+\item{paf_df}{a data frame containing PAF data. Required columns are: "tname", "tstart", "tend", "qname", "qstart", "qend", and "strand".}
+
+\item{gridlines.x}{numeric vector of positions along the x-axis where vertical gridlines should be drawn. Default is NULL.}
+
+\item{gridlines.y}{numeric vector of positions along the y-axis where horizontal gridlines should be drawn. Default is NULL.}
+
+\item{wiggle}{numeric value indicating the amount of random jitter to add to the gridlines. Default is 0.}
+
+\item{plot_gridlines}{logical value indicating whether or not to plot the gridlines. Default is TRUE.}
+
+\item{linewidth}{numeric value indicating the width of the plotted gridlines. Default is 1.}
+}
+\value{
+a ggplot object containing the alignment plot.
+}
 \description{
-plot_paf
-This is another, MUCH simplified version of plotting a paf.
-Optionally, gridlines can be plotted, too.
+This function creates a plot of a pairwise alignment format (PAF) data frame, showing the alignment between two sequences.
 }
 \author{
 Wolfram Hoeps

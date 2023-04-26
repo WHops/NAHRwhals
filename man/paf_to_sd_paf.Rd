@@ -7,7 +7,7 @@
 paf_to_sd_paf(inpaf_link)
 }
 \arguments{
-\item{inpaf_link}{\link{character/link} a link to the inpaf to be converted to bed.}
+\item{inpaf_link}{A link to the inpaf to be converted to bed.}
 }
 \value{
 a filtered pseudo-paf file. Gotta double-check this.

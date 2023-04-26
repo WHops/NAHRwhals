@@ -2,10 +2,16 @@
 % Please edit documentation in R/plot_matrix_ggplot.R
 \name{pmsqrt_rev}
 \alias{pmsqrt_rev}
-\title{little stuff}
+\title{Compute the reverse signed square root}
 \usage{
 pmsqrt_rev(x)
 }
+\arguments{
+\item{x}{A numeric value or vector}
+}
+\value{
+The reverse signed square root of the input value(s)
+}
 \description{
-little stuff
+Compute the reverse signed square root
 }

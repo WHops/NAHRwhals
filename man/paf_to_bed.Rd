@@ -7,7 +7,7 @@
 paf_to_bed(inpaf)
 }
 \arguments{
-\item{inpaf}{\link{data frame} a link to the inpaf to be converted to bed.}
+\item{inpaf}{A link to the inpaf to be converted to bed.}
 }
 \value{
 a bed-file style dataframe.

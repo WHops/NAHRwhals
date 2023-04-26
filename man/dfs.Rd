@@ -2,12 +2,28 @@
 % Please edit documentation in R/dfs_machinery.R
 \name{dfs}
 \alias{dfs}
-\title{DFS caller function
-This is the gateway into entering the dfs.}
+\title{DFS caller function}
 \usage{
 dfs(bitlocus, maxdepth = 3, increase_only = F, earlystop = Inf, history = NULL)
 }
+\arguments{
+\item{bitlocus}{A matrix representing the search space.}
+
+\item{maxdepth}{The maximum depth of the search tree.}
+
+\item{increase_only}{A boolean indicating whether only increasing mutations are allowed.}
+
+\item{earlystop}{The maximum number of evaluations before the search is terminated.}
+
+\item{history}{An optional argument representing previous search history.}
+}
+\value{
+A list containing the search history and the evaluation results.
+}
 \description{
-DFS caller function
-This is the gateway into entering the dfs.
+This function serves as the gateway to entering the DFS process. It calls the dfsutil function recursively
+to explore possible paths within the search space.
+}
+\author{
+Wolfram Höps
 }

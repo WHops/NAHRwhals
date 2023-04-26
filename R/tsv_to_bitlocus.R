@@ -169,7 +169,7 @@ bounce_point <- function(vectors, point) {
 #' with a "1". The resulting grid is then plotted as a bitlocus plot.
 #'
 #' @param inpaf A PAF file to be plotted.
-#' @param compression_params A list of parameters used to control the compression of the bitlocus plot.
+#' @param params A list of parameters used to control the compression of the bitlocus plot.
 #' @param gridplot_save If set to TRUE, the resulting bitlocus plot is saved to a file.
 #' @param pregridplot_save If set to TRUE, the resulting pre-bitlocus plot is saved to a file.
 #' @param pregridplot_nolines If set to TRUE, the resulting pre-bitlocus plot is displayed without grid lines.
@@ -181,7 +181,7 @@ bounce_point <- function(vectors, point) {
 #' @export
 wrapper_paf_to_bitlocus <-
   function(inpaf,
-           compression_params,
+           params,
            gridplot_save = F,
            pregridplot_save = F,
            pregridplot_nolines = F,
@@ -200,8 +200,8 @@ wrapper_paf_to_bitlocus <-
     #  compression = wiggled_params[[2]]
     #} else {
     print('Minlen/Compression manually chosen. Testing viability')
-    minlen = compression_params$minlen
-    compression = compression_params$compression
+    minlen = params$minlen
+    compression = params$compression
     #}
     
     print('Making the final grid with:')
@@ -215,11 +215,11 @@ wrapper_paf_to_bitlocus <-
     # I want to re-run stuff until: 
     # 1) The max number of alignments is kept.
     # 2) The max size of the grid is kept.
-    while( (  (length(gridlines.x) + length(gridlines.y))  > params$max_size_col_plus_rows  ) | ((dim(paf)[1]) > compression_params$max_n_alns)   ){
+    while( (  (length(gridlines.x) + length(gridlines.y))  > params$max_size_col_plus_rows  ) | ((dim(paf)[1]) > params$max_n_alns)   ){
       # Stop here and find out why with comp/minlen 200, the big piece gets lost. 
       paf = load_and_prep_paf_for_gridplot_transform(inpaf, minlen, compression)
       
-      if ((dim(paf)[1]) > compression_params$max_n_alns){
+      if ((dim(paf)[1]) > params$max_n_alns){
         print('Too many alignments. Increasing minlen conditions')
         minlen = minlen  * 2
         compression = compression * 2
@@ -302,20 +302,20 @@ wrapper_paf_to_bitlocus <-
       )
     }
     #browser()
-    p = plot_matrix_ggplot_named(grid_list, gridlines.x, gridlines.y)
-    print(p)
-    if (gridplot_save == F) {
-      print(p)
-    } else {
-      ggplot2::ggsave(
-        p,
-        file = gridplot_save,
-        height = 15,
-        width = 15,
-        units = 'cm',
-        device = 'pdf'
-      )
-    }
+    # p = plot_matrix_ggplot_named(grid_list, gridlines.x, gridlines.y)
+    # print(p)
+    # if (gridplot_save == F) {
+    #   print(p)
+    # } else {
+    #   ggplot2::ggsave(
+    #     p,
+    #     file = gridplot_save,
+    #     height = 15,
+    #     width = 15,
+    #     units = 'cm',
+    #     device = 'pdf'
+    #   )
+    # }
     
     
     return(list(gridlines.x, gridlines.y, grid_list))

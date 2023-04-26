@@ -2,12 +2,18 @@
 % Please edit documentation in R/explore_mutation_space_v2_helpers.R
 \name{find_threshold}
 \alias{find_threshold}
-\title{Which percentage do we call 'solved'?
-To account for alignment incongruencies, we say that a puzzle is solved
-If it deviates at most by 1 'unit'.}
+\title{find_threshold}
 \usage{
 find_threshold(bitlocus_f, nmut)
 }
+\arguments{
+\item{bitlocus_f}{The matrix representing the bitlocus.}
+
+\item{nmut}{The number of mutations.}
+}
+\value{
+The threshold.
+}
 \description{
-I want to have a second look at this funciton... is it clean / reasonable?
+This function calculates the alignment threshold for determining when a bitlocus is considered "solved".
 }

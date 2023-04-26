@@ -2,11 +2,13 @@
 % Please edit documentation in R/wrapper_aln_and_analyse.R
 \name{clean_after_yourself}
 \alias{clean_after_yourself}
-\title{clean_after_yourself}
+\title{Delete intermediate files created by NAHRwhals}
 \usage{
 clean_after_yourself(outlinks)
 }
+\arguments{
+\item{outlinks}{A list of file paths for intermediate fasta sequences.}
+}
 \description{
-This function, if invoked, deletes intermediate fasta sequences created by NAHRwhals.
-By default, this is not invoked.
+This function deletes intermediate fasta sequences created by NAHRwhals. It takes a list of file paths as input and deletes the files if they exist and are not empty.
 }

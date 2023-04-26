@@ -2,7 +2,7 @@
 % Please edit documentation in R/tsv_to_bitlocus.R
 \name{add_slope_intercept_info}
 \alias{add_slope_intercept_info}
-\title{add_slope_intercept_info}
+\title{Add slope and intercept information to a data frame of vectors}
 \usage{
 add_slope_intercept_info(
   vector_df,
@@ -12,8 +12,23 @@ add_slope_intercept_info(
   yend = "qend"
 )
 }
+\arguments{
+\item{vector_df}{A data frame containing the start and end points of each vector.}
+
+\item{xstart}{The name of the column in \code{vector_df} containing the x-coordinate of the start point.}
+
+\item{xend}{The name of the column in \code{vector_df} containing the x-coordinate of the end point.}
+
+\item{ystart}{The name of the column in \code{vector_df} containing the y-coordinate of the start point.}
+
+\item{yend}{The name of the column in \code{vector_df} containing the y-coordinate of the end point.}
+}
+\value{
+A data frame containing the slope, inverse slope, y-intercept, and x-intercept of each vector.
+}
 \description{
-add_slope_intercept_info
+This function calculates the slope, inverse slope, y-intercept, and x-intercept of a vector given its start and end points.
+The resulting slope and intercept values are added to the input data frame as additional columns.
 }
 \author{
 Wolfram Hoeps

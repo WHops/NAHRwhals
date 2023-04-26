@@ -16,9 +16,46 @@ liftover_coarse(
   refine_runnr = 0
 )
 }
+\arguments{
+\item{seqname}{(character): The name of the contig/chromosome to lift-over.}
+
+\item{start}{(integer): The starting position (1-based) of the region to lift-over.}
+
+\item{end}{(integer): The ending position (1-based) of the region to lift-over.}
+
+\item{conversionpaf_link}{(character): A link to the precomputed PAF file containing
+the conversion information between the two genome assemblies.}
+
+\item{n_probes}{(integer): The number of subregions to use for calculating the lifted-over
+position. Defaults to 100.}
+
+\item{lenfactor}{(numeric): The length factor used to calculate the length of the subregions.
+A higher lenfactor will result in longer subregions, which may improve the quality of the lifted-over
+position. Defaults to 1.2.}
+
+\item{whole_chr}{(logical): Whether to lift-over the entire chromosome/contig. By default, this is set to
+FALSE, and only the region specified by the start and end coordinates is lifted-over.}
+
+\item{search_mode}{(character): The search mode to use for finding the lifted-over position.
+Can be set to "mad" (default), or "extrapolation".}
+
+\item{refine_runnr}{(integer): The number of times to refine the lifted-over position. Can be set to
+0 (default), 1, or 2. A higher number will result in a more accurate lifted-over position, but will
+also increase the runtime.}
+}
+\value{
+A list containing the lifted-over contig name, the start position, and the end position.
+}
 \description{
-Wrapperfunction to find a liftover sequence from one assembly to the other.
-Better description TBD.
+This function lifts over a genomic region from one assembly to another.
+The function extracts subregions of the input sequence, and then
+calculates the lift-over positions by aligning these subregions
+to the target assembly. By default, the function uses a mean absolute
+deviation (MAD) based approach to calculate the lifted-over region.
+However, it can also be set to use an extrapolation-based approach
+to calculate the lifted-over region. The result of the function is a
+list containing the lifted-over contig name, the start position, and the
+end position.
 }
 \author{
 Wolfram Höps

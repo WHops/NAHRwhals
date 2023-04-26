@@ -2,12 +2,20 @@
 % Please edit documentation in R/explore_mutation_space_v2_helpers.R
 \name{annotate_res_out_with_positions_lens}
 \alias{annotate_res_out_with_positions_lens}
-\title{annotate_res_out_with_positions_lens}
+\title{Annotate Result DataFrame with Position and Length Information}
 \usage{
 annotate_res_out_with_positions_lens(res_out, bitlocus)
 }
+\arguments{
+\item{res_out}{DataFrame: Results dataframe to be annotated.}
+
+\item{bitlocus}{DataFrame: Original bitlocus dataframe.}
+}
+\value{
+DataFrame: Annotated results dataframe with position and length information.
+}
 \description{
-A helper function that takes a results dataframe and an original bitlocus,
-and translates the results (e.g. '4-10-inv') into coordinates (e.g. 450000 - 600000 - inv).
-This is quite limited and rudimentary at this point.
+This helper function takes a results dataframe and an original bitlocus,
+and translates the results (e.g., '4-10-inv') into coordinates (e.g., 450000 - 600000 - inv).
+Note that the function is limited and rudimentary at this point.
 }

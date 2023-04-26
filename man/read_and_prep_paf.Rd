@@ -6,8 +6,11 @@
 \usage{
 read_and_prep_paf(paflink)
 }
+\arguments{
+\item{paflink}{The path to the PAF file to read.}
+}
 \description{
-read_and_prep_paf
+Reads in a PAF file and renames the columns to match the PAF standard column names.
 }
 \author{
 Wolfram Hoeps

@@ -2,11 +2,24 @@
 % Please edit documentation in R/explore_mutation_space_v2_helpers.R
 \name{reduce_depth_if_needed}
 \alias{reduce_depth_if_needed}
-\title{reduce_depth_if_needed}
+\title{Reduces the maximum search depth if the dotplot is unreasonably large}
 \usage{
 reduce_depth_if_needed(bitlocus, increase_only, maxdepth)
+}
+\arguments{
+\item{bitlocus}{A bit locus to be worked on}
+
+\item{increase_only}{A logical value indicating if the maximum search depth should only be increased}
+
+\item{maxdepth}{An integer indicating the maximum search depth}
+}
+\value{
+An integer indicating the updated maximum search depth
 }
 \description{
 Called at the beginning of a tree search. If the dotplot is unreasonably large,
 we pragmatically reduce the search depth here to prevent overly long runtimes.
+}
+\author{
+Wolfram Höps
 }

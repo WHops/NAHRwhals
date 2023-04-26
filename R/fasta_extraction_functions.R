@@ -30,16 +30,6 @@ extract_subseq_bedtools <-
     system(paste0('echo "', region, '" > ', tmp_bedfile))
     # Run bedtools
 
-    print(paste0(
-      bedtoolsloc,
-      " getfasta -fi ",
-      infasta,
-      " -bed ",
-      tmp_bedfile,
-      " > ",
-      outfasta
-    ))
-
     system(paste0(
       bedtoolsloc,
       " getfasta -fi ",
@@ -60,7 +50,7 @@ extract_subseq_bedtools <-
     )
     
     # Report your success :)
-    print(paste0('Subsequence extracted and saved to ', outfasta))
+    # print(paste0('Subsequence extracted and saved to ', outfasta))
     
   }
 
@@ -426,7 +416,6 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
   
   # p = ggplot(liftover_coords) + geom_point(aes(x=pos_probe, y=liftover_coord)) +
   # coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on")
-  #print(p)
   mapped_x_region_frac = abs(max(liftover_coords_maxseq$pos_probe) - min(liftover_coords_maxseq$pos_probe)) / abs(end-start)
   
   mapped_y_region_frac = abs(end_winners - start_winners) / abs(end-start)

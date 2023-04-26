@@ -2,14 +2,24 @@
 % Please edit documentation in R/explore_mutation_space_v2.R
 \name{solve_mutation}
 \alias{solve_mutation}
-\title{Alternative wrapper for calling dfs several times.
-THis function is called as a standard.
-TODO: description}
+\title{Alternative wrapper for calling dfs several times.}
 \usage{
-solve_mutation(bitlocus, maxdepth_input, earlystop = Inf)
+solve_mutation(bitlocus, maxdepth_input, earlystop = Inf, solve_th = 98)
+}
+\arguments{
+\item{bitlocus}{A bit locus to be worked on}
+
+\item{maxdepth_input}{An integer indicating the maximum search depth}
+
+\item{earlystop}{A number indicating the maximum evaluations}
+
+\item{solve_th}{Threshold for considering a mutation 'solved', in percent (def. 98)}
+}
+\value{
+A data frame that stores the search results
 }
 \description{
-Alternative wrapper for calling dfs several times.
-THis function is called as a standard.
-TODO: description
+This function runs a tree search with varying depths to find the best mutation for the given bit locus.
+If the dotplot is unreasonably large, it reduces the search depth to prevent long runtimes.
+If a conclusion is not found, it runs a steepest descent bonus round.
 }

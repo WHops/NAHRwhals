@@ -172,12 +172,10 @@ run_n_tests <-
         quadrantsize = 1e5
       )
       
-      print('hi')
       # If not too many alignments, construct a grid.
       # If the grid also not too many dimensions, we are happy.
       n_alns_in_paf_ok = (dim(paf)[1] > 0) &
         (dim(paf)[1] <= n_max_alns)
-      print(dim(paf))
 
       if (n_alns_in_paf_ok) {
         gxy = make_xy_grid(paf, n_additional_bounces = 2)

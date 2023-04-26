@@ -4,8 +4,8 @@
 #'
 #' @description Merges paired alignment rows in the provided PAF file.
 #'
-#' @param paffile [data.frame] PAF file data frame with column names
-#' @param pairs [data.frame] Data frame with columns representing row numbers of paired alignments
+#' @param paffile PAF file data frame with column names
+#' @param pairs Data frame with columns representing row numbers of paired alignments
 #' @return PAF file data frame with merged rows
 #'
 #' @author Wolfram Höps
@@ -90,14 +90,14 @@ merge_rows <- function(paffile, pairs) {
 #' Note that improvements may be needed in the future, as the melting process is not
 #' entirely straightforward.
 #'
-#' @param inpaf_link [character/link] A file path or link to the input chunked PAF file.
-#' @param outpaf_link [character/link] A file path or link to the output "molten" PAF file.
-#' @param inpaf_df [data.frame] An optional input PAF dataframe.
-#' @param save_outpaf [logical] Whether to save the output PAF file (default: TRUE).
-#' @param n_quadrants_per_axis [numeric] The number of quadrants per axis (determines chunking).
-#' @param second_run [logical] Whether this is the second run of the function (default: FALSE).
-#' @param inparam_chunklen [numeric] The input parameter for chunk length.
-#' @param inparam_compression [numeric] The input parameter for compression.
+#' @param inpaf_link A file path or link to the input chunked PAF file.
+#' @param outpaf_link A file path or link to the output "molten" PAF file.
+#' @param inpaf_df An optional input PAF data.frame.
+#' @param save_outpaf Logical value whether to save the output PAF file (default: TRUE).
+#' @param n_quadrants_per_axis The number of quadrants per axis (determines chunking).
+#' @param second_run Logical value whether this is the second run of the function (default: FALSE).
+#' @param inparam_chunklen The input parameter for chunk length in bp.
+#' @param inparam_compression The input parameter for compression in bp.
 #' @author Wolfram Höps
 #' @export
 compress_paf_fnct <-

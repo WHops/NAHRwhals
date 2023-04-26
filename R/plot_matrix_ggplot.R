@@ -1,6 +1,6 @@
 #' Compute the signed square root
 #'
-#' @param x [numeric] A numeric value or vector
+#' @param x A numeric value or vector
 #' @return The signed square root of the input value(s)
 #' @export
 pmsqrt <- function(x) {
@@ -9,7 +9,7 @@ pmsqrt <- function(x) {
 
 #' Compute the reverse signed square root
 #'
-#' @param x [numeric] A numeric value or vector
+#' @param x A numeric value or vector
 #' @return The reverse signed square root of the input value(s)
 #' @export
 pmsqrt_rev <- function(x) {

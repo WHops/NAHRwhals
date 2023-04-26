@@ -7,9 +7,9 @@
 get_subseq(input_fasta, range = NULL)
 }
 \arguments{
-\item{range}{\link{numeric 2x1 vctor} Sequence range to extract. E.g. range=c(10,100) extracts bases 10 to 100.}
+\item{input_fasta}{A link to a single-sequence fasta}
 
-\item{inputfasta}{\link{character/link} link to a single-sequence fasta}
+\item{range}{A numeric 2x1 vector describing the sequence range to extract. E.g. range=c(10,100) extracts bases 10 to 100.}
 }
 \value{
 A DNA sequence as a character

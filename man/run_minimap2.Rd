@@ -7,13 +7,15 @@
 run_minimap2(targetfasta, queryfasta, outpaf, params, nthreads = 4)
 }
 \arguments{
-\item{targetfasta}{\link{character/link} link to the 'target' single-sequence fasta (sometimes reference, e.g. chm13.)}
+\item{targetfasta}{A link to the 'target' single-sequence fasta (sometimes reference, e.g. chm13.)}
 
-\item{queryfasta}{\link{character/link} link to the 'query' fasta. Can be single or multi-fasta}
+\item{queryfasta}{A link to the 'query' fasta. Can be single or multi-fasta}
 
-\item{outpaf}{\link{character/link} Path to the output paffile to be written.}
+\item{outpaf}{A Path to the output paffile to be written.}
 
-\item{minimap2loc}{\link{character/link} link to minimap2 binary.}
+\item{params}{a list with all NAHRwhals parameters}
+
+\item{nthreads}{number of threads to use with Minimap2}
 }
 \value{
 nothing. Only output files written.
@@ -21,15 +23,15 @@ nothing. Only output files written.
 \description{
 This is a helperfunction to run minimap2. Also check out:
 https://github.com/PacificBiosciences/pbmm2/ . Minimap2 parameters:
--k   k-mer size (no larger than 28). \link{-1}
--w   Minimizer window size. \link{-1}
+-k   k-mer size (no larger than 28). (-1)
+-w   Minimizer window size. (1-)
 -u   Disable homopolymer-compressed k-mer (compression is active for SUBREAD & UNROLLED presets).
--A   Matching score. \link{-1}
--B   Mismatch penalty. \link{-1}
--z   Z-drop score. \link{-1}
--Z   Z-drop inversion score. \link{-1}
--r   Bandwidth used in chaining and DP-based alignment. \link{-1}
--g   Stop chain enlongation if there are no minimizers in N bp. \link{-1}
+-A   Matching score. (-1)
+-B   Mismatch penalty. (-1)
+-z   Z-drop score. (-1)
+-Z   Z-drop inversion score. (-1)
+-r   Bandwidth used in chaining and DP-based alignment. (-1)
+-g   Stop chain enlongation if there are no minimizers in N bp. (-1)
 #'
 }
 \author{

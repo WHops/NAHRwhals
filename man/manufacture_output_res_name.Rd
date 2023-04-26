@@ -2,10 +2,20 @@
 % Please edit documentation in R/wrapper_aln_and_analyse.R
 \name{manufacture_output_res_name}
 \alias{manufacture_output_res_name}
-\title{manufacture_output_res_name}
+\title{Create output file name for NAHRwhals results}
 \usage{
 manufacture_output_res_name(seqname_x, start_x, end_x)
 }
+\arguments{
+\item{seqname_x}{The name of the input sequence.}
+
+\item{start_x}{The starting coordinate of the input sequence.}
+
+\item{end_x}{The ending coordinate of the input sequence.}
+}
+\value{
+The output file name for the NAHRwhals results.
+}
 \description{
-Creates an output file name that will be used by other functions.
+This function creates an output file name for the results of a NAHRwhals analysis, based on the input sequence name, start and end coordinates.
 }

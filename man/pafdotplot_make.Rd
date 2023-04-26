@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_paf_dotplot.R
 \name{pafdotplot_make}
 \alias{pafdotplot_make}
-\title{Wrapperfunction for turning a paf (and an SD highlight annotation) into a dotplot pdf.}
+\title{Generate a Dotplot from a PAF File with Optional SD Highlight Annotation}
 \usage{
 pafdotplot_make(
   inpaf_link,
@@ -10,58 +10,85 @@ pafdotplot_make(
   min_align = 11,
   min_query_aln = 11,
   keep_ref = 10000,
-  similarity = T,
-  h_lines = T,
-  interactive = F,
+  similarity = TRUE,
+  h_lines = TRUE,
+  interactive = FALSE,
   plot_size = 10,
-  on_target = T,
-  v = F,
-  hllink = F,
-  hltype = F,
+  on_target = TRUE,
+  v = FALSE,
+  hllink = FALSE,
+  hltype = FALSE,
   hlstart = NULL,
   hlend = NULL,
-  save = T,
+  save = TRUE,
   minsdlen = 5000,
-  anntrack = F,
+  anntrack = FALSE,
   x_seqname = NULL,
   x_start = NULL,
   x_end = NULL,
-  hltrack = NULL
+  hltrack = NULL,
+  aln_type_xx_yy_xy = "xy",
+  samplename_x = "seq_x",
+  samplename_y = "seq_y"
 )
 }
 \arguments{
-\item{inpaf_link}{\link{character/link} a link to the paf to be plotted}
+\item{inpaf_link}{Character/link: Path to the PAF file to be plotted.}
 
-\item{outplot_link}{\link{character/link} a link to where the output pdf will be saved}
+\item{outplot_link}{Character/link: Path to the output dotplot PDF to be saved.}
 
-\item{min_align}{not sure. set to 11, keep it there.}
+\item{min_align}{Numeric: Minimum alignment length (default: 11).}
 
-\item{min_query_aln}{not sure. set to 11, keep it there.}
+\item{min_query_aln}{Numeric: Minimum query alignment length (default: 11).}
 
-\item{keep_ref}{number of sequences to keep or something. Dont touch.}
+\item{keep_ref}{Numeric: Number of sequences to keep for plotting.}
 
-\item{similarity}{\link{T/F} indicate sequence similarity by color code (default: T)}
+\item{similarity}{Logical: Indicate sequence similarity by color code (default: TRUE).}
 
-\item{h_lines}{\link{T/F} plot horizontal lines (default: T)}
+\item{h_lines}{Logical: Plot horizontal lines (default: TRUE).}
 
-\item{interactive}{\link{T/F} unsure. Dotplotly? Untested, keep at F.}
+\item{interactive}{Logical: Use interactive dotplot (Dotplotly)? Untested, keep at FALSE.}
 
-\item{plot_size}{\link{numeric} plot size in inch.}
+\item{plot_size}{Numeric: Plot size in inches.}
 
-\item{on_target}{\link{T/F} dont remember. default: T}
+\item{on_target}{Logical: Unknown parameter, default: TRUE.}
 
-\item{v}{\link{T/F} unsure. default: F}
+\item{v}{Logical: Unknown parameter, default: FALSE.}
 
-\item{hllink}{\link{character/link} link to an SD annotation file (bed, tsv or paf) to include as
-highlights in the plot.}
+\item{hllink}{Character/link: Path to an SD annotation file (BED, TSV, or PAF) to include as highlights in the plot.}
 
-\item{hltype}{\link{character} filetype of hllink. Can be 'NULL', 'bed', 'tsv', 'paf'.}
+\item{hltype}{Character: Filetype of hllink. Can be 'NULL', 'bed', 'tsv', 'paf'.}
+
+\item{hlstart}{Numeric: Optional start position for highlights.}
+
+\item{hlend}{Numeric: Optional end position for highlights.}
+
+\item{save}{Logical: Save the dotplot to the specified output path (default: TRUE).}
+
+\item{minsdlen}{Numeric: Minimum length for SD annotations (default: 5000).}
+
+\item{anntrack}{Logical: Include annotation tracks (default: FALSE).}
+
+\item{x_seqname}{Character: Sequence name for X-axis.}
+
+\item{x_start}{Numeric: Start position for X-axis.}
+
+\item{x_end}{Numeric: End position for X-axis.}
+
+\item{hltrack}{Logical: Include highlight track (default: NULL).}
+
+\item{aln_type_xx_yy_xy}{Character: Alignment type (default: 'xy').}
+
+\item{samplename_x}{The name of the sequence to appear on the x axis. (default: 'seq_x')}
+
+\item{samplename_y}{The name of the sequence to appear on the y axis. (default: 'seq_y')}
 }
 \value{
-Nothing, but writes a pdf with a dotplot.
+The generated dotplot. If 'save' is TRUE, the dotplot is saved as a PDF.
 }
 \description{
-T
+This function generates a dotplot from a PAF file and saves it as a PDF.
+It can also include an optional SD highlight annotation file for enhanced visualization.
 }
 \author{
 Wolfram Höps

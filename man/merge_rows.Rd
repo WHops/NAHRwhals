@@ -2,22 +2,20 @@
 % Please edit documentation in R/compress_paf.R
 \name{merge_rows}
 \alias{merge_rows}
-\title{Helperfunction (1/1) of compress_paf_fnct}
+\title{Merge paired alignment rows in PAF file}
 \usage{
 merge_rows(paffile, pairs)
 }
 \arguments{
-\item{paffile}{\link{data frame} loaded paffile with colnames}
+\item{paffile}{PAF file data frame with column names}
 
-\item{nl1}{\link{character/link} line number of first-of-pair}
-
-\item{nl2}{\link{character/link} line number of second-of-pair}
+\item{pairs}{Data frame with columns representing row numbers of paired alignments}
 }
 \value{
-paffile with one row less (bc a pair has been merged)
+PAF file data frame with merged rows
 }
 \description{
-Melt two alignment entries into one.
+Merges paired alignment rows in the provided PAF file.
 }
 \author{
 Wolfram Höps

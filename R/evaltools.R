@@ -276,9 +276,6 @@ calc_coarse_grained_aln_score <-
     }
     
     
-    #print(cost_res)
-    #print(round((1-(cost_res[row, col]) / sum(climb_up_cost, walk_right_cost)) * 100, 3))
-    #print('##########################')
     # Return value: percentage of basepairs not crossed along alignments.
     return(round((
       1 - (cost_res[row, col]) / sum(climb_up_cost, walk_right_cost)

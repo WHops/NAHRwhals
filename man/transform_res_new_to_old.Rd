@@ -6,7 +6,12 @@
 \usage{
 transform_res_new_to_old(res_df_f)
 }
+\arguments{
+\item{res_df_f}{The results of the tree search in the new format.}
+}
+\value{
+The results of the tree search in the old format.
+}
 \description{
-This is a helperfunction transforming between different ways of representing the results of a tree search.
-Further documentation required - for now, just don't touch it :).
+This function transforms between different ways of representing the results of a tree search.
 }

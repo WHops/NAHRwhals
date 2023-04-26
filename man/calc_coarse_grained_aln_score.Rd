@@ -2,7 +2,7 @@
 % Please edit documentation in R/evaltools.R
 \name{calc_coarse_grained_aln_score}
 \alias{calc_coarse_grained_aln_score}
-\title{calc_coarse_aln_score}
+\title{Calculate a coarse-grained alignment score for a condensed dotplot}
 \usage{
 calc_coarse_grained_aln_score(
   mat,
@@ -13,16 +13,23 @@ calc_coarse_grained_aln_score(
 )
 }
 \arguments{
-\item{mat}{matrix. Bitlocus / Gridmatrix.}
+\item{mat}{A matrix representing the condensed dotplot.}
+
+\item{old_way_of_calc}{Deprecated parameter.}
+
+\item{verbose}{If TRUE, the function prints the cost matrix and the percentage of unmatching base pairs along the alignments.}
+
+\item{forcecalc}{If TRUE, the function forces the calculation of the alignment score.}
+
+\item{orig_symm}{Deprecated parameter.}
+}
+\value{
+The percentage of basepairs not crossed along alignments.
 }
 \description{
-A function assigning an alignment score to a condensed dotplot.
-we are using a base-function from geeksforgeeks.org, which is
-essentially like needleman-wunsch.
-Since in our case the costs for traversing a node 'vertically' or
-'horizontally' are different, we had to work around this a bit by
-adapting the algorithm.
+This function assigns an alignment score to a condensed dotplot using a variation of the needleman-wunsch algorithm.
+It is adapted to work with a condensed dotplot in which the costs for traversing a node 'vertically' or 'horizontally' are different.
 }
 \author{
-geeksforgeeks.org; Wolfram Hoeps
+Wolfram Hoeps, based on the geeksforgeeks.org base-function
 }

@@ -2,10 +2,16 @@
 % Please edit documentation in R/save_logfile.R
 \name{init_log_with_def_values}
 \alias{init_log_with_def_values}
-\title{init_log_with_def_values}
+\title{Initialize log with default values.}
 \usage{
 init_log_with_def_values()
 }
+\value{
+A named list containing the initialized flags and counters.
+}
 \description{
-init_log_with_def_values
+This function initializes a named list with the default values for the flags and counters used in the analysis.
+}
+\author{
+Wolfram Hoeps
 }

@@ -2,18 +2,25 @@
 % Please edit documentation in R/fasta_extraction_functions.R
 \name{extract_subseq_bedtools}
 \alias{extract_subseq_bedtools}
-\title{extract_subseq_bedtools
-Give me an input fasta link, chromosome coordinates and an
-output destionation file. I will extract the sequence of that
-coordinates from the fasta, and output it into the outfasta.}
+\title{extract_subseq_bedtools}
 \usage{
 extract_subseq_bedtools(infasta, seqname, start, end, outfasta, params)
 }
+\arguments{
+\item{infasta}{(character): A link to the input fasta file.}
+
+\item{seqname}{(character): The name of the sequence/chromosome to extract from the fasta file.}
+
+\item{start}{(integer): The starting position (1-based) of the sequence to extract.}
+
+\item{end}{(integer): The ending position (1-based) of the sequence to extract.}
+
+\item{outfasta}{(character): The destination file to write the extracted subsequence in fasta format.}
+
+\item{params}{(list): A list containing the path to the bedtools binary (bedtools_bin).}
+}
 \description{
-extract_subseq_bedtools
-Give me an input fasta link, chromosome coordinates and an
-output destionation file. I will extract the sequence of that
-coordinates from the fasta, and output it into the outfasta.
+Extracts a subsequence from a fasta file using bedtools getfasta.
 }
 \author{
 Wolfram Hoeps

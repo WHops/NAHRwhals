@@ -7,7 +7,7 @@
 gridlist_to_gridmatrix(grid)
 }
 \arguments{
-\item{grid_list}{a dataframe, columns (x,y,z).}
+\item{grid}{a dataframe, columns (x,y,z).}
 }
 \value{
 A matrix of the bitplot

@@ -5,8 +5,8 @@
 #' @description The Bedfile will have the wrong colnames
 # but it doesn't matter because it's saved without them. 
 #'   
-#' @param inpaf_link [character/link] a link to the inpaf to be converted to bed.
-#' @param outsdbed_link [character/link] a link to the output bedfile. Can be NULL, then 
+#' @param inpaf_link A link to the inpaf to be converted to bed.
+#' @param outsdbed_link A link to the output bedfile. Can be NULL, then 
 #' the output will be returned
 #' @return a bed dataframe if outsdbed_link is NULL.
 #' 
@@ -30,7 +30,7 @@ paf_write_bed <- function(inpaf_link, outsdbed_link){
 #' @description Cuts down a paf to entries where query > target. Not 100% sure
 #' what is going on here. 
 #'   
-#' @param inpaf_link [character/link] a link to the inpaf to be converted to bed.
+#' @param inpaf_link A link to the inpaf to be converted to bed.
 #' @return a filtered pseudo-paf file. Gotta double-check this. 
 #' 
 #' @author Wolfram Höps
@@ -61,7 +61,7 @@ paf_to_sd_paf <- function(inpaf_link){
 
 #' Convert a trimmed-down paf to bed? Not sure either about this. 
 #' 
-#' @param inpaf [data frame] a link to the inpaf to be converted to bed.
+#' @param inpaf A link to the inpaf to be converted to bed.
 #' @return a bed-file style dataframe.
 #' 
 #' @author Wolfram Höps

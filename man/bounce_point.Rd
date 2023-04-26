@@ -2,14 +2,21 @@
 % Please edit documentation in R/tsv_to_bitlocus.R
 \name{bounce_point}
 \alias{bounce_point}
-\title{bounce point. Algorithm for making the grid.
-Description TBD.}
+\title{Calculate the "bounced" points of a vector given a point}
 \usage{
 bounce_point(vectors, point)
 }
+\arguments{
+\item{vectors}{A data frame containing the start and end points of each vector, as well as slope and intercept information.}
+
+\item{point}{A numeric vector containing the x- and y-coordinates of the point.}
+}
+\value{
+A data frame containing the bounced points of the vector.
+}
 \description{
-bounce point. Algorithm for making the grid.
-Description TBD.
+This function calculates the "bounced" points of a vector given a point, where the bounced points are the points where the vector intersects the x- and y-axes.
+The function returns a data frame containing the bounced points.
 }
 \author{
 Wolfram Hoeps

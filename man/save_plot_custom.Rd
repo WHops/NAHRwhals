@@ -2,7 +2,7 @@
 % Please edit documentation in R/wrapper_aln_and_analyse.R
 \name{save_plot_custom}
 \alias{save_plot_custom}
-\title{save_plot_custom}
+\title{Save ggplot plot to file using custom settings}
 \usage{
 save_plot_custom(
   inplot,
@@ -13,6 +13,19 @@ save_plot_custom(
   units = "cm"
 )
 }
+\arguments{
+\item{inplot}{The ggplot plot object to be saved.}
+
+\item{filename}{The base name for the output file.}
+
+\item{device}{The device for output file generation (e.g. "pdf", "png", etc.).}
+
+\item{width}{The width of the plot in the specified units.}
+
+\item{height}{The height of the plot in the specified units.}
+
+\item{units}{The units for the plot dimensions (e.g. "cm", "in", etc.).}
+}
 \description{
-Quick helperfunction for saving a ggplot plot.
+This function saves a ggplot plot to a file using custom settings for the filename, device, width, height, and units. It is a quick helper function for saving ggplot plots.
 }

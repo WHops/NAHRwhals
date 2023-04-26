@@ -2,8 +2,7 @@
 % Please edit documentation in R/dfs_machinery.R
 \name{dfsutil}
 \alias{dfsutil}
-\title{DFS workhorse function
-TODO: description}
+\title{DFS workhorse function}
 \usage{
 dfsutil(
   visited,
@@ -20,7 +19,35 @@ dfsutil(
   earlystop = Inf
 )
 }
+\arguments{
+\item{visited}{A hash table containing the visited nodes.}
+
+\item{pair}{A data frame representing a pair of points to be mutated.}
+
+\item{pairhash}{A hash value representing the mutated pair.}
+
+\item{mutator}{A matrix representing the mutated search space.}
+
+\item{depth}{The current depth of the search tree.}
+
+\item{maxdepth}{The maximum depth of the search tree.}
+
+\item{pairhistory}{The search history up to the current pair.}
+
+\item{df_output}{A data frame representing the evaluation results.}
+
+\item{increase_only}{A boolean indicating whether only increasing mutations are allowed.}
+
+\item{orig_symm}{The original symmetry value of the search space.}
+
+\item{last_eval}{The score of the previous evaluation.}
+
+\item{earlystop}{The maximum number of evaluations before the search is terminated.}
+}
+\value{
+A list containing the search history and the evaluation results.
+}
 \description{
-DFS workhorse function
-TODO: description
+This function recursively explores possible paths within the search space and returns a list containing
+the search history and the evaluation results.
 }

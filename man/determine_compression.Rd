@@ -2,11 +2,18 @@
 % Please edit documentation in R/wrapper_aln_and_analyse.R
 \name{determine_compression}
 \alias{determine_compression}
-\title{determine_compression}
+\title{Determine optimal compression parameter for segmenting a dot plot}
 \usage{
 determine_compression(start, end)
 }
+\arguments{
+\item{start}{The starting coordinate of the input sequence.}
+
+\item{end}{The ending coordinate of the input sequence.}
+}
+\value{
+The optimal compression parameter for segmenting the dot plot.
+}
 \description{
-Compression parameter for segmenting the dotplot.
-We choose this based on the length of the sequence.
+This function determines the optimal compression parameter for segmenting a dot plot based on the length of the input sequence. It uses a set of pre-defined upper length cutoffs and compression values to choose the best compression parameter for the input sequence.
 }

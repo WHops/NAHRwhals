@@ -7,7 +7,7 @@
 flip_bitl_y_if_needed(bitl)
 }
 \arguments{
-\item{bitl_f}{a gridmatrix / bitlocus.}
+\item{bitl}{a gridmatrix / bitlocus.}
 }
 \value{
 the same gridmatrix, flipped or unflipped.

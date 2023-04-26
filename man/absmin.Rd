@@ -2,12 +2,18 @@
 % Please edit documentation in R/evaltools.R
 \name{absmin}
 \alias{absmin}
-\title{absmin}
+\title{Return the absolute minimum of a numeric vector}
 \usage{
 absmin(x)
 }
+\arguments{
+\item{x}{A numeric vector.}
+}
+\value{
+The absolute minimum value of \code{x}.
+}
 \description{
-Tiny helperfuction to return the absolute minimum
+This function returns the absolute minimum of a numeric vector.
 }
 \author{
 Wolfram Hoeps

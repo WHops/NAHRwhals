@@ -2,14 +2,25 @@
 % Please edit documentation in R/fasta_extraction_functions.R
 \name{find_punctual_liftover}
 \alias{find_punctual_liftover}
-\title{find_punctual_liftover
-Translates a single point from one assembly to another.
-Uses the pre-computed conversion-paf.}
+\title{find_punctual_liftover}
 \usage{
 find_punctual_liftover(cpaf, pointcoordinate, chrom)
 }
+\arguments{
+\item{cpaf}{(data.frame): A data frame containing the conversion-paf.}
+
+\item{pointcoordinate}{(integer): The coordinate of the point to be lifted over.}
+
+\item{chrom}{(character): The chromosome of the point to be lifted over.}
+}
+\value{
+A data frame with two columns: seqname and liftover_coord.
+seqname gives the name of the sequence to which the point was lifted over, and liftover_coord
+gives the lifted-over coordinate.
+}
 \description{
-find_punctual_liftover
-Translates a single point from one assembly to another.
-Uses the pre-computed conversion-paf.
+Translates a single point from one genome assembly to another using a pre-computed conversion-paf.
+}
+\author{
+Wolfram Höps
 }

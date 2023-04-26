@@ -290,9 +290,7 @@ dotplotly_dotplot_return_aln <- function(opt) {
 #' @param opt A list of options for the plot
 #' @export
 plot_alignments <- function(alignments, opt) {
-  # Print x_end and x_start
-  print(opt$x_end)
-  print(opt$x_start)
+
 
   # Calculate yTickMarks
   yTickMarks = tapply(alignments$queryEnd, alignments$queryID, max)
@@ -304,14 +302,14 @@ plot_alignments <- function(alignments, opt) {
 
   # Set samplename_x and samplename_y based on aln_type_xx_yy_xy
   if (opt$aln_type_xx_yy_xy == 'xx') {
-    samplename_x = params$samplename_x
-    samplename_y = params$samplename_x
+    samplename_x = opt$samplename_x
+    samplename_y = opt$samplename_x
   } else if (opt$aln_type_xx_yy_xy == 'yy') {
-    samplename_x = params$samplename_y
-    samplename_y = params$samplename_y
+    samplename_x = opt$samplename_y
+    samplename_y = opt$samplename_y
   } else if (opt$aln_type_xx_yy_xy == 'xy') {
-    samplename_x = params$samplename_x
-    samplename_y = params$samplename_y
+    samplename_x = opt$samplename_x
+    samplename_y = opt$samplename_y
   }
 
   # Create the ggplot object
@@ -560,6 +558,8 @@ areColors <- function(x) {
 #' @param x_end Numeric: End position for X-axis.
 #' @param hltrack Logical: Include highlight track (default: NULL).
 #' @param aln_type_xx_yy_xy Character: Alignment type (default: 'xy').
+#' @param samplename_x The name of the sequence to appear on the x axis. (default: 'seq_x')
+#' @param samplename_y The name of the sequence to appear on the y axis. (default: 'seq_y')
 #' @return The generated dotplot. If 'save' is TRUE, the dotplot is saved as a PDF.
 #' @author Wolfram Höps
 #' @export
@@ -585,9 +585,11 @@ pafdotplot_make <- function(inpaf_link,
                             x_start = NULL,
                             x_end = NULL,
                             hltrack = NULL,
-                            aln_type_xx_yy_xy = 'xy') {
-  
-  options <- list(
+                            aln_type_xx_yy_xy = 'xy',
+                            samplename_x = 'seq_x',
+                            samplename_y = 'seq_y') {
+
+    options <- list(
     input_filename = inpaf_link,
     output_filename = outplot_link,
     min_align = min_align,
@@ -610,16 +612,19 @@ pafdotplot_make <- function(inpaf_link,
     x_end = x_end,
     anntrack = anntrack,
     hltrack = hltrack,
-    aln_type_xx_yy_xy = aln_type_xx_yy_xy
+    aln_type_xx_yy_xy = aln_type_xx_yy_xy,
+    samplename_x = samplename_x, 
+    samplename_y = samplename_y
   )
 
   # Obtain alignments using the provided options
   alignments = dotplotly_dotplot_return_aln(options)
+
   # Generate the dotplot from the alignments
   plot = plot_alignments(alignments, options)
 
   return(plot)
-                            }
+}
 
 #' Plot a pairwise alignment format (PAF) data frame.
 #'

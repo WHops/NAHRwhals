@@ -2,10 +2,21 @@
 % Please edit documentation in R/pafless_liftover.R
 \name{make_params_conversionpaf}
 \alias{make_params_conversionpaf}
-\title{Doc pending}
+\title{DOC PENDING.}
 \usage{
 make_params_conversionpaf(params, outlinks)
 }
+\arguments{
+\item{params}{A list of parameters specifying the input and output file paths and other options}
+
+\item{outlinks}{A list of output file paths}
+}
+\value{
+params, a list.
+}
 \description{
-Doc pending
+DOC PENDING.
+}
+\author{
+Wolfram Höps
 }

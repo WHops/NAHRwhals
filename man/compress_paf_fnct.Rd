@@ -2,7 +2,7 @@
 % Please edit documentation in R/compress_paf.R
 \name{compress_paf_fnct}
 \alias{compress_paf_fnct}
-\title{Melt the alignment pieces back together after chunkifying them earlier.}
+\title{Melt Alignment Chunks Back Together}
 \usage{
 compress_paf_fnct(
   inpaf_link = NULL,
@@ -16,15 +16,28 @@ compress_paf_fnct(
 )
 }
 \arguments{
-\item{inpaf_link}{\link{character/link} link to the chunked paf}
+\item{inpaf_link}{A file path or link to the input chunked PAF file.}
 
-\item{outpaf_link}{\link{character/link} link to the molten output paf
-Set to larger values (e.g. 250k) for very large alignments (>5Mb).}
+\item{outpaf_link}{A file path or link to the output "molten" PAF file.}
+
+\item{inpaf_df}{An optional input PAF data.frame.}
+
+\item{save_outpaf}{Logical value whether to save the output PAF file (default: TRUE).}
+
+\item{n_quadrants_per_axis}{The number of quadrants per axis (determines chunking).}
+
+\item{second_run}{Logical value whether this is the second run of the function (default: FALSE).}
+
+\item{inparam_chunklen}{The input parameter for chunk length in bp.}
+
+\item{inparam_compression}{The input parameter for compression in bp.}
 }
 \description{
-This is a crucial module for finding the SDs later, and poses
-the last part of the chunk-minimap2-edit-melt workflow. This might need more
-work in the future, because melting is not so straight forward.
+This function is a crucial part of the process of identifying synteny blocks (SDs)
+and is the last step of the chunk-minimap2-edit-melt workflow. It takes the chunked PAF file
+produced earlier in the pipeline and "melts" the alignment pieces back together.
+Note that improvements may be needed in the future, as the melting process is not
+entirely straightforward.
 }
 \author{
 Wolfram Höps

@@ -2,10 +2,17 @@
 % Please edit documentation in R/wrapper_aln_and_analyse.R
 \name{write_results}
 \alias{write_results}
-\title{write_results}
+\title{Write tree search results to output file and logfile}
 \usage{
 write_results(res, outlinks, params)
 }
+\arguments{
+\item{res}{A table of search results to write to an output file.}
+
+\item{outlinks}{A list of output links where the resulting files will be saved.}
+
+\item{params}{A list of input parameters for the search.}
+}
 \description{
-Write results of a tree search to an output file. Uses the global 'log' variable.
+This function writes the results of a tree search to an output file and saves a log of the results to a logfile.
 }

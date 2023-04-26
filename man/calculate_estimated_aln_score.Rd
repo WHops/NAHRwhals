@@ -8,8 +8,6 @@ calculate_estimated_aln_score(mat)
 }
 \arguments{
 \item{mat}{A matrix object representing a condensed dotplot}
-
-\item{output}{a percentage estimate for the score}
 }
 \description{
 Quick & Dirty estimation of the score of a condensed dotplot.

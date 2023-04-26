@@ -7,11 +7,11 @@
 #' @param bitlocus A bit locus to be worked on
 #' @param maxdepth_input An integer indicating the maximum search depth
 #' @param earlystop A number indicating the maximum evaluations
-#' 
+#' @param solve_th Threshold for considering a mutation 'solved', in percent (def. 98)
 #' @return A data frame that stores the search results
 #' 
 #' @export
-solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
+solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th = 98){
   # 
   # browser()
   # bitlocus = readRDS('bitme_large')
@@ -36,7 +36,7 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
   
   # Optional: adjust depth
   maxdepth = reduce_depth_if_needed(bitlocus, increase_only = F, maxdepth_input)
-  print(maxdepth)
+
   # Run iterations of increasing depth. 
   # Always run the whole thing, but also don't go 
   # deeper once a good solution is found. 
@@ -62,7 +62,7 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
     res_df = vis_list[[2]]
 
     # Are we happy with the best result? 
-    solve_th = params$eval_th# find_threshold(bitlocus, current_depth)
+    # solve_th = params$eval_th# find_threshold(bitlocus, current_depth)
     conclusion_found = (max(as.numeric(res_df$eval)) >= solve_th)
     
     if (conclusion_found){
@@ -91,9 +91,6 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
     res_df = run_steepest_descent_one_layer_down(bitlocus, res_df, starting_depth = current_depth - 1)
   } 
   
-
-  print('Sorting results')
-
   # Prepare output for returns
   res_df_sort = sort_new_by_penalised(bitlocus, res_df)
   res_out = transform_res_new_to_old(res_df_sort)
@@ -109,10 +106,10 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf){
     log_collection$mut_tested <<- dim(res_df)[1]
   }
 
-  print(paste0('Nodes considered: ', n_eval_total + n_hash_excluded))  
-  print(paste0('Eval attempted: ', n_eval_total))
-  print(paste0('Eval calced: ', n_eval_calc))
-  print(paste0('Hash excluded: ', n_hash_excluded))
+  # print(paste0('Nodes considered: ', n_eval_total + n_hash_excluded))  
+  # print(paste0('Eval attempted: ', n_eval_total))
+  # print(paste0('Eval calced: ', n_eval_calc))
+  # print(paste0('Hash excluded: ', n_hash_excluded))
 
   return(res_out)
 

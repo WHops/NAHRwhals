@@ -2,10 +2,13 @@
 % Please edit documentation in R/pafless_liftover.R
 \name{create_mmi_if_doesnt_exists}
 \alias{create_mmi_if_doesnt_exists}
-\title{Doc pending}
+\title{Creates a minimap2 index (.mmi) file for a genome assembly if it doesn't exist.}
 \usage{
 create_mmi_if_doesnt_exists(params)
 }
+\arguments{
+\item{params}{A list containing parameters for the function.}
+}
 \description{
-Doc pending
+Creates a minimap2 index (.mmi) file for a genome assembly if it doesn't exist.
 }

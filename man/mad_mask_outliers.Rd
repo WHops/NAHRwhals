@@ -2,12 +2,22 @@
 % Please edit documentation in R/fasta_extraction_functions.R
 \name{mad_mask_outliers}
 \alias{mad_mask_outliers}
-\title{mad_mask_outliers}
+\title{mad_mask_outliers
+This function masks outliers in a vector using the median absolute deviation (MAD) method.}
 \usage{
 mad_mask_outliers(obs, th = 4)
 }
+\arguments{
+\item{obs}{A numeric vector}
+
+\item{th}{A numeric threshold (default 4)}
+}
+\value{
+A logical vector indicating which values in obs are not outliers
+}
 \description{
 mad_mask_outliers
+This function masks outliers in a vector using the median absolute deviation (MAD) method.
 }
 \author{
 Wolfram Hoeps

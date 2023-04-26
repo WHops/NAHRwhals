@@ -6,8 +6,16 @@
 \usage{
 extract_sequence_wrapper(params, outlinks)
 }
+\arguments{
+\item{params}{A list containing parameters for the sequence extraction}
+
+\item{outlinks}{A list containing links for the output files}
+}
+\value{
+A list containing the start and end positions of the extracted sequence and the parameters for the sequence extraction
+}
 \description{
-Needs more documentation.
+This function extracts a sequence from the reference genome and the assembly genome based on the input parameters.
 }
 \author{
 Wolfram Höps

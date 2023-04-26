@@ -2,7 +2,11 @@
 % Please edit documentation in R/wiggle_find_parameters.R
 \name{run_n_tests}
 \alias{run_n_tests}
-\title{TODO: describe}
+\title{Runs n_tests tests for each candidate minlen and compression value in a range
+defined by the input parameters. Returns a dataframe with the results of each
+test, including the minlen, compression, success (TRUE if no incongruencies,
+FALSE otherwise), the number of alignments in the paf file, the number of rows
+plus the number of columns of the resulting grid, and the collapse penalty.}
 \usage{
 run_n_tests(
   inpaf,
@@ -14,6 +18,36 @@ run_n_tests(
   max_size_col_plus_rows
 )
 }
+\arguments{
+\item{inpaf}{a string representing the path to a PAF file.}
+
+\item{min_}{integer representing the minimum value of the log2 of the candidate
+minlen values.}
+
+\item{max_}{integer representing the maximum value of the log2 of the candidate
+minlen values.}
+
+\item{res}{a dataframe to append the results of each test to.}
+
+\item{n_tests}{integer representing the number of tests to run for each candidate
+minlen and compression value.}
+
+\item{n_max_alns}{integer representing the maximum number of alignments that
+should be included in a grid.}
+
+\item{max_size_col_plus_rows}{integer representing the maximum number of columns
+plus the maximum number of rows that a grid should have.}
+}
+\value{
+a dataframe with the results of each test, including the minlen,
+compression, success (TRUE if no incongruencies, FALSE otherwise), the number
+of alignments in the paf file, the number of rows plus the number of columns
+of the resulting grid, and the collapse penalty.
+}
 \description{
-TODO: describe
+Runs n_tests tests for each candidate minlen and compression value in a range
+defined by the input parameters. Returns a dataframe with the results of each
+test, including the minlen, compression, success (TRUE if no incongruencies,
+FALSE otherwise), the number of alignments in the paf file, the number of rows
+plus the number of columns of the resulting grid, and the collapse penalty.
 }

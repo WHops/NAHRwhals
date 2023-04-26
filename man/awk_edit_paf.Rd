@@ -7,16 +7,19 @@
 awk_edit_paf(inpaf, outpaf, params)
 }
 \arguments{
-\item{inpaf}{\link{character/link} input paf}
+\item{inpaf}{A character/link to input PAF file name or link.}
 
-\item{outpaf}{\link{character/link} output paf}
+\item{outpaf}{A character/link to output PAF file name or link.}
+
+\item{params}{A named list containing the parameters for running the awk command. The list must contain an element
+named \code{awkscript_paf} that specifies the path to the awk script file to be used.}
 }
 \value{
-nothing. Only output files written.
+Nothing. The function only writes the output file.
 }
 \description{
-This is a helperfunction to run awk
+This is a helper function that submits a system command to run awk to change sequence chunk names in a PAF file.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

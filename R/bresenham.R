@@ -85,8 +85,7 @@ bresenham <-
     # What about stopping as soon as one of the contestants has reached their goal?
     while (!(isTRUE(all.equal(x, x.end)) |
              isTRUE(all.equal(y, y.end)))) {
-      # print(x)
-      # print(x.end)
+
       # Here is where the omnidirectionality is encoded.
       # s perhaps for 'step'?
       
@@ -96,18 +95,11 @@ bresenham <-
         ifelse(x < x.end, griddiffs_x[x_grididx],-griddiffs_x[x_grididx - 1])
       sy <-
         ifelse(y < y.end, griddiffs_y[y_grididx],-griddiffs_y[y_grididx - 1])
-      # print(sx)
-      # print(dx)
-      # print(sy)
-      # print(dx)
-      # print(dy)
-      # browser()
+
       e2 <- 2 * err
-      #print(paste0('e2 >= dy: ', e2 >= dy))
       if (e2 >= dy | e2 <= dx) {
         # increment x
         
-        # print('incrementing x')
         # increment x
         x <- x + sx
         x_grididx <- x_grididx + sign(sx)
@@ -121,7 +113,6 @@ bresenham <-
         #}
         #if (e2 <= dx) { # increment y
         
-        # print('incrementing y')
         y <- y + sy
         y_grididx <- y_grididx + sign(sy)
         

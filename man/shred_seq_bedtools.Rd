@@ -7,11 +7,13 @@
 shred_seq_bedtools(infasta, outfasta_chunk, chunklen, params)
 }
 \arguments{
-\item{infasta}{\link{character/link} single-seq fasta to be chopped}
+\item{infasta}{A link to a single-seq fasta to be chopped}
 
-\item{outfasta_chunk}{\link{character/link} output chopped multi-seq fasta.}
+\item{outfasta_chunk}{A link to the output path for a chopped multi-seq fasta.}
 
-\item{chunklen}{\link{numeric} length of sequence chunks in bp}
+\item{chunklen}{length of sequence chunks in bp}
+
+\item{params}{a list with all NAHRwhals parameters}
 }
 \value{
 nothing. But output files written.

@@ -7,9 +7,9 @@
 writeFasta(data, filename)
 }
 \arguments{
-\item{data}{\link{character/link} data frame with column 'name' and 'seq'}
+\item{data}{A data frame with column 'name' and 'seq'}
 
-\item{filename}{\link{character/link} output filename.}
+\item{filename}{An output filename.}
 }
 \value{
 nothing. Only output files written.

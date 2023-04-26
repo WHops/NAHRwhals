@@ -2,7 +2,7 @@
 % Please edit documentation in R/merge_paf_entries_intraloop.R
 \name{merge_paf_entries_intraloop}
 \alias{merge_paf_entries_intraloop}
-\title{Undocumented helperfunction. Called in the process of stitching together chunked alignments.}
+\title{Merge neighboring alignments in a PAF file for stitching together chunked alignments}
 \usage{
 merge_paf_entries_intraloop(
   inpaf,
@@ -11,8 +11,20 @@ merge_paf_entries_intraloop(
   inparam_compression = NULL
 )
 }
+\arguments{
+\item{inpaf}{A PAF file containing alignments}
+
+\item{second_run}{A logical indicating if this is the second run of the stitching process}
+
+\item{inparam_chunklen}{An optional parameter to specify the length of the input chunks}
+
+\item{inparam_compression}{An optional parameter to specify the compression factor to be used in the merging process}
+}
+\value{
+A data.frame of row pairs that are considered neighbors
+}
 \description{
-Undocumented helperfunction. Called in the process of stitching together chunked alignments.
+This function identifies alignments in a PAF file that are potential neighbors by checking if their distance in any direction (+-x, +-y) is less than 5\% of their alignment length. Alignments are considered as neighbors if they have the same strand and the end of one is the start of the other. The function returns a data.frame of row pairs that are considered neighbors based on the above criteria. This function is called in the process of stitching together chunked alignments.
 }
 \author{
 Wolfram Höps

@@ -2,10 +2,18 @@
 % Please edit documentation in R/wrapper_aln_and_analyse.R
 \name{determine_chunklen}
 \alias{determine_chunklen}
-\title{TODO: describe}
+\title{Determine optimal chunk length for processing a sequence}
 \usage{
 determine_chunklen(start, end)
 }
+\arguments{
+\item{start}{The starting coordinate of the input sequence.}
+
+\item{end}{The ending coordinate of the input sequence.}
+}
+\value{
+The optimal chunk length for processing the input sequence.
+}
 \description{
-TODO: describe
+This function determines the optimal chunk length for processing a sequence based on the length of the input sequence. It uses a set of pre-defined upper length cutoffs and chunk length values to choose the best chunk length for the input sequence.
 }

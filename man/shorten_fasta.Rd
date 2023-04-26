@@ -2,12 +2,19 @@
 % Please edit documentation in R/seqbuilder_functions.R
 \name{shorten_fasta}
 \alias{shorten_fasta}
-\title{helperfunction to shorten a fasta file.}
+\title{Shorten a FASTA file.}
 \usage{
 shorten_fasta(infasta, outfasta, range)
 }
+\arguments{
+\item{infasta}{A Path to input FASTA file.}
+
+\item{outfasta}{A Path to output shortened FASTA file.}
+
+\item{range}{Numeric vector of length 2 specifying the start and stop positions of the sequence to extract.}
+}
 \description{
-helperfunction to shorten a fasta file.
+This function reads in a FASTA file and writes a shortened version of it to a new file. The shortened version contains only the sequence specified by the start and stop positions passed in the range argument. The new file is written to the location specified by outfasta.
 }
 \author{
 Nicholas Hathaway

@@ -2,10 +2,16 @@
 % Please edit documentation in R/seqbuilder_functions.R
 \name{colMax}
 \alias{colMax}
-\title{ColMax function}
+\title{colMax function}
 \usage{
 colMax(data)
 }
+\arguments{
+\item{data}{a matrix or data frame.}
+}
+\value{
+a numeric vector containing the maximum value for each column of \code{data}.
+}
 \description{
-From Stackoverflow. Does what you expect it to do.
+Computes the maximum value for each column of a matrix or data frame.
 }

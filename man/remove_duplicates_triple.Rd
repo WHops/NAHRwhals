@@ -2,15 +2,18 @@
 % Please edit documentation in R/remove_duplicates_triple.R
 \name{remove_duplicates_triple}
 \alias{remove_duplicates_triple}
-\title{remove_duplicates_triple}
+\title{Remove duplicate values from a triple data frame}
 \usage{
 remove_duplicates_triple(grid_list_f)
 }
+\arguments{
+\item{grid_list_f}{A data frame containing columns x, y, and z}
+}
+\value{
+A data frame with duplicate values removed
+}
 \description{
-Remove duplicates TRIPLE. First, remove obvious duplicates (all 3 same)
-Then, identify those with same x/y but different z. The get 0.
-Finally, the second step has produced new duplicates, so be mean again.
-Used to 'purify' / 'simplify' a grid_list
+This function takes a triple data frame containing columns x, y, and z, and removes duplicate values. First, obvious duplicates (where all three values are the same) are removed. Then, values with the same x/y but different z are identified and set to 0. Finally, the second step may produce new duplicates, so the function removes those again. This function is typically used to simplify a grid_list.
 }
 \author{
 Wolfram Hoeps

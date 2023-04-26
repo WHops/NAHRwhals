@@ -22,9 +22,3 @@ keys (always character) and value a list column
 \description{
 Transform a hash into a nrowx2 data.frame
 }
-\examples{
-
- h <- hash( a=1, b=1:2, c=1:3)
- as.data.frame(h)
- 
-}

@@ -109,9 +109,6 @@ write_x_y_sequences <- function(seqname_x,
     }
     
     
-    print(coords_liftover)
-    print(coords_liftover_2nd)
-    
     extract_subseq_bedtools(genome_y_fa,
                                 coords_liftover_2nd$lift_contig,
                                 coords_liftover_2nd$lift_start,

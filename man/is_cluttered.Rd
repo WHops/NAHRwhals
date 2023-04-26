@@ -2,12 +2,18 @@
 % Please edit documentation in R/explore_mutation_space_v2_helpers.R
 \name{is_cluttered}
 \alias{is_cluttered}
-\title{Determine if a bitlocus is good for use in the first place.
-If it has many dots around its edges, it is not good and we
-need a larger window.}
+\title{is_cluttered}
 \usage{
 is_cluttered(bitlocus_f, clutter_limit_per_border = 5)
 }
+\arguments{
+\item{bitlocus_f}{The matrix representing the bitlocus.}
+
+\item{clutter_limit_per_border}{The maximum number of dots allowed per border.}
+}
+\value{
+TRUE if the bitlocus is cluttered, FALSE otherwise.
+}
 \description{
-I want to have a second look at this function... is it clean / reasonable?
+This function determines if a bitlocus is too cluttered to be analysed/considered further
 }

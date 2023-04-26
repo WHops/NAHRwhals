@@ -2,10 +2,16 @@
 % Please edit documentation in R/plot_matrix_ggplot.R
 \name{pmsqrt}
 \alias{pmsqrt}
-\title{little stuff}
+\title{Compute the signed square root}
 \usage{
 pmsqrt(x)
 }
+\arguments{
+\item{x}{A numeric value or vector}
+}
+\value{
+The signed square root of the input value(s)
+}
 \description{
-little stuff
+Compute the signed square root
 }

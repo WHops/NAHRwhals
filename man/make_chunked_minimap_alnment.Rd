@@ -2,8 +2,7 @@
 % Please edit documentation in R/seqbuilder_functions.R
 \name{make_chunked_minimap_alnment}
 \alias{make_chunked_minimap_alnment}
-\title{A core wrapper function. Give me two fasta files and I'll give you
-an output paf and a dotplot pdf.}
+\title{Perform Chunked Minimap2 Alignment and Generate Dotplot}
 \usage{
 make_chunked_minimap_alnment(
   params,
@@ -28,38 +27,64 @@ make_chunked_minimap_alnment(
   x_start = NULL,
   x_end = NULL,
   hltrack = NULL,
-  onlypafreturn = F
+  onlypafreturn = F,
+  aln_type_xx_yy_xy = "xy"
 )
 }
 \arguments{
-\item{targetfasta}{\link{character/link} link to the 'target' single-sequence fasta (sometimes reference, e.g. chm13.)}
+\item{params}{a list of NAHRwhals paramters}
 
-\item{queryfasta}{\link{character/link} link to the 'query' single-sequence fasta.}
+\item{targetfasta}{A character string containing the path to the 'target' single-sequence FASTA file (e.g., chm13).}
 
-\item{outpaf}{\link{character/link} Path to the output paffile to be written.}
+\item{queryfasta}{A character string containing the path to the 'query' single-sequence FASTA file.}
 
-\item{chunklen}{\link{numeric} length of sequence chunks to split the query to (default = 1000 bp.)}
+\item{outpaf}{A character string containing the path to the output PAF file to be written.}
 
-\item{keep_ref}{\link{numeric} Number of alignments to keep or something. Plotting parameter.}
+\item{chunklen}{A numeric value indicating the length of sequence chunks to split the query into (default = 1000 bp).}
 
-\item{plot_size}{\link{numeric} Plot size in inch.}
+\item{keep_ref}{A numeric value indicating the number of alignments to keep for plotting (default = 10000).}
 
-\item{hllink}{\link{character/link} link to an SD annotation file (bed, tsv or paf) to include as
-highlights in the plot.}
+\item{minsdlen}{A numeric value; purpose not entirely clear.}
 
-\item{hltype}{\link{character} filetype of hllink. Can be 'NULL', 'bed', 'tsv', 'paf'.}
+\item{plot_size}{A numeric value indicating the plot size in inches (default = 10).}
 
-\item{outplot}{\link{character/link} Path to the output plot to be written.}
+\item{saveplot}{A logical value indicating whether or not to save the plot (default = TRUE).}
 
-\item{outsd}{\link{character/link} Outputfile for the modified SD tsv file.}
+\item{savepaf}{A logical value indicating whether or not to save the PAF file (default = TRUE).}
+
+\item{quadrantsize}{A numeric value indicating the quadrant size (default = 100000).}
+
+\item{hllink}{A character string containing the path to an SD annotation file (BED, TSV, or PAF) to include as highlights in the plot (default = FALSE).}
+
+\item{hltype}{A character string indicating the filetype of hllink. Can be 'NULL', 'bed', 'tsv', or 'paf' (default = FALSE).}
+
+\item{hlstart}{An integer value indicating the start position of the highlight region (default = NULL).}
+
+\item{hlend}{An integer value indicating the end position of the highlight region (default = NULL).}
+
+\item{targetrange}{A numeric vector containing the start and end positions of the target sequence to use (default = NULL).}
+
+\item{queryrange}{A numeric vector containing the start and end positions of the query sequence to use (default = NULL).}
+
+\item{anntrack}{A logical value indicating whether or not to include an annotation track (default = FALSE).}
+
+\item{x_seqname}{A character string indicating the name of the reference sequence for the annotation track (default = NULL).}
+
+\item{x_start}{A numeric value indicating the start position of the reference sequence for the annotation track (default = NULL).}
+
+\item{x_end}{A numeric value indicating the end position of the reference sequence for the annotation track (default = NULL).}
+
+\item{hltrack}{A numeric value indicating the track number to use for highlighting (default = NULL).}
+
+\item{onlypafreturn}{A logical value indicating whether or not to only return the PAF file (default = FALSE).}
+
+\item{aln_type_xx_yy_xy}{A character string indicating the orientation of the alignment (default = 'xy').}
 }
 \value{
-nothing. But output files written.
+This function has no return value. Output files are written to the specified paths.
 }
 \description{
-This is sitting at the core of the nahrchainer module. It ties
-together core modules, such as query-sequence chunking, minimap2 alignment,
-paf recombination and plotting. s
+This function performs a chunked minimap2 alignment of two single-sequence FASTA files, generates a PAF file, and creates a dotplot PDF. It utilizes helper functions for sequence chunking, minimap2 alignment, PAF recombination, and dotplot generation.
 }
 \author{
 Wolfram Höps

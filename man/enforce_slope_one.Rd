@@ -2,12 +2,23 @@
 % Please edit documentation in R/tsv_to_bitlocus.R
 \name{enforce_slope_one}
 \alias{enforce_slope_one}
-\title{enforce_slope_one}
+\title{Ensure that the slope of each alignment is equal to one.}
 \usage{
 enforce_slope_one(df)
 }
+\arguments{
+\item{df}{A data frame containing alignments.}
+}
+\value{
+A modified data frame containing alignments, with the slope of each alignment equal to one.
+}
 \description{
-enforce_slope_one
+This function takes a data frame of alignments, and ensures that the slope of each
+alignment is equal to one. This is done by first calculating the length of the
+alignment along the query and target sequences, and then setting the length along
+the query and target sequences to be equal to the negative of the maximum of these
+two lengths. The resulting alignment is then returned, with the length of the alignment
+along the query and target sequences, and the squaresize, removed.
 }
 \author{
 Wolfram Hoeps

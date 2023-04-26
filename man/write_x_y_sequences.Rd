@@ -2,7 +2,7 @@
 % Please edit documentation in R/fasta_find_extract_2.R
 \name{write_x_y_sequences}
 \alias{write_x_y_sequences}
-\title{write_x_y_sequences}
+\title{Write x and y subsequences based on given coordinates.}
 \usage{
 write_x_y_sequences(
   seqname_x,
@@ -17,8 +17,33 @@ write_x_y_sequences(
   extract_only = F
 )
 }
+\arguments{
+\item{seqname_x}{character string specifying the sequence name in genome_x_fa.}
+
+\item{start_x_pad}{numeric value indicating the start position on genome_x_fa.}
+
+\item{end_x_pad}{numeric value indicating the end position on genome_x_fa.}
+
+\item{genome_x_fa_subseq}{character string specifying the output file for the subsequence of genome_x_fa.}
+
+\item{genome_y_fa_subseq}{character string specifying the output file for the subsequence of genome_y_fa.}
+
+\item{genome_y_fa}{character string specifying the path to the genome_y_fa file.}
+
+\item{conversionpaf_link}{character string specifying the path to the conversion PAF file.}
+
+\item{outlinks}{a list containing output file paths.}
+
+\item{params}{a list containing parameters for the function.}
+
+\item{extract_only}{logical value indicating whether or not to only extract the subsequence of genome_x_fa. Default is FALSE.}
+}
+\value{
+a list containing the new sequence name, new start position on genome_x_fa, and new end position on genome_x_fa.
+}
 \description{
-This was previously part of the wrapper_aln_and_analyse.
-However, over time, this grew into more and more complex code,
-So it is for sure worth its own function by now.
+This function extracts subsequences of genome_x_fa and genome_y_fa based on the given coordinates and parameters. It also converts the coordinates from genome_x_fa to genome_y_fa using a liftover_coarse function. The function returns the new start and end coordinates of the regions on genome_x_fa and genome_y_fa as a list. If extract_only is set to true, it only extracts the subsequence of genome_x_fa and returns the new start and end coordinates of the subsequence.
+}
+\author{
+Wolfram Höps
 }

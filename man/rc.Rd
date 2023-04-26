@@ -19,13 +19,7 @@ sequences that are stored as character strings.
 }
 \details{
 This function accepts only DNA sequences in concatenated character
-string format, see \code{\link[ape]{complement}} in the \code{\link[ape]{ape}}
-package for "DNAbin" input objects, and \code{\link[seqinr]{comp}} in the
-\code{\link[seqinr]{seqinr}} package for when the input object is a character
-vector.
-}
-\examples{
-rc("TATTG")
+string format.
 }
 \author{
 Shaun Wilkinson

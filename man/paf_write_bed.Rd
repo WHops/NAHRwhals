@@ -9,9 +9,9 @@ to a bedfile.}
 paf_write_bed(inpaf_link, outsdbed_link)
 }
 \arguments{
-\item{inpaf_link}{\link{character/link} a link to the inpaf to be converted to bed.}
+\item{inpaf_link}{A link to the inpaf to be converted to bed.}
 
-\item{outsdbed_link}{\link{character/link} a link to the output bedfile. Can be NULL, then
+\item{outsdbed_link}{A link to the output bedfile. Can be NULL, then
 the output will be returned}
 }
 \value{

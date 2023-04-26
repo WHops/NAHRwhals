@@ -2,10 +2,25 @@
 % Please edit documentation in R/explore_mutation_space_v2_helpers.R
 \name{run_steepest_descent_one_layer_down}
 \alias{run_steepest_descent_one_layer_down}
-\title{run_steepest_descent_one_layer_down}
+\title{Runs a tree search in steepest_descent mode with a maximum search depth of one less than the starting depth.}
 \usage{
 run_steepest_descent_one_layer_down(bitlocus, res_df, starting_depth = 1)
 }
+\arguments{
+\item{bitlocus}{A bit locus to be worked on}
+
+\item{res_df}{A data frame that stores the search results}
+
+\item{starting_depth}{An integer indicating the starting search depth}
+}
+\value{
+A data frame that stores the updated search results
+}
 \description{
-Helperfunction to run a tree search in steepest_descent mode.
+This function is a helper function for running a tree search in steepest_descent mode.
+It searches for the best results of the given starting depth and applies one more mutation to each result to
+start a new search with one less maximum search depth.
+}
+\author{
+Wolfram Höps
 }

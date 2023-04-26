@@ -2,10 +2,18 @@
 % Please edit documentation in R/wrapper_aln_and_analyse.R
 \name{wrapper_condense_paf}
 \alias{wrapper_condense_paf}
-\title{wrapper_condense_paf}
+\title{Wrapper function for condensing PAF files into bit-locus format}
 \usage{
 wrapper_condense_paf(params, outlinks)
 }
+\arguments{
+\item{params}{A list of input parameters used for the bit-locus plot generation.}
+
+\item{outlinks}{A list of output links where the resulting plot files will be saved.}
+}
+\value{
+A matrix containing the condensed bit-locus data.
+}
 \description{
-Wrapper around a wrapper ... consider to simplify / remove.
+This function serves as a wrapper for the \code{wrapper_paf_to_bitlocus} function. It condenses PAF files into bit-locus format based on the input parameters and saves the resulting plot files to disk.
 }

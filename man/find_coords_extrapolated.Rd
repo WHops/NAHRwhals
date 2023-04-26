@@ -2,7 +2,8 @@
 % Please edit documentation in R/fasta_extraction_functions.R
 \name{find_coords_extrapolated}
 \alias{find_coords_extrapolated}
-\title{find_coords_extrapolated}
+\title{find_coords_extrapolated
+This function finds the coordinates of a region given a set of liftover coordinates and other parameters.}
 \usage{
 find_coords_extrapolated(
   liftover_coords,
@@ -13,8 +14,25 @@ find_coords_extrapolated(
   liftover_run
 )
 }
+\arguments{
+\item{liftover_coords}{A data frame containing liftover coordinates}
+
+\item{cpaf}{A data frame containing cpaf information}
+
+\item{winner_chr}{The chromosome with the highest number of matching sequences}
+
+\item{start}{The start position of the region}
+
+\item{end}{The end position of the region}
+
+\item{liftover_run}{A logical value indicating whether this is a liftover run}
+}
+\value{
+A numeric vector containing the start and end coordinates of the region
+}
 \description{
 find_coords_extrapolated
+This function finds the coordinates of a region given a set of liftover coordinates and other parameters.
 }
 \author{
 Wolfram Hoeps

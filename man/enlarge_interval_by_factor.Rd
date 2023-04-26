@@ -13,9 +13,24 @@ enlarge_interval_by_factor(
   log_collection = NULL
 )
 }
+\arguments{
+\item{start}{start coordinate of the input interval}
+
+\item{end}{end coordinate of the input interval}
+
+\item{factor}{factor by which to increase the length of the input interval}
+
+\item{seqname_f}{(optional) chromosome name, used for quality control}
+
+\item{conversionpaf_f}{(optional) path to PAF file, used for quality control}
+
+\item{log_collection}{(optional) log file to keep track of the operation}
+}
+\value{
+A vector of length 2, containing the new start and end coordinates.
+}
 \description{
-input start and end coordinates and a factor by which to enlarge. E.g. 40-50 (len 10) and factor 2 will result in 35-55 (len 20).
-Makes sure no negative values are created.
+Given a start coordinate, an end coordinate and a factor, the function returns new start and end coordinates after padding the original interval. The padding factor can be greater than 1, in which case the function increases the length of the input interval by that factor. The padding is applied symmetrically on both ends. The function makes sure that negative values are not created and that the output interval does not exceed the length of the chromosome. A log file can also be created to keep track of the operation.
 }
 \author{
 Wolfram Höps

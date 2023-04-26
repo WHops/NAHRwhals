@@ -2,12 +2,22 @@
 % Please edit documentation in R/alignment_wrapper.R
 \name{produce_pairwise_alignments_minimap2}
 \alias{produce_pairwise_alignments_minimap2}
-\title{Produce up to three minimap2 based alignments.}
+\title{Run minimap2 pairwise alignment on two genome sequences and generate plot}
 \usage{
 produce_pairwise_alignments_minimap2(params, outlinks, chr_start_end_pad)
 }
+\arguments{
+\item{params}{A list containing all input information.}
+
+\item{outlinks}{A list containing output file paths.}
+
+\item{chr_start_end_pad}{A list containing the chromosome, start, end, and padding information.}
+}
+\value{
+A plot of the alignment between two genome sequences.
+}
 \description{
-Produce up to three minimap2 based alignments.
+This function produces up to three pairwise alignments between two genome sequences using minimap2 and generates a plot of the alignments.
 }
 \author{
 Wolfram Höps
