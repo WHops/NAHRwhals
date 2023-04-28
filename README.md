@@ -12,7 +12,7 @@ NAHRwhals is an R package providing tools for visualization and automatic detect
 
 
 
-#Installation (total time: ca 10 minutes)
+# Installation (total time: ca 10 minutes)
 
 ### (1) Clone the NAHRwhals repository
 
