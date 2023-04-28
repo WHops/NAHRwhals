@@ -83,8 +83,8 @@ aln_pad_factor = 1.0
 debug = F
 clean_after_yourself = F
 
-awkscript_fasta = 'scripts/awk_on_fasta.sh'
-awkscript_paf = 'scripts/awk_on_paf.sh'
+awkscript_fasta = 'scripts/2awk_on_fasta.sh'
+awkscript_paf = 'scripts/2awk_on_paf.sh'
 
 # samplename = paste0(interval$sample, '-', interval$category, '-', nrun)
 # genome_alt_ref_fa = assembly_fastas[['T2T']]

@@ -41,7 +41,8 @@ nahrwhals(
   aln_pad_factor = 1,
   debug = FALSE,
   clean_after_yourself = FALSE,
-  testrun = FALSE,
+  testrun_std = FALSE,
+  testrun_fullfa = FALSE,
   minimap2_bin = "default",
   bedtools_bin = "default"
 )
@@ -119,7 +120,9 @@ nahrwhals(
 
 \item{clean_after_yourself}{Logical, whether to delete all non-plot files, such as fastas (default: FALSE)}
 
-\item{testrun}{Logical, whether to perform a test/demo run (default: FALSE).}
+\item{testrun_std}{Logical, whether to perform a test/demo run. Mut. Exclusive with testrun_fullfa. (default: FALSE)}
+
+\item{testrun_fullfa}{Logical, whether to perform a test/demo run of full fastas. Mut. Exclusive with testrun_std (default: FALSE).}
 
 \item{minimap2_bin}{Path to minimap2 binary or "default" (default: "default").}
 
@@ -131,9 +134,4 @@ No explicit return value; function generates output files and visualizations.
 \description{
 This function performs sequence alignment between two genomic sequences (fasta files) and
 generates visualizations of the alignment results.
-}
-\examples{
-# Run nahrwhals function with default parameters
-nahrwhals(testrun = TRUE)
-
 }
