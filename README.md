@@ -73,13 +73,13 @@ This PDF contains seven plots that document the NAHRwhals run:
 
 <table>
 <tr>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 1"></td>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 2"></td>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 3"></td>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 4"></td>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 5"></td>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 6"></td>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 6"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-1.png?raw=true" alt="Page 1"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-2.png?raw=true" alt="Page 2"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-3.png?raw=true" alt="Page 3"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-4.png?raw=true" alt="Page 4"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-5.png?raw=true" alt="Page 5"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-6.png?raw=true" alt="Page 6"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-7.png?raw=true" alt="Page 6"></td>
 
 </tr>
 </table>
