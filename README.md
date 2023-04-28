@@ -12,7 +12,7 @@ NAHRwhals is an R package providing tools for visualization and automatic detect
 
 
 
-#  Installation (total time: ca 10 minutes)
+#Installation (total time: ca 10 minutes)
 
 ### (1) Clone the NAHRwhals repository
 
@@ -40,63 +40,57 @@ You can finally install NAHRwhals with the following command.
 Rscript install_package.R
 ```
 
-Confirm successful installation using
-
-```
-R
-> library(nahrwhals)
-> quit()
-```
-
-### (4) [OPTIONAL] NOT NEEDED WITH CONDA/MAMBA: specify minimap2 / bedtools paths; 
-In case minimap2 or bedtools are not part of your $PATH (i.e. can not be called from the commandline via `minimap2` and `bedtools`), specify your paths in conf/conf_default.txt: (otherwise, leave them as 'default')
-
-```
-minimap2_bin = '/your/path/to/minimap2'
-bedtools_bin = '/your/path/to/bedtools'
-```
 
 
-
-#  Test & Example runs (runtime: <1 min)
+# Test & Example runs (runtime: <1 min)
 
 To confirm that NAHRwhals has been correctly installed, run a testrun inside R which will produce output files and plots in the `./res` folder: 
 
 ```
-library(nahrwhals)
-nahrwhals(testrun_std=T)
+R
+> library(nahrwhals)
+> nahrwhals(testrun_std=T)
 ```
 
 
-NAHRwhals can also skip the initial search for sub-sequences, and call SVs directly on two regional fasta files by setting `compare_full_fastas = TRUE'. Run an example via: 
-
-```
-nahrwhals(testrun_fullfa=T)
-```
-
-#  Output files / Interpretation
 
 
 Key results in the .res folder are:
 
-1. **res.tsv**: The SV call output file.
-    - In the example provided, the input sequence x and its counterpart on y yielded a 71.3% correspondence in reference state and a 99.6% correspondence after applying the highest-scoring mutation, 'mut_max' (Inversion between blocks 4 and 12, followed by deletion of blocks 11 to 18). NAHRwhals simulated and tested 26 mutations and used segments of length n*10kbp.
-
-| seqname       | start   | end     | sample         | width_orig | xpad | res_ref | res_max | n_res_max | mut_max        | mut_simulated | mut_tested | search_depth | grid_compression | exceeds_x | exceeds_y | grid_inconsistency | flip_unsure | cluttered_boundaries | mut1_start | mut1_end | mut1_pos_pm | mut1_len | mut1_len_pm | mut2_len | mut2_len_pm | mut3_len | mut3_len_pm |
-|---------------|---------|---------|----------------|------------|------|---------|--------|-----------|---------------|--------------|------------|--------------|-----------------|-----------|-----------|-------------------|-------------|---------------------|------------|----------|------------|---------|------------|---------|------------|---------|------------|
-| chr1_partial  | 1700000 | 3300000 | Fasta_x_Fasta_y | 1600000    | 1    | 71.378  | 99.595 | 2         | 4_12_inv+11_18_del | 26           | 26         | 3            | 10000           | FALSE     | FALSE     | FALSE             | FALSE       | FALSE               | 555000      | 945000   | 65000      | 390000  | 130000     | 360000  | 130000     | NA      | NA         |
+## 1. **res/res.tsv**: The SV call output file.
 
 
-2. **res/chr1_partial-1700000-3300000/Fasta_x_Fasta_y_all.pdf**: This PDF contains six plots that document the NAHRwhals run:
 
-    - 2.1. Self-dotplot of the selected region on sequence x
-    - 2.2. Self-dotplot of the corresponding homologous region on sequence y
-    - 2.3. Pairwise dotplot of the two regions
-    - 2.4. Visualization of the obtained segments on sequence x
-    - 2.5. Segmented pairwise alignment
-    - 2.6. Segmented pairwise alignment AFTER applying the top-scoring mutation
+| seqname| start | end | sample | res_ref | res_max | mut_max|
+| ---- | ------- | ------- | ------| ------- | ------- | ----|
+| chr1_partial | 1700000 | 3300000 | Fasta_x_Fasta_y | 71.378| 99.595| 4_12_inv+11_18_del|
 
+In the example provided, the input sequence x and its counterpart on y yielded a 71.3% correspondence in reference state and a 99.6% correspondence after applying the highest-scoring mutation, 'mut_max' (Inversion between blocks 4 and 12, followed by deletion of blocks 11 to 18). The file contains additional columns used mainly for QC. Those are explained at the end of the README. 
 
+## 2. **res/chr1_partial-1700000-3300000/Fasta_x_Fasta_y_all.pdf**: 
+
+This PDF contains seven plots that document the NAHRwhals run:
+
+<table>
+<tr>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 1"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 2"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 3"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 4"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 5"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 6"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" alt="Page 6"></td>
+
+</tr>
+</table>
+
+- 2.1. Self-dotplot of the selected region on sequence x
+- 2.2. Self-dotplot of the corresponding homologous region on sequence y
+- 2.3. Pairwise dotplot of the two regions
+- 2.4. Visualization of the obtained segments on sequence x
+- 2.5. Pariwise dotplot colored on x axis by obtained segments
+- 2.6. Segmented pairwise alignment
+- 2.7. Segmented pairwise alignment AFTER applying the top-scoring mutation
 
 
 # Quick start: your own data (runtime: <1 min)
@@ -105,14 +99,14 @@ To run your own data, exchange genome_x_fa (typically a reference, e.g. hg38), g
 
 ```
 nahrwhals(genome_x_fa = system.file("extdata/assemblies", "hg38_partial.fa", package="nahrwhals"),
-          genome_y_fa = system.file("extdata/assemblies", "assembly_partial.fa", package="nahrwhals"),  
-          seqname_x = 'chr1_partial',
-          start_x = 1700000,
-          end_x = 3300000,
-          anntrack= system.file("extdata/assemblies", "hg38_partial_genes.bed", package="nahrwhals"),
-          samplename_x = 'Fasta_x',
-          samplename_y = 'Fasta_y'
-        )
+genome_y_fa = system.file("extdata/assemblies", "assembly_partial.fa", package="nahrwhals"),
+seqname_x = 'chr1_partial',
+start_x = 1700000,
+end_x = 3300000,
+anntrack= system.file("extdata/assemblies", "hg38_partial_genes.bed", package="nahrwhals"),
+samplename_x = 'Fasta_x',
+samplename_y = 'Fasta_y'
+)
 ```
 
 Resulting in pairwise alignments plots with gene annotations overlaid on the top: 
@@ -124,42 +118,106 @@ Figures and results from the NAHRwhals manuscript can be replicated by querying 
 
 # Parameters
 
-NAHRwhals comes with a variety of parameters specified in a config file and/or via commandline. Default values are denoted in [brackets].
+## Required
 
-## Paths and input/output
+| Variable name | Description | Default value|
+|-|-|--|
+| genome_x_fa | Multi- or single-contig genome sequence in fasta format, typically a genome assembly used as reference, such as hg38 or T2T.| - |
+| genome_y_fa | Multi- or single-contig genome sequence in fasta format, typically a genome assembly to be analyzed, such as a de-novo assembled haplotype.| - |
+| seqname_x| Contigname of the region of interest on genome_x. | - |
+| start_x| Start of the region of interest on seqname_x. (Region of interest should typically be in a range of ~20kbp to ~5-10Mbp and not contain centromeric regions, which drive up computation time significantly.)| - |
+| end_x| End of the region of interest on seqname_x. | - |
 
-- **minimap2_bin** link to minimap2 binary. If minimap2 is in $PATH, keep value 'default'. [default]
-  
-- **bedtools_bin** link to bedtools binary. If bedtools is in $PATH, keep value 'default'. [default]
-- **genome_x_fa** Multi- or single-contig genome sequence in fasta format, typically a genome assembly used as reference, such as hg38 or T2T. ['testdata/assemblies/hg38_partial.fa']
-- **genome_y_fa** Multi- or single-contig genome sequence in fasta format, typically a genome assembly to be analysed, such as a de-novo assembled haplotype. ['testdata/assemblies/assembly_partial.fa']
-- **genome_y_fa_mmi** Link to minimap2 index mmi file of genome_y_fa, which is needed for fast alignments. If the mmi does not exist, NAHRwhals will invoke minimap2 to creat it at the link location. By default, it is created in the same directly as genome_y_fa. [default]
-- **anntrack** You can supply a .bed file (seqname, start, end, featurename) for annotations to appear in the dotplot. Typically used to indicate e.g. genes in a dotplot. [F]
-- **logfile** Output file to which sSV calls will be written ['res/unittest.tsv']
 
-## Basic parameters: region of interest
 
-- **compare_full_fastas** If TRUE, seqname_x, start_x and end_x are ignored, and instead the whole genome_x_fa is aligned to the whole genome_y_fa. Use this if you have two regional fasta files that you want to compare. Do NOT use this when dealing with whole genome assemblies. [F]
-- **seqname_x** Contigname of region of interest on genome_x. ['chr1_partial']
-- **start_x** Start of region of interest on seqname_x. (Region of interest should typically be in a range of ~20kbp to ~5-10Mbp and not contain centromeric regions, which drive up computation time significantly.) [1700000]
-- **end_x** End of region of interest on seqname_x. [3300000]
-  
+
+## Recommended parameters
+
+
+| Variable name | Description | Default value |
+|-------|---|-------|
+| samplename_x| Set a name for the genome_x sequence (e.g., samplename) to appear in the results.| 'Fasta_x' |
+| samplename_y| Set a name for the genome_y sequence (e.g., samplename) to appear in the results.| 'Fasta_y' |
+| anntrack| You can supply a .bed file (seqname, start, end, featurename) for annotations to appear in the dotplot. Typically used to indicate e.g. genes in a dotplot.| F|
+| logfile | Output file to which sSV calls will be written.| 'res/res.tsv' |
+
+
 ## Advanced parameters
 
-- **samplename_x** Set a name for the genome_x sequence (e.g., samplename) to appear in the results. ['Fasta_x']
-- **samplename_y** Set a name for the genome_y sequence (e.g., samplename) to appear in the results. ['Fasta_y']
-- **plot_only** If TRUE, NAHRwhals creates only dotplots but does not attempt SV calling. [F]
-- **self_plots** If TRUE, NAHRwhals automatically creates a self-dotplot (aligning sequence to itself) of both the reference and homologous region of interest. Will be saved in res/chrX-start-end/self. [T]
-- **plot_xy_segmented** If TRUE, NAHRwhals outputs a plot indicating obtained segmentation. [T]
-- **eval_th** Set the threshold (in percent) for when NAHRwhals considers two sequences equal. Lower thresholds lead to missed SVs, higher thresholds to more 'unexplained' loci. Consider lowering to e.g. 95% for cross-species analyses. [98]
-- **depth** Maximum number of consecutive SVs to model. [3]
-- **chunklen** Lenght of sequence chunks which are separately aligned to each other. By default, this is a function of the total sequence length and typically 1000 bp or 10.000 bp. It is typically not necessary to touch this parameter, as pairwise alignments are robust. [auto]
-- **minlen** Minimum alignment length to consider when searching for sSVs. By default, this is a function of the total sequence length and typically 1000 bp or 10.000 bp. Lower values can lead to finer alignments but high computation times and false positive calls. [auto]
-- **compression** Minimum segment length to consider when segmenting a dotplot. By default, this is a function of the total sequence length and typically 1000 bp or 10.000 bp. Lower values can lead to finer segmented dotplots but high computation times and false positive calls. [auto]
-- **max_size_col_plus_rows** Maximum acceptable size for the segmented dotplot (rows + columns). Is set to prevent computation / memory overflow. If this value is overstepped, minlen and chunklen are doubled until the resulting segmented dotplot its in the maximum dimensions. [250]
-- **max_n_alns** Maximum number of individual alignments that can participate in dotplot segmentation. If this value is overstepped, minlen and chunklen are doubled until the resulting segmented dotplot its in the maximum dimensions. [150]
+
+| Variable name | Description | Default value |
+|---|-------|-------|
+| genome_y_fa_mmi | Link to minimap2 index mmi file of genome_y_fa, which is needed for fast alignments. If the mmi does not exist, NAHRwhals will invoke minimap2 to create it at the link location. | 'default' (By default, it is searched/created in the same directory as genome_y_fa). |
+| plot_only | If TRUE, NAHRwhals creates only dotplots but does not attempt SV calling.| F |
+| self_plots| If TRUE, NAHRwhals automatically creates a self-dotplot (aligning sequence to itself) of both the reference and homologous region of interest. Will be saved in res/chrX-start-end/self. | T |
+| plot_xy_segmented | If TRUE, NAHRwhals outputs a plot indicating obtained segmentation. | T |
+| eval_th | Set the threshold (in percent) for when NAHRwhals considers two sequences equal. Lower thresholds lead to missed SVs, higher thresholds to more 'unexplained' loci. Consider lowering to e.g. 95% for cross-species analyses. | 98|
+| depth | Maximum number of consecutive SVs to model. | 3 |
+| chunklen| Length of sequence chunks which are separately aligned to each other. By default, this is a function of the total sequence length and typically 1000 bp or 10.000 bp. It is typically not necessary to touch this parameter, as pairwise alignments are robust.| 'auto'|
+| minlen| Minimum alignment length to consider when searching for sSVs. By default, this is a function of the total sequence length and typically 1000 bp or 10.000 bp. Lower values can lead to finer alignments but high computation times and false positive calls.| 'auto'|
+| compression | Minimum segment length to consider when segmenting a dotplot. By default, this is a function of the total sequence length and typically 1000 bp or 10.000 bp. Lower values can lead to finer segmented dotplots but high computation times and false positive calls.| 'auto'|
+| max_size_col_plus_rows| Maximum acceptable size for the segmented dotplot (rows + columns). Is set to prevent computation / memory overflow. If this value is overstepped, minlen and chunklen are doubled until the resulting segmented dotplot is in the maximum dimensions. | 250 |
+| max_n_alns| Maximum number of individual alignments that can participate in dotplot segmentation. If this value is overstepped, minlen and chunklen are doubled until the resulting segmented dotplot is in the maximum dimensions. | 150 |
+| testrun_std | Runs a testrun with example data. | F |
+| testrun_fatofa| Runs a testrun with example data, but with the mode activated that compares full fastas to each other.| F |
+| compare_full_fastas| If TRUE, seqname_x, start_x, and end_x are ignored, and instead the whole genome_x_fa is aligned to the whole genome_y_fa. Use this if you have two regional fasta files that you want to compare. Do NOT use this when dealing with whole genome assemblies. | 'F' |
+ minimap2_bin| Link to the minimap2 binary. If minimap2 is in $PATH, keep the value 'default'. | default|
+| bedtools_bin| Link to the bedtools binary. If bedtools is in $PATH, keep the value 'default'. | default|
 
 
+
+# Output columns
+
+The main output from a nahrwhals run is found in res/res.tsv. Here is a description of all columsn in this file: 
+
+
+| Column Name| Description |
+|----|---|
+| seqname| The name of the sequence. This could be a chromosome, contig, or any other identifier for a sequence. |
+| start| The start position of the sequence. |
+| end| The end position of the sequence. |
+| sample | The name of the run, denoted as namex_namey.|
+| width_orig | The width of the input sequence. |
+| xpad | The amount of padding added to the sequence (obsolete).|
+| res_ref| Pairwise alignment concordance of the sequences on x and y in native state.|
+| res_max| Pairwise alignment concordance after applying the highest-scoring mutation.|
+| n_res_max| The number of mutation sequences obtaining res_max. If >1, there are alternative paths.|
+| mut_max| The highest-scoring mutation sequence. |
+| mut_simulated| The number of simulated mutations.|
+| mut_tested | The number of tested mutations (=mut_simulated minus rejected). |
+| search_depth | The depth of the search algorithm used.|
+| grid_compression | The amount of compression used for the grid, in bp. |
+| exceeds_x| QC: Whether or not the sequence exceeds the x-axis.|
+| exceeds_y| QC: Whether or not the sequence exceeds the y-axis.|
+| grid_inconsistency | QC: Whether or not there is inconsistency in the grid. |
+| flip_unsure| QC: Whether or not the algorithm was unsure about flipping the sequence.|
+| cluttered_boundaries | QC: Whether or not the sequence has cluttered boundaries.|
+| mut1_start | The start position of the first mutation.|
+| mut1_end | The end position of the first mutation.|
+| mut1_pos_pm| The confidence interval of both breakpoints (plus/minus). |
+| mut1_len | The length of the first mutation.|
+| mut1_len_pm| The confidence interval of SV length (plus/minus). |
+| mut2_len | The length of the second mutation. |
+| mut2_len_pm| The confidence interval of SV length (plus/minus).|
+| mut3_len | The length of the third mutation.|
+| mut3_len_pm| The confidence interval of SV length (plus/minus). |
+
+
+# NOTES
+
+
+- In case minimap2 or bedtools are not part of your $PATH (i.e. can not be called from the commandline via `minimap2` and `bedtools`), specify your paths when running nahrwhals:
+
+```
+library(nahrwhals)
+nahrwhals( ... , minimap2_bin = '/path/to/your/minimap2', bedtools_bin = 'path/to/your/bedtools')
+```
+
+- NAHRwhals can also skip the initial search for sub-sequences, and call SVs directly on two regional fasta files by setting `compare_full_fastas = TRUE'. Run an example via: 
+
+```
+> nahrwhals(testrun_fullfa=T)
+```
 
 # Report Errors
 
