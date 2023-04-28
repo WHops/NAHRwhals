@@ -363,7 +363,7 @@ plot_alignments <- function(alignments, opt) {
 
   # If a (colored) block track is given
   if (opt$anntrack != FALSE) {
-    gp = add_ann_blocks(gp, opt)
+    gp = add_annotation_blocks(gp, opt)
   }
 
   return(gp)
@@ -441,6 +441,7 @@ add_annotation_blocks <- function(gp, opt) {
   
   labels = sub(".*/", "", c(opt$anntrack, 'plot'))
   
+  library(patchwork)
   # Combine the annotation plot with the input ggplot object (gp) using patchwork
   gp_out = (annotation_plot + ggplot2::coord_fixed(ratio = (opt$x_start - opt$x_end) / 50)) +
     (gp + ggplot2::coord_fixed()) +

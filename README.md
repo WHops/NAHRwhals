@@ -60,24 +60,60 @@ bedtools_bin = '/your/path/to/bedtools'
 
 #  Test & Example runs (runtime: <1 min)
 
-To confirm that NAHRwhals has been correctly installed, run a testrun which should produce output files and plots in the `./res` folder: 
+To confirm that NAHRwhals has been correctly installed, run a testrun inside R which will produce output files and plots in the `./res` folder: 
 
-```Rscript nahrwhals.R --config conf/conf_default.txt```
-
+```
+library(nahrwhals)
+nahrwhals(testrun_std=T)
+```
 
 
 NAHRwhals can also skip the initial search for sub-sequences, and call SVs directly on two regional fasta files by setting `compare_full_fastas = TRUE'. Run an example via: 
 
-```Rscript nahrwhals.R --config conf/conf_fa2fa.txt```
+```
+nahrwhals(testrun_fullfa=T)
+```
+
+#  Output files / Interpretation
 
 
-# Use cases (runtime: <1 min)
+Key results in the .res folder are:
 
-To run your own data, exchange genome_x_fa (typically a reference, e.g. hg38), genome_y_fa (typically a genome assembly) and your coordinates of interest (seqname_x, start_x, end_x) in the config file.  
+1. **res.tsv**: The SV call output file.
+    - In the example provided, the input sequence x and its counterpart on y yielded a 71.3% correspondence in reference state and a 99.6% correspondence after applying the highest-scoring mutation, 'mut_max' (Inversion between blocks 4 and 12, followed by deletion of blocks 11 to 18). NAHRwhals simulated and tested 26 mutations and used segments of length n*10kbp.
 
-For convenience, parameters in the config file can also be overwritten from the commandline. We can use this e.g. to add a gene annotation track to our plots:
+| seqname       | start   | end     | sample         | width_orig | xpad | res_ref | res_max | n_res_max | mut_max        | mut_simulated | mut_tested | search_depth | grid_compression | exceeds_x | exceeds_y | grid_inconsistency | flip_unsure | cluttered_boundaries | mut1_start | mut1_end | mut1_pos_pm | mut1_len | mut1_len_pm | mut2_len | mut2_len_pm | mut3_len | mut3_len_pm |
+|---------------|---------|---------|----------------|------------|------|---------|--------|-----------|---------------|--------------|------------|--------------|-----------------|-----------|-----------|-------------------|-------------|---------------------|------------|----------|------------|---------|------------|---------|------------|---------|------------|
+| chr1_partial  | 1700000 | 3300000 | Fasta_x_Fasta_y | 1600000    | 1    | 71.378  | 99.595 | 2         | 4_12_inv+11_18_del | 26           | 26         | 3            | 10000           | FALSE     | FALSE     | FALSE             | FALSE       | FALSE               | 555000      | 945000   | 65000      | 390000  | 130000     | 360000  | 130000     | NA      | NA         |
 
-```Rscript nahrwhals.R --config conf/conf_default.txt --params anntrack='testdata/assemblies/hg38_partial_genes.bed'```
+
+2. **res/chr1_partial-1700000-3300000/Fasta_x_Fasta_y_all.pdf**: This PDF contains six plots that document the NAHRwhals run:
+
+    - 2.1. Self-dotplot of the selected region on sequence x
+    - 2.2. Self-dotplot of the corresponding homologous region on sequence y
+    - 2.3. Pairwise dotplot of the two regions
+    - 2.4. Visualization of the obtained segments on sequence x
+    - 2.5. Segmented pairwise alignment
+    - 2.6. Segmented pairwise alignment AFTER applying the top-scoring mutation
+
+
+
+
+# Quick start: your own data (runtime: <1 min)
+
+To run your own data, exchange genome_x_fa (typically a reference, e.g. hg38), genome_y_fa (typically a genome assembly) and your coordinates of interest (seqname_x, start_x, end_x) in the config file. An example run which includes a gene annotation track (optional) could look like this: 
+
+```
+nahrwhals(genome_x_fa = system.file("extdata/assemblies", "hg38_partial.fa", package="nahrwhals"),
+          genome_y_fa = system.file("extdata/assemblies", "assembly_partial.fa", package="nahrwhals"),  
+          seqname_x = 'chr1_partial',
+          start_x = 1700000,
+          end_x = 3300000,
+          anntrack= system.file("extdata/assemblies", "hg38_partial_genes.bed", package="nahrwhals"),
+          samplename_x = 'Fasta_x',
+          samplename_y = 'Fasta_y'
+        )
+```
 
 Resulting in pairwise alignments plots with gene annotations overlaid on the top: 
 

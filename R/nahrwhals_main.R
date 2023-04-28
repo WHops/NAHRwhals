@@ -41,14 +41,12 @@
 #' @param aln_pad_factor Alignment padding factor (default: 1.0).
 #' @param debug Logical, whether to enable debug mode (default: FALSE).
 #' @param clean_after_yourself Logical, whether to delete all non-plot files, such as fastas (default: FALSE)
-#' @param testrun Logical, whether to perform a test/demo run (default: FALSE).
+#' @param testrun_std Logical, whether to perform a test/demo run. Mut. Exclusive with testrun_fullfa. (default: FALSE)
+#' @param testrun_fullfa Logical, whether to perform a test/demo run of full fastas. Mut. Exclusive with testrun_std (default: FALSE). 
 #' @param minimap2_bin Path to minimap2 binary or "default" (default: "default").
 #' @param bedtools_bin Path to bedtools binary or "default" (default: "default").
 #' @return No explicit return value; function generates output files and visualizations.
 #'
-#' @examples
-#' # Run nahrwhals function with default parameters
-#' nahrwhals(testrun = TRUE)
 #'
 #' @export
 nahrwhals <- function(
@@ -65,8 +63,8 @@ nahrwhals <- function(
                       n_tests = 10, n_max_testchunks = 5, baseline_log_minsize_min = 8,
                       baseline_log_minsize_max = FALSE, discovery_exact = FALSE,
                       hltrack = FALSE, hllink = FALSE, aln_pad_factor = 1.0,
-                      debug = FALSE, clean_after_yourself = FALSE, testrun = FALSE,
-                      minimap2_bin = "default", bedtools_bin = "default"
+                      debug = FALSE, clean_after_yourself = FALSE, testrun_std = FALSE,
+                      testrun_fullfa = FALSE, minimap2_bin = "default", bedtools_bin = "default"
                       ) {
 
 
@@ -87,13 +85,22 @@ nahrwhals <- function(
   # Merge the provided parameters and default values
   params <- modifyList(defaults, call_evaluated)
   
-  if (testrun){
-    cat('Testmode! Running a testrun with sample data.')
+  if (testrun_std && testrun_fullfa) {
+    stop("Parameters testrun_std and testrun_fullfa cannot both be TRUE.")
+  }
+
+  if (testrun_std){
+    cat('Testmode! Running a standard testrun with sample data.')
     params$genome_x_fa = system.file("extdata/assemblies", "hg38_partial.fa", package="nahrwhals")
     params$genome_y_fa = system.file("extdata/assemblies", "assembly_partial.fa", package="nahrwhals")
     params$seqname_x = 'chr1_partial'
     params$start_x = 1700000
     params$end_x = 3300000
+  } else if (testrun_fullfa){
+    cat('Testmode! Running a "full fasta to full fasta" testrun with sample data.')
+    params$genome_x_fa = system.file("extdata/extracted_fastas", "sequence1.fa", package="nahrwhals")
+    params$genome_y_fa = system.file("extdata/extracted_fastas", "sequence2.fa", package="nahrwhals")
+    params$compare_full_fastas = T
   }
 
   ###### Compute parameters that are functions of other parameters. #####
