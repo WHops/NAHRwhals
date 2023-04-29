@@ -40,5 +40,5 @@ Note that improvements may be needed in the future, as the melting process is no
 entirely straightforward.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

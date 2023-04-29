@@ -21,5 +21,5 @@ Called at the beginning of a tree search. If the dotplot is unreasonably large,
 we pragmatically reduce the search depth here to prevent overly long runtimes.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

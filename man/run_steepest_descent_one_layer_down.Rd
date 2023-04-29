@@ -22,5 +22,5 @@ It searches for the best results of the given starting depth and applies one mor
 start a new search with one less maximum search depth.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

@@ -15,5 +15,5 @@ carry_out_compressed_sv(bitl, input_ins)
 Carry out an SV IN GRIDSPACE
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

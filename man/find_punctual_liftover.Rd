@@ -22,5 +22,5 @@ gives the lifted-over coordinate.
 Translates a single point from one genome assembly to another using a pre-computed conversion-paf.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

@@ -20,5 +20,5 @@ and runs an 'awk' command to correct the input PAF file if it's made on
 scattered input. The corrected PAF file is saved to the output file.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

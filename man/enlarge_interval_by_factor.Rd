@@ -33,5 +33,5 @@ A vector of length 2, containing the new start and end coordinates.
 Given a start coordinate, an end coordinate and a factor, the function returns new start and end coordinates after padding the original interval. The padding factor can be greater than 1, in which case the function increases the length of the input interval by that factor. The padding is applied symmetrically on both ends. The function makes sure that negative values are not created and that the output interval does not exceed the length of the chromosome. A log file can also be created to keep track of the operation.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

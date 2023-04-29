@@ -18,5 +18,5 @@ PAF file data frame with merged rows
 Merges paired alignment rows in the provided PAF file.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

@@ -1,6 +1,6 @@
 Package: nahrwhals
 Title: Toolset for detection of Repeat-associated SVs from assembly data
-Version: 1.0
+Version: 1.2
 Authors@R: 
     person(given = "Wolfram ",
            family = "Hops",
@@ -16,7 +16,6 @@ RoxygenNote: 7.2.3
 Imports:
 	ggplot2,
 	dplyr,
-	Biostrings,
 	scales,
 	matrixStats,
 	RColorBrewer,

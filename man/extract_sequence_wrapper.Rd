@@ -18,5 +18,5 @@ A list containing the start and end positions of the extracted sequence and the 
 This function extracts a sequence from the reference genome and the assembly genome based on the input parameters.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

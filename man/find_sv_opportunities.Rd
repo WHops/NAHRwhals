@@ -18,5 +18,5 @@ and return a list of NAHR-driven rearrangements that
 are possible on the reference sequence.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

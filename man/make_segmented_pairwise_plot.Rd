@@ -17,5 +17,5 @@ make_segmented_pairwise_plot(grid_xy, plot_x_y, outlinks)
 This function takes a grid_xy and a plot, and adds segments to the plot based on the grid lines. The resulting plot is saved to a file. This function is considered quick-and-dirty and may need to be improved in the future.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

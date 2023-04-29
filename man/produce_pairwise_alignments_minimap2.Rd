@@ -20,5 +20,5 @@ A plot of the alignment between two genome sequences.
 This function produces up to three pairwise alignments between two genome sequences using minimap2 and generates a plot of the alignments.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

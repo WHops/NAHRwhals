@@ -23,5 +23,5 @@ This is a helperfunction calling bedtools to
 chop a query sequence into chunks.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

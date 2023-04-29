@@ -10,5 +10,5 @@ confirm_loaded_nw()
 A testfunction to see if nahrwhals is loaded
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

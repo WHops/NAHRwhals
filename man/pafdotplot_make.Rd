@@ -91,5 +91,5 @@ This function generates a dotplot from a PAF file and saves it as a PDF.
 It can also include an optional SD highlight annotation file for enhanced visualization.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

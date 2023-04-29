@@ -25,5 +25,5 @@ This function serves as the gateway to entering the DFS process. It calls the df
 to explore possible paths within the search space.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

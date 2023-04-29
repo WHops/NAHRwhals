@@ -10,5 +10,5 @@ version_nw()
 Print version number.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

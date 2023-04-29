@@ -16,5 +16,5 @@ A matrix with zero-padding columns and rows removed. If the resulting matrix is 
 This function removes padding zero columns or rows from a matrix. If all outside columns and rows have entries, the function returns the original matrix.
 }
 \author{
-Wolfram Häps
+Wolfram Hoeps
 }

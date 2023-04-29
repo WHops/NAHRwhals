@@ -1,38 +1,15 @@
-
-#' Simple helperfunction to extract part of a fasta into a character.
-#'
-#' @description Simple helperfunction to extract part of a fasta into a character.
-#' Can be useful e.g. to visualize part of a fasta with an exact dotplot.
-#'
-#' @param input_fasta A link to a single-sequence fasta
-#' @param range A numeric 2x1 vector describing the sequence range to extract. E.g. range=c(10,100) extracts bases 10 to 100.
-#' @return A DNA sequence as a character
-#'
-#' @author Wolfram Höps
-#' @export
-get_subseq <- function(input_fasta, range = NULL) {
-  # Load
-  seq1f = Biostrings::readDNAStringSet(input_fasta)
-  seq1seq = as.character(seq1f)
-  if (!is.null(range)) {
-    seq1seq = substr(seq1seq, range[1], range[2])
-  }
-  return(seq1seq)
-}
-
-
 #' A testfunction to see if nahrwhals is loaded
-#' @author Wolfram Höps
+#' @author Wolfram Hoeps
 #' @export
 confirm_loaded_nw <- function() {
-  print('NAHRwhals loaded and ready to go.')
+  print("NAHRwhals loaded and ready to go.")
 }
 
 #' Print version number.
-#' @author Wolfram Höps
+#' @author Wolfram Hoeps
 #' @export
 version_nw <- function() {
-  print('This is version 1.0 from Apr 25, 2023.')
+  print("This is version 1.2 from Apr 29, 2023.")
 }
 
 #' Perform Chunked Minimap2 Alignment and Generate Dotplot
@@ -47,7 +24,7 @@ version_nw <- function() {
 #' @param hltype A character string indicating the filetype of hllink. Can be 'NULL', 'bed', 'tsv', or 'paf' (default = FALSE).
 #' @param outpaf A character string containing the path to the output PAF file to be written.
 #' @param keep_ref A numeric value indicating the number of alignments to keep for plotting (default = 10000).
-#' @param minsdlen A numeric value; purpose not entirely clear. 
+#' @param minsdlen A numeric value; purpose not entirely clear.
 #' @param plot_size A numeric value indicating the plot size in inches (default = 10).
 #' @param saveplot A logical value indicating whether or not to save the plot (default = TRUE).
 #' @param savepaf A logical value indicating whether or not to save the PAF file (default = TRUE).
@@ -66,14 +43,14 @@ version_nw <- function() {
 #'
 #' @return This function has no return value. Output files are written to the specified paths.
 #'
-#' @author Wolfram Höps
+#' @author Wolfram Hoeps
 #' @export
 make_chunked_minimap_alnment <-
-  function(params, 
+  function(params,
            targetfasta,
            queryfasta,
            outpaf,
-           #outplot,
+           # outplot,
            chunklen = 1000,
            keep_ref = 10000,
            minsdlen = 2000,
@@ -86,69 +63,55 @@ make_chunked_minimap_alnment <-
            hlstart = NULL,
            hlend = NULL,
            targetrange = NULL,
-           queryrange = NULL, 
+           queryrange = NULL,
            anntrack = F,
            x_seqname = NULL,
            x_start = NULL,
-           x_end = NULL, 
+           x_end = NULL,
            hltrack = NULL,
            onlypafreturn = F,
-           aln_type_xx_yy_xy = 'xy')
- {
-
+           aln_type_xx_yy_xy = "xy") {
     # Define intermediate files
-    queryfasta_chunk = paste0(queryfasta, ".chunk.fa")
-    outpaf_chunk = paste0(outpaf, '.chunk')
-    outpaf_awk = paste0(outpaf, '.awked')
-    outpaf_filter = paste0(outpaf, '.filter')
-    outpaf_plot = paste0(outpaf, '.plot')
-    outplot = paste0(outpaf, '.pdf')
-    
-    # Only partial? Cut down input fastas to a .tmp file
-    if (!is.null(queryrange)) {
-      shorten_fasta(targetfasta,
-                    paste0(targetfasta, '.short.fa'),
-                    targetrange)
-      shorten_fasta(queryfasta, paste0(queryfasta, '.short.fa'), queryrange)
-      
-      targetfasta = paste0(targetfasta, '.short.fa')
-      queryfasta =  paste0(queryfasta, '.short.fa')
-    }
+    queryfasta_chunk <- paste0(queryfasta, ".chunk.fa")
+    outpaf_chunk <- paste0(outpaf, ".chunk")
+    outpaf_awk <- paste0(outpaf, ".awked")
+    outpaf_filter <- paste0(outpaf, ".filter")
+    outpaf_plot <- paste0(outpaf, ".plot")
+    outplot <- paste0(outpaf, ".pdf")
+
     # Run a series of chunking, aligning and merging functions/scripts
     # Single-sequence query fasta gets chopped into pieces.
 
-    
+
     shred_seq_bedtools(queryfasta, queryfasta_chunk, chunklen, params)
 
     # Self explanatory
     run_minimap2(targetfasta, queryfasta_chunk, outpaf_chunk, params)
-    
 
-    
-    # Awk is used to correct the sequence names. This is because I know only there
+    # gawk is used to correct the sequence names. This is because I know only there
     # how to use regex...
-    awk_edit_paf(outpaf_chunk, outpaf_filter, params)
+    correct_paf(outpaf_chunk, outpaf_filter)
     # paf of fragmented paf gets put back together.
     compress_paf_fnct(inpaf_link = outpaf_filter, outpaf_link = outpaf, inparam_chunklen = chunklen)
-    
-    if (onlypafreturn){
+
+    if (onlypafreturn) {
       return(outpaf)
     }
-    
+
     # Make a dotplot of that final paf (and with sd highlighting).
-    miniplot = pafdotplot_make(
+    miniplot <- pafdotplot_make(
       outpaf,
       outplot,
       keep_ref = keep_ref,
       plot_size = plot_size,
       hllink = hllink,
       hltype = hltype,
-      hlstart = hlstart, 
+      hlstart = hlstart,
       hlend = hlend,
       minsdlen = minsdlen,
       save = saveplot,
       anntrack = anntrack,
-      x_start = x_start, 
+      x_start = x_start,
       x_end = x_end,
       x_seqname = x_seqname,
       hltrack = params$hltrack,
@@ -158,7 +121,7 @@ make_chunked_minimap_alnment <-
     )
 
     if (saveplot == F) {
-      print('returning your plot')
+      print("returning your plot")
       return(miniplot)
     } else {
       ggplot2::ggsave(
@@ -166,11 +129,10 @@ make_chunked_minimap_alnment <-
         plot = miniplot,
         height = 10,
         width = 10,
-        device = 'pdf'
+        device = "pdf"
       )
-      print('Saving')
+      print("Saving")
     }
-    
   }
 
 
@@ -184,13 +146,14 @@ make_chunked_minimap_alnment <-
 #' @param outputinfo A character string specifying the path to the output file.
 #'
 #' @return Nothing is returned by the function, but the sequence names and lengths are saved to the output file.
-#' @author Wolfram Höps
+#' @author Wolfram Hoeps
 #' @export
 get_fasta_info <- function(inputfa, outputinfo) {
-  
   # Run the gawk command to get the fasta file info
-  cmd <- paste0("gawk '/^>/{if (l!=\"\") print l; print; l=0; next}{l+=length($0)}END{print l}' ",
-                inputfa, " > ", outputinfo)
+  cmd <- paste0(
+    "gawk '/^>/{if (l!=\"\") print l; print; l=0; next}{l+=length($0)}END{print l}' ",
+    inputfa, " > ", outputinfo
+  )
   system(cmd)
 }
 
@@ -205,13 +168,14 @@ get_fasta_info <- function(inputfa, outputinfo) {
 #'
 #' @return Nothing is returned by the function, but the corrected PAF file is saved to the output file.
 #'
-#' @author Wolfram Höps
-#' @export 
+#' @author Wolfram Hoeps
+#' @export
 correct_paf <- function(inputpaf, outputpaf) {
-  
   # Run the gawk command to correct the input paf file
-  cmd <- paste0("gawk '{FS=OFS=\"\\t\"} match($1, /_([0-9]*)?-/,a){$3 = $3+a[1]; $4 = $4+a[1]; print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' ",
-                inputpaf, " > ", outputpaf)
+  cmd <- paste0(
+    "gawk '{FS=OFS=\"\\t\"} match($1, /_([0-9]*)?-/,a){$3 = $3+a[1]; $4 = $4+a[1]; print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' ",
+    inputpaf, " > ", outputpaf
+  )
   system(cmd)
 }
 
@@ -226,45 +190,43 @@ correct_paf <- function(inputpaf, outputpaf) {
 #' @param params a list with all NAHRwhals parameters
 #' @return nothing. But output files written.
 #'
-#' @author Wolfram Höps
+#' @author Wolfram Hoeps
 #' @export
 shred_seq_bedtools <- function(infasta,
                                outfasta_chunk,
                                chunklen,
-                               params){
-  
-  bedtoolsloc = params$bedtools_bin
-  fasta_awk_script = params$awkscript_fasta
-  
-  # Write a temporary bedfile that will be removed at the end of the function
-  bed_tmp_file = paste0('tmpbed_deleteme_', sprintf("%.0f",runif(1, 1e13, 1e14)), '.bed')
-  fasta_awk_tmp_file = paste0('tmpinfo_deleteme_', sprintf("%.0f",runif(1, 1e13, 1e14)), '.bed')
+                               params) {
+  bedtoolsloc <- params$bedtools_bin
+  fasta_awk_script <- params$awkscript_fasta
 
-  #system(paste0(fasta_awk_script, ' ', infasta, ' ', fasta_awk_tmp_file))
+  # Write a temporary bedfile that will be removed at the end of the function
+  bed_tmp_file <- paste0("tmpbed_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
+  fasta_awk_tmp_file <- paste0("tmpinfo_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
+
+  # system(paste0(fasta_awk_script, ' ', infasta, ' ', fasta_awk_tmp_file))
   get_fasta_info(infasta, fasta_awk_tmp_file)
   # Collect information about the fasta we want to chop. This info is needed for bedtools getfasta
-  # To work well. 
-  name_len_df = read.table(fasta_awk_tmp_file)
-  contigname = sub('>', '', (name_len_df)[1,])
-  contiglen = as.numeric((name_len_df)[2,])
-  
-  bed_df = data.frame(
-    seqnames = contigname, 
-               start = sprintf("%d",seq(0, contiglen - (contiglen %% chunklen), by=chunklen)),
-               end =   sprintf("%d",pmin(seq(0, contiglen - (contiglen %% chunklen), by=chunklen) + (chunklen - 1), contiglen))
-  )
-  
-  write.table(bed_df, file=bed_tmp_file, sep='\t', quote=F, row.names=F, col.names = F)
-  
+  # To work well.
+  name_len_df <- read.table(fasta_awk_tmp_file)
+  contigname <- sub(">", "", (name_len_df)[1, ])
+  contiglen <- as.numeric((name_len_df)[2, ])
 
-  system(paste0('rm ', infasta, '.fai'))
-  
-  sedcmd = "sed -r \'s/(.*):/\\1_/'"
-  system(paste0(bedtoolsloc, ' getfasta -fi ', infasta, ' -bed ', bed_tmp_file, ' | ', sedcmd, ' > ', outfasta_chunk))
-  
-  system(paste0('rm ', bed_tmp_file))
-  system(paste0('rm ', fasta_awk_tmp_file))
-  
+  bed_df <- data.frame(
+    seqnames = contigname,
+    start = sprintf("%d", seq(0, contiglen - (contiglen %% chunklen), by = chunklen)),
+    end = sprintf("%d", pmin(seq(0, contiglen - (contiglen %% chunklen), by = chunklen) + (chunklen - 1), contiglen))
+  )
+
+  write.table(bed_df, file = bed_tmp_file, sep = "\t", quote = F, row.names = F, col.names = F)
+
+
+  system(paste0("rm ", infasta, ".fai"))
+
+  sedcmd <- "sed -r \'s/(.*):/\\1_/'"
+  system(paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " | ", sedcmd, " > ", outfasta_chunk))
+
+  system(paste0("rm ", bed_tmp_file))
+  system(paste0("rm ", fasta_awk_tmp_file))
 }
 
 
@@ -289,7 +251,7 @@ shred_seq_bedtools <- function(infasta,
 #' @param nthreads number of threads to use with Minimap2
 #' @return nothing. Only output files written.
 #'
-#' @author Wolfram Höps
+#' @author Wolfram Hoeps
 #' @export
 run_minimap2 <-
   function(targetfasta,
@@ -297,10 +259,10 @@ run_minimap2 <-
            outpaf,
            params,
            nthreads = 4) {
-    #system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
-    
-    minimap2loc = params$minimap2_bin
-    
+    # system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
+
+    minimap2loc <- params$minimap2_bin
+
     # Some self-defined parameters
     invisible(system(
       paste0(
@@ -314,39 +276,15 @@ run_minimap2 <-
         " > ",
         outpaf
       )
+    ))
+    # Check if that was successful.
+    stopifnot(
+      "Alignment error: Minimap2 has not reported any significant alignment.
+              Check if your input sequence is sufficiently long." =
+        file.size(outpaf) != 0
     )
-    )
-    # Check if that was successful. 
-    stopifnot("Alignment error: Minimap2 has not reported any significant alignment. 
-              Check if your input sequence is sufficiently long." = 
-                file.size(outpaf) != 0)
-
   }
 
-
-#' Submit a system command to run awk to change sequence chunk names
-#'
-#' This is a helper function that submits a system command to run awk to change sequence chunk names in a PAF file.
-#' 
-#' @param inpaf A character/link to input PAF file name or link.
-#' @param outpaf A character/link to output PAF file name or link.
-#' @param params A named list containing the parameters for running the awk command. The list must contain an element
-#' named `awkscript_paf` that specifies the path to the awk script file to be used.
-#'
-#' @return Nothing. The function only writes the output file.
-#'
-#' @author Wolfram Hoeps
-#' @export
-awk_edit_paf <- function(inpaf, outpaf, params) {
-  
-  scriptlink = params$awkscript_paf 
-  
-  
-  # Submit a system command to run awk
-  #system(paste0(scriptlink, " ", inpaf, " ", outpaf))
-  correct_paf(inpaf, outpaf)
-
-}
 
 
 #' Helperfunction to save a fasta file.
@@ -363,37 +301,14 @@ awk_edit_paf <- function(inpaf, outpaf, params) {
 #' @author Nicholas Hathaway
 #' @export
 writeFasta <- function(data, filename) {
-  fastaLines = c()
+  fastaLines <- c()
   for (rowNum in 1:nrow(data)) {
-    fastaLines = c(fastaLines, as.character(paste(">", data[rowNum, "name"], sep = "")))
-    fastaLines = c(fastaLines, as.character(data[rowNum, "seq"]))
+    fastaLines <- c(fastaLines, as.character(paste(">", data[rowNum, "name"], sep = "")))
+    fastaLines <- c(fastaLines, as.character(data[rowNum, "seq"]))
   }
   fileConn <- file(filename)
   writeLines(fastaLines, fileConn)
   close(fileConn)
-}
-
-#' Shorten a FASTA file.
-#'
-#' This function reads in a FASTA file and writes a shortened version of it to a new file. The shortened version contains only the sequence specified by the start and stop positions passed in the range argument. The new file is written to the location specified by outfasta.
-#'
-#' @param infasta A Path to input FASTA file.
-#' @param outfasta A Path to output shortened FASTA file.
-#' @param range Numeric vector of length 2 specifying the start and stop positions of the sequence to extract.
-#'
-#' @author Nicholas Hathaway
-#' @export
-shorten_fasta <- function(infasta, outfasta, range) {
-  input = read.table(infasta)
-  seq_shortened = as.character(Biostrings::subseq(
-    Biostrings::readDNAStringSet(infasta),
-    start = range[1],
-    stop = range[2]
-  ))
-  
-  writeFasta(data.frame(name = 'seq', seq = seq_shortened), filename = outfasta)
-  
-  print('Successfully written sub-fasta')
 }
 
 
@@ -425,8 +340,9 @@ rc <- function(z) {
   res <- unname(sapply(z, rc1))
   if (!is.null(attr(z, "quality"))) {
     strev <-
-      function(x)
+      function(x) {
         sapply(lapply(lapply(unname(x), charToRaw), rev), rawToChar)
+      }
     attr(res, "quality") <-
       unname(sapply(attr(z, "quality"), strev))
   }
@@ -445,6 +361,6 @@ rc <- function(z) {
 #' @param data a matrix or data frame.
 #' @return a numeric vector containing the maximum value for each column of \code{data}.
 #' @export
-colMax <- function(data)
+colMax <- function(data) {
   sapply(data, max, na.rm = TRUE)
-
+}

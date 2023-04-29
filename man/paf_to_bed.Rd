@@ -16,5 +16,5 @@ a bed-file style dataframe.
 Convert a trimmed-down paf to bed? Not sure either about this.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

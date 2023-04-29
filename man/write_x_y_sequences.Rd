@@ -45,5 +45,5 @@ a list containing the new sequence name, new start position on genome_x_fa, and 
 This function extracts subsequences of genome_x_fa and genome_y_fa based on the given coordinates and parameters. It also converts the coordinates from genome_x_fa to genome_y_fa using a liftover_coarse function. The function returns the new start and end coordinates of the regions on genome_x_fa and genome_y_fa as a list. If extract_only is set to true, it only extracts the subsequence of genome_x_fa and returns the new start and end coordinates of the subsequence.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

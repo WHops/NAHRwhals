@@ -160,7 +160,7 @@ Figures and results from the NAHRwhals manuscript can be replicated by querying 
 | max_n_alns| Maximum number of individual alignments that can participate in dotplot segmentation. If this value is overstepped, minlen and chunklen are doubled until the resulting segmented dotplot is in the maximum dimensions. | 150 |
 | testrun_std | Runs a testrun with example data. | F |
 | testrun_fatofa| Runs a testrun with example data, but with the mode activated that compares full fastas to each other.| F |
-| compare_full_fastas| If TRUE, seqname_x, start_x, and end_x are ignored, and instead the whole genome_x_fa is aligned to the whole genome_y_fa. Use this if you have two regional fasta files that you want to compare. Do NOT use this when dealing with whole genome assemblies. | 'F' |
+| compare_full_fastas| If TRUE, seqname_x, start_x, and end_x are ignored, and instead the whole genome_x_fa is aligned to the whole genome_y_fa. Use this if you have two regional fasta files that you want to compare. Do NOT use this when dealing with whole genome assemblies. | F |
  minimap2_bin| Link to the minimap2 binary. If minimap2 is in $PATH, keep the value 'default'. | default|
 | bedtools_bin| Link to the bedtools binary. If bedtools is in $PATH, keep the value 'default'. | default|
 

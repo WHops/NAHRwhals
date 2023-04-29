@@ -35,5 +35,5 @@ https://github.com/PacificBiosciences/pbmm2/ . Minimap2 parameters:
 #'
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

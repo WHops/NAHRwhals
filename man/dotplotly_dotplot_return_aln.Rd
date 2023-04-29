@@ -20,5 +20,5 @@ Should be run through the 'pafdotplot_make' wrapper function
 which helps in selecting input parameters.
 }
 \author{
-Tom Poorten (https://github.com/tpoorten/dotPlotly), edited by Wolfram Höps.
+Tom Poorten (https://github.com/tpoorten/dotPlotly), edited by Wolfram Hoeps.
 }

@@ -20,5 +20,5 @@ and runs a 'gawk' command to extract the name and length of each sequence
 in the fasta file. The extracted information is saved to the output file.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

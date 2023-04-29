@@ -17,5 +17,5 @@ Cuts down a paf to entries where query > target. Not 100\% sure
 what is going on here.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

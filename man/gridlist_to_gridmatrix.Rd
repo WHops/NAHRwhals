@@ -16,5 +16,5 @@ A matrix of the bitplot
 Convert gridlist to grimatrix
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

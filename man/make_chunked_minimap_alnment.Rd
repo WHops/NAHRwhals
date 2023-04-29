@@ -87,5 +87,5 @@ This function has no return value. Output files are written to the specified pat
 This function performs a chunked minimap2 alignment of two single-sequence FASTA files, generates a PAF file, and creates a dotplot PDF. It utilizes helper functions for sequence chunking, minimap2 alignment, PAF recombination, and dotplot generation.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

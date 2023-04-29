@@ -21,5 +21,5 @@ a bed dataframe if outsdbed_link is NULL.
 The Bedfile will have the wrong colnames
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

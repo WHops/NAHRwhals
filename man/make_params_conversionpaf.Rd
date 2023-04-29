@@ -18,5 +18,5 @@ params, a list.
 DOC PENDING.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }

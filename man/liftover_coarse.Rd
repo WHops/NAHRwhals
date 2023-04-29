@@ -58,5 +58,5 @@ list containing the lifted-over contig name, the start position, and the
 end position.
 }
 \author{
-Wolfram Höps
+Wolfram Hoeps
 }
