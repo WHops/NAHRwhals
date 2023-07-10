@@ -73,13 +73,13 @@ This PDF contains seven plots that document the NAHRwhals run:
 
 <table>
 <tr>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-1.png?raw=true" alt="Page 1"></td>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-2.png?raw=true" alt="Page 2"></td>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-3.png?raw=true" alt="Page 3"></td>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-4.png?raw=true" alt="Page 4"></td>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-5.png?raw=true" alt="Page 5"></td>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-6.png?raw=true" alt="Page 6"></td>
-<td><img src="https://github.com/WHops/NAHRwhals/blob/package_cleaning/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-7.png?raw=true" alt="Page 6"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-1.png?raw=true" alt="Page 1"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-2.png?raw=true" alt="Page 2"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-3.png?raw=true" alt="Page 3"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-4.png?raw=true" alt="Page 4"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-5.png?raw=true" alt="Page 5"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-6.png?raw=true" alt="Page 6"></td>
+<td><img src="https://github.com/WHops/NAHRwhals/blob/main/inst/extdata/output_png/Fasta_x_Fasta_y_all/Fasta_x_Fasta_y_all-7.png?raw=true" alt="Page 6"></td>
 
 </tr>
 </table>
@@ -111,7 +111,7 @@ samplename_y = 'Fasta_y'
 
 Resulting in pairwise alignments plots with gene annotations overlaid on the top: 
 
-<img src="https://github.com/WHops/NAHRwhals/blob/main/testdata/output_png/examplerun_output_hg38_T2T.png?raw=true" width="500" height="500">
+<img src="https://github.com/WHops/NAHRwhals/blob/main/inst/extdata/output_png/examplerun_output_hg38_T2T.png?raw=true" width="500" height="500">
 
 
 Figures and results from the NAHRwhals manuscript can be replicated by querying coordinates of interest (see supp. Tables) on a reference (parameter: genome_x_fa) against assembly fastas (parameter: genome_y_fa) (see https://doi.org/10.5281/zenodo.7635935). Note that in the majority of cases, T2T is used as reference.
