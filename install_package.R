@@ -4,4 +4,5 @@
 install.packages("reshape2", repos="https://cran.us.r-project.org")
 
 # Use devtools to install the package. 
-devtools::install(dependencies = FALSE)
+#devtools::document()
+devtools::install()

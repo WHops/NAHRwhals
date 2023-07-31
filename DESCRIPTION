@@ -14,6 +14,7 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports:
+        tidyr,
 	ggplot2,
 	dplyr,
 	scales,
