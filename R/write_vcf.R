@@ -46,11 +46,13 @@ generate_gt_strings <- function(df, sample_list, haplotype_list){
       df_complete <- merge(all_combinations, df_temp, by = c("sample_id", "phase"), all.x = TRUE)
       df_complete$GT[is.na(df_complete$GT)] <- '.'
       
-      GTS <- df_complete %>%
-        dplyr::arrange(sample_id, phase) %>%
-        dplyr::group_by(sample_id) %>%
-        dplyr::summarise(GT_combined = paste0(GT, collapse = "|"), .groups = "drop") %>%
-        tidyr::pivot_wider(names_from = sample_id, values_from = GT_combined)
+      GT_combined <- dplyr::summarise(
+        dplyr::group_by(df_complete, sample_id),
+        GT_combined = paste0(GT, collapse = "|")
+      )
+      
+      GTS = data.frame(t(GT_combined$GT_combined), stringsAsFactors = FALSE)
+      colnames(GTS)=GT_combined$sample_id
       
       finished_line <- create_vcf_line(df_temp, GTS)
       all_lines <- rbind(all_lines, finished_line)
