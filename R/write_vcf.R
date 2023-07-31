@@ -1,11 +1,14 @@
-# @title Preprocess input data
-# @description Remove alt samples, replace mut_max by 'UNK' where res_max < threshold, extract sample_id and phase from sample
-# @param input_file A character string specifying the path to the input file
-# @param res_max_threshold A numeric value specifying the res_max threshold for assigning 'UNK' to mut_max
-# @author Wolfram Hoeps
-# @export
-# @return A preprocessed data frame
+#' @title Preprocess input data
+#' @description Remove alt samples, replace mut_max by 'UNK' where res_max < threshold, extract sample_id and phase from sample
+#' @param input_file A character string specifying the path to the input file
+#' @param res_max_threshold A numeric value specifying the res_max threshold for assigning 'UNK' to mut_max
+#' @author Wolfram Hoeps
+#' @export
+#' @return A preprocessed data frame
 preprocess_data <- function(input_file, res_max_threshold = 0.98){
+  
+  "%>%" <- magrittr::"%>%"
+  
   df <- read.delim(input_file)
   df <- df[!grepl("\\.alt$", df$sample),]
   df[df$res_max < res_max_threshold,]$mut_max <- 'UNK'
@@ -15,14 +18,14 @@ preprocess_data <- function(input_file, res_max_threshold = 0.98){
   return(df)
 }
 
-# @title Generate genotype strings
-# @description Generate the genotype strings for each unique start and mutation
-# @param df A data frame from the preprocess_data function
-# @param sample_list A character vector of unique sample ids
-# @param haplotype_list A numeric vector specifying the haplotype options
-# @author Wolfram Hoeps
-# @export
-# @return A data frame with all the lines for the VCF file
+#' @title Generate genotype strings
+#' @description Generate the genotype strings for each unique start and mutation
+#' @param df A data frame from the preprocess_data function
+#' @param sample_list A character vector of unique sample ids
+#' @param haplotype_list A numeric vector specifying the haplotype options
+#' @author Wolfram Hoeps
+#' @export
+#' @return A data frame with all the lines for the VCF file
 generate_gt_strings <- function(df, sample_list, haplotype_list){
   unique_starts <- unique(df$start)
   all_lines <- data.frame()
@@ -62,13 +65,13 @@ generate_gt_strings <- function(df, sample_list, haplotype_list){
   return(all_lines)
 }
 
-# @title Create each line of the VCF
-# @description Create each line of the VCF with the genotype string
-# @param df A data frame from the generate_gt_strings function
-# @param GTS A data frame with the genotype strings
-# @author Wolfram Hoeps
-# @export
-# @return A data frame with a single VCF line
+#' @title Create each line of the VCF
+#' @description Create each line of the VCF with the genotype string
+#' @param df A data frame from the generate_gt_strings function
+#' @param GTS A data frame with the genotype strings
+#' @author Wolfram Hoeps
+#' @export
+#' @return A data frame with a single VCF line
 create_vcf_line <- function(df, GTS){
   df_line_preGT <- data.frame(
     CHROM = df[1,'seqname'],
@@ -80,24 +83,23 @@ create_vcf_line <- function(df, GTS){
     QUAL = '.',
     FILTER = 'PASS',
     INFO = paste0('SVDESC=', df[1,'mut_maxsimple'], ';', 
-                  'SVDEPTH=', str_count(df[1,'mut_maxsimple'], '\\+')+1 , ';',
+                  'SVDEPTH=', stringr::str_count(df[1,'mut_maxsimple'], '\\+')+1 , ';',
                   'SVLEN=', df[1,'width_orig'] , ';', 
                   'END=', df[1,'start']),
-    FMT = 'GT'
+    FORMAT = 'GT'
   )
   
   finished_line <- cbind(df_line_preGT, GTS)
   return(finished_line)
 }
 
-# @title Generate the header
-# @description Generate the header for the VCF file
-# @param all_lines A data frame from the generate_gt_strings function
-# @param GTS A data frame with the genotype strings
-# @author Wolfram Hoeps
-# @export
-# @return A character vector with the VCF header
-generate_header <- function(all_lines, GTS){
+#' @title Generate the header
+#' @description Generate the header for the VCF file
+#' @param all_lines A data frame from the generate_gt_strings function
+#' @author Wolfram Hoeps
+#' @export
+#' @return A character vector with the VCF header
+generate_header <- function(all_lines){
   contigs_header <- paste0("##contig=<ID=", unique(all_lines$CHROM), ">")
   header <- c("##fileformat=VCFv4.2",
               contigs_header,
@@ -106,19 +108,19 @@ generate_header <- function(all_lines, GTS){
               "##INFO=<ID=SVLEN,Number=1,Type=Integer,Description=\"SV length\">",
               "##INFO=<ID=END,Number=1,Type=Integer,Description=\"End position of the variant described in this record\">",
               "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">",
-              paste0("#", paste(c("CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT", 
-                                  colnames(GTS)), collapse="\t"))
-  )
+              paste0("#", paste(colnames(all_lines), collapse="\t"))
+        )
+  
   return(header)
 }
 
-# @title Write VCF file
-# @description Create VCF file from input data and save it
-# @param input_file A character string specifying the path to the input file
-# @param output_file A character string specifying the path to the output VCF file
-# @param res_max_threshold A numeric value specifying the res_max threshold for assigning 'UNK' to mut_max
-# @author Wolfram Hoeps
-# @export
+#' @title Write VCF file
+#' @description Create VCF file from input data and save it
+#' @param input_file A character string specifying the path to the input file
+#' @param output_file A character string specifying the path to the output VCF file
+#' @param res_max_threshold A numeric value specifying the res_max threshold for assigning 'UNK' to mut_max
+#' @author Wolfram Hoeps
+#' @export
 write_vcf <- function(input_file, output_file, res_max_threshold = 0.98, sort = F){
   
   # Preprocess the data
@@ -136,7 +138,7 @@ write_vcf <- function(input_file, output_file, res_max_threshold = 0.98, sort = 
   }
   
   # Generate the VCF header
-  header <- generate_header(all_lines, all_lines)
+  header <- generate_header(all_lines)
   
   # Convert data to character and generate VCF body
   body <- apply(all_lines, 1, function(x) paste(x, collapse="\t"))

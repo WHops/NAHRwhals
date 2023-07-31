@@ -9,7 +9,7 @@ confirm_loaded_nw <- function() {
 #' @author Wolfram Hoeps
 #' @export
 version_nw <- function() {
-  print("This is version 1.2 from Apr 29, 2023.")
+  print("This is version 1.2X from Jul 31st, 2023.")
 }
 
 #' Perform Chunked Minimap2 Alignment and Generate Dotplot
