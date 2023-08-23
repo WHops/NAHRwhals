@@ -122,6 +122,7 @@ wrapper_aln_and_analyse <- function(params) {
   # saveRDS(gridmatrix, file='~/Desktop/sec_advanced')
   # Step 4: Solve and make a solved plot
   # res = solve_mutation_old(gridmatrix, depth = params$depth, discovery_exact = params$discovery_exact)
+  #saveRDS(gridmatrix, file='gridmatrix_cpx.Rdate')
   res <- solve_mutation(gridmatrix, maxdepth = params$depth, solve_th = params$eval_th) # , discovery_exact = params$discovery_exact)
 
   make_modified_grid_plot(res, gridmatrix, outlinks)

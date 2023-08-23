@@ -101,10 +101,10 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
     log_collection$mut_tested <<- dim(res_df)[1]
   }
 
-  # print(paste0('Nodes considered: ', n_eval_total + n_hash_excluded))
-  # print(paste0('Eval attempted: ', n_eval_total))
-  # print(paste0('Eval calced: ', n_eval_calc))
-  # print(paste0('Hash excluded: ', n_hash_excluded))
+  print(paste0('Nodes considered: ', n_eval_total + n_hash_excluded))
+  print(paste0('Eval attempted: ', n_eval_total))
+  print(paste0('Eval calced: ', n_eval_calc))
+  print(paste0('Hash excluded: ', n_hash_excluded))
 
   return(res_out)
 }

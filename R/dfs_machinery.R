@@ -193,7 +193,7 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
     node_is_novel_bool <- is.null(visited[[hash]])
     if (!node_is_novel_bool) {
       n_hash_excluded <<- n_hash_excluded + 1
-
+      
       # The value of this hash has been computed
       if ((as.numeric(visited[[hash]][3])) > 1) {
         vector_to_add_to_df_out <- c(
@@ -211,7 +211,7 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
       }
       next()
     }
-
+    
 
     # Leave if the mutation is too unsymmetrical (unlikely path)
     node_passes_symmetry_crit <- T # decide_loop_continue_symmetry(bitl_mut, orig_symm = orig_symm)

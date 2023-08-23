@@ -57,7 +57,7 @@ generate_gt_strings <- function(df, sample_list, haplotype_list){
       GTS = data.frame(t(GT_combined$GT_combined), stringsAsFactors = FALSE)
       colnames(GTS)=GT_combined$sample_id
       
-      finished_line <- create_vcf_line(df_temp, GTS)
+      finished_line <- create_vcf_line(df_temp[df_temp$mut_maxsimple == mutation,], GTS)
       all_lines <- rbind(all_lines, finished_line)
     }
   }
@@ -85,7 +85,7 @@ create_vcf_line <- function(df, GTS){
     INFO = paste0('SVDESC=', df[1,'mut_maxsimple'], ';', 
                   'SVDEPTH=', stringr::str_count(df[1,'mut_maxsimple'], '\\+')+1 , ';',
                   'SVLEN=', df[1,'width_orig'] , ';', 
-                  'END=', df[1,'start']),
+                  'END=', df[1,'end']),
     FORMAT = 'GT'
   )
   
