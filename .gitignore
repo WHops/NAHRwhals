@@ -25,3 +25,5 @@ testdata/extracted_fastas/sequence1.fa.fai
 tmp_conversionpaf30944258777.8904.paf
 trash/
 y_x.fa
+nw_local.R
+unittest-dev.R

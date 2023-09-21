@@ -272,7 +272,10 @@ calc_coarse_grained_aln_score <-
         "%)"
       ))
     }
-    all_est <<- append(all_est, est)
+    if(!exists("all_est")) all_est <- list()
+    all_est <<- append(all_est, est) 
+
+    if(!exists("all_real")) all_real <- list()
     all_real <<- append(all_real, (round((
       1 - (cost_res[row, col]) / sum(climb_up_cost, walk_right_cost)
     ) * 100, 3)))

@@ -12,11 +12,12 @@
 #' @author Wolfram Hoeps
 #' @export
 save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
+
+  options(scipen=999)
+
   res_ref <- res[res$mut1 == "ref", "eval"]
   res_max <- res[1, "eval"]
   n_res_max <- dim(res[res$eval == max(res$eval), ])[1]
-
-
   maxres <- res[
     which.max(
       rowSums(
@@ -29,7 +30,6 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
       )
     ),
   ]
-
   if (is.null(log$compression)) {
     log$compression <- 0
   }
@@ -53,6 +53,9 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
     log$start,
     log$end,
     log$samplename,
+    log$y_seqname,
+    log$y_start,
+    log$y_end,
     as.numeric(log$end) - as.numeric(log$start),
     log$xpad,
     res_ref,
@@ -84,6 +87,9 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
     "start",
     "end",
     "sample",
+    "y_seqname",
+    'y_start',
+    'y_end',
     "width_orig",
     "xpad",
     "res_ref",
@@ -110,6 +116,7 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
     "mut3_len_pm"
   )
 
+
   if (alt_x) {
     to_append <- cbind(params$seqname_x_alt, params$start_x_alt, params$end_x_alt, to_append)
     colnames_ <- cbind("seqname_alt", "start_alt", "end_alt", colnames_)
@@ -118,10 +125,10 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
   if (is.na(file.size(logfile)) | (file.size(logfile) == 0)) {
     write.table(colnames_, file = logfile, append = TRUE, sep = "\t", col.names = F, row.names = F, quote = F)
   }
-
+  # write to_apped to file logfile, with append = TRUE, and making sure numericals are written out
   write.table(to_append, file = logfile, append = TRUE, sep = "\t", col.names = F, row.names = F, quote = F)
-
-  print("Logfile written.")
+  
+  print(paste0("Logfile written: ", logfile))
 }
 
 

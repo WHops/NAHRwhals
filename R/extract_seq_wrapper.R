@@ -28,10 +28,10 @@ extract_sequence_wrapper <- function(params, outlinks) {
     # First, write the asm y and hg38 x.
 
     # First, write the asm y and hg38 x.
-
+    print('hi')
     if (params$samplename_y == "hg38") {
       # If we have hg38 as y, we write hg38 into the 'x' and 'y' fasta.
-      write_x_y_sequences(params$seqname_x,
+      coords = write_x_y_sequences(params$seqname_x,
         start_x_pad,
         end_x_pad,
         outlinks$genome_x_fa_subseq, # hg38 sequence gets directed here
@@ -43,7 +43,7 @@ extract_sequence_wrapper <- function(params, outlinks) {
         extract_only = T
       )
     } else {
-      write_x_y_sequences(
+      coords = write_x_y_sequences(
         params$seqname_x,
         start_x_pad,
         end_x_pad,
@@ -55,6 +55,13 @@ extract_sequence_wrapper <- function(params, outlinks) {
         params
       )
     }
+    
+    if (exists("log_collection")) {
+      log_collection$y_seqname <<- coords['new_seqname']
+      log_collection$y_start <<- coords['new_x_start']
+      log_collection$y_end <<- coords['new_x_end']
+    }
+    
   } else if (is.null(params$conversionpaf_link)) {
     # Huh?
     system(paste0("cp ", genome_x_fa, " ", outlinks$genome_x_fa_subseq))
@@ -69,3 +76,4 @@ extract_sequence_wrapper <- function(params, outlinks) {
   }
   return(list(chr_start_end_pad, params))
 }
+
