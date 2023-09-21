@@ -27,6 +27,7 @@ preprocess_data <- function(input_file, res_max_threshold = 0.98){
 #' @export
 #' @return A data frame with all the lines for the VCF file
 generate_gt_strings <- function(df, sample_list, haplotype_list){
+  
   unique_starts <- unique(df$start)
   all_lines <- data.frame()
   
@@ -53,8 +54,47 @@ generate_gt_strings <- function(df, sample_list, haplotype_list){
         dplyr::group_by(df_complete, sample_id),
         GT_combined = paste0(GT, collapse = "|")
       )
-      
-      GTS = data.frame(t(GT_combined$GT_combined), stringsAsFactors = FALSE)
+
+      # Now, add the PS block. This is a bit of a messy part #
+
+      # First, determine which haplotypes are mutated
+      GT_combined$phase <- sapply(GT_combined$GT_combined, function(x) {
+        # Split the string at the pipe symbol
+        split_values <- strsplit(x, "\\|")[[1]]
+        
+        # Convert '.' to '0'
+        split_values[split_values == '.'] <- '0'
+        
+        # If the values are the same, return 0
+        if (split_values[1] == split_values[2]) {
+          return(0)
+        }
+        
+        # Find the position of '1' (if exists), else return 0
+        if (split_values[1] == '1') {
+          return(1)
+        } else if (split_values[2] == '1') {
+          return(2)
+        } else {
+          return(0)
+        }
+      })
+
+      # "sample" is here the PS column. Change that for another col. 
+      selected_df_complete = dplyr::select(df_complete, sample_id, phase, sample)
+      GT_combined$sample <- (dplyr::left_join(GT_combined, selected_df_complete, by = c("sample_id", "phase")))$sample
+
+      GT_combined  = magrittr::"%>%"(GT_combined, 
+        dplyr::mutate(GT_combined_PS = dplyr::if_else(
+          is.na(sample),
+          paste(GT_combined, ".", sep = ":"),
+          paste(GT_combined, sample, sep = ":")
+        ))
+        )
+
+      GT_combined[,c('phase', 'sample', 'GT_combined')] <- NULL
+
+      GTS = data.frame(t(GT_combined$GT_combined_PS), stringsAsFactors = FALSE)
       colnames(GTS)=GT_combined$sample_id
       
       finished_line <- create_vcf_line(df_temp[df_temp$mut_maxsimple == mutation,], GTS)
@@ -86,7 +126,7 @@ create_vcf_line <- function(df, GTS){
                   'SVDEPTH=', stringr::str_count(df[1,'mut_maxsimple'], '\\+')+1 , ';',
                   'SVLEN=', df[1,'width_orig'] , ';', 
                   'END=', df[1,'end']),
-    FORMAT = 'GT'
+    FORMAT = 'GT:PS'
   )
   
   finished_line <- cbind(df_line_preGT, GTS)
@@ -108,6 +148,7 @@ generate_header <- function(all_lines){
               "##INFO=<ID=SVLEN,Number=1,Type=Integer,Description=\"SV length\">",
               "##INFO=<ID=END,Number=1,Type=Integer,Description=\"End position of the variant described in this record\">",
               "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">",
+              "##FORMAT=<ID=PS,Number=1,Type=Integer,Description=\"Phase set identifier\">",
               paste0("#", paste(colnames(all_lines), collapse="\t"))
         )
   
@@ -150,3 +191,7 @@ write_vcf <- function(input_file, output_file, res_max_threshold = 0.98, sort = 
   writeLines(vcf_data, output_file)
 }
 
+# Make a debug sample run
+# input_file = '/Users/hoeps/PhD/projects/nahrcall/vcflab/test_data/all.tsv'
+# output_file = '/Users/hoeps/PhD/projects/nahrcall/vcflab/all.vcf'
+# write_vcf(input_file, output_file, res_max_threshold = 0.98, sort = F)
