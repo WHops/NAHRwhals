@@ -182,6 +182,7 @@
       all_lines = all_lines[order(all_lines$CHROM, all_lines$POS),]
     }
     
+    all_lines$POS = as.character(all_lines$POS)
     # Generate the VCF header
     header <- generate_header(all_lines)
     
@@ -190,12 +191,12 @@
     
     # Combine header and body
     vcf_data <- c(header, body)
-    
+
     # Write to VCF file
     writeLines(vcf_data, output_file)
   }
   
   # Make a debug sample run
-  #input_file = '/Users/hoeps/PhD/projects/nahrcall/vcflab/test_data/all.tsv'
-  #output_file = '/Users/hoeps/PhD/projects/nahrcall/vcflab/all.vcf'
-  #write_vcf(input_file, output_file, res_max_threshold = 0.98, sort = F, ps_colname='start')
+  # input_file = '/Users/hoeps/PhD/projects/nahrcall/vcflab/test_data/all.tsv'
+  # output_file = '/Users/hoeps/PhD/projects/nahrcall/vcflab/all.vcf'
+  # write_vcf(input_file, output_file, res_max_threshold = 0.98, sort = T, ps_colname='start')
