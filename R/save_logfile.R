@@ -126,9 +126,6 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
     write.table(colnames_, file = logfile, append = TRUE, sep = "\t", col.names = F, row.names = F, quote = F)
   }
   # write to_apped to file logfile, with append = TRUE, and making sure numericals are written out
-  write.table(to_append, file = logfile, append = TRUE, sep = "\t", col.names = F, row.names = F, quote = F)
-  library(filelock)
-
   max_retries <- 5
   retry_count <- 0
 
