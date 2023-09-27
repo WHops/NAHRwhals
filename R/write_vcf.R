@@ -17,7 +17,7 @@
     #  dplyr::mutate(sample_id = sub("(\\.|_)([^0-9]).*$", "", df$sample), 
     #               phase = ifelse(grepl("h[ap]{0,2}2", df$sample), 2, 1)) 
     df <- df %>%
-      mutate(sample_id = sub("^[^_]+_([^\\._]+).*", "\\1", sample),
+      dplyr::mutate(sample_id = sub("^[^_]+_([^\\._]+).*", "\\1", sample),
              phase = ifelse(grepl("h[ap]{0,2}2", df$sample), 2, 1))
     return(df)
   }
