@@ -12,9 +12,13 @@
     df <- read.delim(input_file)
     df <- df[!grepl("\\.alt$", df$sample),]
     df[df$res_max < res_max_threshold,]$mut_max <- 'UNK'
+    #browser()
+    #df <- df %>%
+    #  dplyr::mutate(sample_id = sub("(\\.|_)([^0-9]).*$", "", df$sample), 
+    #               phase = ifelse(grepl("h[ap]{0,2}2", df$sample), 2, 1)) 
     df <- df %>%
-      dplyr::mutate(sample_id = sub("(\\.|_)([^0-9]).*$", "", df$sample), 
-                    phase = ifelse(grepl("h[ap]{0,2}2", df$sample), 2, 1)) 
+      mutate(sample_id = sub("^[^_]+_([^\\._]+).*", "\\1", sample),
+             phase = ifelse(grepl("h[ap]{0,2}2", df$sample), 2, 1))
     return(df)
   }
   
@@ -100,6 +104,8 @@
   
         GTS = data.frame(t(GT_combined$GT_combined_PS), stringsAsFactors = FALSE)
         colnames(GTS)=GT_combined$sample_id
+        # sort the columns alphabetically
+        GTS <- GTS[,order(colnames(GTS))]
         
         finished_line <- create_vcf_line(df_temp[df_temp$mut_maxsimple == mutation,], GTS)
         all_lines <- rbind(all_lines, finished_line)
@@ -194,9 +200,13 @@
 
     # Write to VCF file
     writeLines(vcf_data, output_file)
+
+    # Inform the user that we are done
+    cat(paste0("VCF file written to ", output_file, "\n"))
+
   }
   
   # Make a debug sample run
-  # input_file = '/Users/hoeps/PhD/projects/nahrcall/vcflab/test_data/all.tsv'
-  # output_file = '/Users/hoeps/PhD/projects/nahrcall/vcflab/all.vcf'
-  # write_vcf(input_file, output_file, res_max_threshold = 0.98, sort = T, ps_colname='start')
+  #input_file = '/Users/hoeps/PhD/projects/nahrcall/vcflab/new_vcf/res.tsv'
+  #output_file = '/Users/hoeps/PhD/projects/nahrcall/vcflab/new_vcf/all.vcf'
+  #write_vcf(input_file, output_file, res_max_threshold = 0.98, sort = T, ps_colname='start')
