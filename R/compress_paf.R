@@ -21,7 +21,9 @@ merge_rows <- function(paffile, pairs) {
     paf_work <- paffile[c(nl1, nl2), ]
     if (paf_work[1, "strand"] == "+") {
       paf_work[1, ]$qname <- paste0(
-        sub("_.*", "", paf_work[1, ]$qname),
+        # HERE is the offending line!!
+        # sub("_.*", "", paf_work[1, ]$qname) <- this line removes everything after the first '_'. Actually i want to remove everything after the *last* instance of '_'. I dont know beforehand if there are 1, 2 or more "_". Therefore, the nnew line is:
+        sub("_[^_]*$", "", paf_work[1, ]$qname),
         "_",
         paf_work[1, ]$qstart,
         "-",
@@ -40,7 +42,7 @@ merge_rows <- function(paffile, pairs) {
       # Sort by t, because this is increasing
       paf_work <- paf_work[order(paf_work$tstart), ]
       paf_work[1, ]$qname <- paste0(
-        sub("_.*", "", paf_work[1, ]$qname),
+        sub("_[^_]*$", "", paf_work[1, ]$qname),
         "_",
         paf_work[2, ]$qend,
         "-",
@@ -106,6 +108,7 @@ compress_paf_fnct <-
            second_run = F,
            inparam_chunklen = NULL,
            inparam_compression = NULL) {
+
     if (is.null(inpaf_df)) {
       # Read and col-annotate the input paf
       inpaf <- read.table(inpaf_link, sep = "\t")
