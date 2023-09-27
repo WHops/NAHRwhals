@@ -134,13 +134,13 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
 
   while (retry_count < max_retries) {
     # Attempt to acquire an exclusive lock for writing
-    lock <- lock(logfile, timeout = 0)  # timeout = 0 means it won't wait
+    lock <- filelock::lock(logfile, timeout = 0)  # timeout = 0 means it won't wait
 
     if (!is.null(lock)) {
       # Lock acquired successfully; write the content and then release the lock
       write.table(to_append, file = logfile, append = TRUE, sep = "\t", 
                   col.names = FALSE, row.names = FALSE, quote = FALSE)
-      unlock(lock)
+      filelock::unlock(lock)
       break
     } else {
       # Lock is held by another process; sleep for a random interval and retry
