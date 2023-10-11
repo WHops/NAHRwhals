@@ -126,20 +126,20 @@ wrapper_aln_and_analyse <- function(params) {
   res <- solve_mutation(gridmatrix, maxdepth = params$depth, solve_th = params$eval_th) # , discovery_exact = params$discovery_exact)
 
   
-  write.table(gridmatrix, file=paste0('testcases/',params$seqname_x,'_',params$start_x,'_',params$end_x, '_',params$samplename_y, '.tsv'),
-              row.names=F, col.names = F, sep='\t', quote = F)
-
-  # Extract column names and row names
-  column_names <- colnames(gridmatrix)
-  row_names <- row.names(gridmatrix)
-  
-  # Convert to a single character vector with tab-separated values
-  column_string <- paste(column_names, collapse = "\t")
-  row_string <- paste(row_names, collapse = "\t")
-  
-  # Write the two lines to a file
-  writeLines(c(row_string, column_string),
-             paste0('testcases/',params$seqname_x,'_',params$start_x,'_',params$end_x, '_',params$samplename_y, '_rows_cols.tsv'))
+  # write.table(gridmatrix, file=paste0('testcases/',params$seqname_x,'_',params$start_x,'_',params$end_x, '_',params$samplename_y, '.tsv'),
+  #             row.names=F, col.names = F, sep='\t', quote = F)
+  # 
+  # # Extract column names and row names
+  # column_names <- colnames(gridmatrix)
+  # row_names <- row.names(gridmatrix)
+  # 
+  # # Convert to a single character vector with tab-separated values
+  # column_string <- paste(column_names, collapse = "\t")
+  # row_string <- paste(row_names, collapse = "\t")
+  # 
+  # # Write the two lines to a file
+  # writeLines(c(row_string, column_string),
+  #            paste0('testcases/',params$seqname_x,'_',params$start_x,'_',params$end_x, '_',params$samplename_y, '_rows_cols.tsv'))
   
   
   make_modified_grid_plot(res, gridmatrix, outlinks)

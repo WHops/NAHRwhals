@@ -6,7 +6,7 @@
 #' @param threads Number of threads to use
 #' @return Nothing
 #' @export
-align_all_vs_all_using_minimap2 <- function(minimap2_bin, reference_fasta, asm_fasta, out_paf, threads = 1){
+align_all_vs_all_using_minimap2 <- function(minimap2_bin, reference_fasta, asm_fasta, out_paf, threads){
 
     # Search for a reference_mmi in the same folder as the reference_fasta. If it does not exist, create it.
     # for example for a file reference.fa, we want to create reference.mmi
@@ -14,16 +14,19 @@ align_all_vs_all_using_minimap2 <- function(minimap2_bin, reference_fasta, asm_f
     if(!file.exists(reference_mmi)){
         # Inform the user what happened and what we do 
         message("Reference index ", reference_mmi, " does not exist. Creating it now.")
-        minimap2_indexing_command <- paste0(minimap2_bin, " -k 28 -w 255 --idx-no-seq -H -d ", reference_mmi, " ", reference_fasta)
+        minimap2_indexing_command <- paste0(minimap2_bin, " -k 28 -w 255 -H -d ", reference_mmi, " ", reference_fasta)
         system(minimap2_indexing_command)
     } else {
         # Inform the user what happened and what we do
         message("Found existing reference index ", reference_mmi, ". Skipping re-calculation.")
     }
 
-
-    # What I ran in the terminal is: minimap2 -x asm5 -t 8 -c /Users/hoeps/PhD/projects/huminvs/genomes/hg38/centro_lab/hg38_masked.mmi ../../alns/NA12878_giab_pbsq2-ccs_1000-hifiasm.h1-un.fasta. Now we need to make this accessible via system()
-    minimap2_cmd = paste0(minimap2_bin, " -x asm5 -t 1 -c ", reference_mmi, " ", asm_fasta, " > ", out_paf)
+    # Check if the out_paf exists already. If it does, explain to the user and do not run the code. 
+    if(file.exists(out_paf)){
+        message("Output file ", out_paf, " already exists. Skipping minimap2.")
+        return()
+    }
+    minimap2_cmd = paste0(minimap2_bin, " -x asm5 -t ",threads, " -c ", reference_mmi, " ", asm_fasta, " > ", out_paf)
     system(minimap2_cmd)
 
     # Inform the user
@@ -52,9 +55,17 @@ extract_test_list_from_paf <- function(all_vs_all_paf, out_dir, genome_path, bed
 #' @param out_path Path to the output file
 #' @return Nothing
 #' @export
-make_genome_file <- function(fasta_fai, out_path){
+make_genome_file <- function(fasta, out_path){
+
+    # If fasta.fai file does not exist, create it
+    if(!file.exists(paste0(fasta,'.fai'))){
+        message("Fasta index ", paste0(fasta,'.fai'), " does not exist. Creating it now.")
+        system(paste0("samtools faidx ", fasta))
+    } else {
+        message("Found existing fasta index ", paste0(fasta,'.fai'), ". Skipping re-calculation.")
+    }
     # Read the fai file
-    fai = read.table(fasta_fai, sep="\t", header=F, stringsAsFactors=F)
+    fai = read.table(paste0(fasta,'.fai'), sep="\t", header=F, stringsAsFactors=F)
     # Extract the first column
     seqnames = fai[,1]
     # Extract the second column
@@ -65,21 +76,22 @@ make_genome_file <- function(fasta_fai, out_path){
     write.table(df, out_path, sep="\t", quote=F, row.names=F, col.names=F)
 }
 
-wga_write_interval_list <- function(ref_fa, asm_fa, outdir, 
+#' @export
+wga_write_interval_list <- function(ref_fa, asm_fa, outdir, threads,
                                     bedtools_bin = 'bedtools', 
                                     minimap2_bin = '/Users/hoeps/opt/anaconda3/envs/snakemake/envs/nahrwhalsAPR/bin/minimap2'
 ){
     system(paste0("mkdir -p ", outdir))
-    allpaf = paste0(out_basename, /, "fullaln.paf")
-    genome_file = paste0(out_basename, /, "ref.genome")
+    allpaf = paste0(outdir, "/fullaln.paf")
+    genome_file = paste0(outdir, "/ref.genome")
 
     # Make all-vs-all alignemnt
-    align_all_vs_all_using_minimap2(minimap2_bin, ref_fa, asm_fa, allpaf)
+    align_all_vs_all_using_minimap2(minimap2_bin, ref_fa, asm_fa, allpaf, threads)
     # Write the genome file
-    make_genome_file(in_fa_fai, genome)
+    make_genome_file(ref_fa, genome_file)
     # Extract list of breakpoint clusters
-    extract_test_list_from_paf(allpaf, out_dir, genome, bedtools_bin)
+    extract_test_list_from_paf(allpaf, outdir, genome_file, bedtools_bin)
 
     # return the name of the final output list, which is in outdir/list_final.txt
-    return(paste0(outdir, /, "list_final.txt"))
+    return(paste0(outdir, "/list_cut_final.bed"))
 }

@@ -80,7 +80,7 @@ nahrwhals <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, end_x,
 
   # Merge the provided parameters and default values
   params <- modifyList(defaults, call_evaluated)
-
+  
   if (testrun_std && testrun_fullfa) {
     stop("Parameters testrun_std and testrun_fullfa cannot both be TRUE.")
   }
