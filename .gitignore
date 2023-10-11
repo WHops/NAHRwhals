@@ -27,3 +27,12 @@ trash/
 y_x.fa
 nw_local.R
 unittest-dev.R
+res_old
+tmp_*
+tmp*
+testcases
+wga
+out.txt
+outpaf.paf
+output.txt
+test.txt
