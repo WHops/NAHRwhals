@@ -13,12 +13,12 @@
     df <- df[!grepl("\\.alt$", df$sample),]
     df[df$res_max < res_max_threshold,]$mut_max <- 'UNK'
     #browser()
-    #df <- df %>%
-    #  dplyr::mutate(sample_id = sub("(\\.|_)([^0-9]).*$", "", df$sample), 
-    #               phase = ifelse(grepl("h[ap]{0,2}2", df$sample), 2, 1)) 
     df <- df %>%
-      dplyr::mutate(sample_id = sub("^[^_]+_([^\\._]+).*", "\\1", sample),
-             phase = ifelse(grepl("h[ap]{0,2}2", df$sample), 2, 1))
+      dplyr::mutate(sample_id = sub("(\\.|_)([^0-9]).*$", "", df$sample), 
+                   phase = ifelse(grepl("h[ap]{0,2}2", df$sample), 2, 1)) 
+    #df <- df %>%
+    #  dplyr::mutate(sample_id = sub("^[^_]+_([^\\._]+).*", "\\1", sample),
+    #         phase = ifelse(grepl("h[ap]{0,2}2", df$sample), 2, 1))
     return(df)
   }
   
@@ -173,7 +173,7 @@
   #' @author Wolfram Hoeps
   #' @export
   write_vcf <- function(input_file, output_file, res_max_threshold = 0.98, sort = F, ps_colname = 'start'){
-    
+    browser()
     # Preprocess the data
     df <- preprocess_data(input_file, res_max_threshold)
     

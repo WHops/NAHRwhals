@@ -364,3 +364,66 @@ rc <- function(z) {
 colMax <- function(data) {
   sapply(data, max, na.rm = TRUE)
 }
+
+#' shred_seq_bedtools_multifasta
+#' @description This is a helperfunction calling bedtools to
+#' chop a query sequence into chunks.
+#'
+#' @param infasta A link to a multi-seq fasta to be chopped
+#' @param outfasta_chunk A link to the output path for a chopped multi-seq fasta.
+#' @param chunklen length of sequence chunks in bp
+#' @param params a list with all NAHRwhals parameters
+#' @return nothing. But output files written.
+#'
+#' @author Wolfram Hoeps
+shred_seq_bedtools_multifasta <- function(infasta,
+                                outfasta_chunk,
+                                chunklen,
+                                params) {
+  bedtoolsloc <- params$bedtools_bin
+  fasta_awk_script <- params$awkscript_fasta
+  # Write a temporary bedfile that will be removed at the end of the function
+  bed_tmp_file <- paste0("tmpbed_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
+  fasta_awk_tmp_file <- paste0("tmpinfo_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
+
+  get_fasta_info_multi(infasta, fasta_awk_tmp_file)
+
+  # Collect information about the fasta we want to chop. This info is needed for bedtools getfasta to work well.
+  name_len_df <- read.table(fasta_awk_tmp_file, stringsAsFactors = FALSE)
+  
+  bed_df_list <- lapply(1:nrow(name_len_df), function(i) {
+    contigname <- sub(">", "", name_len_df[i, 1])
+    contiglen <- as.numeric(name_len_df[i, 2])
+    data.frame(
+      seqnames = contigname,
+      start = sprintf("%d", seq(0, contiglen - (contiglen %% chunklen), by = chunklen)),
+      end = sprintf("%d", pmin(seq(0, contiglen - (contiglen %% chunklen), by = chunklen) + (chunklen - 1), contiglen))
+    )
+  })
+
+  bed_df <- do.call(rbind, bed_df_list)
+
+  write.table(bed_df, file = bed_tmp_file, sep = "\t", quote = F, row.names = F, col.names = F)
+
+  system(paste0("rm ", infasta, ".fai"))
+
+  sedcmd <- "sed -r \'s/(.*):/\\1_/'"
+  system(paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " | ", sedcmd, " > ", outfasta_chunk))
+
+  system(paste0("rm ", bed_tmp_file))
+  system(paste0("rm ", fasta_awk_tmp_file))
+}
+
+get_fasta_info_multi <- function(inputfa, outputinfo) {
+  # Run the gawk command to get the fasta file info
+  cmd <- paste0(
+    "gawk '/^>/{if (l!=\"\") {print seqname, l} seqname=$0; l=0; next}{l+=length($0)}END{print seqname, l}' ",
+    inputfa, " > ", outputinfo
+  )
+  system(cmd)
+}
+
+# in_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/chunk_lab/NA12878_giab_pbsq2-ccs_1000-hifiasm.h1-un.fasta'
+# out_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/chunk_lab/NA12878_giab_pbsq2-ccs_1000-hifiasm.h1-un_chunked.fasta'
+# params = list(bedtools_bin = 'bedtools', awkscript_fasta = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/scripts/awk_on_fasta_gpt4.sh')
+# shred_seq_bedtools_multifasta(in_fa, out_fa, 10000, params)
