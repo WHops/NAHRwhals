@@ -41,7 +41,7 @@ align_all_vs_all_using_minimap2 <- function(minimap2_bin, reference_fasta, asm_f
 #' @param merge_distance Distance to merge overlapping intervals
 #' @return Nothing
 #' @export
-extract_test_list_from_paf <- function(all_vs_all_paf, out_dir, genome_path, bedtools_bin, merge_distance=2000000){
+extract_test_list_from_paf <- function(all_vs_all_paf, out_dir, genome_path, bedtools_bin, merge_distance){
 
     command = paste0('bash scripts/wg_run_all.sh ', all_vs_all_paf, ' ', out_dir, ' ', genome_path, ' ', bedtools_bin, ' ', merge_distance)
     system(command)
@@ -77,7 +77,7 @@ make_genome_file <- function(fasta, out_path){
 }
 
 #' @export
-wga_write_interval_list <- function(ref_fa, asm_fa, outdir, threads,
+wga_write_interval_list <- function(ref_fa, asm_fa, outdir, merge_distance, threads,
                                     bedtools_bin = 'bedtools', 
                                     minimap2_bin = '/Users/hoeps/opt/anaconda3/envs/snakemake/envs/nahrwhalsAPR/bin/minimap2'
 ){
@@ -90,7 +90,8 @@ wga_write_interval_list <- function(ref_fa, asm_fa, outdir, threads,
     # Write the genome file
     make_genome_file(ref_fa, genome_file)
     # Extract list of breakpoint clusters
-    extract_test_list_from_paf(allpaf, outdir, genome_file, bedtools_bin)
+    print(paste0('Using merge distance: ', merge_distance))
+    extract_test_list_from_paf(allpaf, outdir, genome_file, bedtools_bin, merge_distance)
 
     # return the name of the final output list, which is in outdir/list_final.txt
     return(paste0(outdir, "/list_cut_final.bed"))

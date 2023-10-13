@@ -18,7 +18,7 @@ EDGE_DISTANCE=50
 
 # Step 1: Filter out alignments shorter than 10 kbp based on the query sequence length
 echo "Step 1: Filtering alignments shorter than 10 kbp based on the query sequence length..."
-awk 'BEGIN{FS=OFS="\t"} ($4-$3 >= 10000) {print $0}' "$INPUT" > $TEMP
+awk 'BEGIN{FS=OFS="\t"} ($4-$3 >= 1000) {print $0}' "$INPUT" > $TEMP
 echo "Filtering done."
 
 # Step 2: Count occurrences of each contig

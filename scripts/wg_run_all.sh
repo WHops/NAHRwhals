@@ -19,9 +19,11 @@ OUTPUT_DIR="$2"
 GENOME_PATH="$3"
 BEDTOOLS="$4"
 BP_MERGE_DISTANCE="$5"
-EXPAND_PERCENT=1
+EXPAND_FRACTION=0.5
 BP_COLLAPSE_REMOVE_DISTANCE=10000
-MERGE_DISTANCE=100000000000
+MERGE_DISTANCE=1000000
+FINAL_REGIONS_CLUSTER_DISTANCE=100000
+FINAL_INTERVALS_PER_CLUSTER=3
 
 # Ensure output directory exists
 mkdir -p "$OUTPUT_DIR"
@@ -40,7 +42,7 @@ mkdir -p "$OUTPUT_DIR"
 ./scripts/wg_extract_clusters.sh "${OUTPUT_DIR}/wga_primary_bps_distfiltered.bed" "${OUTPUT_DIR}/breakpoint_clusters_merged.bed" $BP_MERGE_DISTANCE
 
 # Step 5: Expand the clusters
-$BEDTOOLS slop -i "${OUTPUT_DIR}/breakpoint_clusters_merged.bed" -g "$GENOME_PATH" -b $EXPAND_PERCENT -pct > "${OUTPUT_DIR}/breakpoint_clusters_merged_expand.bed"
+$BEDTOOLS slop -i "${OUTPUT_DIR}/breakpoint_clusters_merged.bed" -g "$GENOME_PATH" -b $EXPAND_FRACTION -pct > "${OUTPUT_DIR}/breakpoint_clusters_merged_expand.bed"
 
 # Step 6: Filter clusters greater than 50,000 after expansion
 awk 'BEGIN {FS=OFS="\t"} ($3-$2 > 50000)' "${OUTPUT_DIR}/breakpoint_clusters_merged_expand.bed" > "${OUTPUT_DIR}/breakpoint_clusters_merged_expand_50kb.bed"
@@ -55,6 +57,8 @@ awk 'BEGIN {FS=OFS="\t"} {print $4"_"$1,$2,$3,$1}' "${OUTPUT_DIR}/wga_primary_bp
 awk 'BEGIN {FS=OFS="\t"} {print $4"_"$1,$2,$3,$1}' "${OUTPUT_DIR}/wga_primary_bps_noskip.bed" | $BEDTOOLS sort -i - | $BEDTOOLS merge -d $MERGE_DISTANCE -c 4 -o distinct -i - | awk 'BEGIN {FS=OFS="\t"} {print $4,$2,$3,$1}' > "${OUTPUT_DIR}/contigmerges_igv.bed"
 
 # Step 9: Intersect the processed data
-$BEDTOOLS intersect -a "${OUTPUT_DIR}/contigmerges.bed" -b "${OUTPUT_DIR}/list.bed" | awk 'BEGIN {FS=OFS="\t"} {print $4,$2,$3}' > "${OUTPUT_DIR}/list_cut_final.bed"
+$BEDTOOLS intersect -a "${OUTPUT_DIR}/contigmerges.bed" -b "${OUTPUT_DIR}/list.bed" | awk 'BEGIN {FS=OFS="\t"} {print $4,$2,$3}' > "${OUTPUT_DIR}/list_cut_final_prefilter.bed"
+
+./scripts/wg_reduce_clusters.sh <(bedtools sort -i ${OUTPUT_DIR}/list_cut_final_prefilter.bed) ${OUTPUT_DIR}/list_cut_final.bed $FINAL_INTERVALS_PER_CLUSTER $FINAL_REGIONS_CLUSTER_DISTANCE
 
 echo "Processing completed. Results saved in $OUTPUT_DIR."

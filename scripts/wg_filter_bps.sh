@@ -21,7 +21,6 @@ function abs(v) {return v < 0 ? -v : v}
 {
     currTName = $1; currTStart = $2; currTStrand = $7;
     currQName = $4; currQStart = $5;
-
     # Check if current breakpoint is close to the previous breakpoint in both reference and assembly
     if (prevTName == currTName && abs(prevTStart - currTStart) <= prox && prevQName == currQName && abs(prevQStart - currQStart) <= prox) {
         # Marking previous and current as clustered

@@ -103,7 +103,6 @@ wrapper_aln_and_analyse <- function(params) {
     # What do we need here?
   }
 
-
   make_segmented_pairwise_plot(grid_xy, plot_x_y, outlinks)
 
   # Make in between another plot

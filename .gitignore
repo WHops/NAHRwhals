@@ -37,3 +37,5 @@ outpaf.paf
 output.txt
 test.txt
 wga_*
+res_*
+*.bed
