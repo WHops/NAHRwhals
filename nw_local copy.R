@@ -31,7 +31,7 @@ run_nw_once <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 
 hg38_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/centro_lab/hg38_masked.fa"
 t2t_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/T2T_v1.1/chm13.draft_v1.1.fasta"
 ref_fa = t2t_fa
-#ref_fa = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/tomato/download?path=S.lycopersicum.Heinz1706.genomic.fa"
+#ref_fa = "/hg38_fa/hoeps/PhD/projects/nahrcall/nahrchainer/data/tomato/download?path=S.lycopersicum.Heinz1706.genomic.fa"
 #asm_fa = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/tomato/download?path=S.lycopersicum.M82.genomic.fa"
 #ref_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/An-1.chr.all.v2.0.fasta'
 #asm_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/C24.chr.all.v2.0.fasta'
@@ -52,6 +52,7 @@ message("minimap2_bin: ", minimap2_bin)
 message("samplename_y: ", samplename_y)
 message("samplename_x: ", samplename_x)
 message("threads: ", threads)
+test_list = ''
 test_list = wga_write_interval_list(ref_fa, asm_fa, 'wga_test_t2t', 1000000, threads)
 tests = read.table(test_list, sep='\t')
 
