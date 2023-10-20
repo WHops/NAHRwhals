@@ -139,7 +139,7 @@ nahrwhals <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, end_x,
   # for (param_name in names(params)) {
   #   cat(param_name, "=", params[[param_name]], "\n")
   # }
-
+  print(params$genome_y_fa)
   ##### Run the main NAHRwhals wrapper function #####
   wrapper_aln_and_analyse(params)
 

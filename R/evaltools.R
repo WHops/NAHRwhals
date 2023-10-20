@@ -156,7 +156,6 @@ calc_coarse_grained_aln_score <-
     }
 
     n_eval_calc <<- n_eval_calc + 1
-
     # Construct our three cost matrices:
     # cost_u, if you want to go 'up'
     # cost_r, if you want to go 'right'

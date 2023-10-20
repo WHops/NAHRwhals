@@ -9,8 +9,8 @@
 set -euo pipefail
 
 # Check if correct number of arguments are provided
-if [ "$#" -ne 5 ]; then
-    echo "Usage: $0 [input_file] [output_directory] [genome_path] [bedtools_path] [cluster_merge_distance]"
+if [ "$#" -ne 6 ]; then
+    echo "Usage: $0 [input_file] [output_directory] [genome_path] [bedtools_path] [cluster_merge_distance] [indel_ignore_threshold]"
     exit 1
 fi
 
@@ -19,8 +19,8 @@ OUTPUT_DIR="$2"
 GENOME_PATH="$3"
 BEDTOOLS="$4"
 BP_MERGE_DISTANCE="$5"
+BP_COLLAPSE_REMOVE_DISTANCE="$6"
 EXPAND_FRACTION=0.5
-BP_COLLAPSE_REMOVE_DISTANCE=10000
 MERGE_DISTANCE=1000000
 FINAL_REGIONS_CLUSTER_DISTANCE=100000
 FINAL_INTERVALS_PER_CLUSTER=3

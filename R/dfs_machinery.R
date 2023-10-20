@@ -24,7 +24,6 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only = F, earlystop = Inf, hist
   ref_mut_pair <- data.frame(p1 = "1", p2 = "1", sv = "ref")
   ref_mut_pair <- annotate_pairs_with_hash(bitl, ref_mut_pair)
   bitl_ref_mut <- carry_out_compressed_sv(bitl, ref_mut_pair)
-
   # This is if it's called from a history mode
   if (!is.null(history)) {
     print("Continuing a previous run.")
@@ -34,7 +33,7 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only = F, earlystop = Inf, hist
     pairhistory <- paste(ref_mut_pair[, 1:3], collapse = "_")
     depth <- 0
   }
-
+  
   # And enter the dfs rabbithole! (you'll stay there for a while,
   # if calls itself recursively.)
   visited_outputdf_list <- dfsutil(
@@ -82,12 +81,16 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only = F, earlystop = Inf, hist
 #'
 #' @export
 dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairhistory = NULL, df_output = NULL, increase_only = NULL, orig_symm = 1, last_eval = 0, earlystop = Inf) {
+  
+
   # Calc score of a node. Force the calculation if we have ref (there we definitely want to know the value)
   aln_score <- calc_coarse_grained_aln_score(mutator, forcecalc = (pair$sv == "ref"), orig_symm = orig_symm)
   # if ((depth==2)){#} & (pair$p1 == 25) & (pair$p2 == 41)){#'25_41_inv'){
   #   browser()
   # }
   # Initiate an output_df if there is none
+  
+
   if (is.null(df_output)) {
     df_output <- replicate(4,
       rep(NA, 1000),
