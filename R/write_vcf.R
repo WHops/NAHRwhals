@@ -173,7 +173,6 @@
   #' @author Wolfram Hoeps
   #' @export
   write_vcf <- function(input_file, output_file, res_max_threshold = 0.98, sort = F, ps_colname = 'start'){
-    browser()
     # Preprocess the data
     df <- preprocess_data(input_file, res_max_threshold)
     
