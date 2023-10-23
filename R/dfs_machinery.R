@@ -16,7 +16,7 @@
 dfs <- function(bitlocus, maxdepth = 3, increase_only = F, earlystop = Inf, history = NULL) {
   # Prepare initial bitlocus bit
   bitl <- flip_bitl_y_if_needed(bitlocus)
-  bitl <- matrix_remove_zero_pads(bitl)
+  #bitl <- matrix_remove_zero_pads(bitl)
   # Get the orig_symmm value
   orig_symm <- calc_symm(bitl)
   # Initialize a hash.

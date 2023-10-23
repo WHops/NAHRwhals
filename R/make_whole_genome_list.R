@@ -10,7 +10,7 @@ align_all_vs_all_using_minimap2 <- function(minimap2_bin, reference_fasta, asm_f
 
     # Search for a reference_mmi in the same folder as the reference_fasta. If it does not exist, create it.
     # for example for a file reference.fa, we want to create reference.mmi
-    reference_mmi = paste0(dirname(reference_fasta), "/", sub(pattern = "(.*)\\..*$", replacement = "\\1", basename(reference_fasta)), ".mmi")
+    reference_mmi = paste0(dirname(reference_fasta), "/", sub(pattern = "^(.*)\\.[^\\.]+$", replacement = "\\1", basename(reference_fasta)), ".mmi")
     if(!file.exists(reference_mmi)){
         # Inform the user what happened and what we do 
         message("Reference index ", reference_mmi, " does not exist. Creating it now.")
@@ -41,9 +41,9 @@ align_all_vs_all_using_minimap2 <- function(minimap2_bin, reference_fasta, asm_f
 #' @param merge_distance Distance to merge overlapping intervals
 #' @return Nothing
 #' @export
-extract_test_list_from_paf <- function(all_vs_all_paf, out_dir, genome_path, bedtools_bin, merge_distance, indel_ignore_distance){
+extract_test_list_from_paf <- function(all_vs_all_paf, out_dir, genome_path, bedtools_bin, merge_distance, indel_ignore_distance, exclusion_mask){
 
-    command = paste0('bash scripts/wg_run_all.sh ', all_vs_all_paf, ' ', out_dir, ' ', genome_path, ' ', bedtools_bin, ' ', merge_distance, ' ', indel_ignore_distance)
+    command = paste0('bash scripts/wg_run_all.sh ', all_vs_all_paf, ' ', out_dir, ' ', genome_path, ' ', bedtools_bin, ' ', merge_distance, ' ', indel_ignore_distance, ' ', exclusion_mask)
     system(command)
 
     # Inform the user
@@ -77,14 +77,14 @@ make_genome_file <- function(fasta, out_path){
 }
 
 #' @export
-wga_write_interval_list <- function(ref_fa, asm_fa, outdir, merge_distance, indel_ignore_distance, threads,
+wga_write_interval_list <- function(ref_fa, asm_fa, outdir, merge_distance, indel_ignore_distance, exclusion_mask, threads,
                                     bedtools_bin = 'bedtools', 
                                     minimap2_bin = '/Users/hoeps/opt/anaconda3/envs/snakemake/envs/nahrwhalsAPR/bin/minimap2'
 ){
     system(paste0("mkdir -p ", outdir))
     allpaf = paste0(outdir, "/fullaln.paf")
     genome_file = paste0(outdir, "/ref.genome")
-
+    browser()
     # Make all-vs-all alignemnt
     align_all_vs_all_using_minimap2(minimap2_bin, ref_fa, asm_fa, allpaf, threads)
     # Write the genome file
@@ -92,7 +92,7 @@ wga_write_interval_list <- function(ref_fa, asm_fa, outdir, merge_distance, inde
     # Extract list of breakpoint clusters
     print(paste0('Using merge distance: ', merge_distance))
     print(paste0('Using indel ignore distance: ', indel_ignore_distance))
-    extract_test_list_from_paf(allpaf, outdir, genome_file, bedtools_bin, merge_distance, indel_ignore_distance)
+    extract_test_list_from_paf(allpaf, outdir, genome_file, bedtools_bin, merge_distance, indel_ignore_distance, exclusion_mask)
 
     # return the name of the final output list, which is in outdir/list_final.txt
     return(paste0(outdir, "/list_cut_final.bed"))

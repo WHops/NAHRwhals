@@ -86,7 +86,7 @@ calc_coarse_grained_aln_score <-
            forcecalc = F,
            orig_symm = 1) {
     # Remove zero-pads.
-    mat <- matrix_remove_zero_pads(mat)
+    #mat <- matrix_remove_zero_pads(mat)
 
     n_eval_total <<- n_eval_total + 1
 

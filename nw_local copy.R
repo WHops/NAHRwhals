@@ -29,15 +29,14 @@ run_nw_once <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 
   
 }
 
-i = 2
-as = asm_fas[i]
+
 #run_nw_once(1, test_list, ref_fa, as, anntrack, minimap2_bin, asm_names[i], 'An-1')
 
 
 # Hardcoded values moved out of the function
 hg38_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/centro_lab/hg38_masked.fa"
-t2t_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/T2T_v1.1/chm13.draft_v1.1.fasta"
-ref_fa = hg38_fa
+t2t_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/T2T-CHM13v2.0.fa"
+ref_fa = t2t_fa
 #ref_fa = "/hg38_fa/hoeps/PhD/projects/nahrcall/nahrchainer/data/tomato/download?path=S.lycopersicum.Heinz1706.genomic.fa"
 #asm_fa = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/tomato/download?path=S.lycopersicum.M82.genomic.fa"
 #ref_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/Col-0.fasta'
@@ -46,7 +45,7 @@ asm_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/alns/NA12878_giab_
 anntrack = F#/Users/hoeps/PhD/projects/huminvs/analyses_paper/data/genes/hg38/for_ntk/genes_hg38.bed"
 minimap2_bin = '/Users/hoeps/opt/anaconda3/envs/snakemake/bin/minimap2'
 samplename_y = 'NA12878_h1' 
-samplename_x = 'hg38'
+samplename_x = 'T2T'
 
 threads = 5
 
@@ -93,18 +92,19 @@ asm_names = c('An-1', 'C24','Cvi','Eri','Kyo','Ler','Sha')
 # for (i in 1:length(asm_names)){
 #   asm_fa = asm_fas[i]
 #   asm_name = asm_names[i]
-#test_list = wga_write_interval_list(ref_fa, asm_fa, paste0('wga_hg38_NA12878_h1'), 1000000, 10000, threads)
+t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_1mbmerge.bed'
+test_list = wga_write_interval_list(ref_fa, asm_fa, paste0('wga_t2t_NA12878_h1'), 1000000, 10000, t2t_mask, threads)
 tests = read.table(test_list, sep='\t')
 #genome_file = 'wga_test_ara_An-1//ref.genome'
 
-test_list = 'wga_hg38_NA12878_h1/list_cut_final.bed'
+#test_list = 'wga_hg38_NA12878_h1/list_cut_final.bed'
 #make_karyogram(test_list, genome_file, specified_text = 'CP0')
 
-for (i in 22:nrow(tests)){
-  samplename_y = 'NA12878_h1'
-  print(i)
-  run_nw_once(i, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x)
-}
+# for (i in 22:nrow(tests)){
+#   samplename_y = 'NA12878_h1'
+#   print(i)
+#   run_nw_once(i, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x)
+# }
 #results <- mclapply(1:nrow(tests), function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x), mc.cores = threads)
 # }
 # 
