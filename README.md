@@ -12,7 +12,7 @@ NAHRwhals is an R package providing tools for visualization and automatic detect
 
 
 
-# Installation (total time: ca 10 minutes)
+# Installation 
 
 ### (1) Clone the NAHRwhals repository
 
@@ -23,7 +23,7 @@ cd NAHRwhals; git checkout main
 ```
 ### (2) Install dependencies
  
-NAHRwhals has a number of dependencies, including [minimap2](https://github.com/lh3/minimap2), [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html), [gawk](https://formulae.brew.sh/formula/gawk) and a number of R packages. The easiest way to install all is by using the provided conda/mamba environment. Conda takes a while to execute this, so we recommend using mamba, which is an accelerated version. Installation/Download time: 5-10 minutes. 
+NAHRwhals dependencies include [minimap2](https://github.com/lh3/minimap2), [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html), [gawk](https://formulae.brew.sh/formula/gawk) and a number of R packages. The easiest way to install all is by using the provided conda environment (we use mamba here for faster returns):
 
 ```
 conda config --set channel_priority flexible
@@ -42,16 +42,15 @@ Rscript install_package.R
 
 
 
-# Test & Example runs (runtime: <1 min)
+# Test & Example runs
 
-To confirm that NAHRwhals has been correctly installed, run a testrun inside R which will produce output files and plots in the `./res` folder: 
+To confirm that NAHRwhals has been correctly installed, run a testrun inside R which will produce output files and plots in the `./res` folder. This should take around 1 minute. 
 
 ```
 R
 > library(nahrwhals)
 > nahrwhals(testrun_std=T)
 ```
-
 
 
 
@@ -221,18 +220,13 @@ nahrwhals( ... , minimap2_bin = '/path/to/your/minimap2', bedtools_bin = 'path/t
 
 # Report Errors
 
-NAHRwhals is still in development, and errors in usage are to be expected. 
 Please help improve the code by [reporting](https://github.com/WHops/nahrchainer/issues/new) issues you encounter.
 
 # Citation
 
-If you find NAHRwhals useful, please cite:
-
-`https://www.biorxiv.org/content/10.1101/2023.03.09.531868v1`
-
+For more information on how NAHRwhals, check out our [preprint](https://www.biorxiv.org/content/10.1101/2023.03.09.531868v1)!
 
 
 # Correspondence
 
-
-Please direct any correspondence to: Wolfram Höps (wolfram.hoeps@embl.de)
+Please direct any correspondence to: Wolfram Höps (wolfram.hoeps@gmail.com)

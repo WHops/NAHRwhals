@@ -84,7 +84,6 @@ wga_write_interval_list <- function(ref_fa, asm_fa, outdir, merge_distance, inde
     system(paste0("mkdir -p ", outdir))
     allpaf = paste0(outdir, "/fullaln.paf")
     genome_file = paste0(outdir, "/ref.genome")
-    browser()
     # Make all-vs-all alignemnt
     align_all_vs_all_using_minimap2(minimap2_bin, ref_fa, asm_fa, allpaf, threads)
     # Write the genome file
@@ -139,10 +138,9 @@ make_karyogram <- function(test_list_file, genome_file, specified_text='', chr_m
                         "(median: ", round(median_size/1000,1), ')')
 
 
-
-    kp <- plotKaryotype(genome=genome)
-    kpAddMainTitle(kp, label_text, cex=0.6)
-    kpPlotRegions(kp, data=tests, r0=0, r1=1, col="#FF000088")
+    kp <- karyoploteR::plotKaryotype(genome=genome)
+    karyoploteR::kpAddMainTitle(kp, label_text, cex=0.6)
+    karyoploteR::kpPlotRegions(kp, data=tests, r0=0, r1=1, col="#FF000088")
 
 }
 
