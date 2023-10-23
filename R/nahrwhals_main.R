@@ -62,7 +62,12 @@ nahrwhals <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, end_x,
                       baseline_log_minsize_max = FALSE, discovery_exact = FALSE,
                       hltrack = FALSE, hllink = FALSE, aln_pad_factor = 1.0,
                       debug = FALSE, clean_after_yourself = FALSE, testrun_std = FALSE,
-                      testrun_fullfa = FALSE, minimap2_bin = "default", bedtools_bin = "default") {
+                      testrun_fullfa = FALSE, minimap2_bin = "default", bedtools_bin = "default",
+                      noclutterplots = T) {
+
+  # Dev off
+  while(!is.null(dev.list())){dev.off()}
+
   # Get the function call
   call <- match.call()
 

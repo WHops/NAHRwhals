@@ -87,7 +87,6 @@ write_x_y_sequences <- function(seqname_x,
 
   if (refine_runnr == 1) {
     # Special stuff
-
     paf <- make_chunked_minimap_alnment(
       params,
       genome_x_fa_subseq,
@@ -108,6 +107,14 @@ write_x_y_sequences <- function(seqname_x,
       onlypafreturn = T
     )
 
+    if (is.null(paf)) {
+      return(list(
+        new_seqname = coords_liftover$lift_contig,
+        new_x_start = coords_liftover$lift_start,
+        new_x_end = coords_liftover$lift_end
+      ))
+    }
+    
     coords_liftover_2nd <- liftover_coarse(
       "None",
       "none",

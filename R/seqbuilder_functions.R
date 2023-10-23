@@ -91,6 +91,17 @@ make_chunked_minimap_alnment <-
     # gawk is used to correct the sequence names. This is because I know only there
     # how to use regex...
     correct_paf(outpaf_chunk, outpaf_filter)
+
+    # Check if abandon
+    pafin = read_and_prep_paf(outpaf_filter)
+    if (is_cluttered_paf(pafin) & (onlypafreturn == T | params$noclutterplots == T)){
+      print('Ok we are in overly cluttery regions; abandon!')
+      log_collection$cluttered_boundaries <<- T
+      return(NULL)
+    }
+    
+    
+
     # paf of fragmented paf gets put back together.
     compress_paf_fnct(inpaf_link = outpaf_filter, outpaf_link = outpaf, inparam_chunklen = chunklen)
 

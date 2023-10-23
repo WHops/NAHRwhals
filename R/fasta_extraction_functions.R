@@ -416,16 +416,20 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
 
   if (liftover_run == F) {
     dist_between_probes <- min(unique(diff(liftover_coords$pos_probe)))
-    n_probes_distance <- 5
-    # If the break is very close (5_probes distance)
-    # Warn if we are exceeding chromosome boundaries in the query.
-    if ((start_winners < (dist_between_probes * n_probes_distance)) |
-      (end_winners + (dist_between_probes * n_probes_distance)) > (cpaf[cpaf$tname == winner_chr, ][1, "tlen"])) {
-      print("Warning! Reaching the end of alignment!")
+    n_probes_distance <- 1
 
-      # Make an entry to the output logfile #
-      if (exists("log_collection")) {
-        log_collection$exceeds_y <<- T
+    # If less than 90% of probes fall on one target, we get suspicious
+    if (max(as.numeric(table(liftover_coords$seqname))) < 90){
+      # If the break is very close (5_probes distance)
+      # Warn if we are exceeding chromosome boundaries in the query.
+      if ((start_winners < (dist_between_probes * n_probes_distance)) |
+        (end_winners + (dist_between_probes * n_probes_distance)) > (cpaf[cpaf$tname == winner_chr, ][1, "tlen"])) {
+        print("Warning! Reaching the end of alignment!")
+  
+        # Make an entry to the output logfile #
+        if (exists("log_collection")) {
+          log_collection$exceeds_y <<- T
+        }
       }
     }
   }
@@ -494,20 +498,22 @@ find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, e
 
   }
 
-  pointspace <- min(diff(liftover_coords_maxseq$pos_probe))
-  points_from_border_to_consider_ok <- 5
-  if (liftover_run == F) {
+  dist_between_probes <- min(unique(diff(liftover_coords$pos_probe)))
+  n_probes_distance <- 1
+  if (max(as.numeric(table(liftover_coords$seqname))) < 90){
+    # If the break is very close (5_probes distance)
     # Warn if we are exceeding chromosome boundaries in the query.
-    if ((start_winners < (pointspace * points_from_border_to_consider_ok)) |
-      ((end_winners + (pointspace * points_from_border_to_consider_ok)) > cpaf[cpaf$tname == winner_chr, ][1, "tlen"])) {
+    if ((start_winners < (dist_between_probes * n_probes_distance)) |
+        (end_winners + (dist_between_probes * n_probes_distance)) > (cpaf[cpaf$tname == winner_chr, ][1, "tlen"])) {
       print("Warning! Reaching the end of alignment!")
-
+      
       # Make an entry to the output logfile #
       if (exists("log_collection")) {
         log_collection$exceeds_y <<- T
       }
     }
   }
+  
   # Log file entry done #
 
   return(c(start_winners, end_winners))

@@ -33,7 +33,7 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
   if (is.null(log$compression)) {
     log$compression <- 0
   }
-  stopifnot(ncol(maxres) >= 2)
+  #stopifnot(ncol(maxres) >= 2)
 
 
   # Find the result with the fewest steps.
@@ -45,42 +45,102 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
     mut_max <- paste0(maxres[, mut_cols], collapse = "+")
   } else if (ncol(maxres) == 2) {
     mut_max <- paste0(maxres[1, 2])
+  } else {
+    mut_max = "ref"
   }
 
-  ###### TBD ###########
-  to_append <- data.frame(
-    log$chr,
-    log$start,
-    log$end,
-    log$samplename,
-    log$y_seqname,
-    log$y_start,
-    log$y_end,
-    as.numeric(log$end) - as.numeric(log$start),
-    log$xpad,
-    res_ref,
-    res_max,
-    n_res_max,
-    mut_max,
-    log$mut_simulated,
-    log$mut_tested,
-    log$depth,
-    log$compression,
-    log$exceeds_x,
-    log$exceeds_y,
-    log$grid_inconsistency,
-    log$flip_unsure,
-    log$cluttered_boundaries,
-    maxres$mut1_start,
-    maxres$mut1_end,
-    maxres$mut1_pos_pm,
-    maxres$mut1_len,
-    maxres$mut1_len_pm,
-    maxres$mut2_len,
-    maxres$mut2_len_pm,
-    maxres$mut3_len,
-    maxres$mut3_len_pm
-  )
+
+
+# Ensure the 'log' list exists
+if (!exists("log", envir = .GlobalEnv)) {
+  log <- list()
+}
+
+# Ensure the 'maxres' list exists
+if (!exists("maxres", envir = .GlobalEnv)) {
+  maxres <- list()
+}
+
+# List of elements in 'log' to check
+log_elements <- c("chr", "start", "end", "samplename", "y_seqname", "y_start", "y_end", 
+                  "xpad", "mut_simulated", "mut_tested", "depth", "compression", "exceeds_x",
+                  "exceeds_y", "grid_inconsistency", "flip_unsure", "cluttered_boundaries")
+
+# Ensure each element in 'log' exists
+for (elem in log_elements) {
+  if (!is.null(log) && !elem %in% names(log)) {
+    log[[elem]] <- NA
+  }
+}
+
+# List of elements in 'maxres' to check
+maxres_elements <- c("mut1_start", "mut1_end", "mut1_pos_pm", "mut1_len", "mut1_len_pm", 
+                     "mut2_len", "mut2_len_pm", "mut3_len", "mut3_len_pm")
+
+# Ensure each element in 'maxres' exists
+for (elem in maxres_elements) {
+  if (!is.null(maxres) && !elem %in% names(maxres)) {
+    maxres[[elem]] <- NA
+  }
+}
+
+# Check standalone variables
+standalone_vars <- c("res_ref", "res_max", "n_res_max", "mut_max")
+for (var in standalone_vars) {
+  if (!exists(var) | is.null(var)) {
+    assign(var, NA)
+  }
+}
+
+if (is.null(res_ref)){
+  res_ref = NA
+}
+
+if (is.null(res_max)){
+  res_max = NA
+}
+
+if (is.null(n_res_max)){
+  n_res_max = NA
+}
+
+if (is.null(mut_max)){
+  mut_max = NA
+}
+# Create your data frame
+to_append <- data.frame(
+  log$chr,
+  log$start,
+  log$end,
+  log$samplename,
+  log$y_seqname,
+  log$y_start,
+  log$y_end,
+  as.numeric(log$end) - as.numeric(log$start),
+  log$xpad,
+  res_ref,
+  res_max,
+  n_res_max,
+  mut_max,
+  log$mut_simulated,
+  log$mut_tested,
+  log$depth,
+  log$compression,
+  log$exceeds_x,
+  log$exceeds_y,
+  log$grid_inconsistency,
+  log$flip_unsure,
+  log$cluttered_boundaries,
+  maxres$mut1_start,
+  maxres$mut1_end,
+  maxres$mut1_pos_pm,
+  maxres$mut1_len,
+  maxres$mut1_len_pm,
+  maxres$mut2_len,
+  maxres$mut2_len_pm,
+  maxres$mut3_len,
+  maxres$mut3_len_pm
+)
 
   colnames_ <- data.frame(
     "seqname",

@@ -47,7 +47,6 @@ wrapper_aln_and_analyse <- function(params) {
   outlinks <- define_output_files(sequence_name_output, paste0(params$samplename_x, "_", params$samplename_y))
 
   pdf(file = outlinks$outpdf_main)
-
   if (params$compare_full_fastas == T) {
     print("Option pairwise_fasta_direct recognized. Comparing entire fasta files.")
     chr_start_end_pad <- list(chr = "seqname", start = "1", end = as.numeric(nchar(read.table(params$genome_x_fa))))
@@ -65,6 +64,12 @@ wrapper_aln_and_analyse <- function(params) {
     chr_start_end_pad <- chr_start_end_pad_params[[1]]
     params <- chr_start_end_pad_params[[2]]
     system(paste0("rm ", params$conversionpaf_link))
+  }
+
+  if (log_collection$cluttered_boundaries == T){
+    write_results(data.frame(), outlinks, params)
+    log_collection <<- init_log_with_def_values()
+    return('EARLY FINISH!')
   }
   # Step 2: Run the alignments
   plot_x_y <- produce_pairwise_alignments_minimap2(params, outlinks, chr_start_end_pad)
@@ -90,6 +95,7 @@ wrapper_aln_and_analyse <- function(params) {
   }
 
   # Step 3: Condense and make a condensed plot
+
   grid_xy <- wrapper_condense_paf(params, outlinks)
   # Step 3.1: If the alignment is cluttered, exit. No SV calls.
   if (is.null(grid_xy)) {
@@ -116,13 +122,12 @@ wrapper_aln_and_analyse <- function(params) {
     units = "cm",
     device = "pdf"
   )
-
   gridmatrix <- gridlist_to_gridmatrix(grid_xy)
   # saveRDS(gridmatrix, file='~/Desktop/sec_advanced')
   # Step 4: Solve and make a solved plot
   # res = solve_mutation_old(gridmatrix, depth = params$depth, discovery_exact = params$discovery_exact)
   #saveRDS(gridmatrix, file='gridmatrix_cpx.Rdate')
-  res <- solve_mutation(gridmatrix, maxdepth = params$depth, solve_th = params$eval_th) # , discovery_exact = params$discovery_exact)
+  res <- solve_mutation(gridmatrix, maxdepth = params$depth, solve_th = params$eval_th, compression = params$compression, is_cluttered_already_paf = log_collection$cluttered_boundaries==T) # , discovery_exact = params$discovery_exact)
 
   
   # write.table(gridmatrix, file=paste0('testcases/',params$seqname_x,'_',params$start_x,'_',params$end_x, '_',params$samplename_y, '.tsv'),

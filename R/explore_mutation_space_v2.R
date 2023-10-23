@@ -11,7 +11,7 @@
 #' @return A data frame that stores the search results
 #'
 #' @export
-solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th = 98) {
+solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th = 98, compression=1000, is_cluttered_already_paf=F) {
   #
   # browser()
   # bitlocus = readRDS('bitme_large')
@@ -26,7 +26,7 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
   n_discontinued <<- 0
 
   # reject bitloci with cut-off alignments at the borders ('clutter')
-  if (is_cluttered(bitlocus)) {
+  if (is_cluttered(bitlocus) | is_cluttered_already_paf) {
     print("Alignments overlap with borders. Make frame larger!")
     res_out <- data.frame(eval = 0, mut1 = "ref")
     res_out <- annotate_res_out_with_positions_lens(res_out, bitlocus)
@@ -87,7 +87,7 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
   }
 
   # Prepare output for returns
-  res_df_sort <- sort_new_by_penalised(bitlocus, res_df)
+  res_df_sort <- sort_new_by_penalised(bitlocus, res_df, compression)
   res_out <- transform_res_new_to_old(res_df_sort)
   res_out$eval <- as.numeric(res_out$eval)
 

@@ -21,7 +21,7 @@ BEDTOOLS="$4"
 BP_MERGE_DISTANCE="$5"
 BP_COLLAPSE_REMOVE_DISTANCE="$6"
 EXCLUSION_MASK="$7"
-EXPAND_FRACTION=0.5
+EXPAND_FRACTION=0.75
 MERGE_DISTANCE=1000000
 FINAL_REGIONS_CLUSTER_DISTANCE=100000
 FINAL_INTERVALS_PER_CLUSTER=3
@@ -46,7 +46,7 @@ mkdir -p "$OUTPUT_DIR"
 $BEDTOOLS slop -i "${OUTPUT_DIR}/breakpoint_clusters_merged.bed" -g "$GENOME_PATH" -b $EXPAND_FRACTION -pct > "${OUTPUT_DIR}/breakpoint_clusters_merged_expand.bed"
 
 # Step 6: Filter clusters greater than 50,000 after expansion
-awk 'BEGIN {FS=OFS="\t"} ($3-$2 > 50000)' "${OUTPUT_DIR}/breakpoint_clusters_merged_expand.bed" > "${OUTPUT_DIR}/breakpoint_clusters_merged_expand_50kb.bed"
+cp "${OUTPUT_DIR}/breakpoint_clusters_merged_expand.bed" "${OUTPUT_DIR}/breakpoint_clusters_merged_expand_50kb.bed"
 
 # Step 7: Filter out random, alt, and chrUn entries, and then sort
 grep -vE 'random|alt|chrUn' "${OUTPUT_DIR}/breakpoint_clusters_merged_expand_50kb.bed" | $BEDTOOLS sort -i - | awk 'BEGIN {FS=OFS="\t"} {print $4,$2,$3,$1}' > "${OUTPUT_DIR}/list.bed"
@@ -63,7 +63,7 @@ $BEDTOOLS intersect -a "${OUTPUT_DIR}/contigmerges.bed" -b "${OUTPUT_DIR}/list.b
 ./scripts/wg_reduce_clusters.sh <(bedtools sort -i ${OUTPUT_DIR}/list_cut_final_prefilter.bed) ${OUTPUT_DIR}/list_cut_final.bed $FINAL_INTERVALS_PER_CLUSTER $FINAL_REGIONS_CLUSTER_DISTANCE
 
 if [ "$EXCLUSION_MASK" != "" ]; then
-    awk 'BEGIN {FS=OFS="\t"} ($3-$2 > 50000)' <($BEDTOOLS subtract -a "${OUTPUT_DIR}/list_cut_final.bed" -b "$EXCLUSION_MASK") > "${OUTPUT_DIR}/list_cut_final_exclusion.bed"
+    $BEDTOOLS subtract -a "${OUTPUT_DIR}/list_cut_final.bed" -b "$EXCLUSION_MASK" > "${OUTPUT_DIR}/list_cut_final_exclusion.bed"
     mv "${OUTPUT_DIR}/list_cut_final_exclusion.bed" "${OUTPUT_DIR}/list_cut_final.bed"
 fi
 

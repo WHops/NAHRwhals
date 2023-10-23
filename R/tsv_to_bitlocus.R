@@ -51,6 +51,9 @@ load_and_prep_paf_for_gridplot_transform <-
     )
 
     # Filter alignments by length
+    if (nrow(paf) > 10000){
+      minlen = minlen * 2
+    }
     paf <- paf[paf$alen > minlen, ]
 
     if (dim(paf)[1] == 0) {

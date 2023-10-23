@@ -142,18 +142,18 @@ transform_res_new_to_old <- function(res_df_f) {
 #'
 #' After computing results, we want to penalize results that needed more steps; e.g, if a depth 1 and a depth 3 result
 #' gave the same result, we want the depth 1 result to appear first. This also helps avoiding over-correcting of the model,
-#' if it e.g. uses 3 steps to correct a small alignment artifact. Each step therefore gets a penalty that is 1.5 times the size
+#' if it e.g. uses 3 steps to correct a small alignment artifact. Each step therefore gets a penalty that is 0.9 times the size
 #' of the smallest dot of a bitlocus.
 #'
 #' @param bitlocus_f matrix, representing a bitlocus
 #' @param res_df_f  a data frame containing results from a tree search run.
 #'
 #' @export
-sort_new_by_penalised <- function(bitlocus_f, res_df_f) {
+sort_new_by_penalised <- function(bitlocus_f, res_df_f, compression) {
   # Just to be on the safe side here
   res_df_f$eval <- as.numeric(res_df_f$eval)
 
-  min_dotsize <- min(as.numeric(row.names(bitlocus_f)), as.numeric(colnames(bitlocus_f)))
+  min_dotsize <- compression# min(as.numeric(row.names(bitlocus_f)), as.numeric(colnames(bitlocus_f)))
   step_penalty <- (min_dotsize / sum(as.numeric(colnames(bitlocus_f))) * 100) * 1.5
   res_df_f$eval_penalised <- as.numeric(res_df_f$eval) - (as.numeric(res_df_f$depth) * step_penalty)
 
@@ -209,7 +209,7 @@ is_cluttered <- function(bitlocus_f, clutter_limit_per_border = 5) {
   clutter_all <- c(clutter_firstrow, clutter_lastrow, clutter_firstcol, clutter_lastcol)
 
   if (any(clutter_all >= clutter_limit_per_border)) {
-    print("Cluttered alignment. Adding this info output.")
+    print("Cluttered alignment. Adding this info to output.")
     if (exists("log_collection")) {
       log_collection$cluttered_boundaries <<- T
     }
@@ -229,6 +229,8 @@ is_cluttered <- function(bitlocus_f, clutter_limit_per_border = 5) {
 #' @return A boolean indicating whether the DOTPLOT is cluttered or not
 #' @export
 is_cluttered_paf <- function(paf, clutter_limit_per_border = 5) {
+
+  paf = na.omit(paf)
   clutter1 <- sum(paf$qstart == 0)
   clutter2 <- sum(paf$qend == max(paf$qend))
   clutter3 <- sum(paf$tstart == 0)
@@ -243,9 +245,8 @@ is_cluttered_paf <- function(paf, clutter_limit_per_border = 5) {
       (length(unique(paf$qstart)) < (nrow(paf) / 2))
 
 
-
   if (any(clutter_all >= clutter_limit_per_border) & seems_simplistic) {
-    print("Cluttered alignment. Adding this info output.")
+    print("Cluttered alignment. Adding this info to output.")
     if (exists("log_collection")) {
       log_collection$cluttered_boundaries <<- T
     }

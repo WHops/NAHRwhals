@@ -72,6 +72,7 @@ baseline_log_minsize_min = 8
 baseline_log_minsize_max = F
 
 discovery_exact = F 
+noclutterplots = T
 
 # Additional data tracks
 hltrack = F 
