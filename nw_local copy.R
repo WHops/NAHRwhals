@@ -39,32 +39,6 @@ assembly_fastas = c(
   'hg38' = NA
 )
 
-
-run_nw_once_specified <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x){
-  #tests = read.table(test_list, sep='\t')
-  colnames(tests) = c('chr', 'start', 'end')
-  seqname_x = 'chr1'#tests[row, 'chr']
-  start_x =   862092#as.numeric(tests[row, 'start'])
-  end_x =     1761081#as.numeric(tests[row, 'end'])
-  print(asm_fa)
-  nahrwhals(genome_x_fa = ref_fa,
-                genome_y_fa = asm_fa,
-                seqname_x = seqname_x,
-                start_x = start_x,
-                end_x =   end_x,
-                samplename_y = samplename_y,
-                samplename_x = samplename_x,
-                self_plots = F,#AN
-                anntrack = anntrack,
-                plot_only = F,
-                minimap2_bin = minimap2_bin,
-                noclutterplots = T,
-                logfile = paste0('res/res_', strsplit(asm_fa, '/')[[1]][length((strsplit(asm_fa, '/')[[1]]))], '.tsv')
-  
-  )
-  
-}
-
 run_nw_once <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x){
   tests = read.table(test_list, sep='\t')
   colnames(tests) = c('chr', 'start', 'end')
@@ -89,7 +63,35 @@ run_nw_once <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 
   )
   
 }
-#run_nw_once_specified(1, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 'NA12878_h2', 'T2T')
+
+
+
+run_nw_once_specified <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x){
+  #tests = read.table(test_list, sep='\t')
+  colnames(tests) = c('chr', 'start', 'end')
+  seqname_x = 'chr5'#tests[row, 'chr']
+  start_x =   17395688#as.numeric(tests[row, 'start'])
+  end_x =     17681106#as.numeric(tests[row, 'end'])
+  print(asm_fa)
+  nahrwhals(genome_x_fa = ref_fa,
+            genome_y_fa = asm_fa,
+            seqname_x = seqname_x,
+            start_x = start_x,
+            end_x =   end_x,
+            samplename_y = samplename_y,
+            samplename_x = samplename_x,
+            self_plots = F,#AN
+            anntrack = anntrack,
+            plot_only = F,
+            minimap2_bin = minimap2_bin,
+            noclutterplots = T,
+            logfile = paste0('res/res_', strsplit(asm_fa, '/')[[1]][length((strsplit(asm_fa, '/')[[1]]))], '.tsv')
+            
+  )
+  
+}
+
+run_nw_once_specified(1, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 'HG00733_h1', 'T2T')
 
 # Hardcoded values moved out of the function
 hg38_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/centro_lab/hg38_masked.fa"
@@ -156,12 +158,12 @@ t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_100k
 for (sample in c('NA12878_h2', 'HG00733_h1', 'HG02018_h1', 'HG02018_h2', 'hg38', 'NA19240_h2')){
   
   asm_fa = assembly_fastas[sample]
-  test_list = wga_write_interval_list(ref_fa, asm_fa, paste0('wga_t2t_',sample), 1000000, 10000, t2t_mask, threads)
+  test_list = wga_write_interval_list(ref_fa, asm_fa, paste0('wga_t2t_',sample), 5000000, 10000, t2t_mask, threads)
   tests = read.table(test_list, sep='\t')
   genome_file = paste0('wga_t2t_',sample, '/ref.genome')
   
   #test_list = 'wga_hg38_NA12878_h1/list_cut_final.bed'
-  #make_karyogram(test_list, genome_file, specified_text = 'T2T_NA12878_h1')
+  make_karyogram(test_list, genome_file, specified_text = 'T2T_NA12878_h1')
   
   #for (i in 22:nrow(tests)){
   #   samplename_y = 'NA12878_h1'
@@ -173,8 +175,8 @@ for (sample in c('NA12878_h2', 'HG00733_h1', 'HG02018_h1', 'HG02018_h2', 'hg38',
   #   run_nw_once(i, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 'NA12878_h2', 'T2T')
   # }
   
-  sample = samplename_y
-  results <- mclapply(20:nrow(tests), function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x), mc.cores = threads)
+  samplename_y = sample
+  results <- mclapply(1:nrow(tests), function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x), mc.cores = threads)
 }
 # }
 # 
