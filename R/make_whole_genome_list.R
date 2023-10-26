@@ -114,7 +114,6 @@ inform_about_tests <- function(test_list){
 
 #' @export
 make_karyogram <- function(test_list_file, genome_file, specified_text='', chr_min=10000000){
-
     # Quick and hacky
     tests = read.table(test_list_file, sep='\t')
     colnames(tests) = c('chr','start','end')

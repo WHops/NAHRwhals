@@ -12,60 +12,104 @@
 #' @export
 merge_rows <- function(paffile, pairs) {
   count <- 0
+  
+  qnames = paffile$qname
+  qstarts = paffile$qstart
+  qends = paffile$qend
+  tstarts = paffile$tstart
+  tends = paffile$tend
+  strands = paffile$strand
+  nmatches = as.numeric(paffile$nmatch)
+  alens = as.numeric(paffile$alen)
+  
   for (i in dim(pairs)[1]:1) {
     if (count %% 100 == 0) {
       print(paste0("Merging pair ", count, " out of ", dim(pairs)[1]))
     }
+
+    
     nl1 <- (pairs[i, 1])
     nl2 <- (pairs[i, 2])
-    paf_work <- paffile[c(nl1, nl2), ]
-    if (paf_work[1, "strand"] == "+") {
-      paf_work[1, ]$qname <- paste0(
+    nl1_bu = nl1
+    #paf_work <- paffile[c(nl1, nl2), ]
+    
+    if (strands[nl1] == "+") {
+      
+      
+      qname1 = qnames[nl1]
+      qname2 = qnames[nl2]
+      qstart1 = qstarts[nl1]
+      qstart2 = qstarts[nl2]
+      qend1 = qends[nl1]
+      qend2 = qends[nl2]
+      tstart1 = tstarts[nl1]
+      tstart2 = tstarts[nl2]
+      tend1 = tends[nl1]
+      tend2 = tends[nl2]
+      
+      qname1 <- paste0(
         # HERE is the offending line!!
         # sub("_.*", "", paf_work[1, ]$qname) <- this line removes everything after the first '_'. Actually i want to remove everything after the *last* instance of '_'. I dont know beforehand if there are 1, 2 or more "_". Therefore, the nnew line is:
-        sub("_[^_]*$", "", paf_work[1, ]$qname),
+        sub("_[^_]*$", "", qname1),
         "_",
-        paf_work[1, ]$qstart,
+        qstart1,
         "-",
-        paf_work[2, ]$qend - 1
+        qend2 - 1
       )
 
-      paf_work_bu <- paf_work
       # query coordinates
-      paf_work[1, ]$qend <- max(paf_work_bu[1, ]$qend, paf_work_bu[2, ]$qend)
-      paf_work[1, ]$qstart <- min(paf_work_bu[1, ]$qstart, paf_work_bu[2, ]$qstart)
+      qend1 <- max(qend1, qend2)
+      qstart1 <- min(qstart1, qstart2)
 
       # target coordinates
-      paf_work[1, ]$tend <- max(paf_work_bu[1, ]$tend, paf_work_bu[2, ]$tend)
-      paf_work[1, ]$tstart <- min(paf_work_bu[1, ]$tstart, paf_work_bu[2, ]$tstart)
-    } else if (paf_work[1, "strand"] == "-") {
+      tend1 <- max(tend1, tend2)
+      tstart1 <- min(tstart1, tstart2)
+      
+      
+    } else if (strands[nl1] == "-") {
       # Sort by t, because this is increasing
-      paf_work <- paf_work[order(paf_work$tstart), ]
-      paf_work[1, ]$qname <- paste0(
-        sub("_[^_]*$", "", paf_work[1, ]$qname),
+      if (tstarts[nl1] < tstarts[nl2]){
+        # Switch the values of nl1 and nl2
+        nl1 = nl2
+        nl2 = nl1_bu
+      }
+
+      qname1 = qnames[nl1]
+      qname2 = qnames[nl2]
+      qstart1 = qstarts[nl1]
+      qstart2 = qstarts[nl2]
+      qend1 = qends[nl1]
+      qend2 = qends[nl2]
+      tstart1 = tstarts[nl1]
+      tstart2 = tstarts[nl2]
+      tend1 = tends[nl1]
+      tend2 = tends[nl2]
+
+      
+      qname1 <- paste0(
+        sub("_[^_]*$", "", qname1),
         "_",
-        paf_work[2, ]$qend,
+        qend2,
         "-",
-        paf_work[2, ]$qstart
+        qstart2
       )
-      paf_work_bu <- paf_work
+
       # query coordinates
-      paf_work[1, ]$qend <- min(paf_work_bu[1, ]$qend, paf_work_bu[2, ]$qend)
-      paf_work[1, ]$qstart <- max(paf_work_bu[1, ]$qstart, paf_work_bu[2, ]$qstart)
+      qend1 <- min(qend1, qend2)
+      qstart1 <- max(qstart1, qstart2)
 
       # target coordinates
-      paf_work[1, ]$tend <- max(paf_work_bu[1, ]$tend, paf_work_bu[2, ]$tend)
-      paf_work[1, ]$tstart <- min(paf_work_bu[1, ]$tstart, paf_work_bu[2, ]$tstart)
+      tend1 <- max(tend1, tend2)
+      tstart1 <- min(tstart1, tstart2)
     }
 
-
     # nmatch
-    paf_work[1, ]$nmatch <- paf_work[1, ]$nmatch + paf_work[2, ]$nmatch
-    # alen
-    paf_work[1, ]$alen <- paf_work[1, ]$alen + paf_work[2, ]$alen
-
+    nmatch1 <-nmatches[nl1] + nmatches[nl2]
+    alen1 <- alens[nl1] + alens[nl2]
+   
+    
     # Now process the main paf thing
-    paffile[nl1, ] <- paf_work[1, ]
+    paffile[nl1_bu, c('qname', 'qstart','qend','tstart','tend','nmatch','alen')] <- c(qname1, qstart1, qend1, tstart1, tend1, nmatch1, alen1)
 
     count <- count + 1
   }
@@ -73,9 +117,10 @@ merge_rows <- function(paffile, pairs) {
   paffile <- paffile[!(row.names(paffile) %in% pairs$col), ]
 
   # Filter
-  paffile <- paffile[dplyr::between((abs(paffile$tend - paffile$tstart) /
-    abs(paffile$qend - paffile$qstart)), 0.5, 2), ]
+  paffile <- paffile[dplyr::between((abs(as.numeric(paffile$tend) - as.numeric(paffile$tstart)) /
+    abs(as.numeric(paffile$qend) - as.numeric(paffile$qstart))), 0.5, 2), ]
 
+  print('done')
   return(paffile)
 }
 
@@ -108,7 +153,6 @@ compress_paf_fnct <-
            second_run = F,
            inparam_chunklen = NULL,
            inparam_compression = NULL) {
-
     if (is.null(inpaf_df)) {
       # Read and col-annotate the input paf
       inpaf <- read.table(inpaf_link, sep = "\t")
@@ -193,13 +237,13 @@ compress_paf_fnct <-
     n_steps <- length(tsteps) * length(qsteps)
     rowpairs <- data.frame()
     count <- 0
-
+    #p = ggplot(inpaf) + geom_point(aes(x=tstart, y=qstart)) 
+    
     for (tstep in tsteps[1:length(tsteps) - 1]) {
       for (qstep in qsteps[1:length(qsteps) - 1]) {
         # Input: we take any alignment that touches our box.
 
-
-
+        #print(p + geom_rect(aes(xmin=tstep, xmax=tstep+tstepsize, ymin=qstep,ymax=qstep+qstepsize), color='green', alpha=0.1))
         inpaf_q <- inpaf[(
           (inpaf$tstart >= tstep) & (inpaf$tstart <= tstep + tstepsize) &
             (inpaf$qstart >= qstep) &
@@ -214,13 +258,15 @@ compress_paf_fnct <-
         # print(ggplot() + geom_segment(data=inpaf, aes(x=tstart, xend=tend, y=qstart, yend=qend)) +
         #   geom_segment(data=inpaf_q, aes(x=tstart, xend=tend, y=qstart, yend=qend), color='red') +
         #   geom_rect(aes(xmin=tstep, xmax=tstep+tstepsize, ymin=qstep, ymax=qstep+qstepsize), alpha=0.5))
-
-
-        rowpairs <- rbind(rowpairs, merge_paf_entries_intraloop(inpaf_q, second_run, inparam_chunklen, inparam_compression))
+        if (nrow(inpaf_q) > 1){
+          rowpairs <- rbind(rowpairs, merge_paf_entries_intraloop(inpaf_q, second_run, inparam_chunklen, inparam_compression))
+        } 
         count <- count + 1
         # print(paste0('Merging step ', count, ' out of ', n_steps))
       }
     }
+    
+    print('pairs found!')
     # Sort once again, by row.
     rowpairs <- rowpairs[order(rowpairs$col), ]
     row.names(rowpairs) <- NULL
@@ -248,7 +294,6 @@ compress_paf_fnct <-
         dplyr::group_by(row) %>% dplyr::top_n(1, combined_matchlen) %>%
         dplyr::group_by(col) %>% dplyr::top_n(1, combined_matchlen)
     )
-
 
 
     # Go through each pair, make the merge. We go through the lines backwards,
