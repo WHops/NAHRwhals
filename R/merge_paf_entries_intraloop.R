@@ -12,10 +12,12 @@
 #' @author Wolfram Hoeps
 #' @export
 merge_paf_entries_intraloop <- function(inpaf, second_run = F, inparam_chunklen = NULL, inparam_compression = NULL) {
+  
+  
+  # For safety: sort entries by qstart. Reset row names so they start at 1.
+  #inpaf <- inpaf[order(inpaf$tstart), ]
   inpaf_rownames <- row.names(inpaf)
 
-  # For safety: sort entries by qstart. Reset row names so they start at 1.
-  inpaf <- inpaf[order(inpaf$qstart), ]
   rownames(inpaf) <- NULL
 
   # We consider alignments as 'potential neighbours' if their distance in any direction
@@ -45,23 +47,22 @@ merge_paf_entries_intraloop <- function(inpaf, second_run = F, inparam_chunklen 
   # )
 
 
+
+
+
+
+
+
   rowpairs <- data.frame(which(
-
-    # only first half of matrix
-    # (outer(inpaf_t$tend, inpaf_t$tstart, '-') <= tolerance_bp) &
-    (((abs(outer(inpaf_t$tend, inpaf_t$tstart, "-")) < tolerance_bp) &
-      (abs(outer(inpaf_t$qend, inpaf_t$qstart, "-")) < tolerance_bp)) |
-
-      ((abs(outer(inpaf_t$tstart, inpaf_t$tend, "-")) < tolerance_bp) &
-        (abs(outer(inpaf_t$qstart, inpaf_t$qend, "-")) < tolerance_bp))) &
-
-      # Same directionality
-      (outer(inpaf_t$strand, inpaf_t$strand, "==")),
+    
+    (
+      (abs(outer(inpaf_t$tend, inpaf_t$tstart, "-")) < tolerance_bp) &
+        (abs(outer(inpaf_t$qend, inpaf_t$qstart, "-")) < tolerance_bp) & 
+        (outer(inpaf_t$strand, inpaf_t$strand, "=="))
+    ),
     arr.ind = T
   ))
-
-  rowpairs <- rowpairs[rowpairs$col > rowpairs$row, ]
-
+  
   # Remove pairs with very small alignments.
   if (tolerance_bp > 100) {
     rowpairs <- rowpairs[inpaf_t[rowpairs$row, ]$alen > tolerance_bp, ]

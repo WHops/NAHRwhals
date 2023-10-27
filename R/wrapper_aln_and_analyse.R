@@ -36,7 +36,6 @@ wrapper_aln_and_analyse <- function(params) {
       params$seqname_x, params$start_x, params$end_x, params$xpad,
       params$chunklen, paste0(params$samplename_x, "_", params$samplename_y), params$depth
     )
-
   # Determine 'main' output name for this run
   sequence_name_output <- manufacture_output_res_name(
     params$seqname_x, params$start_x, params$end_x
@@ -95,6 +94,7 @@ wrapper_aln_and_analyse <- function(params) {
   }
 
   # Step 3: Condense and make a condensed plot
+  browser()
 
   grid_xy <- wrapper_condense_paf(params, outlinks)
   # Step 3.1: If the alignment is cluttered, exit. No SV calls.
@@ -108,6 +108,7 @@ wrapper_aln_and_analyse <- function(params) {
   } else {
     # What do we need here?
   }
+
 
   make_segmented_pairwise_plot(grid_xy, plot_x_y, outlinks)
 
