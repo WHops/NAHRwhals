@@ -26,7 +26,7 @@ paf = read.table('~/Desktop/test.tsv', header=T)
 #   qstart = ifelse(strand == "-", qend, qstart)
 # )
 
-paf_df = load_and_prep_paf_for_gridplot_transform('res/chr1-144923346-150047635/diff/paf/T2T_NA12_xy.paf', minlen=1000, compression=1000)
+paf_df = load_and_prep_paf_for_gridplot_transform('res/chr1-144923346-150047635/diff/paf/T2T_NA12_xy.paf', minlen=500, compression=500)
 
 
 
@@ -42,19 +42,20 @@ microbenchmark(grid_list = fill_matrix_bressiexchange(paf_df, gxy),times = 2)
 grid_list = fill_matrix_bressiexchange(paf_df, gxy)
 
 grid_list = data.frame()
-griddiffs_x = diff(gxy[[1]])
-griddiffs_y = diff(gxy[[2]])
+
 #microbenchmark(
 
 prof = profvis(bressiwrap())
-microbenchmark(gl = bressiwrap(), times = 2)
-bressiwrap <- function() {
+microbenchmark(gl = bressiwrap(paf_df, gxy), times = 2)
+bressiwrap <- function(paf_df, gxy) {
   
+  griddiffs_x = diff(gxy[[1]])
+  griddiffs_y = diff(gxy[[2]])
   # Create an empty list to store dataframes
   df_list <- vector("list", dim(paf_df)[1])
   
   for (i in 1:dim(paf_df)[1]) {
-    df_list[[i]] <- as.data.frame(
+    df_list[[i]] <- 
       bresenham(
         x = as.numeric(paf_df[i, c("tstart", "tend")]),
         y = as.numeric(paf_df[i, c("qstart", "qend")]),
@@ -63,7 +64,7 @@ bressiwrap <- function() {
         griddiffs_x,
         griddiffs_y,
         debug = F
-      )
+      
     )
   }
   
@@ -73,8 +74,8 @@ bressiwrap <- function() {
   return(grid_list)
 }
 #)
-gl = bressiwrap()
-plot_matrix_ggplot(gl)
+gl = bressiwrap(paf_df, gxy)
+plot_matrix_ggplot(as.data.frame(gl))
 
 #' @export
 fill_matrix_bressiexchange <- function(paf_df, gridlines_xy){
