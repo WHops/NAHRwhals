@@ -69,9 +69,9 @@ run_nw_once <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 
 run_nw_once_specified <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x){
   #tests = read.table(test_list, sep='\t')
   colnames(tests) = c('chr', 'start', 'end')
-  seqname_x = 'chr5'#tests[row, 'chr']
-  start_x =   17395688#as.numeric(tests[row, 'start'])
-  end_x =     17681106#as.numeric(tests[row, 'end'])
+  seqname_x = tests[row, 'chr']
+  start_x =   as.numeric(tests[row, 'start'])
+  end_x =     as.numeric(tests[row, 'end'])
   print(asm_fa)
   nahrwhals(genome_x_fa = ref_fa,
             genome_y_fa = asm_fa,
@@ -91,17 +91,17 @@ run_nw_once_specified <- function(row, test_list, ref_fa, asm_fa, anntrack, mini
   
 }
 
-run_nw_once_specified(1, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 'HG00733_h1', 'T2T')
+run_nw_once_specified(1, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 'Y', 'X')
 
 # Hardcoded values moved out of the function
 hg38_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/centro_lab/hg38_masked.fa"
 t2t_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/T2T-CHM13v2.0.fa"
 ref_fa = t2t_fa
-#ref_fa = "/hg38_fa/hoeps/PhD/projects/nahrcall/nahrchainer/data/tomato/download?path=S.lycopersicum.Heinz1706.genomic.fa"
+#ref_fa = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/tomato/download?path=S.lycopersicum.Heinz1706.genomic.fa"
 #asm_fa = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/tomato/download?path=S.lycopersicum.M82.genomic.fa"
 #ref_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/Col-0.fasta'
-#asm_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/C24.chr.all.v2.0.fasta'
-asm_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/alns/NA12878_giab_pbsq2-ccs_1000-hifiasm.h1-un.fasta'
+asm_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/C24.chr.all.v2.0.fasta'
+#asm_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/alns/NA12878_giab_pbsq2-ccs_1000-hifiasm.h1-un.fasta'
 anntrack = F#/Users/hoeps/PhD/projects/huminvs/analyses_paper/data/genes/hg38/for_ntk/genes_hg38.bed"
 minimap2_bin = '/Users/hoeps/opt/anaconda3/envs/snakemake/bin/minimap2'
 samplename_y = 'NA12878_h1' 
@@ -120,17 +120,21 @@ message("samplename_x: ", samplename_x)
 message("threads: ", threads)
 test_list = ''
 
-asm_fas = c(
-  '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/An-1.chr.all.v2.0.fasta',
-  '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/C24.chr.all.v2.0.fasta',
-  '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/Cvi.chr.all.v2.0.fasta',
-  '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/Eri.chr.all.v2.0.fasta',
-  '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/Kyo.chr.all.v2.0.fasta',
-  '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/Ler.chr.all.v2.0.fasta',
-  '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/Sha.chr.all.v2.0.fasta'
+ara_fas = c(
+  'An-1' = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/An-1.chr.all.v2.0.fasta',
+  'C24' = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/C24.chr.all.v2.0.fasta',
+  'Cvi' = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/Cvi.chr.all.v2.0.fasta',
+  'Eri' = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/Eri.chr.all.v2.0.fasta',
+  'Kyo' = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/Kyo.chr.all.v2.0.fasta',
+  'Ler' = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/Ler.chr.all.v2.0.fasta',
+  'Sha' = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/Sha.chr.all.v2.0.fasta'
 )
 
-asm_names = c('An-1', 'C24','Cvi','Eri','Kyo','Ler','Sha')
+ara_names = c('An-1', 'C24','Cvi','Eri','Kyo','Ler','Sha')
+
+tomato_fas = c(
+  
+)
 
 # for (i in 1:length(asm_names)){
 #   browser()
@@ -155,15 +159,14 @@ asm_names = c('An-1', 'C24','Cvi','Eri','Kyo','Ler','Sha')
 t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_100kb_merge_2.bed'
 
 
-for (sample in c('NA12878_h2', 'HG00733_h1', 'HG02018_h1', 'HG02018_h2', 'hg38', 'NA19240_h2')){
-  
-  asm_fa = assembly_fastas[sample]
-  test_list = wga_write_interval_list(ref_fa, asm_fa, paste0('wga_t2t_',sample), 5000000, 10000, t2t_mask, threads)
+#for (sample in ara_names[5:length(ara_names)]){
+  sample = 'HG00733_h1'
+  test_list = wga_write_interval_list(ref_fa, asm_fa, paste0('wga_t2t_',sample), 1000000, 10000, 'none', threads)
   tests = read.table(test_list, sep='\t')
-  genome_file = paste0('wga_t2t_',sample, '/ref.genome')
+  genome_file = paste0('wga_t2t_HG00733_h1',sample, '/ref.genome')
   
   #test_list = 'wga_hg38_NA12878_h1/list_cut_final.bed'
-  make_karyogram(test_list, genome_file, specified_text = 'T2T_NA12878_h1')
+  make_karyogram(test_list, genome_file, specified_text = 'Stuff')
   
   #for (i in 22:nrow(tests)){
   #   samplename_y = 'NA12878_h1'
@@ -174,10 +177,10 @@ for (sample in c('NA12878_h2', 'HG00733_h1', 'HG02018_h1', 'HG02018_h2', 'hg38',
   # for (i in 10:20){
   #   run_nw_once(i, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 'NA12878_h2', 'T2T')
   # }
-  
+  samplename_x = 'T2T'
   samplename_y = sample
-  results <- mclapply(1:nrow(tests), function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x), mc.cores = threads)
-}
+  #results <- mclapply(1:nrow(tests), function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x), mc.cores = threads)
+#}
 # }
 # 
 # 

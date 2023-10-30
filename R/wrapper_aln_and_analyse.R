@@ -113,6 +113,7 @@ wrapper_aln_and_analyse <- function(params) {
   make_segmented_pairwise_plot(grid_xy, plot_x_y, outlinks)
 
   # Make in between another plot
+  
   p <- plot_matrix_ggplot_named(grid_xy[[3]], grid_xy[[1]], grid_xy[[2]])
   print(p)
   ggplot2::ggsave(

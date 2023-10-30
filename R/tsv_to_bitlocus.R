@@ -50,10 +50,6 @@ load_and_prep_paf_for_gridplot_transform <-
       inparam_chunklen = inparam_chunklen
     )
 
-    # Filter alignments by length
-    if (nrow(paf) > 10000){
-      minlen = minlen * 2
-    }
     paf <- paf[paf$alen > minlen, ]
 
     if (dim(paf)[1] == 0) {
@@ -114,60 +110,6 @@ load_and_prep_paf_for_gridplot_transform <-
   }
 
 
-#' Calculate the "bounced" points of a vector given a point
-#'
-#' This function calculates the "bounced" points of a vector given a point, where the bounced points are the points where the vector intersects the x- and y-axes.
-#' The function returns a data frame containing the bounced points.
-#'
-#' @param vectors A data frame containing the start and end points of each vector, as well as slope and intercept information.
-#' @param point A numeric vector containing the x- and y-coordinates of the point.
-#'
-#' @return A data frame containing the bounced points of the vector.
-#'
-#' @author Wolfram Hoeps
-#' @export
-bounce_point <- function(vectors, point) {
-  newpoints <- data.frame(matrix(ncol = 2, nrow = 0))
-  newpoints[1, ] <- point
-  colnames(newpoints) <- c("x", "y")
-
-  if (!(point[1] %in% x_orig_visited)) {
-    # Check for vertical overlaps
-    y_overlap_vecs <- vectors[((vectors$tstart < as.numeric(point[1])) &
-      (vectors$tend > as.numeric(point[1]))), ]
-    # If there is overlap, calculate overlap of point with every overlapper
-    if (dim(y_overlap_vecs)[1] > 0) {
-      for (i in 1:dim(y_overlap_vecs)[1]) {
-        newpoints <- rbind(
-          newpoints,
-          data.frame(x = point[1], y = ((y_overlap_vecs$slope) * as.numeric(point[1])) + y_overlap_vecs$y_intercept)
-        )
-      }
-    }
-
-    x_orig_visited <<- c(x_orig_visited, point[1])
-  }
-
-  if (!(point[2] %in% y_orig_visited)) {
-    # Check for horizontal overlaps
-    x_overlap_vecs <- vectors[((vectors$qlow < as.numeric(point[2])) &
-      (vectors$qhigh > as.numeric(point[2]))), ]
-    # If there is overlap, calculate overlap of point with every overlapper
-    if (dim(x_overlap_vecs)[1] > 0) {
-      for (i in 1:dim(x_overlap_vecs)[1]) {
-        newpoints <- rbind(
-          newpoints,
-          data.frame(x = (point[2] - x_overlap_vecs$y_intercept) / x_overlap_vecs$slope, y = point[2])
-        )
-      }
-    }
-
-    y_orig_visited <<- c(y_orig_visited, point[2])
-  }
-
-  return(newpoints)
-}
-
 #' Generate a bitlocus plot from a PAF file.
 #'
 #' This function takes a PAF file, and generates a bitlocus plot from it.
@@ -199,25 +141,19 @@ wrapper_paf_to_bitlocus <-
     # 1) there are less than 50 alignments, and
     # 2) There are no incongruencies in the grid.
 
-    # if (compression_params$auto_find == T) {
-    #  wiggled_params = find_minlen_compression_params_wiggle(
-    #    inpaf, compression_params
-    #  )
-    #  minlen = wiggled_params[[1]]
-    #  compression = wiggled_params[[2]]
-    # } else {
     print("Minlen/Compression manually chosen. Testing viability")
     minlen <- params$minlen
     compression <- params$compression
-    # }
 
     print("Making the final grid with:")
     print(paste0("Minlen: ", minlen))
     print(paste0("Compression: ", compression))
 
+
     paf <- matrix(NA, nrow = 1e3, ncol = 1e3)
     gridlines.x <- rep(NA, 1e4)
     gridlines.y <- rep(NA, 1e4)
+
     # SUPER weird construct here. Should be re-written.
     # I want to re-run stuff until:
     # 1) The max number of alignments is kept.
@@ -230,8 +166,6 @@ wrapper_paf_to_bitlocus <-
         print("Too many alignments. Increasing minlen conditions")
         minlen <- minlen * 2
         compression <- compression * 2
-
-
         next()
       }
 
@@ -239,8 +173,9 @@ wrapper_paf_to_bitlocus <-
         print("This paf file seems very cluttered and/or repetitive. Abort mission. ")
         return()
       }
+
       print(paste0("Leading to a paf of dimensions: ", dim(paf)[1]))
-      gxy <- make_xy_grid(paf, n_additional_bounces = 50)
+      gxy <- make_xy_grid_fast(paf)
 
       # Make an entry to the output logfile #
       if (exists("log_collection")) {
@@ -264,6 +199,9 @@ wrapper_paf_to_bitlocus <-
     # 'bressi' is the bresenham algorithm. It can also handle vectors
     # with slope != 1. This used to be common in a previous version of ntk.
     # Right now, bressi is a bit overkill but we keep it in anyway.
+    
+    browser()
+    
     grid_list <- data.frame()
 
     for (i in 1:dim(paf)[1]) {
@@ -362,7 +300,6 @@ enforce_slope_one <- function(df) {
   return(df)
 }
 
-
 #' Generate a grid of x and y coordinates for a bitlocus plot.
 #'
 #' This function takes a PAF file, and generates a grid of x and y coordinates for a
@@ -372,134 +309,104 @@ enforce_slope_one <- function(df) {
 #' as the x and y coordinates of the grid.
 #'
 #' @param paf a dataframe of alignments which is in paf-like format.
-#' @param n_additional_bounces The number of additional times the points are bounced.
-#'
+#' @param generations. The max number of generations to run this thing. Default infinity.
 #' @return A list containing the x and y coordinates of the grid, and a logical indicating whether the grid was successfully generated or not.
 #'
 #' @author Wolfram Hoeps
 #' @export
-make_xy_grid <- function(paf, n_additional_bounces = 10) {
-  grid_successful <- T
-  # Points is 'gridpoints'
-  points_overall <- data.frame()
-
-  # Bounce points a couple of times. For the bouncing algorithm,
-  # see separate description.
-
-  x_orig_visited <<- c()
-  y_orig_visited <<- c()
-
-  for (i in 1:dim(paf)[1]) {
-    # Bounce start once
-    # p1_bounced = bounce_point(paf, c(paf[i,]$tstart, paf[i,]$qlow))
-    # # Bounce end once
-    # p2_bounced = bounce_point(paf, c(paf[i,]$tend, paf[i,]$qhigh))
-
-    # Bounce start once
-    p1_bounced <- bounce_point(paf, c(paf[i, ]$tstart, paf[i, ]$qstart))
-    # Bounce end once
-    p2_bounced <- bounce_point(paf, c(paf[i, ]$tend, paf[i, ]$qend))
-    points_overall <- rbind(rbind(points_overall, p1_bounced), p2_bounced)
-
-    # Bounce bounced #1
-    for (j in 1:dim(p1_bounced)[1]) {
-      points_overall <- rbind(points_overall, bounce_point(paf, as.numeric(p1_bounced[j, ])))
-    }
-    # Bounce bounced #2
-    for (k in 1:dim(p2_bounced)[1]) {
-      points_overall <- rbind(points_overall, bounce_point(paf, as.numeric(p2_bounced[k, ])))
-    }
-
-    points_overall <- unique(points_overall[order(points_overall$x), ])
-  }
-
-  # Unique and sort
-  points_overall <- unique(points_overall[order(points_overall$x), ])
-  plot_helper_debug(paf, points_overall)
-  # browser()
-
-  points_last_iteration <- points_overall
-  # # bounce some more
-  for (j in (1:n_additional_bounces)) {
-    print(paste0("Additional bounce: ", j, " out of ", n_additional_bounces))
-
-    # If we have converged after 1st iteration, exit here.
-    if ((j == 2) & (all(points_overall %in% points_last_iteration))) {
-      print("Grid has converged. All fine.")
-      # Make an entry to the output logfile #
-      if (exists("log_collection")) {
-        log_collection$grid_inconsistency <<- F
-      }
-
-      gridlines.y <- unique(round(sort(c(0, points_overall$y))))
-      gridlines.x <- unique(round(sort(c(0, points_overall$x))))
-
-      return(list(gridlines.x, gridlines.y, T))
-    }
-
-    if ((j > 2) & (all(points_overall %in% points_last_iteration))) {
-      print(paste0("Grid has converged after ", j - 1, " additional bounces."))
-      grid_successful <- F
-      # Make an entry to the output logfile #
-      if (exists("log_collection")) {
-        log_collection$grid_inconsistency <<- T
-      }
-
-      plot_helper_debug(paf, points_overall)
-
-      gridlines.y <- unique(round(sort(c(0, points_overall$y))))
-      gridlines.x <- unique(round(sort(c(0, points_overall$x))))
-
-      return(list(gridlines.x, gridlines.y, F))
-    }
-
-    # Run one more bounding point.
-    if (j == 1) {
-      points_for_consideration <- points_overall
-    } else {
-      points_for_consideration <- dplyr::anti_join(points_overall, points_last_iteration)
-    }
-    points_last_iteration <- points_overall
-    # browser()
-
-    # Bounce every point once
-    # [note: we could def constrict this to *new* points (last generation)]
-    for (i in 1:nrow(points_for_consideration)) {
-      points_overall <- unique(rbind(points_overall, bounce_point(paf, as.numeric(points_for_consideration[i, ]))))
-    }
-  }
-
-  print(
-    "WARNING. Grid has not converged. Small alignment incongruencies are likely, results may not be reliable. Consider re-running with larger conversion-factor (typically >100)"
-  )
+make_xy_grid_fast <- function(paf_df, generations=100000) {
 
   if (exists("log_collection")) {
-    log_collection$grid_inconsistency <<- F
+    log_collection$grid_inconsistency <<- T
   }
 
-  gridlines.y <- unique(round(sort(c(0, points_overall$y))))
-  gridlines.x <- unique(round(sort(c(0, points_overall$x))))
+  all_x <- sort(unique(c(paf_df$tstart, paf_df$tend)))
+  all_y <- sort(unique(c(paf_df$qstart, paf_df$qend)))
+  
+  slopes = (paf_df$qend - paf_df$qstart) / (paf_df$tend - paf_df$tstart)
+  
+  paf_tstarts = paf_df$tstart
+  paf_tends = paf_df$tend
+  paf_qstarts = paf_df$qstart
+  paf_qends = paf_df$qend
 
-  return(list(gridlines.x, gridlines.y, F))
-}
+  for (i in 1:generations) {
 
-#' Debugging function for plotting points and PAF data
-#'
-#' This function takes a data frame of alignments in .paf-like format, and a data frame
-#' of points, and generates a plot to help with debugging.
-#'
-#' @param paf A data frame of alignments in .paf-like format.
-#' @param points_overall A data frame of points.
-#'
-#' @export
-plot_helper_debug <- function(paf, points_overall) {
-  pp <- plot_paf(
-    paf,
-    unique(round(sort(c(0, points_overall$x)))),
-    unique(round(sort(c(0, points_overall$y)))),
-    linewidth = 0.5
-  )
-  print(pp)
+    # Only process the most recent gridlines
+    if (i == 1){
+      process_x <- all_x
+      process_y <- all_y
+    } else {
+      process_x <- new_x
+      process_y <- new_y
+    }
+    
+    # Pre-allocate
+    max_size <- nrow(paf_df) * max(length(process_x), length(process_y))
+    new_x <- numeric(max_size)
+    new_y <- numeric(max_size)
+    
+    # Index counters
+    idx_x <- 1
+    idx_y <- 1
+    
+    for (row in 1:nrow(paf_df)) {
+      
+      slope = slopes[row] 
+      paf_tstarts_row = paf_tstarts[row]
+      paf_tends_row = paf_tends[row]
+      paf_qstarts_row = paf_qstarts[row]
+      paf_qends_row = paf_qends[row]
+      
+      current_xs = process_x[(process_x > paf_tstarts_row) & (process_x < paf_tends_row)]
+      current_ys = process_y[(process_y > min(c(paf_qstarts_row, paf_qends_row))) & (process_y < max(c(paf_qstarts_row, paf_qends_row)))]
+      
+      # Identify overlaps between current_xs and pairwise alignments
+      delta_x = current_xs - paf_tstarts_row
+      new_y_vals = paf_qstarts_row + slope * delta_x
+      n = length(new_y_vals)
+      if (n > 0){
+        new_y[idx_y:(idx_y + n - 1)] <- new_y_vals
+        idx_y <- idx_y + n
+      }
+      
+      # Identify overlaps between current_ys and pairwise alignments
+      delta_y = current_ys - paf_qstarts_row
+      new_x_vals = paf_tstarts_row + delta_y / slope
+      n = length(new_x_vals)
+      if (n > 0){
+        new_x[idx_x:(idx_x + n - 1)] <- new_x_vals
+        idx_x <- idx_x + n
+      }
+    }
+    
+    # Trim the vectors to the actual sizes
+    new_x <- new_x[1:(idx_x-1)]
+    new_y <- new_y[1:(idx_y-1)]
+
+    # New_x and new_y should be subset to keep only those values which are not part of all_x and all_y
+    new_x <- new_x[!(new_x %in% all_x)]
+    new_y <- new_y[!(new_y %in% all_y)]
+
+    prev_x <- all_x
+    prev_y <- all_y
+    
+    all_x <- c(all_x, new_x)
+    all_y <- c(all_y, new_y)
+    
+    # If no new gridlines are identified, break
+    if (length(all_x) == length(prev_x) && length(all_y) == length(prev_y)) {
+      print(paste0('Grid has converged after ', i-1, ' iterations with ', length(all_x), ' lines'))
+      
+        if (exists("log_collection")) {
+          log_collection$grid_inconsistency <<- F
+        }
+
+      break
+    }
+  }
+  
+  return(list(sort(unique(all_x)), sort(unique(all_y))))
 }
 
 
@@ -539,3 +446,5 @@ add_slope_intercept_info <- function(vector_df, xstart = "tstart", xend = "tend"
 
   return(slope_df)
 }
+
+ #   bounce_point(paf, c(points_current_gen[i,'t'], points_current_gen[i,'q']))
