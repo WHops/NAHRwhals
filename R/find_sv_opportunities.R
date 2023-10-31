@@ -40,7 +40,7 @@ find_sv_opportunities <- function(sample) {
 
       for (ncomb in (1:dim(combs)[2])) {
         if (n_opportunity == all_opp_len) {
-          print("[Debug]: Extending size of all-opp matrix.")
+          #print("[Debug]: Extending size of all-opp matrix.")
           all_opportunities_addendum <- replicate(3,
             rep(NA, dim(all_opportunities)[1]),
             simplify = T

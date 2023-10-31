@@ -150,14 +150,22 @@ plot_matrix_ggplot_named <- function(data_frame_xyz, colnames_f, rownames_f) {
 #' @author Wolfram Hoeps
 #' @export
 make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks) {
-  # Make plot_xy_segmented.
-  # Needs debug.
-  xstart <- (grid_xy[[1]][1:length(grid_xy[[1]]) - 1])
-  xend <- (grid_xy[[1]][2:length(grid_xy[[1]])])
-  ystart <- (grid_xy[[2]][1:length(grid_xy[[2]]) - 1])
-  yend <- (grid_xy[[2]][2:length(grid_xy[[2]])])
-  xmax <- max(grid_xy[[1]])
-  ymax <- max(grid_xy[[2]])
+
+  x_vals = grid_xy[[1]]
+  length_x_vals = length(x_vals)
+  
+  y_vals = grid_xy[[2]]
+  length_y_vals = length(y_vals)
+  
+  xstart <- x_vals[1:length_x_vals - 1]
+  xend <-   x_vals[2:length_x_vals]
+  
+  ystart <- y_vals[1:length_y_vals - 1]
+  yend <-  y_vals[2:length_y_vals]
+  
+  xmax <- max(x_vals)
+  ymax <- max(y_vals)
+  
   datx <- data.frame(
     xstart = xstart,
     xend = xend,
@@ -168,22 +176,28 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks) {
     ymax = ymax,
     ystart = ystart
   )
-
-  likely_stepsize <- min(c(diff(datx$xstart), diff(daty$ystart)))
-
+  
+  likely_stepsize <- min(c(diff(x_vals), diff(y_vals)))
+  
   # Introducing special case for nrow(datx) = 1
   if (likely_stepsize == Inf) {
     likely_stepsize <- 0
   }
-
+  
   if (length(xstart) > 433) {
     print("Too many segments to make colored plot")
     return()
   }
-
+  
   qual_col_pals <- RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == "qual", ]
   col_vector <- rep(unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals))), 10)
-
+  
+  max_x <- max(ggplot2::layer_scales(plot_x_y)$x$range$range, max(xmax) + likely_stepsize)
+  max_y <- max(ggplot2::layer_scales(plot_x_y)$y$range$range, max(ymax) + likely_stepsize)
+  
+  min_x <- min(ggplot2::layer_scales(plot_x_y)$x$range$range, min(xstart) - likely_stepsize)
+  min_y <- min(ggplot2::layer_scales(plot_x_y)$y$range$range, min(ystart) - likely_stepsize)
+  
   plot_x_y_segmented <- plot_x_y +
     ggplot2::geom_rect(
       data = datx,
@@ -191,14 +205,13 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks) {
       alpha = 0.5
     ) +
     ggplot2::guides(fill = FALSE) +
-    ggplot2::xlim(c(0, max(ggplot2::layer_scales(plot_x_y)$x$range$range, xmax + likely_stepsize))) + # Range is the max of previous plot and new additions. So that nothing gets cut off.
-    ggplot2::ylim(c(0, max(ggplot2::layer_scales(plot_x_y)$y$range$range, ymax + likely_stepsize))) +
+    ggplot2::coord_cartesian(xlim = c(min_x, max_x), ylim = c(min_y, max_y)) +
     ggplot2::scale_x_continuous(labels = scales::comma) +
     ggplot2::scale_y_continuous(labels = scales::comma)
   # ggplot2::geom_segment(data=daty,
   #             ggplot2::aes(x=0, xend=xmax, y=ystart, yend=ystart), color='grey')
   print(plot_x_y_segmented)
-
+  
   ggplot2::ggsave(
     filename = paste0(outlinks$outfile_colored_segment),
     plot = plot_x_y_segmented,
@@ -209,6 +222,9 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks) {
   )
 }
 
+
+
+
 #' Create a modified grid plot
 #'
 #' @param res A data frame with results
@@ -216,9 +232,10 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks) {
 #' @param outlinks A list containing output links
 #' @export
 make_modified_grid_plot <- function(res, gridmatrix, outlinks) {
+  
+  res$mut_max = NULL
   # Sort results by 'eval' in descending order
   res <- res[order(res$eval, decreasing = TRUE), ]
-
   # Modify the grid matrix using the first row of results
   grid_modified <- modify_gridmatrix(gridmatrix, res[1, ])
 

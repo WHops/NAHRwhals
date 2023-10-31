@@ -10,17 +10,6 @@ wrapper_aln_and_analyse <- function(params) {
     browser()
   }
 
-  # Work out some reference genome things...
-  # if (params$reference_genome == 'hg38'){
-  #  params$alt_ref_sample = F
-  # } else if (params$reference_genome == 'T2T'){
-  #  print('T2T chosen. Translating reference coodinates...')
-  #  params$alt_ref_sample = 'T2T'
-  # } else {
-  #  print('Error: reference_genome must be "hg38" or "T2T".')
-  #  return()
-  # }
-
   # Start writing a log file.
   log_collection <<- init_log_with_def_values()
   log_collection[c(
@@ -36,15 +25,18 @@ wrapper_aln_and_analyse <- function(params) {
       params$seqname_x, params$start_x, params$end_x, params$xpad,
       params$chunklen, paste0(params$samplename_x, "_", params$samplename_y), params$depth
     )
+  
   # Determine 'main' output name for this run
   sequence_name_output <- manufacture_output_res_name(
     params$seqname_x, params$start_x, params$end_x
   )
+  
   # Create output folder tree
   make_output_folder_structure(sequence_name_output)
+  
   # Define output files
   outlinks <- define_output_files(sequence_name_output, paste0(params$samplename_x, "_", params$samplename_y))
-
+  
   pdf(file = outlinks$outpdf_main)
   if (params$compare_full_fastas == T) {
     print("Option pairwise_fasta_direct recognized. Comparing entire fasta files.")
@@ -123,11 +115,16 @@ wrapper_aln_and_analyse <- function(params) {
     device = "pdf"
   )
   gridmatrix <- gridlist_to_gridmatrix(grid_xy)
-  # saveRDS(gridmatrix, file='~/Desktop/sec_advanced')
-  # Step 4: Solve and make a solved plot
-  # res = solve_mutation_old(gridmatrix, depth = params$depth, discovery_exact = params$discovery_exact)
-  #saveRDS(gridmatrix, file='gridmatrix_cpx.Rdate')
-  res <- solve_mutation(gridmatrix, maxdepth = params$depth, solve_th = params$eval_th, compression = params$compression, is_cluttered_already_paf = log_collection$cluttered_boundaries==T) # , discovery_exact = params$discovery_exact)
+
+  res <- solve_mutation(gridmatrix, maxdepth = 1, solve_th = params$eval_th, compression = params$compression, is_cluttered_already_paf = log_collection$cluttered_boundaries==T)
+
+  if (max(res$eval) < params$eval_th){
+    # Fahre schwere Geschuetze auf
+    print('No easy solution found. Starting the much more powerful julia implementation.')
+    res <- solve_mutation_julia_wrapper(params, gridmatrix, grid_xy[[1]], outlinks$solver_inmat_path, outlinks$solver_inlens_path, outlinks$solver_juliares_path)
+  }
+
+
 
   
   # write.table(gridmatrix, file=paste0('testcases/',params$seqname_x,'_',params$start_x,'_',params$end_x, '_',params$samplename_y, '.tsv'),
@@ -144,10 +141,7 @@ wrapper_aln_and_analyse <- function(params) {
   # # Write the two lines to a file
   # writeLines(c(row_string, column_string),
   #            paste0('testcases/',params$seqname_x,'_',params$start_x,'_',params$end_x, '_',params$samplename_y, '_rows_cols.tsv'))
-  
-  
   make_modified_grid_plot(res, gridmatrix, outlinks)
-
   # Step 5: Save
   write_results(res, outlinks, params)
 
@@ -290,7 +284,7 @@ save_plot_custom <-
       dpi = 300,
       device = device
     )
-    print("plot saved.")
+    #print("plot saved.")
   }
 
 
@@ -393,6 +387,10 @@ define_output_files <- function(sequence_name_output, samplename) {
     samplename,
     "_x_y_grid_mut.pdf"
   )
+
+  outlinks$solver_inmat_path <- paste0(sequence_name_output, "/diff/", samplename, "_x_y_grid_mut.tsv")
+  outlinks$solver_inlens_path <- paste0(sequence_name_output, "/diff/", samplename, "_x_y_grid_mut_lens.tsv")
+  outlinks$solver_juliares_path <- paste0(sequence_name_output, "/diff/", samplename, "_x_y_grid_mut_juliares.tsv")
 
   outlinks$genome_x_fa_subseq <- paste0(sequence_name_output, "/fasta/", samplename, "_x.fa")
   outlinks$genome_y_fa_subseq <- paste0(sequence_name_output, "/fasta/", samplename, "_y.fa")

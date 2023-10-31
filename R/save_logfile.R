@@ -14,7 +14,7 @@
 save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
 
   options(scipen=999)
-
+  res$mut_mat = NULL
   res_ref <- res[res$mut1 == "ref", "eval"]
   res_max <- res[1, "eval"]
   n_res_max <- dim(res[res$eval == max(res$eval), ])[1]

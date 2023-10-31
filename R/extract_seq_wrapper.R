@@ -29,7 +29,6 @@ extract_sequence_wrapper <- function(params, outlinks) {
     # First, write the asm y and hg38 x.
 
     # First, write the asm y and hg38 x.
-    print('hi')
     # if (params$samplename_y == "hg38") {
     #   # If we have hg38 as y, we write hg38 into the 'x' and 'y' fasta.
     #   coords = write_x_y_sequences(params$seqname_x,

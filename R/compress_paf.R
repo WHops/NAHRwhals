@@ -26,9 +26,9 @@ merge_rows <- function(paffile, pairs) {
   alens = as.numeric(paffile$alen)
   
   for (i in dim(pairs)[1]:1) {
-    if (count %% 100 == 0) {
-      print(paste0("Merging pair ", count, " out of ", dim(pairs)[1]))
-    }
+    #if (count %% 100 == 0) {
+    #  print(paste0("Merging pair ", count, " out of ", dim(pairs)[1]))
+    #}
 
     nl1 <- (pairs[i, 1])
     nl2 <- (pairs[i, 2])
@@ -135,10 +135,10 @@ merge_rows <- function(paffile, pairs) {
   # Print out the longest t length of the paffile
   max_tlen = max(abs(as.numeric(paffile$tend) - as.numeric(paffile$tstart)))
   # Print out the number of alingments in the paffile
-  print(paste0("Number of alignments: ", dim(paffile)[1]))
+  # print(paste0("Number of alignments: ", dim(paffile)[1]))
   # Print this result
-  print(paste0("Max tlen: ", max_tlen))
-  print('done')
+  # print(paste0("Max tlen: ", max_tlen))
+  # print('done')
   return(paffile)
 }
 
@@ -251,7 +251,7 @@ compress_paf_fnct <-
     }
     rowpairs <- data.frame()
     count <- 0
-    #p = ggplot(inpaf) + geom_point(aes(x=tstart, y=qstart)) 
+
     tstarts = inpaf$tstart
     tends = inpaf$tend
     qstarts = inpaf$qstart
@@ -264,9 +264,6 @@ compress_paf_fnct <-
         #print(p + geom_rect(aes(xmin=tstep, xmax=tstep+tstepsize, ymin=qstep,ymax=qstep+qstepsize), color='green', alpha=0.1))
         inpaf_q <- inpaf[((tstarts >= tstep) & (tstarts <= tstep + tstepsize) | (tends  >= tstep) & (tends <= tstep + tstepsize)),] 
 
-        # print(ggplot() + geom_segment(data=inpaf, aes(x=tstart, xend=tend, y=qstart, yend=qend)) +
-        #   geom_segment(data=inpaf_q, aes(x=tstart, xend=tend, y=qstart, yend=qend), color='red') +
-        #   geom_rect(aes(xmin=tstep, xmax=tstep+tstepsize, ymin=qstep, ymax=qstep+qstepsize), alpha=0.5))
         if (nrow(inpaf_q) > 1){
           rowpairs <- rbind(rowpairs, merge_paf_entries_intraloop(inpaf_q, second_run, inparam_chunklen, inparam_compression))
           #rowpairs <- merge_paf_entries_intraloop(inpaf_q, second_run, inparam_chunklen, inparam_compression)
@@ -276,7 +273,7 @@ compress_paf_fnct <-
         # print(paste0('Merging step ', count, ' out of ', n_steps))
     }
     
-    print('pairs found!')
+    #print('pairs found!')
     # Sort once again, by row.
     rowpairs <- rowpairs[order(rowpairs$col), ]
     row.names(rowpairs) <- NULL
@@ -324,7 +321,7 @@ compress_paf_fnct <-
     #   qstart = ifelse(strand == '-', qend, qstart)
     # )
 
-    print(paste0("PAF compressed to ", dim(inpaf)[1], " alignments."))
+    #print(paste0("PAF compressed to ", dim(inpaf)[1], " alignments."))
     # Save
     if (save_outpaf) {
       inpaf <- transform(

@@ -52,7 +52,7 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
   # local minima in rare instances. Additionally, it is not guaranteed that all alternative paths to an
   # optimal result are identified with this.
   while ((!conclusion_found) & (current_depth <= maxdepth)) {
-    print(paste0("Running depth layer: ", current_depth))
+    #print(paste0("Running depth layer: ", current_depth))
 
     # Run the dfs machinery (main work horse)
     vis_list <- (dfs(bitlocus, maxdepth = current_depth, increase_only = F, earlystop = earlystop))

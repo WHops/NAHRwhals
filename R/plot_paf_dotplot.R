@@ -44,7 +44,7 @@ add_file_highlight <- function(gp, opt) {
   # Filter out rows with length less than the specified minimum length
   highlight_data <- highlight_data[((highlight_data$chromEnd - highlight_data$chromStart) > opt$minsdlen), ]
 
-  cat(paste0("Printing a final thing with ", nrow(highlight_data), " entries.\n"))
+  #cat(paste0("Printing a final thing with ", nrow(highlight_data), " entries.\n"))
 
   # Add geom_rect layers to the ggplot object for the file-based highlights
   gp <- gp + ggplot2::geom_rect(

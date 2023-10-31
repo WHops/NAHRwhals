@@ -45,7 +45,7 @@ run_nw_once <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 
   seqname_x = tests[row, 'chr']
   start_x =   as.numeric(tests[row, 'start'])
   end_x =     as.numeric(tests[row, 'end'])
-  print(asm_fa)
+  #print(asm_fa)
   try(nahrwhals(genome_x_fa = ref_fa,
                 genome_y_fa = asm_fa,
                 seqname_x = seqname_x,
@@ -72,7 +72,7 @@ run_nw_once_specified <- function(row, test_list, ref_fa, asm_fa, anntrack, mini
   seqname_x = tests[row, 'chr']
   start_x =   as.numeric(tests[row, 'start'])
   end_x =     as.numeric(tests[row, 'end'])
-  print(asm_fa)
+  #print(asm_fa)
   nahrwhals(genome_x_fa = ref_fa,
             genome_y_fa = asm_fa,
             seqname_x = seqname_x,

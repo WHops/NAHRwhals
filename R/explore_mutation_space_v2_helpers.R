@@ -409,7 +409,7 @@ annotate_res_out_with_positions_lens <- function(res_out, bitlocus) {
     count <- count + 1
 
     if (count > 2000) {
-      print("Stopping to annotate results to save some time.")
+      #print("Stopping to annotate results to save some time.")
       return(res_out)
     }
     res_vec <- res_out[nrow, ]

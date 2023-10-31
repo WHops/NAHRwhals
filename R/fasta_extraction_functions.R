@@ -200,7 +200,7 @@ liftover_coarse <-
     } else if (search_mode == "mad") { # mad = mean absolute deviation.
       startend <- find_coords_mad(liftover_coords, cpaf, winner_chr, start, end, refine_runnr != 1)
       if (is.null(startend)) {
-        print("MAD failed. Going for extrapolation instead.")
+        #print("MAD failed. Going for extrapolation instead.")
         startend <- find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end, refine_runnr != 1)
       }
     }
@@ -289,7 +289,7 @@ enlarge_interval_by_factor <-
 
     # From here on: ensure that the padding was good :)
     if (start_pad < 0) {
-      print("Warning: Start coordinate after padding exceeds chromosome boundary. Setting start to 0")
+      #print("Warning: Start coordinate after padding exceeds chromosome boundary. Setting start to 0")
       start_pad <- 0
 
       if (exists("log_collection")) {
@@ -306,15 +306,15 @@ enlarge_interval_by_factor <-
 
       chrlen <- paf[paf$qname == seqname_f, ][1, "qlen"]
       if (end_pad > chrlen) {
-        print(
-          paste0(
-            "Warning: End coordinate after padding (",
-            end_pad,
-            ") exceedis chromosome boundary. Setting end to chr end (",
-            chrlen,
-            ") instead."
-          )
-        )
+        #print(
+        #  paste0(
+        #    "Warning: End coordinate after padding (",
+        #    end_pad,
+        #    ") exceedis chromosome boundary. Setting end to chr end (",
+        #    chrlen,
+        #    ") instead."
+        #  )
+        #)
         end_pad <- chrlen
 
         # Make an entry to the output logfile
@@ -424,7 +424,7 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
       # Warn if we are exceeding chromosome boundaries in the query.
       if ((start_winners < (dist_between_probes * n_probes_distance)) |
         (end_winners + (dist_between_probes * n_probes_distance)) > (cpaf[cpaf$tname == winner_chr, ][1, "tlen"])) {
-        print("Warning! Reaching the end of alignment!")
+        #print("Warning! Reaching the end of alignment!")
   
         # Make an entry to the output logfile #
         if (exists("log_collection")) {
@@ -505,7 +505,7 @@ find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, e
     # Warn if we are exceeding chromosome boundaries in the query.
     if ((start_winners < (dist_between_probes * n_probes_distance)) |
         (end_winners + (dist_between_probes * n_probes_distance)) > (cpaf[cpaf$tname == winner_chr, ][1, "tlen"])) {
-      print("Warning! Reaching the end of alignment!")
+      #print("Warning! Reaching the end of alignment!")
       
       # Make an entry to the output logfile #
       if (exists("log_collection")) {

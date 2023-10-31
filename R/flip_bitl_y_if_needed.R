@@ -51,7 +51,7 @@ flip_bitl_y_if_needed <- function(bitl) {
 
   # If one is not at least double the other, we are unsure about the outcome.
   if ((max(pos_aln_sum, neg_aln_sum) / min(pos_aln_sum, neg_aln_sum)) < 2) {
-    print("Warning. Frame-flipping determination potentially unsure. Consider using a wider interval. ")
+    #print("Warning. Frame-flipping determination potentially unsure. Consider using a wider interval. ")
     # Make an entry to the output logfile #
     if (exists("log_collection")) {
       log_collection$flip_unsure <<- T

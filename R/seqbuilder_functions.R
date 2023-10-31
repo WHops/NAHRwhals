@@ -71,6 +71,7 @@ make_chunked_minimap_alnment <-
            hltrack = NULL,
            onlypafreturn = F,
            aln_type_xx_yy_xy = "xy") {
+
     # Define intermediate files
     queryfasta_chunk <- paste0(queryfasta, ".chunk.fa")
     outpaf_chunk <- paste0(outpaf, ".chunk")
