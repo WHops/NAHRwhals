@@ -94,8 +94,6 @@ wrapper_aln_and_analyse <- function(params) {
   }
 
   # Step 3: Condense and make a condensed plot
-  browser()
-
   grid_xy <- wrapper_condense_paf(params, outlinks)
   # Step 3.1: If the alignment is cluttered, exit. No SV calls.
   if (is.null(grid_xy)) {

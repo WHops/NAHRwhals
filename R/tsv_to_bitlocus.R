@@ -200,40 +200,13 @@ wrapper_paf_to_bitlocus <-
     # with slope != 1. This used to be common in a previous version of ntk.
     # Right now, bressi is a bit overkill but we keep it in anyway.
     
-    browser()
-    
-    grid_list <- data.frame()
-
-    for (i in 1:dim(paf)[1]) {
-      grid_list <- rbind(grid_list, as.data.frame(
-        bresenham(
-          x = as.numeric(paf[i, c("tstart", "tend")]),
-          y = as.numeric(paf[i, c("qstart", "qend")]),
-          gridlines.x,
-          gridlines.y,
-          debug = F
-        )
-      ))
-    }
-
-
-    grid_list <- remove_duplicates_triple(grid_list)
-
-    # grid_list_bu = grid_list
-    # Sweep clean (?)
-    # grid_list = clean_sweep_matrix(grid_list)
-
-    # Sort by x
+    grid_list = bressiwrap(paf, gxy)
     grid_list <- grid_list[order(grid_list$x), ]
-    # grid_list_bu = grid_list_bu[order(grid_list_bu$x),]
-
-    grid_list <- remove_duplicates_triple(grid_list)
-    # grid_list_bu = remove_duplicates_triple(grid_list_bu)
 
     ### MAKE AND SAVE PLOTS
     pregridplot_paf <- plot_paf(paf, gridlines.x, gridlines.y, linewidth = 0.1)
-    # pp  + ggplot2::coord_cartesian(ylim=c(1e5,2e5), xlim = c(2.5e5, 3.5e5)) +
-    #   ggplot2::theme(panel.grid.major = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank())
+
+    
     if (pregridplot_save == F) {
       print(pregridplot_paf)
     } else {
