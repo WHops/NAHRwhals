@@ -306,6 +306,10 @@ reduce_depth_if_needed <- function(bitlocus, increase_only, maxdepth) {
     maxdepth <- 1
   }
 
+  if (n_pairs > 2000){
+    print("More than 2000 pairs in first layer. Passing to Julia right away.")
+    maxdepth = 0
+  }
   return(maxdepth)
 }
 

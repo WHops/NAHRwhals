@@ -93,6 +93,8 @@ make_chunked_minimap_alnment <-
     # how to use regex...
     correct_paf(outpaf_chunk, outpaf_filter)
 
+
+
     # Check if abandon
     pafin = read_and_prep_paf(outpaf_filter)
     if (is_cluttered_paf(pafin) & (onlypafreturn == T | params$noclutterplots == T)){
@@ -105,6 +107,9 @@ make_chunked_minimap_alnment <-
 
     # paf of fragmented paf gets put back together.
     compress_paf_fnct(inpaf_link = outpaf_filter, outpaf_link = outpaf, inparam_chunklen = chunklen)
+
+    system(paste0('rm ',outpaf_chunk))
+    system(paste0('rm ',outpaf_filter))
 
     if (onlypafreturn) {
       return(outpaf)

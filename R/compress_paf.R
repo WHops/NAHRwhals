@@ -10,7 +10,7 @@
 #'
 #' @author Wolfram Hoeps
 #' @export
-merge_rows <- function(paffile, pairs) {
+merge_rows <- function(paffile, pairs, reduced_qnames = F) {
 
   count <- 0
 
@@ -46,13 +46,17 @@ merge_rows <- function(paffile, pairs) {
       tend1 = tends[nl1]
       tend2 = tends[nl2]
       
-      qnames[nl1_bu] <- paste0(
+      if (reduced_qnames){
+        qnames[nl1_bu] <- qname1
+      } else {
+        qnames[nl1_bu] <- paste0(
         sub("_[^_]*$", "", qname1),
         "_",
         qstart1,
         "-",
         qend2 - 1
-      )
+        )
+      }
 
       # query coordinates
       qends[nl1_bu] <- max(qend1, qend2)
@@ -82,14 +86,18 @@ merge_rows <- function(paffile, pairs) {
       tend1 = tends[nl1]
       tend2 = tends[nl2]
 
-      
-      qnames[nl1_bu] <- paste0(
-        sub("_[^_]*$", "", qname1),
-        "_",
-        qend2,
-        "-",
-        qstart2
-      )
+      if (reduced_qnames){
+        qnames[nl1_bu] <- qname1
+      } else {
+        qnames[nl1_bu] <- paste0(
+           sub("_[^_]*$", "", qname1),
+           "_",
+           qend2,
+           "-",
+           qstart2
+          )
+      }
+      qnames[nl1_bu] <- qname1#
 
       # query coordinates
       qends[nl1_bu] <- min(qend1, qend2)
@@ -170,8 +178,10 @@ compress_paf_fnct <-
            n_quadrants_per_axis = NULL,
            second_run = F,
            inparam_chunklen = NULL,
-           inparam_compression = NULL) {
-    if (is.null(inpaf_df)) {
+           inparam_compression = NULL,
+           qname = NULL) {
+
+      if (is.null(inpaf_df)) {
       # Read and col-annotate the input paf
       inpaf <- read.table(inpaf_link, sep = "\t")
       # Remove redundant rows
@@ -210,6 +220,34 @@ compress_paf_fnct <-
       row.names(inpaf) <- 1:dim(inpaf)[1]
     }
 
+    if (!is.null(qname)){
+      inpaf = inpaf[inpaf$qname == qname,,drop=F]
+      row.names(inpaf) = NULL
+    }
+    
+    if (nrow(inpaf) <= 1){
+      if (save_outpaf) {
+        inpaf <- transform(
+          inpaf,
+          qend = ifelse(strand == "-", qstart, qend),
+          qstart = ifelse(strand == "-", qend, qstart)
+        )
+        write.table(
+          inpaf,
+          file = outpaf_link,
+          quote = F,
+          col.names = F,
+          row.names = F,
+          sep = "\t",
+          append=!is.null(qname)
+        )
+        return()
+        
+      }
+      
+      return(inpaf)
+      
+    }
     # In paf, start is always smaller than end. For our slope etc calculation, it will be easier
     # to change the order of start and end, if the orientation of the alignment is negative.
     # inpaf = transform(
@@ -273,6 +311,30 @@ compress_paf_fnct <-
         # print(paste0('Merging step ', count, ' out of ', n_steps))
     }
     
+    
+    if(nrow(rowpairs) == 0){
+      if (save_outpaf) {
+        inpaf <- transform(
+          inpaf,
+          qend = ifelse(strand == "-", qstart, qend),
+          qstart = ifelse(strand == "-", qend, qstart)
+        )
+        write.table(
+          inpaf,
+          file = outpaf_link,
+          quote = F,
+          col.names = F,
+          row.names = F,
+          sep = "\t",
+          append=!is.null(qname)
+        )
+        
+        return()
+        
+      }
+      
+      return(inpaf)
+    }
     #print('pairs found!')
     # Sort once again, by row.
     rowpairs <- rowpairs[order(rowpairs$col), ]
@@ -308,7 +370,7 @@ compress_paf_fnct <-
     # old_len = sum(inpaf$tend - inpaf$tstart) + sum(inpaf$qend - inpaf$qstart)
     count <- 0
     if (dim(rowpairs_singular)[1] > 0) {
-      inpaf <- merge_rows(inpaf, rowpairs_singular)
+      inpaf <- merge_rows(inpaf, rowpairs_singular, !is.null(qname))
     }
 
     # Re-merge with old thing
@@ -335,9 +397,11 @@ compress_paf_fnct <-
         quote = F,
         col.names = F,
         row.names = F,
-        sep = "\t"
+        sep = "\t",
+        append=!is.null(qname)
       )
     } else {
       return(inpaf)
     }
   }
+

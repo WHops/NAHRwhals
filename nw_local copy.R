@@ -53,11 +53,17 @@ run_nw_once <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 
                 end_x =   end_x,
                 samplename_y = samplename_y,
                 samplename_x = samplename_x,
+                compression = 1000,
+                minlen = 1000,
+                max_size_col_plus_rows = 1000,
+                max_n_alns = 10000,
                 self_plots = F,#AN
                 anntrack = anntrack,
                 plot_only = F,
                 minimap2_bin = minimap2_bin,
                 noclutterplots = F,
+                use_paf_library = T,
+                conversionpaf_link = 'out.paf',
                 logfile = paste0('res/res_', strsplit(asm_fa, '/')[[1]][length((strsplit(asm_fa, '/')[[1]]))], '.tsv')
   )
   )
@@ -85,13 +91,14 @@ run_nw_once_specified <- function(row, test_list, ref_fa, asm_fa, anntrack, mini
             plot_only = F,
             minimap2_bin = minimap2_bin,
             noclutterplots = T,
+            debug=T,
             logfile = paste0('res/res_', strsplit(asm_fa, '/')[[1]][length((strsplit(asm_fa, '/')[[1]]))], '.tsv')
             
   )
   
 }
 
-run_nw_once_specified(1, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 'Y', 'X')
+#run_nw_once_specified(1, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 'Y', 'X')
 
 # Hardcoded values moved out of the function
 hg38_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/centro_lab/hg38_masked.fa"
@@ -100,12 +107,13 @@ ref_fa = t2t_fa
 #ref_fa = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/tomato/download?path=S.lycopersicum.Heinz1706.genomic.fa"
 #asm_fa = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/tomato/download?path=S.lycopersicum.M82.genomic.fa"
 #ref_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/Col-0.fasta'
-asm_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/C24.chr.all.v2.0.fasta'
+#asm_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/athaliana/C24.chr.all.v2.0.fasta'
 #asm_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/alns/NA12878_giab_pbsq2-ccs_1000-hifiasm.h1-un.fasta'
 anntrack = F#/Users/hoeps/PhD/projects/huminvs/analyses_paper/data/genes/hg38/for_ntk/genes_hg38.bed"
 minimap2_bin = '/Users/hoeps/opt/anaconda3/envs/snakemake/bin/minimap2'
-samplename_y = 'NA12878_h1' 
+samplename_y = 'HG00733_h1' 
 samplename_x = 'T2T'
+asm_fa = assembly_fastas[samplename_y]
 
 threads = 5
 
@@ -161,9 +169,9 @@ t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_100k
 
 #for (sample in ara_names[5:length(ara_names)]){
   sample = 'HG00733_h1'
-  test_list = wga_write_interval_list(ref_fa, asm_fa, paste0('wga_t2t_',sample), 1000000, 10000, 'none', threads)
+  test_list = wga_write_interval_list(ref_fa, asm_fa, paste0('wga_t2t_',sample), 1000000, 10000, t2t_mask, threads)
   tests = read.table(test_list, sep='\t')
-  genome_file = paste0('wga_t2t_HG00733_h1',sample, '/ref.genome')
+  genome_file = paste0('wga_t2t_',sample, '/ref.genome')
   
   #test_list = 'wga_hg38_NA12878_h1/list_cut_final.bed'
   make_karyogram(test_list, genome_file, specified_text = 'Stuff')
@@ -178,8 +186,10 @@ t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_100k
   #   run_nw_once(i, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 'NA12878_h2', 'T2T')
   # }
   samplename_x = 'T2T'
-  samplename_y = sample
-  #results <- mclapply(1:nrow(tests), function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x), mc.cores = threads)
+  samplename_y = sample#
+  devtools::load_all()
+  
+  results <- mclapply(1:nrow(tests), function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x), mc.cores = threads)
 #}
 # }
 # 

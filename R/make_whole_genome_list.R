@@ -82,10 +82,12 @@ wga_write_interval_list <- function(ref_fa, asm_fa, outdir, merge_distance, inde
                                     minimap2_bin = '/Users/hoeps/opt/anaconda3/envs/snakemake/envs/nahrwhalsAPR/bin/minimap2'
 ){
     system(paste0("mkdir -p ", outdir))
-    allpaf = paste0(outdir, "/fullaln.paf")
+
+    #allpaf = paste0(outdir, "/fullaln.paf")
+    allpaf = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/out.paf'
     genome_file = paste0(outdir, "/ref.genome")
     # Make all-vs-all alignemnt
-    align_all_vs_all_using_minimap2(minimap2_bin, ref_fa, asm_fa, allpaf, threads)
+    #align_all_vs_all_using_minimap2(minimap2_bin, ref_fa, asm_fa, allpaf, threads)
     # Write the genome file
     make_genome_file(ref_fa, genome_file)
     # Extract list of breakpoint clusters

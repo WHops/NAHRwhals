@@ -80,16 +80,15 @@ load_and_prep_paf_for_gridplot_transform <-
       qend = ifelse(strand == "-", qstart, qend),
       qstart = ifelse(strand == "-", qend, qstart)
     )
-    
+
     # Now, in case any two ends have come close together, re-merge them.
-    paf <- compress_paf_fnct(
-      inpaf_df = paf,
-      save_outpaf = F,
-      second_run = T,
-      inparam_compression = compression,
-      inparam_chunklen = inparam_chunklen
-    )
-    
+    # paf <- compress_paf_fnct(
+    #   inpaf_df = paf,
+    #   save_outpaf = F,
+    #   second_run = T,
+    #   inparam_compression = compression,
+    #   inparam_chunklen = inparam_chunklen
+    # )
     
     
     # Add slope information to the paf.

@@ -9,7 +9,6 @@ wrapper_aln_and_analyse <- function(params) {
     print("Debug mode!")
     browser()
   }
-
   # Start writing a log file.
   log_collection <<- init_log_with_def_values()
   log_collection[c(
@@ -34,9 +33,9 @@ wrapper_aln_and_analyse <- function(params) {
   # Create output folder tree
   make_output_folder_structure(sequence_name_output)
   
+  
   # Define output files
   outlinks <- define_output_files(sequence_name_output, paste0(params$samplename_x, "_", params$samplename_y))
-  
   pdf(file = outlinks$outpdf_main)
   if (params$compare_full_fastas == T) {
     print("Option pairwise_fasta_direct recognized. Comparing entire fasta files.")
@@ -45,6 +44,7 @@ wrapper_aln_and_analyse <- function(params) {
     system(paste0("cp ", params$genome_y_fa, " ", outlinks$genome_y_fa_subseq))
   } else if (params$use_paf_library == T) {
     # Step 1: Get the sequences (write to disk)
+    
     chr_start_end_pad_params <- extract_sequence_wrapper(params, outlinks)
     chr_start_end_pad <- chr_start_end_pad_params[[1]]
     params <- chr_start_end_pad_params[[2]]
@@ -62,6 +62,7 @@ wrapper_aln_and_analyse <- function(params) {
     log_collection <<- init_log_with_def_values()
     return('EARLY FINISH!')
   }
+  
   # Step 2: Run the alignments
   plot_x_y <- produce_pairwise_alignments_minimap2(params, outlinks, chr_start_end_pad)
 
@@ -74,7 +75,9 @@ wrapper_aln_and_analyse <- function(params) {
     return()
   }
 
-
+  if (exists("log_collection")) {
+    log_collection$exceeds_y <<- F
+  }
   # Step 2.2: If alignment has a contig break, exit. No SV calls.
   if (log_collection$exceeds_y) {
     print("Assembly contig is broken. Not attempting to produce SV calls")
@@ -116,6 +119,13 @@ wrapper_aln_and_analyse <- function(params) {
   )
   gridmatrix <- gridlist_to_gridmatrix(grid_xy)
 
+  # reject bitloci with cut-off alignments at the borders ('clutter')
+  if (is_cluttered(gridmatrix) | log_collection$cluttered_boundaries==T) {
+    print("Alignments overlap with borders. Make frame larger!")
+
+    return()
+  }
+  
   res <- solve_mutation(gridmatrix, maxdepth = 1, solve_th = params$eval_th, compression = params$compression, is_cluttered_already_paf = log_collection$cluttered_boundaries==T)
 
   if (max(res$eval) < params$eval_th){

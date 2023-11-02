@@ -18,7 +18,6 @@ extract_subseq_bedtools <-
     # we need to create a temporary bedfile that will be deleted in a few lines.
     random_tag <- as.character(runif(1, 1e10, 1e11))
     tmp_bedfile <- paste0("region2_", random_tag, ".bed")
-
     # Write coordinates into temporary bedfile
     region <- paste0(
       seqname,
@@ -136,13 +135,22 @@ liftover_coarse <-
            start,
            end,
            conversionpaf_link,
+           external_paf_bool,
            n_probes = 100,
            lenfactor = 1.2, # Typically 1.0, because we want to get symmetrical dotplots.
            whole_chr = F,
            search_mode = "mad",
-           refine_runnr = 0) {
+           refine_runnr = 0
+           ) {
     cpaf <- read_and_prep_paf(conversionpaf_link)
-
+    
+    if (external_paf_bool){
+      newnames = c("tname"  ,"tlen"  , "tstart" ,"tend" ,  
+                   "strand" ,"qname",  "qlen" ,  "qstart" ,
+                   "qend" ,  "nmatch" ,"alen" ,  "mapq")
+      colnames(cpaf) = newnames
+    }
+    
     if (refine_runnr == 2) {
       colnames_orig <- colnames(cpaf)
       cpaf <- cpaf[, c(6, 7, 8, 9, 5, 1, 2, 3, 4, 10, 11, 12)]
@@ -205,6 +213,19 @@ liftover_coarse <-
       }
     }
 
+    if (external_paf_bool){
+      start_winners_cutoff <- as.integer(max(0, startend[1]))
+      end_winners_cutoff <- as.integer(min(max(cpaf[cpaf$tname == winner_chr, "tend"]), startend[2] - 1))
+      
+      return(
+        list(
+          lift_contig = winner_chr,
+          lift_start = start_winners_cutoff,
+          lift_end = end_winners_cutoff
+        )
+      )
+    }
+    
     if (refine_runnr == 1) {
       length <- startend[2] - startend[1]
       if (length < 50000) {
@@ -214,6 +235,7 @@ liftover_coarse <-
       } else {
         shift_fact <- 1.1
       }
+      
       start_winners <- startend[1] - (length * ((shift_fact - 1) * 0.5))
       end_winners <- startend[2] + (length * ((shift_fact - 1) * 0.5))
       # Make sure we don't exceed chromosome boundaries in the query.

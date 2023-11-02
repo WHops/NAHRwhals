@@ -75,6 +75,12 @@ format_julia_output <- function(juliares_path, gridlines_x, depth){
   }
   jout_combine$mut_max = NULL
   
+  # Clean up
+  system(paste0('rm ', juliares_path))
+
+  if (nrow(jout_combine) > 1000){
+    return(jout_combine[,1:1000])
+  }
   return(jout_combine)
 }
 

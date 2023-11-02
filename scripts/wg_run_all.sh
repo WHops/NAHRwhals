@@ -21,7 +21,7 @@ BEDTOOLS="$4"
 BP_MERGE_DISTANCE="$5"
 BP_COLLAPSE_REMOVE_DISTANCE="$6"
 EXCLUSION_MASK="$7"
-EXPAND_FRACTION=0.75
+EXPAND_FRACTION=1
 MERGE_DISTANCE=1000000
 FINAL_REGIONS_CLUSTER_DISTANCE=100000
 FINAL_INTERVALS_PER_CLUSTER=3
@@ -62,7 +62,8 @@ $BEDTOOLS intersect -a "${OUTPUT_DIR}/contigmerges.bed" -b "${OUTPUT_DIR}/list.b
 
 ./scripts/wg_reduce_clusters.sh <(bedtools sort -i ${OUTPUT_DIR}/list_cut_final_prefilter.bed) ${OUTPUT_DIR}/list_cut_final.bed $FINAL_INTERVALS_PER_CLUSTER $FINAL_REGIONS_CLUSTER_DISTANCE
 
-if [ "$EXCLUSION_MASK" != "" ]; then
+echo "HI"
+if [ "$EXCLUSION_MASK" != "none" ]; then
     $BEDTOOLS subtract -a "${OUTPUT_DIR}/list_cut_final.bed" -b "$EXCLUSION_MASK" > "${OUTPUT_DIR}/list_cut_final_exclusion.bed"
     mv "${OUTPUT_DIR}/list_cut_final_exclusion.bed" "${OUTPUT_DIR}/list_cut_final.bed"
 fi

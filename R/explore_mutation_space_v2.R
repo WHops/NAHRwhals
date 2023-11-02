@@ -37,6 +37,10 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
   # Optional: adjust depth
   maxdepth <- reduce_depth_if_needed(bitlocus, increase_only = F, maxdepth_input)
 
+  if (maxdepth == 0){
+    return(data.frame(eval=-1))
+  }
+  
   # Run iterations of increasing depth.
   # Always run the whole thing, but also don't go
   # deeper once a good solution is found.

@@ -39,10 +39,11 @@ extract_sequence_wrapper <- function(params, outlinks) {
     #     NULL,
     #     NULL,
     #     NULL,
-    #     params,
+    #     params,n
     #     extract_only = T
     #   )
     # } else {
+
     coords = write_x_y_sequences(
       params$seqname_x,
       start_x_pad,

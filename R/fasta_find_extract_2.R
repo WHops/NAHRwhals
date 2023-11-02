@@ -39,6 +39,7 @@ write_x_y_sequences <- function(seqname_x,
       start_x_pad,
       end_x_pad,
       conversionpaf_link,
+      external_paf_bool = params$use_paf_library,
       lenfactor = 1, # Unneeded parameter
       whole_chr = F, # (params$start_x %in% c(0, 1)),
       refine_runnr = refine_runnr
@@ -85,7 +86,7 @@ write_x_y_sequences <- function(seqname_x,
     params
   )
 
-  if (refine_runnr == 1) {
+  if (refine_runnr == 1 & params$use_paf_library == F) {
     # Special stuff
     paf <- make_chunked_minimap_alnment(
       params,
@@ -120,6 +121,7 @@ write_x_y_sequences <- function(seqname_x,
       "none",
       "nonepaflink",
       paf,
+      params$use_paf_library,
       refine_runnr = 2
     )
     if (is.null(coords_liftover_2nd)) {

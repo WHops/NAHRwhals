@@ -7,6 +7,7 @@
 
 minimap2_bin = default
 bedtools_bin = default
+julia_bin = '/Users/hoeps/.juliaup/bin/julia'
 
 genome_x_fa = 'testdata/assemblies/hg38_partial.fa'
 genome_y_fa = 'testdata/assemblies/assembly_partial.fa'
@@ -54,6 +55,9 @@ compression = default
 max_size_col_plus_rows = 250
 max_n_alns = 150
 
+init_width = 1000
+maxdup = 2
+minreport = 0.98
 
 # [4] Misc, this and that. (Usually untouched unless you are a developer)
 ################################################
@@ -86,6 +90,7 @@ clean_after_yourself = F
 
 awkscript_fasta = 'scripts/2awk_on_fasta.sh'
 awkscript_paf = 'scripts/2awk_on_paf.sh'
+solverscript = 'scripts/solver.jl'
 
 # samplename = paste0(interval$sample, '-', interval$category, '-', nrun)
 # genome_alt_ref_fa = assembly_fastas[['T2T']]
