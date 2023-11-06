@@ -106,7 +106,6 @@ wrapper_aln_and_analyse <- function(params) {
   make_segmented_pairwise_plot(grid_xy, plot_x_y, outlinks)
 
   # Make in between another plot
-  
   p <- plot_matrix_ggplot_named(grid_xy[[3]], grid_xy[[1]], grid_xy[[2]])
   print(p)
   ggplot2::ggsave(
@@ -119,19 +118,27 @@ wrapper_aln_and_analyse <- function(params) {
   )
   gridmatrix <- gridlist_to_gridmatrix(grid_xy)
 
+  
   # reject bitloci with cut-off alignments at the borders ('clutter')
-  if (is_cluttered(gridmatrix) | log_collection$cluttered_boundaries==T) {
+  if (is_cluttered(gridmatrix)){#} | log_collection$cluttered_boundaries==T) {
     print("Alignments overlap with borders. Make frame larger!")
-
     return()
   }
   
   res <- solve_mutation(gridmatrix, maxdepth = 1, solve_th = params$eval_th, compression = params$compression, is_cluttered_already_paf = log_collection$cluttered_boundaries==T)
-
   if (max(res$eval) < params$eval_th){
     # Fahre schwere Geschuetze auf
     print('No easy solution found. Starting the much more powerful julia implementation.')
-    res <- solve_mutation_julia_wrapper(params, gridmatrix, grid_xy[[1]], outlinks$solver_inmat_path, outlinks$solver_inlens_path, outlinks$solver_juliares_path)
+
+    res_julia <- solve_mutation_julia_wrapper(params, gridmatrix, grid_xy[[1]], outlinks$solver_inmat_path, outlinks$solver_inlens_path, outlinks$solver_juliares_path)
+    if (!dim(res_julia) == c(1,3)){
+      if (!'ref' %in% res_julia$mut1){
+        res_julia = rbind(res_julia, c(res[res$mut1 == 'ref', 'eval'], 'ref', rep(NA,ncol(res_julia)-2)))
+        res <- res_julia[order(-as.numeric(res_julia$eval), -rowSums(is.na(res_julia))), ]
+      } else  {
+        res = res_julia
+      }
+    }
   }
 
 
@@ -155,7 +162,7 @@ wrapper_aln_and_analyse <- function(params) {
   # Step 5: Save
   write_results(res, outlinks, params)
 
-  if(!is.null(dev.list())) dev.off()
+  while(!is.null(dev.list())){dev.off()}
   
 
   return("DONE")

@@ -49,7 +49,12 @@ absmin <- function(x) {
 #' @author  Wolfram Hoeps
 #' @export
 calculate_estimated_aln_score <- function(mat) {
-  matdiag <- diagonalize(mat, 0.25)
+
+  diagonalize_fact = 0.25
+  if (dim(mat)[1] < 10){
+    diagonalize_fact = 1
+  }
+  matdiag <- diagonalize(mat, diagonalize_fact)
   sum_of_rows_with_pos_aln_bp <- sum(matrixStats::rowMaxs(matdiag))
   alt_seq_len_bp <- sum(as.numeric(rownames(mat)))
 
@@ -148,10 +153,16 @@ calc_coarse_grained_aln_score <-
       est_highest <<- est
     }
 
-    if (est < (est_highest)) {
+    est_threshold = 1
+    if (dim(mat)[1] < 10){
+      est_threshold = 0.9
+    }
+    if (est <= (est_highest * est_threshold)) {
       return(1) # est) # [W, 2nd Aug 2023: why we return 1 here and not est? (I believe it's to distinguish estimated solutions?)]
       # print('hi')
-    } else if (est >= (est_highest * 0.9)) {
+    } 
+    
+    if (est > est_highest) {
       est_highest <<- est
     }
 

@@ -30,8 +30,16 @@ format_julia_output <- function(juliares_path, gridlines_x, depth){
   ncols = max(count.fields(juliares_path, sep='\t'))
   jout = read.table(juliares_path, sep='\t', header=F, fill = NA, col.names = paste0('V', 1:ncols))
 
-  n_mut <- (ncol(jout) - 2) / 3
-
+  n_mut <- floor((ncol(jout) - 2) / 3)
+  if (n_mut == 0){
+    if (exists("log_collection")) {
+      log_collection$depth <<- depth
+      log_collection$mut_simulated <<- 0
+      log_collection$mut_tested <<- 0
+      
+      return(data.frame(eval=jout[1], nmut = jout[2], mut1 = 'ref'))
+    }
+  }
   # Block 1: determine start, end, len coordinates
   jout_meta <- jout
   for(i in 1:n_mut) {
@@ -68,18 +76,16 @@ format_julia_output <- function(juliares_path, gridlines_x, depth){
     log_collection$mut_simulated <<- dim(jout_combine)[1]
     log_collection$mut_tested <<- dim(jout_combine)[1]
   }
-  
+
   jout_combine[jout_combine$mut_max == 0, 'mut1'] = 'ref'
-  if (!'ref' %in% jout_combine$mut1){
-    jout_combine = rbind(jout_combine, c(1, 0, 'ref', rep(NA,ncol(jout_combine)-3)))
-  }
+
   jout_combine$mut_max = NULL
   
   # Clean up
   system(paste0('rm ', juliares_path))
 
   if (nrow(jout_combine) > 1000){
-    return(jout_combine[,1:1000])
+    return(jout_combine[1:1000,])
   }
   return(jout_combine)
 }

@@ -35,7 +35,7 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only = F, earlystop = Inf, hist
   }
   
   # And enter the dfs rabbithole! (you'll stay there for a while,
-  # if calls itself recursively.)
+  # it calls itself recursively.)
   visited_outputdf_list <- dfsutil(
     visited = visited,
     pair = ref_mut_pair,

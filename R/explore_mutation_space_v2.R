@@ -26,7 +26,7 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
   n_discontinued <<- 0
 
   # reject bitloci with cut-off alignments at the borders ('clutter')
-  if (is_cluttered(bitlocus) | is_cluttered_already_paf) {
+  if (is_cluttered(bitlocus)){#} | is_cluttered_already_paf) {
     print("Alignments overlap with borders. Make frame larger!")
     res_out <- data.frame(eval = 0, mut1 = "ref")
     res_out <- annotate_res_out_with_positions_lens(res_out, bitlocus)
@@ -37,15 +37,17 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
   # Optional: adjust depth
   maxdepth <- reduce_depth_if_needed(bitlocus, increase_only = F, maxdepth_input)
 
-  if (maxdepth == 0){
-    return(data.frame(eval=-1))
-  }
-  
   # Run iterations of increasing depth.
   # Always run the whole thing, but also don't go
   # deeper once a good solution is found.
   conclusion_found <- F
   current_depth <- 1
+  
+  # If the thingy is SO big that even the first stage will take very long,
+  # Then we want to run only one slim run in which the 'ref' gets its eval. 
+  if (maxdepth == 0){
+    current_depth = 0
+  }
 
   # The tree is explored in an iterative manner, in which all mutations from the one depth are
   # explored. If one depth does not yield a solution, the next depth is explored, until

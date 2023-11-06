@@ -29,8 +29,9 @@ find_sv_opportunities <- function(sample) {
         next()
       }
 
+      row_of_interest = sample[nrow, ]
       # ... If if does, now find the colnames of all those.
-      identical_columns <- as.numeric(which(sample[nrow, ] != 0))
+      identical_columns <- as.numeric(which(row_of_interest != 0))
 
       # make a matrix containing every combination of identical columns.
       # Imagine we have one segment repeated in columns 4, 5 and 9.
@@ -55,10 +56,9 @@ find_sv_opportunities <- function(sample) {
         }
 
         identical_column_pair <- combs[, ncomb]
-        row_of_interest <- sample[nrow, ]
 
         # Determine relative orientation
-        orientation <- sign(row_of_interest[identical_column_pair[1]] * row_of_interest[identical_column_pair[2]])
+        orientation <- prod(sign(row_of_interest[identical_column_pair]))
 
         result_pair <- c(identical_column_pair, orientation)
         all_opportunities[n_opportunity, ] <- result_pair

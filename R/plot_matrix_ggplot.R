@@ -75,9 +75,22 @@ plot_matrix_ggplot_named <- function(data_frame_xyz, colnames_f, rownames_f) {
   diff_rownames <- paste0(as.character(diff(rownames_f)), " (g", 1:length(diff(rownames_f)), ")")
   diff_colnames <- paste0(as.character(diff(colnames_f)), " (g", 1:length(diff(colnames_f)), ")")
 
+  missing_y = which(!(1:max(data_frame_xyz$y) %in% data_frame_xyz$y))
+  missing_x = which(!(1:max(data_frame_xyz$x) %in% data_frame_xyz$x))
+
+  for (i in c(missing_y)){
+    data_frame_xyz = rbind(data_frame_xyz, c(i, i, NA))
+  }
+
+  for (i in c(missing_x)){
+    data_frame_xyz = rbind(data_frame_xyz, c(i, i, NA))
+  }
+
   # Now they are put in place in x and y
   data_frame_xyz$x <- as.factor(as.character(diff_colnames[data_frame_xyz$x]))
   data_frame_xyz$y <- as.factor(as.character(diff_rownames[data_frame_xyz$y]))
+
+  data_frame_xyz = data_frame_xyz[order(data_frame_xyz$x, data_frame_xyz$y),]
 
   # limit <- max(sqrt(abs(data_frame_xyz$z))) * c(-1, 1)
   # limits = unique(sort(c(sort(unique(sqrt(sort(abs(data_frame_xyz$z))))),

@@ -195,43 +195,49 @@ wrapper_paf_to_bitlocus <-
       next()
     }
     
+    # Optional: Update log, if log_collection exists
+    if (exists("log_collection")) {
+      log_collection$compression <- compression
+    }
+        
+    # Run bressi to fill the grid
+    # 'bressi' is the bresenham algorithm. It can also handle vectors
+    # with slope != 1. This used to be common in a previous version of ntk.
+    # Right now, bressi is a bit overkill but we keep it in anyway.
+    
+    grid_list = bressiwrap(paf, gxy)
+    grid_list <- grid_list[order(grid_list$x), ]
+    
+    ### MAKE AND SAVE PLOTS
+    pregridplot_paf <- plot_paf(paf, gridlines.x, gridlines.y, linewidth = 0.1)
+    
+    n_pairs = nrow(find_sv_opportunities(gridlist_to_gridmatrix(list(gridlines.x, gridlines.y, grid_list))))
+    if (n_pairs > 2000){
+      print(paste0('Too many pairs: ', n_pairs))
+      minlen_compression <- update_params(minlen, compression)
+      minlen = minlen_compression$minlen
+      compression = minlen_compression$compression
+      next()
+    }
+
+    if (pregridplot_save == F) {
+      print(pregridplot_paf)
+    } else {
+      ggplot2::ggsave(
+        pregridplot_paf,
+        file = pregridplot_save,
+        height = 10,
+        width = 10,
+        units = "cm",
+        device = "pdf"
+      )
+    }
+
+    return(list(gridlines.x, gridlines.y, grid_list))
+  }
     # If neither condition is met, break the loop
     break
   }
-
-  # Optional: Update log, if log_collection exists
-  if (exists("log_collection")) {
-    log_collection$compression <- compression
-  }
-      
-  # Run bressi to fill the grid
-  # 'bressi' is the bresenham algorithm. It can also handle vectors
-  # with slope != 1. This used to be common in a previous version of ntk.
-  # Right now, bressi is a bit overkill but we keep it in anyway.
-  
-  grid_list = bressiwrap(paf, gxy)
-  grid_list <- grid_list[order(grid_list$x), ]
-  
-  ### MAKE AND SAVE PLOTS
-  pregridplot_paf <- plot_paf(paf, gridlines.x, gridlines.y, linewidth = 0.1)
-  
-  
-  if (pregridplot_save == F) {
-    print(pregridplot_paf)
-  } else {
-    ggplot2::ggsave(
-      pregridplot_paf,
-      file = pregridplot_save,
-      height = 10,
-      width = 10,
-      units = "cm",
-      device = "pdf"
-    )
-  }
-
-  return(list(gridlines.x, gridlines.y, grid_list))
-}
-
 
 #' Ensure that the slope of each alignment is equal to one.
 #'
