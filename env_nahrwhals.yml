@@ -1,4 +1,4 @@
-name: nahrwhalsAPR
+name: nahrwhals
 channels:
   - r
   - bioconda
@@ -36,7 +36,7 @@ dependencies:
   - r-matrixStats
   - r-dplyr
   - r-bitops
-  - r-reshape2
+  - conda-forge::r-reshape2
   - r-RCurl
   - bioconductor-zlibbioc
   - bioconductor-GenomeInfoDbData
