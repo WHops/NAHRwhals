@@ -157,7 +157,7 @@ calc_coarse_grained_aln_score <-
     if (dim(mat)[1] < 10){
       est_threshold = 0.9
     }
-    if (est <= (est_highest * est_threshold)) {
+    if ((est < (est_highest * est_threshold)) & (forcecalc == F)) {
       return(1) # est) # [W, 2nd Aug 2023: why we return 1 here and not est? (I believe it's to distinguish estimated solutions?)]
       # print('hi')
     } 

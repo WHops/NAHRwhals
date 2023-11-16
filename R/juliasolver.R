@@ -5,7 +5,6 @@ solve_mutation_julia_wrapper <- function(params, mat, gridlines_x, inmat_path, i
   write.table(mat, inmat_path, col.names = F, row.names=F, quote=F, sep='\t')
   write.table(t(as.numeric(row.names(mat))), inlens_path, col.names = F, row.names=F, quote=F, sep='\t')
   write.table(t(as.numeric(colnames(mat))), inlens_path, append=T, col.names = F, row.names=F, quote=F, sep='\t')
-  
   run_solver_julia(params, inmat_path, inlens_path, juliares_path)
   return(format_julia_output(juliares_path, gridlines_x, params$depth))
 }
@@ -19,8 +18,8 @@ run_solver_julia <- function(params, inmat_path, inlens_path, outpath){
   maxdup = params$maxdup
   minreport = params$minreport
   init_width = params$init_width
-
-  julia_cmd = paste0(julia_path, " ", solver_path, ' -d ', maxdepth, ' -u ', maxdup, ' -w ', init_width, ' -r ', minreport, ' ', inmat_path, ' ', inlens_path, ' ', outpath)
+# 
+  julia_cmd = paste0(julia_path, " ", solver_path, ' -d ', maxdepth, ' -u ', maxdup, ' -w ', init_width, ' -r ', minreport, ' -R 1000 ', inmat_path, ' ', inlens_path, ' ', outpath)
   system(julia_cmd)
 }
 
@@ -84,9 +83,6 @@ format_julia_output <- function(juliares_path, gridlines_x, depth){
   # Clean up
   system(paste0('rm ', juliares_path))
 
-  if (nrow(jout_combine) > 1000){
-    return(jout_combine[1:1000,])
-  }
   return(jout_combine)
 }
 

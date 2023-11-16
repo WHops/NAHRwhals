@@ -33,6 +33,78 @@ align_all_vs_all_using_minimap2 <- function(minimap2_bin, reference_fasta, asm_f
     message("Minimap2 finished successfully. The output is in ", out_paf)
 }
 
+#' align_all_vs_all_using_minimap2
+#' @param minimap2_bin Path to the minimap2 binary
+#' @param reference_fasta Path to the reference fasta
+#' @param asm_fasta Path to the assembly fasta
+#' @param out_paf Path to the output paf file
+#' @param threads Number of threads to use
+#' @return Nothing
+#' @export
+align_all_vs_all_using_minimap2_shred_merge <- function(minimap2_bin, bedtools_bin, awkscript, reference_fasta, asm_fasta, out_paf, threads){
+
+    # Search for a reference_mmi in the same folder as the reference_fasta. If it does not exist, create it.
+    # for example for a file reference.fa, we want to create reference.mmi
+    reference_mmi = paste0(dirname(reference_fasta), "/", sub(pattern = "^(.*)\\.[^\\.]+$", replacement = "\\1", basename(reference_fasta)), ".mmi")
+    if(!file.exists(reference_mmi)){
+        # Inform the user what happened and what we do 
+        message("Reference index ", reference_mmi, " does not exist. Creating it now.")
+        minimap2_indexing_command <- paste0(minimap2_bin, " -k 28 -w 20 -H -d ", reference_mmi, " ", reference_fasta)
+        system(minimap2_indexing_command)
+    } else {
+        # Inform the user what happened and what we do
+        message("Found existing reference index ", reference_mmi, ". Skipping re-calculation.")
+    }
+
+    # Check if the out_paf exists already. If it does, explain to the user and do not run the code. 
+    if(file.exists(out_paf)){
+        message("Output file ", out_paf, " already exists. Skipping minimap2.")
+        return()
+    }
+
+    params=list(bedtools_bin=bedtools_bin, fasta_awk_script=awkscript)
+    asm_fa_shredded = paste0(asm_fasta, "_10kbp_chunked.fa")
+    alignment_chunked = paste0(out_paf, "_10kbp_chunked.paf")
+    aligment_chunked_corrected = paste0(out_paf, "_10kbp_chunked_corrected.paf")
+
+    shred_seq_bedtools_multifasta(asm_fasta, asm_fa_shredded, 10000, params)
+    minimap2_cmd = paste0(minimap2_bin, " -t ",threads, " ", reference_mmi, " ", asm_fa_shredded, " > ", alignment_chunked)
+    system(minimap2_cmd)
+
+    correct_paf(alignment_chunked, aligment_chunked_corrected)
+
+    paf <- read.table(aligment_chunked_corrected)
+    paf$V1 = sub("_[0-9]+-[0-9]+$", "", paf$V1)
+    colnames(paf) <- c(
+    "qname",
+    "qlen",
+    "qstart",
+    "qend",
+    "strand",
+    "tname",
+    "tlen",
+    "tstart",
+    "tend",
+    "nmatch",
+    "alen",
+    "mapq"
+    )
+
+    paf <- transform(
+        paf,
+        qend = ifelse(strand == "-", qstart, qend),
+        qstart = ifelse(strand == "-", qend, qstart)
+    )
+
+    for (row in 1:length(unique(paf$qname))){
+        compress_paf_fnct(inpaf_link = NULL, outpaf_link = out_paf, inpaf_df = paf, inparam_chunklen = 10000, n_quadrants_per_axis = 10, qname=unique(paf$qname)[row])
+        print(row)
+    }
+    # Inform the user
+    message("Minimap2 finished successfully. The output is in ", out_paf)
+}
+
+
 #' extract_test_list_from_paf
 #' @param all_vs_all_paf Path to the paf file containing all-vs-all alignments
 #' @param out_dir Path to the output directory
@@ -79,15 +151,18 @@ make_genome_file <- function(fasta, out_path){
 #' @export
 wga_write_interval_list <- function(ref_fa, asm_fa, outdir, merge_distance, indel_ignore_distance, exclusion_mask, threads,
                                     bedtools_bin = 'bedtools', 
-                                    minimap2_bin = '/Users/hoeps/opt/anaconda3/envs/snakemake/envs/nahrwhalsAPR/bin/minimap2'
+                                    minimap2_bin = '/Users/hoeps/opt/anaconda3/envs/snakemake/envs/nahrwhalsAPR/bin/minimap2',
+                                    awkscript = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/scripts/awk_on_fasta_gpt4.sh'
 ){
     system(paste0("mkdir -p ", outdir))
 
-    #allpaf = paste0(outdir, "/fullaln.paf")
-    allpaf = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/out.paf'
+    allpaf = paste0(outdir, "/fullaln.paf")
+    #allpaf = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/out.paf'
     genome_file = paste0(outdir, "/ref.genome")
     # Make all-vs-all alignemnt
     #align_all_vs_all_using_minimap2(minimap2_bin, ref_fa, asm_fa, allpaf, threads)
+    align_all_vs_all_using_minimap2_shred_merge(minimap2_bin, bedtools_bin, awkscript, ref_fa, asm_fa, allpaf, threads)
+    
     # Write the genome file
     make_genome_file(ref_fa, genome_file)
     # Extract list of breakpoint clusters
@@ -115,7 +190,8 @@ inform_about_tests <- function(test_list){
 }
 
 #' @export
-make_karyogram <- function(test_list_file, genome_file, specified_text='', chr_min=10000000){
+make_karyogram <- function(test_list_file, genome_file, second_list = NULL, specified_text='', chr_min=10000000){
+
     # Quick and hacky
     tests = read.table(test_list_file, sep='\t')
     colnames(tests) = c('chr','start','end')
@@ -132,6 +208,10 @@ make_karyogram <- function(test_list_file, genome_file, specified_text='', chr_m
     max_size <- max(tests$end - tests$start + 1)
     median_size <- median(tests$end - tests$start + 1)
 
+    if (!is.null(second_list)){
+        tests2 = read.table(second_list, sep='\t')
+        colnames(tests2) = c('chr','start','end')
+    }
     # 2. Add those statistics and a user-specified text to the karyoplot
     label_text <- paste0(specified_text, ' | ',
                         "Regions:", num_regions, ' | ',
@@ -141,7 +221,12 @@ make_karyogram <- function(test_list_file, genome_file, specified_text='', chr_m
 
     kp <- karyoploteR::plotKaryotype(genome=genome)
     karyoploteR::kpAddMainTitle(kp, label_text, cex=0.6)
-    karyoploteR::kpPlotRegions(kp, data=tests, r0=0, r1=1, col="#FF000088")
+    karyoploteR::kpPlotRegions(kp, data=tests, r0=0, r1=0.5, col="#FF000088")
+    # Color of this one should be a good contrast to the first one
+    karyoploteR::kpPlotRegions(kp, data=tests2, r0=0.5, r1=1, col="#0000FF88")
+    # Add a legend also
+    karyoploteR::kpAddLegend(kp, c("NAHRwhals whole-genome", "Yang et al. validated"), fill=c("#FF000088", "#0000FF88"), border=NA, lwd=0, cex=0.6, r0=0.5, r1=1, title="Legend")
+
 
 }
 

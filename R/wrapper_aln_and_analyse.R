@@ -7,7 +7,6 @@ wrapper_aln_and_analyse <- function(params) {
   # Directly enter debug mode?
   if (params$debug) {
     print("Debug mode!")
-    browser()
   }
   # Start writing a log file.
   log_collection <<- init_log_with_def_values()
@@ -37,6 +36,9 @@ wrapper_aln_and_analyse <- function(params) {
   # Define output files
   outlinks <- define_output_files(sequence_name_output, paste0(params$samplename_x, "_", params$samplename_y))
   pdf(file = outlinks$outpdf_main)
+  #for (i in 1:10){try(dev.off())}
+
+  
   if (params$compare_full_fastas == T) {
     print("Option pairwise_fasta_direct recognized. Comparing entire fasta files.")
     chr_start_end_pad <- list(chr = "seqname", start = "1", end = as.numeric(nchar(read.table(params$genome_x_fa))))
@@ -51,7 +53,21 @@ wrapper_aln_and_analyse <- function(params) {
   } else if (params$use_paf_library == F) {
     create_mmi_if_doesnt_exists(params)
     params <- make_params_conversionpaf(params, outlinks)
+    
+    if (is.na(params$conversionpaf_link)){
+      res_empty <- data.frame(eval = 0, mut1 = "ref")
+      res_empty <- annotate_res_out_with_positions_lens(res_empty, NULL)
+      write_results(res_empty, outlinks, params)
+      return()
+    }
     chr_start_end_pad_params <- extract_sequence_wrapper(params, outlinks)
+    
+    if (is.null(chr_start_end_pad_params)){
+      res_empty <- data.frame(eval = 0, mut1 = "ref")
+      res_empty <- annotate_res_out_with_positions_lens(res_empty, NULL)
+      write_results(res_empty, outlinks, params)
+      return()
+    }
     chr_start_end_pad <- chr_start_end_pad_params[[1]]
     params <- chr_start_end_pad_params[[2]]
     system(paste0("rm ", params$conversionpaf_link))
@@ -62,11 +78,10 @@ wrapper_aln_and_analyse <- function(params) {
     log_collection <<- init_log_with_def_values()
     return('EARLY FINISH!')
   }
-  
   # Step 2: Run the alignments
   plot_x_y <- produce_pairwise_alignments_minimap2(params, outlinks, chr_start_end_pad)
 
-  # Step 2.1: If plot_only, exit. No SV calls.
+  # Step 2.1: If plot_only, exit. No SV call
   if (params$plot_only) {
     print("Plots done. Not attemptying to produce SV calls (plot_only is set to TRUE).")
     if (params$clean_after_yourself) {
@@ -122,6 +137,9 @@ wrapper_aln_and_analyse <- function(params) {
   # reject bitloci with cut-off alignments at the borders ('clutter')
   if (is_cluttered(gridmatrix)){#} | log_collection$cluttered_boundaries==T) {
     print("Alignments overlap with borders. Make frame larger!")
+    res_empty <- data.frame(eval = 0, mut1 = "ref")
+    res_empty <- annotate_res_out_with_positions_lens(res_empty, NULL)
+    write_results(res_empty, outlinks, params)
     return()
   }
   
@@ -131,7 +149,8 @@ wrapper_aln_and_analyse <- function(params) {
     print('No easy solution found. Starting the much more powerful julia implementation.')
 
     res_julia <- solve_mutation_julia_wrapper(params, gridmatrix, grid_xy[[1]], outlinks$solver_inmat_path, outlinks$solver_inlens_path, outlinks$solver_juliares_path)
-    if (!dim(res_julia) == c(1,3)){
+    
+    if (!all((dim(res_julia)) == c(1,3))){
       if (!'ref' %in% res_julia$mut1){
         res_julia = rbind(res_julia, c(res[res$mut1 == 'ref', 'eval'], 'ref', rep(NA,ncol(res_julia)-2)))
         res <- res_julia[order(-as.numeric(res_julia$eval), -rowSums(is.na(res_julia))), ]
@@ -159,10 +178,10 @@ wrapper_aln_and_analyse <- function(params) {
   # writeLines(c(row_string, column_string),
   #            paste0('testcases/',params$seqname_x,'_',params$start_x,'_',params$end_x, '_',params$samplename_y, '_rows_cols.tsv'))
   make_modified_grid_plot(res, gridmatrix, outlinks)
-  # Step 5: Save
+  Sys.sleep(2)  # Step 5: Save
   write_results(res, outlinks, params)
 
-  while(!is.null(dev.list())){dev.off()}
+  #while(!is.null(dev.list())){dev.off()}
   
 
   return("DONE")

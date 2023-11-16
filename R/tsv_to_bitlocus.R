@@ -170,7 +170,9 @@ wrapper_paf_to_bitlocus <-
     
     # Check for max number of alignments
     if (dim(paf)[1] > params$max_n_alns) {
-      params <- update_params(minlen, compression)
+      minlen_compression <- update_params(minlen, compression)
+      minlen = minlen_compression$minlen
+      compression = minlen_compression$compression
       next()
     }
 

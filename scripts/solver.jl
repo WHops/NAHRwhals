@@ -118,11 +118,31 @@ Returns:
     * a vector containing the length of each
       block in a compressed alignment.
 """
-function read_length_tsv(tsv_path::String)::Array{Int64}
-    raw_data = readdlm(tsv_path, '\t', Float64, '\n'; skipstart = 1)
-    block_value = ceil.(log.(abs.(raw_data) .+ 1.0))
-    block_value
+function read_length_tsv(tsv_path::String)::Vector{Vector{Float64}}
+    # Open the file
+    open(tsv_path, "r") do file
+        # Read lines from the file
+        lines = readlines(file)
+
+        # Check if there are exactly two lines (rows)
+        if length(lines) != 2
+            error("The TSV file must have exactly two rows.")
+        end
+
+        # Split each line by tabs and convert to Float64
+        row1 = parse.(Float64, split(lines[1], '\t'))
+        row2 = parse.(Float64, split(lines[2], '\t'))
+
+        [row1, row2]
+    end
 end
+
+# function read_length_tsv(tsv_path::String)::Array{Int64}
+#     raw_data = readdlm(tsv_path, '\t', Float64, '\n'; skipstart = 1)
+#     block_value = raw_data #ceil.(log.(abs.(raw_data) .+ 1.0)) #<- there was a 'log' here - why?
+#     block_value
+# end
+
 
 """
     compute_possible_moves(position_1::Array{Int8}, position_2::Array{Int8})::PossibleMove
@@ -277,8 +297,15 @@ function duplication_count(index, max_size)
     maximum(values)
 end
 
+
+
+
+#######
+
+
+
 """
-    slow_score(index, aln, lengths)
+    slow_score(index, aln, lengths, max_offset)
 
 Computes an agreement score for a given index into
 a compressed alignment.
@@ -291,58 +318,172 @@ Returns:
     Agreement score in [0, 1] between compressed reference and target.
     Score of 1 corresponds to perfect agreement.
 """
-function slow_score(index, aln, lengths)
-    # approach:
-    # 1. index into the compressed alignment
-    # 2. follow the diagonal and assign a score of 1
-    #    for each on-diagonal positive orientation block
-    # 3. in case there is no on-diagonal positive block,
-    #    find the closest off-diagonal block and assign
-    #    a score of 1 / (distance-to-current-diagonal + 1)
-    # 4. update the diagonal to the one starting from
-    #    the closest off-diagonal block
-    # 5. repeat until the end of the index is reached
-    # 6. normalize the score by the total length of all blocks
-    #    + the number of unassigned blocks in the reference
-    score = 0
-    off_diagonal = 0
-    total_length = 0
-    @simd for i in 1:size(index, 1)
-        current_length = lengths[abs(index[i])]
-        score_update, off_diagonal = slow_score_kernel(
-            index, aln, i, off_diagonal)
-        score += current_length * score_update
-        total_length += current_length
+function slow_score(index, aln, lengths, forcecalc=1.0)
+
+    # Easy exit for obviously wrong results
+    if length(lengths[1]) > 10 && abs(length(index) - length(lengths[1])) > length(lengths[1]) * 0.5
+        return 0.0
     end
-    last_position = off_diagonal + size(index, 1)
-    last_length = lengths[abs(index[end])]
-    missing_length = last_length * abs(last_position - size(aln, 2))
-    score / (total_length + missing_length)
+
+    selected_rows = [idx < 0 ? -aln[-idx, :] : aln[idx, :] for idx in index]
+    aln_to_use = hcat(selected_rows...)'
+
+    row, col = size(aln_to_use)
+
+    walk_right_cost = lengths[1]
+    climb_up_cost = lengths[2][abs.(index)]
+    
+    cost_u = Float64.(repeat(climb_up_cost, 1, col))
+    cost_r = Float64.(repeat(walk_right_cost', row, 1))
+
+    cumsum_u = cumsum(climb_up_cost, dims=1)
+    cumsum_r = cumsum(walk_right_cost, dims=1)
+
+    cost_d =  Float64.(-aln_to_use)
+    cost_d[cost_d .>= 0] .= Inf
+    cost_d[cost_d .< 0] .= 0
+
+    cost_res = zeros(Float64, row, col)
+
+    calc_corridor_pct = determine_corridor_pct(row, forcecalc)
+
+    cost_res[1, 1] = min(climb_up_cost[1] + walk_right_cost[1], cost_d[1, 1])
+
+    fill_first_column!(cost_res, cost_u, cost_d, cumsum_u, calc_corridor_pct, row)
+    fill_first_row!(cost_res, cost_r, cost_d, cumsum_r, calc_corridor_pct, col)
+
+    cost_res[2:row, 2:col] .= Inf
+
+    fill_matrix!(cost_res, cost_d, cost_u, cost_r, calc_corridor_pct, row, col)
+
+    # Print all relevant values for debugging / evaluating
+    total_cost = sum(vcat(climb_up_cost, walk_right_cost))
+    round((1 - (cost_res[row, col]) / total_cost) * 100, digits=3)
+    
 end
 
-function slow_score_kernel(index, aln, i, off_diagonal)
-    sgn = sign(index[i])
-    pos = abs(index[i])
-    new_off_diagonal = off_diagonal
-    best_dist = 10_000
-    # SIMD-friendly inner loop
-    # for each off-diagonal within 4 blocks
-    # of the current diagonal:
-    @simd for j in max(i + off_diagonal - 4, 1):min(i + off_diagonal + 4, size(aln, 2))
-        # compute the distance to the current diagonal
-        dist = abs(j - i - off_diagonal)
-        # check, if there's a positive-orientation block at that position
-        # and the distance to diagonal is the smallest seen so far
-        cond = sgn * aln[pos, j] > 0 && dist < best_dist
-        # if cond: set this off-diagonal as the new diagonal
-        # and set the current distance to this distance
-        new_off_diagonal = cond ? j - i : new_off_diagonal
-        best_dist = cond ? dist : best_dist
-    end
-    # return a score of 1 / (distance + 1) and the position
-    # of the new diagonal
-    1 / (best_dist + 1), new_off_diagonal
+function determine_corridor_pct(row, forcecalc)
+    if row < 10
+        1.0
+    elseif row < 30
+        0.3
+    else
+        0.2
+    end #|> (pct -> forcecalc ? 1.0 : pct)
 end
+
+function fill_first_column!(cost_res, cost_u, cost_d, cumsum_u, calc_corridor_pct, row)
+    for i in 2:row
+        cost_res[i, 1] = if i / row > calc_corridor_pct
+            Inf
+        else
+            min(cost_u[i, 1] + cost_res[i - 1, 1], cumsum_u[i - 1] + cost_d[i, 1])
+        end
+    end
+end
+
+function fill_first_row!(cost_res, cost_r, cost_d, cumsum_r, calc_corridor_pct, col)
+    for j in 2:col
+        cost_res[1, j] = if j / col > calc_corridor_pct
+            Inf
+        else
+            min(cost_r[1, j] + cost_res[1, j - 1], cumsum_r[j - 1] + cost_d[1, j])
+        end
+    end
+end
+
+function fill_matrix!(cost_res, cost_d, cost_u, cost_r, calc_corridor_pct, row, col)
+    i_mat = repeat((1:row) ./ row, 1, col)
+    j_mat = repeat((1:col)' ./ col, row, 1)
+
+    middleval_mat = 1 .- ((i_mat .> (j_mat .+ calc_corridor_pct)) .+ 
+                          (j_mat .> (i_mat .+ calc_corridor_pct)))
+    middleval_mat[1, :] .= 0
+    middleval_mat[:, 1] .= 0
+    idxs = findall(middleval_mat .== 1)
+
+    for idx in idxs
+        i, j = Tuple(idx)
+        cost_res[i, j] = min(cost_res[i - 1, j - 1] + cost_d[i, j], 
+                             cost_res[i - 1, j] + cost_u[i, j], 
+                             cost_res[i, j - 1] + cost_r[i, j])
+    end
+
+
+end
+
+
+#############
+
+
+
+
+
+
+
+
+
+
+# function slow_score(index, aln, lengths, max_offset)
+#     # approach:
+#     # 1. index into the compressed alignment
+#     # 2. follow the diagonal and assign a score of 1
+#     #    for each on-diagonal positive orientation block
+#     # 3. in case there is no on-diagonal positive block,
+#     #    find the closest off-diagonal block and assign
+#     #    a score of 1 / (distance-to-current-diagonal + 1)
+#     # 4. update the diagonal to the one starting from
+#     #    the closest off-diagonal block
+#     # 5. repeat until the end of the index is reached
+#     # 6. normalize the score by the total length of all blocks
+#     #    + the number of unassigned blocks in the reference
+#     score = 0
+#     off_diagonal = 0
+#     total_length = 0
+#     print(aln, "\n")
+#     print("index: ", index, "\n")
+
+#     @simd for i in 1:size(index, 1)
+#         print(index[i], "\n")
+#         current_length = lengths[abs(index[i])]
+#         score_update, off_diagonal = slow_score_kernel(
+#             index, aln, i, off_diagonal, max_offset)
+#         score += current_length * score_update
+#         total_length += current_length
+#     end
+#     last_position = off_diagonal + size(index, 1)
+#     last_length = lengths[abs(index[end])]
+#     missing_length = last_length * abs(last_position - size(aln, 2))
+#     print(lengths, "\n")
+#     print("score: ", score, " total_length: ", total_length, " missing_length: ", missing_length, "\n")
+#     score / (total_length + missing_length)
+# end
+
+# function slow_score_kernel(index, aln, i, off_diagonal, max_offset)
+#     sgn = sign(index[i])
+#     pos = abs(index[i])
+#     new_off_diagonal = off_diagonal
+#     best_dist = 10_000
+#     # SIMD-friendly inner loop
+#     # for each off-diagonal within 4 blocks
+#     # of the current diagonal:
+#     @simd for j in max(i + off_diagonal - max_offset, 1):min(i + off_diagonal + max_offset, size(aln, 2))
+#         # compute the distance to the current diagonal
+#         dist = abs(j - i - off_diagonal)
+#         # check, if there's a positive-orientation block at that position
+#         # and the distance to diagonal is the smallest seen so far
+#         cond = sgn * aln[pos, j] > 0 && dist < best_dist
+#         # if cond: set this off-diagonal as the new diagonal
+#         # and set the current distance to this distance
+#         new_off_diagonal = cond ? j - i : new_off_diagonal
+#         best_dist = cond ? dist : best_dist
+#     end
+
+#     print("\n best_dist: ", best_dist, "\n")
+#     # return a score of 1 / (distance + 1) and the position
+#     # of the new diagonal
+#     1 / (best_dist + 1), new_off_diagonal
+# end
 
 """
     materialize_aln(index, aln)
@@ -375,12 +516,13 @@ Arguments:
     `threshold`: heuristic score-threshold below which indices and moves are discarded.
     `best`: current highest score.
 """
-@inline function update_index!(index_map, indices, index, parent, move, aln, lengths, threshold, best)
+@inline function update_index!(index_map, indices, index, parent, move, aln, lengths, threshold, best,
+                               max_offset)
     # if the IndexMap has no entry for `index`:
     if !haskey(index_map.map, index)
         # compute the score of `index` & update
         # the current best score
-        score = slow_score(index, aln, lengths)
+        score = slow_score(index, aln, lengths, max_offset)
         if score > best
             best = score
         end
@@ -435,12 +577,13 @@ function all_moves_scored!(index, movemap, aln, lengths, best,
                            index_map,
                            indices::Vector{Vector{T}},
                            max_dup::Int64,
-                           suboptimality) where {T}
+                           suboptimality,
+                           max_offset) where {T}
     start_score::Float32 = 0.0
     if haskey(index_map.map, index)
         start_score = index_map.scores[index_map.map[index]]
     else
-        start_score = slow_score(index, aln, lengths)
+        start_score = slow_score(index, aln, lengths, max_offset)
         index_map.map[index] = index_map.current + 1
         push!(index_map.parents, [])
         push!(index_map.scores, start_score)
@@ -458,14 +601,16 @@ function all_moves_scored!(index, movemap, aln, lengths, best,
                     best = update_index!(
                         index_map, indices,
                         dup_index, index, move, aln, lengths,
-                        suboptimality * current_best, best)
+                        suboptimality * current_best, best,
+                        max_offset)
                 end
                 del_index = apply_deletion(index, i, j)
                 move = MoveTaken(move_del, i, j)
                 best = update_index!(
                     index_map, indices,
                     del_index, index, move, aln, lengths,
-                    suboptimality * current_best, best
+                    suboptimality * current_best, best,
+                    max_offset
                 )
             end
             if possible_moves.invert
@@ -474,7 +619,8 @@ function all_moves_scored!(index, movemap, aln, lengths, best,
                 best = update_index!(
                     index_map, indices,
                     inv_index, index, move, aln, lengths,
-                    suboptimality * current_best, best
+                    suboptimality * current_best, best,
+                    max_offset
                 )
             end
         end
@@ -482,7 +628,11 @@ function all_moves_scored!(index, movemap, aln, lengths, best,
     best
 end
 
-function aln_bfs_scored(aln, lengths; max_depth::Int = 3, max_dup::Int = 2, suboptimality = nothing, max_count = nothing, silent = false)
+function aln_bfs_scored(aln, lengths; max_depth::Int = 3, max_dup::Int = 2,
+                        max_offset::Int = 4,
+                        suboptimality = nothing,
+                        max_count = nothing,
+                        silent = false)
     index_map = IndexMap(
         Dict{Array{Int16}, Int64}(),
         Vector{Int16}[],
@@ -498,7 +648,9 @@ function aln_bfs_scored(aln, lengths; max_depth::Int = 3, max_dup::Int = 2, subo
     if !silent
         println("Iteration 1 with 1 index.")
     end
-    best = all_moves_scored!(index, moveset, aln, lengths, best, index_map, indices, max_dup, 0.0)
+    best = all_moves_scored!(
+        index, moveset, aln, lengths, best,
+        index_map, indices, max_dup, 0.0, max_offset)
     @inbounds for depth = 1:max_depth-1
         subopt = !isnothing(suboptimality) ? suboptimality[depth] : 0.0
         if !isnothing(max_count)
@@ -513,7 +665,7 @@ function aln_bfs_scored(aln, lengths; max_depth::Int = 3, max_dup::Int = 2, subo
             best = all_moves_scored!(
                 current_index, moveset, aln,
                 lengths, best, index_map, new_indices,
-                max_dup, subopt)
+                max_dup, subopt, max_offset)
         end
         indices = new_indices
     end
@@ -559,7 +711,9 @@ function trajectory_to_string(traj::Trajectory)::String
      join([move_to_string(m) for m in traj.moves], "\t"))
 end
 
-function get_good_trajectories(index_map::IndexMap, best; suboptimality=0.9, max_depth=3)::Vector{Trajectory}
+function get_good_trajectories(index_map::IndexMap, best;
+                               suboptimality=0.9, max_depth=3,
+                               max_report = nothing)::Vector{Trajectory}
     trajectories = Trajectory[]
     for (index, key) = index_map.map
         score = index_map.scores[key]
@@ -570,6 +724,10 @@ function get_good_trajectories(index_map::IndexMap, best; suboptimality=0.9, max
         end
     end
     sort!(trajectories, by=x -> (-x.score, length(x.moves)))
+    if !isnothing(max_report)
+        report_limit = min(max_report, length(trajectories))
+        trajectories = view(trajectories, 1:report_limit)
+    end
     trajectories
 end
 
@@ -596,10 +754,18 @@ function main()::Cint
             help = "Maximum width for breadth-first search."
             arg_type = Int64
             default = nothing
+        "--maxoffset", "-O"
+            help = "Maximum off-diagonal jump in score function."
+            arg_type = Int64
+            default = 4
         "--minreport", "-r"
             help = "Threshold percentage of the best score for reporting."
             arg_type = Float64
             default = 0.95
+        "--maxreport", "-R"
+            help = "Maximum number of reported outputs."
+            arg_type = Int64
+            default = nothing
         "compressed_alignment"
             help = "Compressed alignment TSV file."
             required = true
@@ -621,11 +787,13 @@ function main()::Cint
         aln, lengths;
         max_depth = opt["maxdepth"],
         max_dup = opt["maxdup"],
-        max_count = opt["maxwidth"])
+        max_count = opt["maxwidth"],
+        max_offset = opt["maxoffset"])
     trajectories = get_good_trajectories(
         index_map, best;
         suboptimality = opt["minreport"],
-        max_depth = opt["maxdepth"])
+        max_depth = opt["maxdepth"],
+        max_report = opt["maxreport"])
     write_trajectories(opt["out_path"], trajectories)
     return 0
 end

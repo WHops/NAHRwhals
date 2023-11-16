@@ -149,6 +149,9 @@ liftover_coarse <-
                    "strand" ,"qname",  "qlen" ,  "qstart" ,
                    "qend" ,  "nmatch" ,"alen" ,  "mapq")
       colnames(cpaf) = newnames
+      
+      cpaf$tname = sub("_[0-9]+-[0-9]+$", "", cpaf$tname)
+      
     }
     
     if (refine_runnr == 2) {
@@ -176,11 +179,13 @@ liftover_coarse <-
     colnames(liftover_coords) <- c("pos_probe", "seqname", "liftover_coord")
     liftover_coords$pos_probe <- pos_probes
     counter <- 1
+
     for (pointcoord in pos_probes) {
       liftover_coords[counter, c("seqname", "liftover_coord")] <-
         find_punctual_liftover(cpaf, pointcoord, seqname)
       counter <- counter + 1
     }
+
 
     liftover_coords <- na.omit(liftover_coords)
 
@@ -213,6 +218,9 @@ liftover_coarse <-
       }
     }
 
+    if (is.null(startend)){
+      return(NULL)
+    }
     if (external_paf_bool){
       start_winners_cutoff <- as.integer(max(0, startend[1]))
       end_winners_cutoff <- as.integer(min(max(cpaf[cpaf$tname == winner_chr, "tend"]), startend[2] - 1))
@@ -477,10 +485,9 @@ find_coords_extrapolated <- function(liftover_coords, cpaf, winner_chr, start, e
   liftover_coords_maxseq <- liftover_coords[liftover_coords$seqname == winner_chr, ]
 
   # If <10% of probes are matching, there is no point in continuing this discussion
-  stopifnot(
-    "No sequence homolog found in assembly. Consider trying a larger locus window to gap potential deletions." =
-      dim(liftover_coords_maxseq)[1] > 10
-  )
+  if (dim(liftover_coords_maxseq)[1] < 10){
+    return(NULL)
+  }
 
   # Probes are sorted. The juicer makes direction positive if in doubt. (The juicer is what you want it to be :P)
   the_juicer <- 1e-5

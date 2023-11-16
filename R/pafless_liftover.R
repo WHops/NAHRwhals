@@ -38,6 +38,13 @@ make_params_conversionpaf <- function(params, outlinks) {
   minimap2_mapping_command <- paste0(params$minimap2_bin, " ", params$genome_y_fa_mmi, " ", outlinks$genome_x_fa_subseq, " > ", tmp_conversionpaf)
   print("Attempting to locate input sequence homolog in y assembly... ")
   system(minimap2_mapping_command)
+  
+  if (file.info(tmp_conversionpaf)$size == 0){
+    print('Sequence not found!')
+    params$conversionpaf_link <- NA
+    return(params)
+  }
+  
   paf <- read.table(tmp_conversionpaf, fill = T)
 
   # The following will help eliminate the 'second' translation step and thus cut runtime in half. 

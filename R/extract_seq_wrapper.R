@@ -57,6 +57,11 @@ extract_sequence_wrapper <- function(params, outlinks) {
     )
     #}
     
+    if (is.null(coords)){
+      print("Liftover unsuccessful/inconclusive. Try larger frame!")
+      return(NULL)
+    }
+
     if (exists("log_collection")) {
       log_collection$y_seqname <<- coords['new_seqname']
       log_collection$y_start <<- coords['new_x_start']

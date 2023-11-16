@@ -30,7 +30,7 @@ echo "Counting done."
 echo "Step 3: Filtering contigs with less than 3 alignments and extracting breakpoints..."
 awk -v edge="$EDGE_DISTANCE" -v skipstarts="$SKIPSTARTS" 'BEGIN{FS=OFS="\t"} 
 NR==FNR {contigs[$1]=$2; next} contigs[$1] >= 3 {
-    qName = $1; qStart = $3; qEnd = $4; qLen = $2; strand = $5;
+    qName = $1; qStart = $3; qEnd = $4; qLen = 1000000000; strand = $5;
     tName = $6; tStart = $8; tEnd = $9;
 
     # Swap qstart and qend if on the negative strand
