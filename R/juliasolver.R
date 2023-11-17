@@ -56,7 +56,7 @@ format_julia_output <- function(juliares_path, gridlines_x, depth){
   # Block 2: concatenate mutation names
   jout_new <- jout[, 1:2, drop = F]
   colnames(jout_new) <- c('eval', 'mut_max')
-  jout_new$eval = as.numeric(jout_new$eval) * 100 
+  jout_new$eval = as.numeric(jout_new$eval) 
 
   # Iterate over the number of 'mut' columns and generate the concatenated columns
   for(i in 1:n_mut) {

@@ -39,38 +39,6 @@ assembly_fastas = c(
   'hg38' = NA
 )
 
-run_nw_once <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x){
-  tests = read.table(test_list, sep='\t')
-  colnames(tests) = c('chr', 'start', 'end')
-  seqname_x = tests[row, 'chr']
-  start_x =   as.numeric(tests[row, 'start'])
-  end_x =     as.numeric(tests[row, 'end'])
-  #print(asm_fa)
-  try(nahrwhals(genome_x_fa = ref_fa,
-                genome_y_fa = asm_fa,
-                seqname_x = seqname_x,
-                start_x = start_x,
-                end_x =   end_x,
-                samplename_y = samplename_y,
-                samplename_x = samplename_x,
-                compression = 1000,
-                minlen = 1000,
-                max_size_col_plus_rows = 1000,
-                max_n_alns = 10000,
-                self_plots = F,#AN
-                anntrack = anntrack,
-                plot_only = F,
-                minimap2_bin = minimap2_bin,
-                noclutterplots = F,
-                use_paf_library = T,
-                conversionpaf_link = 'out.paf',
-                logfile = paste0('res/res_', strsplit(asm_fa, '/')[[1]][length((strsplit(asm_fa, '/')[[1]]))], '.tsv')
-  )
-  )
-  
-}
-
-
 
 run_nw_once_specified <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x){
   #tests = read.table(test_list, sep='\t')
@@ -98,10 +66,13 @@ run_nw_once_specified <- function(row, test_list, ref_fa, asm_fa, anntrack, mini
   
 }
 
+
+
+
 #run_nw_once_specified(1, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 'Y', 'X')
 
 # Hardcoded values moved out of the function
-hg38_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/centro_lab/hg38_masked.fa"
+hg38_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/hg38/centro_lab/hg38_chr1_22_XY.fa"
 t2t_fa = "/Users/hoeps/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/T2T-CHM13v2.0.fa"
 ref_fa = t2t_fa
 #ref_fa = "/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/tomato/download?path=S.lycopersicum.Heinz1706.genomic.fa"
@@ -168,13 +139,17 @@ t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_100k
 
 
 #for (sample in ara_names[5:length(ara_names)]){
-  sample = 'HG00733_h1'
+  ref_fa = t2t_fa
+  asm_fa = hg38_fa
+  sample = 'hg38'
   test_list = wga_write_interval_list(ref_fa, asm_fa, paste0('wga_t2t_',sample), 1000000, 10000, t2t_mask, threads)
   tests = read.table(test_list, sep='\t')
   genome_file = paste0('wga_t2t_',sample, '/ref.genome')
   
   #test_list = 'wga_hg38_NA12878_h1/list_cut_final.bed'
-  make_karyogram(test_list, genome_file, specified_text = 'Stuff')
+  #extra_list = '/Users/hoeps/PhD/projects/nahrcall/analyses_paper_2/hg38_t2t/yang_et_al/data/validated_chm13_sort.bed'
+  extra_list = '/Users/hoeps/PhD/projects/nahrcall/analyses_paper_2/hg38_t2t/yang_et_al/data/task_d/SDRs.bed'
+  make_karyogram(test_list, genome_file, extra_list, specified_text = 'Stuff')
   
   #for (i in 22:nrow(tests)){
   #   samplename_y = 'NA12878_h1'
@@ -185,12 +160,79 @@ t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_100k
   # for (i in 10:20){
   #   run_nw_once(i, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 'NA12878_h2', 'T2T')
   # }
-  samplename_x = 'T2T'
+  samplename_x = 't2t'
   samplename_y = sample#
   devtools::load_all()
   
-  results <- mclapply(1:nrow(tests), function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x), mc.cores = threads)
-#}
+#   
+  run_nw_once <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x, conversionpaf_link){
+
+    tests = read.table(test_list, sep='\t')
+    colnames(tests) = c('chr', 'start', 'end')
+    seqname_x = tests[row, 'chr']
+    start_x =   as.numeric(tests[row, 'start'])
+    end_x =     as.numeric(tests[row, 'end'])
+    print('#######################')
+    print(row)
+    print('#######################')
+
+    #print(asm_fa)
+    try(nahrwhals(genome_x_fa = ref_fa,
+               genome_y_fa = asm_fa,
+               seqname_x = seqname_x,
+               start_x = start_x,
+               end_x =   end_x,
+               samplename_y = samplename_y,
+               samplename_x = samplename_x,
+               compression = 1000,
+               minlen = 1000,
+               max_size_col_plus_rows = 500,
+               max_n_alns = 10000,
+               self_plots = F,#AN
+               anntrack = anntrack,
+               plot_only = F,
+               minimap2_bin = minimap2_bin,
+               noclutterplots = F,
+               use_paf_library = T,
+               debug=F,
+               init_width = 10,
+               conversionpaf_link = conversionpaf_link,
+               logfile = paste0('res/res_', strsplit(asm_fa, '/')[[1]][length((strsplit(asm_fa, '/')[[1]]))], '.tsv')
+    )
+    )
+
+  }
+
+
+
+  #ntest = 180
+  date()
+  results <- mclapply(150:200, function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x, 'wga_t2t_hg38/fullaln.paf_10kbp_chunked_corrected.paf'), mc.cores = 10)
+  date()
+  #
+#   startsample = 0
+#   step = 10
+#   n_samples = 20#nrow(tests)
+#   n_batches = ceiling(n_samples / step)-1
+#   for (n_batch in 0:n_batches){
+#     start = startsample + (n_batch * step) + 1
+#     end = startsample + (n_batch * step) + step
+#     print('next')
+#     print(start)
+#     print(end)
+#     results <- mclapply(start:end, function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x, 'wga_t2t_hg38/fullaln.paf_10kbp_chunked_corrected.paf'), mc.cores = threads)
+#     print('hi back')
+#   }
+# 
+#   
+# 
+# for (idx in 1:10){
+#   print('#######################')
+#   print(idx)
+#   run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x, 'wga_t2t_hg38/fullaln.paf_10kbp_chunked_corrected.paf')
+# }
+#   
+  
 # }
 # 
 # 

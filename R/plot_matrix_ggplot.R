@@ -220,7 +220,8 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks) {
     ggplot2::guides(fill = FALSE) +
     ggplot2::coord_cartesian(xlim = c(min_x, max_x), ylim = c(min_y, max_y)) +
     ggplot2::scale_x_continuous(labels = scales::comma) +
-    ggplot2::scale_y_continuous(labels = scales::comma)
+    ggplot2::scale_y_continuous(labels = scales::comma) + 
+    ggplot2::coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") 
   # ggplot2::geom_segment(data=daty,
   #             ggplot2::aes(x=0, xend=xmax, y=ystart, yend=ystart), color='grey')
   print(plot_x_y_segmented)
