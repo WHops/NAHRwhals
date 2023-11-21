@@ -175,6 +175,7 @@ liftover_coarse <-
     pos_probes <- as.integer(start + (((end - start) / (n_probes - 1)) * (0:(n_probes -
       1))))
     # Liftover every probe
+
     liftover_coords <- data.frame(matrix(ncol = 3, nrow = length(pos_probes)))
     colnames(liftover_coords) <- c("pos_probe", "seqname", "liftover_coord")
     liftover_coords$pos_probe <- pos_probes
@@ -206,7 +207,6 @@ liftover_coarse <-
     # if (whole_chr){
     #   start_winners = 1
     #   end_winners = min(28500000,max(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord))
-
 
     if (search_mode == "extrapolation") {
       startend <- find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end)
@@ -398,6 +398,7 @@ read_and_prep_paf <- function(paflink) {
   return(cpaf)
 }
 
+#' find_coords_sane
 
 #' find_coords_mad
 #' This function finds the coordinates of a region given a set of liftover coordinates and other parameters.
@@ -413,21 +414,28 @@ read_and_prep_paf <- function(paflink) {
 find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, liftover_run) {
   # Hardcode success thresholds
   th_x <- 0.8
-  th_y_low <- 0.5
-  th_y_high <- 2
+  th_y_low <- 1/3
+  th_y_high <- 3
   start_map_limit <- 10
   end_map_limit <- 90
 
-  # And those snipplets matching to the winner chromosome - where do they fall (median)?
+  # And those snipplets matching to the winner chromosome - where do they fall?
   liftover_coords_maxseq <- liftover_coords[liftover_coords$seqname == winner_chr, ]
 
   # Filter outliers
+  # Here is that part...
   liftover_coords_maxseq <- liftover_coords_maxseq[mad_mask_outliers(liftover_coords_maxseq$liftover_coord), ]
 
-  # The region is now the region
+  # The region is now the region, with little local extrapolations
 
-  start_winners <- min(liftover_coords_maxseq$liftover_coord)
-  end_winners <- max(liftover_coords_maxseq$liftover_coord)
+  direction_plus = sign(sum(sign(diff(liftover_coords_maxseq$liftover_coord))) + 1e-5)
+
+  steplength = abs(min(abs(diff(liftover_coords_maxseq$liftover_coord - min(abs(liftover_coords_maxseq$liftover_coord))))))
+
+
+
+  start_winners <- liftover_coords_maxseq[1,'liftover_coord']# min(liftover_coords_maxseq$liftover_coord)
+  end_winners <- liftover_coords_maxseq[nrow(liftover_coords_maxseq),'liftover_coord']#max(liftover_coords_maxseq$liftover_coord)
 
   # p = ggplot(liftover_coords) + geom_point(aes(x=pos_probe, y=liftover_coord)) +
   # coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on")
@@ -437,13 +445,32 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
 
   start_pointers_arrived <- min(as.numeric(row.names(liftover_coords_maxseq))) < start_map_limit
   end_pointers_arrived <- max(as.numeric(row.names(liftover_coords_maxseq))) > end_map_limit
+  
+  start_is_in_beginning <- which.min(liftover_coords$liftover_coord) < start_map_limit
+  end_is_in_end <- which.max(liftover_coords$liftover_coord) > end_map_limit
+  
+  start_is_in_end <- which.min(liftover_coords$liftover_coord) > end_map_limit
+  end_is_in_start <- which.max(liftover_coords$liftover_coord) < start_map_limit
+  
+  start_end_ok = (start_is_in_beginning && end_is_in_end) | (start_is_in_end && end_is_in_start)
+  
   success <- (mapped_x_region_frac > th_x) & (mapped_y_region_frac > th_y_low) & (mapped_y_region_frac < th_y_high) &
-    (start_pointers_arrived) & (end_pointers_arrived)
+    (start_pointers_arrived) & (end_pointers_arrived) #& start_end_ok
 
   if ((success == F) & (liftover_run == F)) {
     return(NULL)
   }
 
+  start_winners = liftover_coords_maxseq[1,'liftover_coord'] - 
+        (direction_plus * 
+         (min(as.numeric(rownames(liftover_coords_maxseq)))-1) * 
+        steplength)
+  end_winners = liftover_coords_maxseq[nrow(liftover_coords_maxseq),'liftover_coord'] + 
+         (direction_plus * 
+          (100 - max(as.numeric(rownames(liftover_coords_maxseq)))) * 
+         steplength)
+  
+  
   if (liftover_run == F) {
     dist_between_probes <- min(unique(diff(liftover_coords$pos_probe)))
     n_probes_distance <- 1

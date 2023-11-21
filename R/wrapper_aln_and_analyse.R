@@ -35,8 +35,8 @@ wrapper_aln_and_analyse <- function(params) {
   
   # Define output files
   outlinks <- define_output_files(sequence_name_output, paste0(params$samplename_x, "_", params$samplename_y))
+  for (i in 1:10){try(dev.off())}
   pdf(file = outlinks$outpdf_main)
-  #for (i in 1:10){try(dev.off())}
 
   
   if (params$compare_full_fastas == T) {
@@ -144,7 +144,7 @@ wrapper_aln_and_analyse <- function(params) {
   }
   
   res <- solve_mutation(gridmatrix, maxdepth = 1, solve_th = params$eval_th, compression = params$compression, is_cluttered_already_paf = log_collection$cluttered_boundaries==T)
-  if (max(res$eval) < params$eval_th){
+  if (max(res$eval) < 99.8){
     # Fahre schwere Geschuetze auf
     print('No easy solution found. Starting the much more powerful julia implementation.')
 

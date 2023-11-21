@@ -33,12 +33,23 @@ make_params_conversionpaf <- function(params, outlinks) {
     outlinks$genome_x_fa_subseq,
     params
   )
+
+    extract_subseq_bedtools(
+    params$genome_x_fa,
+    params$seqname_x,
+    params$start_x - ((end_x - start_x) * 0.2),
+    params$end_x + ((end_x - start_x) * 0.2),
+    paste0(outlinks$genome_x_fa_subseq, '_elongate.fa'),
+    params
+  )
+
   random_tag <- as.character(runif(1, 1e10, 1e11))
   tmp_conversionpaf <- paste0("tmp_conversionpaf", random_tag, ".paf")
-  minimap2_mapping_command <- paste0(params$minimap2_bin, " ", params$genome_y_fa_mmi, " ", outlinks$genome_x_fa_subseq, " > ", tmp_conversionpaf)
+  minimap2_mapping_command <- paste0(params$minimap2_bin, " ", params$genome_y_fa_mmi, " ", outlinks$genome_x_fa_subseq, '_elongate.fa', " > ", tmp_conversionpaf)
   print("Attempting to locate input sequence homolog in y assembly... ")
   system(minimap2_mapping_command)
   
+  system(paste0('rm ', paste0(outlinks$genome_x_fa_subseq, '_elongate.fa')))
   if (file.info(tmp_conversionpaf)$size == 0){
     print('Sequence not found!')
     params$conversionpaf_link <- NA

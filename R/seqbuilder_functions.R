@@ -96,12 +96,12 @@ make_chunked_minimap_alnment <-
 
 
     # Check if abandon
-    pafin = read_and_prep_paf(outpaf_filter)
-    if (is_cluttered_paf(pafin) & (onlypafreturn == T | params$noclutterplots == T)){
-      print('Ok we are in overly cluttery regions; abandon!')
-      log_collection$cluttered_boundaries <<- T
-      return(NULL)
-    }
+    # pafin = read_and_prep_paf(outpaf_filter)
+    # if (is_cluttered_paf(pafin) & (onlypafreturn == T | params$noclutterplots == T)){
+    #   print('Ok we are in overly cluttery regions; abandon!')
+    #   log_collection$cluttered_boundaries <<- T
+    #   return(NULL)
+    # }
     
     
 

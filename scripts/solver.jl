@@ -308,7 +308,15 @@ end
     slow_score(index, aln, lengths, max_offset)
 
 Computes an agreement score for a given index into
-a compressed alignment.
+a compressed alignment. 
+This is a re-implementation by W. Hoeps, analogous to the original algorithm in 
+NAHRwhals which was implemented in R. The way of scoring is inspired by the Needleman-Wunsch algorithm.
+Since our squares are not symmetrical, we have a slight modification of the algorithm here. 
+# The cost of traversing a square is: 
+#   - The x-length of the field for traversing it in x-directionality
+#   - The y-length of the field...... for y 
+#   - 0 diagonally, if there is a positive alignment
+#   - Inf diagonally, if there is no pos. alignment. 
 Arguments:
     `index`: index into a compressed alignment.
     `aln`: compressed alignment.
@@ -320,16 +328,18 @@ Returns:
 """
 function slow_score(index, aln, lengths, forcecalc=1.0)
 
-    # Easy exit for obviously wrong results
+    # Easy exit for highly unsymmetrical results with are obviously nowhere near a correct solution
     if length(lengths[1]) > 10 && abs(length(index) - length(lengths[1])) > length(lengths[1]) * 0.5
         return 0.0
     end
 
+    # Marry the index and aln to construct our mutated matrix 
     selected_rows = [idx < 0 ? -aln[-idx, :] : aln[idx, :] for idx in index]
     aln_to_use = hcat(selected_rows...)'
 
     row, col = size(aln_to_use)
 
+    # The gap penalties are defined by the length values of the squares
     walk_right_cost = lengths[1]
     climb_up_cost = lengths[2][abs.(index)]
     
@@ -345,19 +355,22 @@ function slow_score(index, aln, lengths, forcecalc=1.0)
 
     cost_res = zeros(Float64, row, col)
 
+    # We will compute only a corridor in the middle to save time. Typically this is 0.2
     calc_corridor_pct = determine_corridor_pct(row, forcecalc)
 
+    # Fill in the Scoring matrix
     cost_res[1, 1] = min(climb_up_cost[1] + walk_right_cost[1], cost_d[1, 1])
 
     fill_first_column!(cost_res, cost_u, cost_d, cumsum_u, calc_corridor_pct, row)
     fill_first_row!(cost_res, cost_r, cost_d, cumsum_r, calc_corridor_pct, col)
 
+    # To be honest I'm not completely sure why we have to do this? 
     cost_res[2:row, 2:col] .= Inf
 
     fill_matrix!(cost_res, cost_d, cost_u, cost_r, calc_corridor_pct, row, col)
 
-    # Print all relevant values for debugging / evaluating
     total_cost = sum(vcat(climb_up_cost, walk_right_cost))
+
     round((1 - (cost_res[row, col]) / total_cost) * 100, digits=3)
     
 end

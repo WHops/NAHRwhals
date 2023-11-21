@@ -32,11 +32,12 @@
   #' @return A data frame with all the lines for the VCF file
   generate_gt_strings <- function(df, sample_list, haplotype_list, ps_colname){
     
-    unique_starts <- unique(df$start)
     all_lines <- data.frame()
     
-    for (start in unique_starts){
-      df_subset <- df[df$start == start,]
+    df$ID = paste0(df$seqname, '-', df$start, '-', df$end)
+    for (ID in unique(df$ID)){
+
+      df_subset <- df[df$ID == ID,]
       df_subset$mut_maxsimple <- gsub("[0-9_]+", "", df_subset$mut_max)
       
       for (mutation in unique(df_subset$mut_maxsimple)){
@@ -174,6 +175,7 @@
   #' @export
   write_vcf <- function(input_file, output_file, res_max_threshold = 0.98, sort = F, ps_colname = 'start'){
     # Preprocess the data
+
     df <- preprocess_data(input_file, res_max_threshold)
     
     # Generate unique lists for samples and haplotypes

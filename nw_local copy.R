@@ -142,29 +142,53 @@ t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_100k
   ref_fa = t2t_fa
   asm_fa = hg38_fa
   sample = 'hg38'
-  test_list = wga_write_interval_list(ref_fa, asm_fa, paste0('wga_t2t_',sample), 1000000, 10000, t2t_mask, threads)
-  tests = read.table(test_list, sep='\t')
-  genome_file = paste0('wga_t2t_',sample, '/ref.genome')
+    
+  # Define a vector with all the sizes you want to process, then sort it in decreasing order
+  sizes <- c(200000, 1000000, 5000000 ) # Add as many sizes as needed
+  sizes <- sort(sizes, decreasing = TRUE)
   
-  #test_list = 'wga_hg38_NA12878_h1/list_cut_final.bed'
-  #extra_list = '/Users/hoeps/PhD/projects/nahrcall/analyses_paper_2/hg38_t2t/yang_et_al/data/validated_chm13_sort.bed'
-  extra_list = '/Users/hoeps/PhD/projects/nahrcall/analyses_paper_2/hg38_t2t/yang_et_al/data/task_d/SDRs.bed'
+  # Initialize a variable to keep track of the cumulative bed file name
+  cumulative_bed <- NULL
+  
+  for (i in 1:length(sizes)) {
+    
+    size <- sizes[i]
+    print(size)
+    test_list <- wga_write_interval_list(ref_fa, asm_fa, paste0('wga_t2t_', sample), size, 10000, t2t_mask, threads)
+    system(paste0('cp ', paste0('wga_t2t_', sample), '/list_cut_final.bed ', paste0('wga_t2t_', sample, '/list_cut_final_', i, '.bed')))
+    Sys.sleep(0.5)
+    # If it's not the first size, perform intersection with the cumulative result
+    if (!is.null(cumulative_bed)) {
+      sys_command <- paste0('bedtools intersect -b ', cumulative_bed, ' -a ', paste0('wga_t2t_', sample, '/list_cut_final_', i, '.bed'), ' -F 0.5 -v > ', paste0('wga_t2t_', sample, '/list_cut_final_', i, '_noredund.bed'))
+      system(sys_command)
+      Sys.sleep(0.5)
+      # Concatenate the non-redundant bed file of the current size with the cumulative bed file and sort
+      sys_command_2 <- paste0("cat ", paste0('wga_t2t_', sample, '/list_cut_final_', i, '_noredund.bed'), ' ', cumulative_bed, " | bedtools sort -i - > ", paste0('wga_t2t_', sample, '/temp_list_cut_final.bed'))
+      system(sys_command_2)
+      Sys.sleep(0.5)
+      # Now move the sorted results to the final file
+      system(paste0('mv ', paste0('wga_t2t_', sample, '/temp_list_cut_final.bed '), paste0('wga_t2t_', sample, '/res_list_cut_final.bed')))
+      Sys.sleep(0.5)
+      # Update the cumulative bed file
+      cumulative_bed <- paste0('wga_t2t_', sample, '/res_list_cut_final.bed')
+    } else {
+      # For the first size, the current bed file is the cumulative file
+      cumulative_bed <- paste0('wga_t2t_', sample, '/list_cut_final_', i, '.bed')
+    }
+  }
+  
+  # Final steps remain the same
+  test_list <- paste0("wga_t2t_", sample, "/res_list_cut_final.bed")
+  tests <- read.table(test_list, sep='\t')
+  genome_file <- paste0('wga_t2t_', sample, '/ref.genome')
+  
+  extra_list = '/Users/hoeps/PhD/projects/nahrcall/analyses_paper_2/hg38_t2t/NW_hg38_t2t/res/taskd/sdrs.bed'
   make_karyogram(test_list, genome_file, extra_list, specified_text = 'Stuff')
   
-  #for (i in 22:nrow(tests)){
-  #   samplename_y = 'NA12878_h1'
-  #   print(i)
-  #   run_nw_once(i, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x)
-  #}
-  # 
-  # for (i in 10:20){
-  #   run_nw_once(i, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, 'NA12878_h2', 'T2T')
-  # }
   samplename_x = 't2t'
-  samplename_y = sample#
+  samplename_y = sample
   devtools::load_all()
   
-#   
   run_nw_once <- function(row, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x, conversionpaf_link){
 
     tests = read.table(test_list, sep='\t')
@@ -175,7 +199,6 @@ t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_100k
     print('#######################')
     print(row)
     print('#######################')
-
     #print(asm_fa)
     try(nahrwhals(genome_x_fa = ref_fa,
                genome_y_fa = asm_fa,
@@ -196,6 +219,7 @@ t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_100k
                use_paf_library = T,
                debug=F,
                init_width = 10,
+               depth = 3,
                conversionpaf_link = conversionpaf_link,
                logfile = paste0('res/res_', strsplit(asm_fa, '/')[[1]][length((strsplit(asm_fa, '/')[[1]]))], '.tsv')
     )
@@ -205,43 +229,6 @@ t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_100k
 
 
 
-  #ntest = 180
   date()
-  results <- mclapply(150:200, function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x, 'wga_t2t_hg38/fullaln.paf_10kbp_chunked_corrected.paf'), mc.cores = 10)
+  results <- mclapply(1:nrow(tests), function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x, 'wga_t2t_hg38/fullaln.paf_10kbp_chunked_corrected.paf'), mc.cores = 1)
   date()
-  #
-#   startsample = 0
-#   step = 10
-#   n_samples = 20#nrow(tests)
-#   n_batches = ceiling(n_samples / step)-1
-#   for (n_batch in 0:n_batches){
-#     start = startsample + (n_batch * step) + 1
-#     end = startsample + (n_batch * step) + step
-#     print('next')
-#     print(start)
-#     print(end)
-#     results <- mclapply(start:end, function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x, 'wga_t2t_hg38/fullaln.paf_10kbp_chunked_corrected.paf'), mc.cores = threads)
-#     print('hi back')
-#   }
-# 
-#   
-# 
-# for (idx in 1:10){
-#   print('#######################')
-#   print(idx)
-#   run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x, 'wga_t2t_hg38/fullaln.paf_10kbp_chunked_corrected.paf')
-# }
-#   
-  
-# }
-# 
-# 
-# 
-# for (i in 1:length(asm_fas)){
-#   print(asm_fas[1])
-#   asm_fa = asm_fas[i]
-#   run_nw_once(1, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, asm_names[i], samplename_x)
-#   
-# }
-
-
