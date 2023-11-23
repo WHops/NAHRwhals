@@ -158,11 +158,29 @@ liftover_coarse <-
       colnames_orig <- colnames(cpaf)
       cpaf <- cpaf[, c(6, 7, 8, 9, 5, 1, 2, 3, 4, 10, 11, 12)]
       colnames(cpaf) <- colnames_orig
-
+      text = cpaf[1,'tname']
+      pattern <- ":([0-9]+-[0-9]+)_"
+      matches <- regexpr(pattern, text)
+      result <- regmatches(text, matches)
+      
+      if (attr(matches, "match.length") > 0) {
+        extracted <- substring(result, 2, nchar(result)-1)
+      } else {
+        extracted <- character(0)  # No match found
+      }
+      
+      
+      start_here = as.numeric(strsplit(extracted, '-')[[1]][1])
+      end_here = as.numeric(strsplit(extracted, '-')[[1]][2])
+      len_here = end_here - start_here
+      len_orig = len_here * (1/1.04)
+      start_orig = len_orig * 0.02
+      end_orig = start_orig + len_orig
+      
       seqname <- cpaf[1, "qname"]
       start <- 0
       end <- cpaf[1, "qlen"]
-
+      
       # Somewhat risky here...
       aln_start <- as.numeric(names(sort(table(sub(".*:([0-9]+).*", "\\1", cpaf$tname)), decreasing = TRUE)[1]))
       cpaf$tname <- names(sort(table(sub(":[0-9]+-[0-9].*", "", cpaf$tname)), decreasing = TRUE)[1])
@@ -180,13 +198,12 @@ liftover_coarse <-
     colnames(liftover_coords) <- c("pos_probe", "seqname", "liftover_coord")
     liftover_coords$pos_probe <- pos_probes
     counter <- 1
-
+    #browser()
     for (pointcoord in pos_probes) {
       liftover_coords[counter, c("seqname", "liftover_coord")] <-
         find_punctual_liftover(cpaf, pointcoord, seqname)
       counter <- counter + 1
     }
-
 
     liftover_coords <- na.omit(liftover_coords)
 
@@ -431,7 +448,6 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
   direction_plus = sign(sum(sign(diff(liftover_coords_maxseq$liftover_coord))) + 1e-5)
 
   steplength = abs(min(abs(diff(liftover_coords_maxseq$liftover_coord - min(abs(liftover_coords_maxseq$liftover_coord))))))
-
 
 
   start_winners <- liftover_coords_maxseq[1,'liftover_coord']# min(liftover_coords_maxseq$liftover_coord)

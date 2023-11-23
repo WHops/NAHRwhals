@@ -77,7 +77,8 @@ write_x_y_sequences <- function(seqname_x,
     ))
   }
 
-  extract_subseq_bedtools(
+  if (!(refine_runnr == 1 & params$use_paf_library == F)) {
+    extract_subseq_bedtools(
     genome_y_fa,
     coords_liftover$lift_contig,
     coords_liftover$lift_start,
@@ -85,9 +86,28 @@ write_x_y_sequences <- function(seqname_x,
     genome_y_fa_subseq,
     params
   )
+  }
 
   if (refine_runnr == 1 & params$use_paf_library == F) {
     # Special stuff
+    len_lift = coords_liftover$lift_end - coords_liftover$lift_start
+    # elongate lift_start and lift_end by 2% on each side
+    lift_start_plus = as.integer(coords_liftover$lift_start - (len_lift * 0.02))
+    lift_end_plus = as.integer(coords_liftover$lift_end + (len_lift * 0.02))
+
+    if (lift_start_plus < 0) {
+      lift_start_plus = 0
+    }
+
+    extract_subseq_bedtools(
+      genome_y_fa,
+      coords_liftover$lift_contig,
+      lift_start_plus,
+      lift_end_plus,
+      genome_y_fa_subseq,
+      params
+    )
+    
     paf <- make_chunked_minimap_alnment(
       params,
       genome_x_fa_subseq,

@@ -13,6 +13,7 @@
 #' @export
 save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
 
+
   options(scipen=999)
   res$mut_mat = NULL
   res_ref <- res[res$mut1 == "ref", "eval"]
@@ -57,7 +58,7 @@ if (!exists("log", envir = .GlobalEnv)) {
 }
 
 # Ensure the 'maxres' list exists
-if (!exists("maxres", envir = .GlobalEnv)) {
+if (!exists("maxres")) {
   maxres <- list()
 }
 
@@ -75,7 +76,8 @@ for (elem in log_elements) {
 
 # List of elements in 'maxres' to check
 maxres_elements <- c("mut1_start", "mut1_end", "mut1_pos_pm", "mut1_len", "mut1_len_pm", 
-                     "mut2_len", "mut2_len_pm", "mut3_len", "mut3_len_pm")
+                     "mut2_start", "mut2_end", "mut2_pos_pm", "mut2_len", "mut2_len_pm",
+                     "mut3_start", "mut3_end", "mut3_pos_pm", "mut3_len", "mut3_len_pm")
 
 # Ensure each element in 'maxres' exists
 for (elem in maxres_elements) {
@@ -107,6 +109,7 @@ if (is.null(n_res_max)){
 if (is.null(mut_max)){
   mut_max = NA
 }
+
 # Create your data frame
 to_append <- data.frame(
   log$chr,
@@ -131,13 +134,19 @@ to_append <- data.frame(
   log$grid_inconsistency,
   log$flip_unsure,
   log$cluttered_boundaries,
-  maxres$mut1_start,
-  maxres$mut1_end,
+  as.character(as.numeric(maxres$mut1_start) + as.numeric(log$start)),
+  as.character(as.numeric(maxres$mut1_end) + as.numeric(log$start)),
   maxres$mut1_pos_pm,
   maxres$mut1_len,
   maxres$mut1_len_pm,
+  as.character(as.numeric(maxres$mut2_start) + as.numeric(log$start)),
+  as.character(as.numeric(maxres$mut2_end) + as.numeric(log$start)),
+  maxres$mut2_pos_pm,
   maxres$mut2_len,
   maxres$mut2_len_pm,
+  as.character(as.numeric(maxres$mut3_start) + as.numeric(log$start)),
+  as.character(as.numeric(maxres$mut3_end) + as.numeric(log$start)),
+  maxres$mut3_pos_pm,
   maxres$mut3_len,
   maxres$mut3_len_pm
 )
@@ -170,8 +179,14 @@ to_append <- data.frame(
     "mut1_pos_pm",
     "mut1_len",
     "mut1_len_pm",
+    "mut2_start",
+    "mut2_end",
+    "mut2_pos_pm",
     "mut2_len",
     "mut2_len_pm",
+    "mut3_start",
+    "mut3_end",
+    "mut3_pos_pm",
     "mut3_len",
     "mut3_len_pm"
   )

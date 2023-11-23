@@ -39,3 +39,8 @@ test.txt
 wga_*
 res_*
 *.bed
+reslab
+debug_juliasolver.R
+R/debug_juliasolver.R
+pafcompress_improve.R
+R/pafcompress_improve.R
