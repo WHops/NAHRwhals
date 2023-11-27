@@ -32,7 +32,9 @@ bedtools merge -i preprocessed_intervals.bed -c 4,5,6 -o distinct > merged_inter
 ./memory_inception_refsources_to_merges.sh postprocessed_merged_intervals.bed $NW_res.ref2
 
 # Winning sources
-./determine_winning_sources.sh updated_postprocessed.bed
+./determine_winning_sources.sh updated_postprocessed.bed # winning_sources.bed
 
 # Get the winning sources
-./map_winning_sources_to_intervals.sh sorted_intervals.bed winning_sources.bed
+./map_winning_sources_to_intervals.sh sorted_intervals.bed winning_sources.bed # returns: dominant_intervals.bed
+
+./merge_final_stuff.sh dominant_intervals.bed # returns: merged_intervals.bed
