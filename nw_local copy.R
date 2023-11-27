@@ -183,6 +183,11 @@ t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_100k
   genome_file <- paste0('wga_t2t_', sample, '/ref.genome')
   
   extra_list = '/Users/hoeps/PhD/projects/nahrcall/analyses_paper_2/hg38_t2t/NW_hg38_t2t/res/taskd/sdrs.bed'
+  extra_list = '/Users/hoeps/PhD/projects/nahrcall/analyses_paper_2/hg38_t2t/NW_hg38_t2t/data/paper_data/validated_chm13_sort.bed'
+  
+  
+  devtools::load_all()
+  
   make_karyogram(test_list, genome_file, extra_list, specified_text = 'Stuff')
   
   samplename_x = 't2t'
@@ -198,6 +203,7 @@ t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_100k
     end_x =     as.numeric(tests[row, 'end'])
     print('#######################')
     print(row)
+    print(tests[row,])
     print('#######################')
     #print(asm_fa)
     try(nahrwhals(genome_x_fa = ref_fa,
@@ -228,7 +234,15 @@ t2t_mask = '~/PhD/projects/huminvs/genomes/T2T-CHM13v2.0/censat/censat_noct_100k
   }
 
 
-
+  #test_list_alt = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/reslab/old2/tests.bed'
+  
+  test_list = '~/PhD/projects/nahrcall/nahrchainer/trashme.bed.txt'
+  tests = read.table(test_list, sep='\t')
+  # Fix the test list
+  #ta = read.table(test_list_alt)
+  #t = read.table(test_list)
+  #df = anti_join(t,ta)
+  #write.table(df, file = 'subset_list.bed', sep='\t', row.names=F, col.names=F, quote=F)
   date()
   results <- mclapply(1:nrow(tests), function(idx) run_nw_once(idx, test_list, ref_fa, asm_fa, anntrack, minimap2_bin, samplename_y, samplename_x, 'wga_t2t_hg38/fullaln.paf_10kbp_chunked_corrected.paf'), mc.cores = 1)
   date()

@@ -208,6 +208,9 @@ make_karyogram <- function(test_list_file, genome_file, second_list = NULL, spec
     max_size <- max(tests$end - tests$start + 1)
     median_size <- median(tests$end - tests$start + 1)
 
+    
+
+
     if (!is.null(second_list)){
         tests2 = read.table(second_list, sep='\t')
         colnames(tests2) = c('chr','start','end')
@@ -219,13 +222,42 @@ make_karyogram <- function(test_list_file, genome_file, second_list = NULL, spec
                         "(median: ", round(median_size/1000,1), ')')
 
 
-    kp <- karyoploteR::plotKaryotype(genome=genome)
+    endsize = 500000
+    # tests, any region smaller than 100 kbp is elongated on both sides so it has a total length of 100000
+    tests$len = tests$end - tests$start + 1
+    tests$newstart = tests$start
+    tests$newend = tests$end
+    tests[tests$len < endsize, 'newstart'] = tests[tests$len < endsize, 'start'] - (endsize - tests[tests$len < endsize, 'len'])/2
+    tests[tests$len < endsize, 'newend'] = tests[tests$len < endsize, 'end'] + (endsize - tests[tests$len < endsize, 'len'])/2
+    tests$start = tests$newstart
+    tests$end = tests$newend
+    tests$newstart = NULL
+    tests$newend = NULL
+
+    tests2$len = tests2$end - tests2$start + 1
+    tests2$newstart = tests2$start
+    tests2$newend = tests2$end
+    tests2[tests2$len < endsize, 'newstart'] = tests2[tests2$len < endsize, 'start'] - (endsize - tests2[tests2$len < endsize, 'len'])/2
+    tests2[tests2$len < endsize, 'newend'] = tests2[tests2$len < endsize, 'end'] + (endsize - tests2[tests2$len < endsize, 'len'])/2
+
+    tests2$start = tests2$newstart
+    tests2$end = tests2$newend
+    tests2$newstart = NULL
+    tests2$newend = NULL
+
+    pp <- getDefaultPlotParams(plot.type=2)
+    pp$data1outmargin <- 100
+    pp$data2outmargin <- 100
+    pp$topmargin <- 450
+    kp <- karyoploteR::plotKaryotype(genome=genome, plot.type=2, plot.params = pp)
+    karyoploteR::kpAddCytobandsAsLine(kp)
+
     karyoploteR::kpAddMainTitle(kp, label_text, cex=0.6)
-    karyoploteR::kpPlotRegions(kp, data=tests, r0=0, r1=0.5, col="#FF000088")
+    karyoploteR::kpPlotRegions(kp, data=tests, col="red", data.panel=2, r0=0, r1=1.5)
     # Color of this one should be a good contrast to the first one
-    karyoploteR::kpPlotRegions(kp, data=tests2, r0=0.5, r1=1, col="#0000FF88")
+    karyoploteR::kpPlotRegions(kp, data=tests2, col='black', data.panel=1, r0=0, r1=1.5)
     # Add a legend also
-    karyoploteR::kpAddLegend(kp, c("NAHRwhals whole-genome", "Yang et al. validated"), fill=c("#FF000088", "#0000FF88"), border=NA, lwd=0, cex=0.6, r0=0.5, r1=1, title="Legend")
+    # karyoploteR::kpAddLegend(kp, c("NAHRwhals whole-genome", "Yang et al. validated"), fill=c("#FF000088", "#0000FF88"), border=NA, lwd=0, cex=0.6, r0=0.5, r1=1, title="Legend")
 
 
 }

@@ -11,7 +11,7 @@ winning_sources_file=$2
 output_file="dominant_intervals.bed"
 
 # Process the files
-awk 'NR==FNR {
+awk 'BEGIN {OFS="\t"} NR==FNR {
     # Store winning source information with their corresponding merged intervals
     # Format: source_start_source_end -> merged_start1_merged_end1 merged_start2_merged_end2 ...
     winners[$4"_"$5] = winners[$4"_"$5] " " $2"_"$3;
