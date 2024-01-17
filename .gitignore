@@ -44,3 +44,5 @@ debug_juliasolver.R
 R/debug_juliasolver.R
 pafcompress_improve.R
 R/pafcompress_improve.R
+run_nw.r
+NW_vis_simulation.R

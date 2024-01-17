@@ -4,7 +4,7 @@
 \alias{generate_gt_strings}
 \title{Generate genotype strings}
 \usage{
-generate_gt_strings(df, sample_list, haplotype_list)
+generate_gt_strings(df, sample_list, haplotype_list, ps_colname)
 }
 \arguments{
 \item{df}{A data frame from the preprocess_data function}

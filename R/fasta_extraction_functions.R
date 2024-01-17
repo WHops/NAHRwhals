@@ -19,6 +19,7 @@ extract_subseq_bedtools <-
     random_tag <- as.character(runif(1, 1e10, 1e11))
     tmp_bedfile <- paste0("region2_", random_tag, ".bed")
     # Write coordinates into temporary bedfile
+
     region <- paste0(
       seqname,
       "\t",
@@ -207,7 +208,7 @@ liftover_coarse <-
 
     liftover_coords <- na.omit(liftover_coords)
 
-
+    print(liftover_coords)
     # Make sure we got any results.
     if (nrow(liftover_coords) <= 1) {
       print("Error: Unsuccessful liftover of the input sequence: Sequence not found on query.")
@@ -224,14 +225,16 @@ liftover_coarse <-
     # if (whole_chr){
     #   start_winners = 1
     #   end_winners = min(28500000,max(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord))
-
+    print(search_mode)
     if (search_mode == "extrapolation") {
       startend <- find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end)
+      print('extrapolated')
     } else if (search_mode == "mad") { # mad = mean absolute deviation.
       startend <- find_coords_mad(liftover_coords, cpaf, winner_chr, start, end, refine_runnr != 1)
       if (is.null(startend)) {
-        #print("MAD failed. Going for extrapolation instead.")
+        print("MAD failed. Going for extrapolation instead.")
         startend <- find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end, refine_runnr != 1)
+        print("extrapolated")
       }
     }
 
@@ -263,13 +266,29 @@ liftover_coarse <-
       
       start_winners <- startend[1] - (length * ((shift_fact - 1) * 0.5))
       end_winners <- startend[2] + (length * ((shift_fact - 1) * 0.5))
+
+      print('extending')
       # Make sure we don't exceed chromosome boundaries in the query.
       start_winners_cutoff <- as.integer(max(0, start_winners))
       end_winners_cutoff <- as.integer(min(cpaf[cpaf$tname == winner_chr, ][1, "tlen"] - 1, end_winners - 1))
+
+      #print for debug
+      print(paste0("start_winners: ", start_winners))
+      print(paste0("end_winners: ", end_winners))
+      print(paste0("start_winners_cutoff: ", start_winners_cutoff))
+      print(paste0("end_winners_cutoff: ", end_winners_cutoff))
+      print(cpaf[cpaf$tname == winner_chr, ][1, "tlen"])
     } else if (refine_runnr == 2) {
+      print('now in number 2')
       start_winners_cutoff <- as.integer(max(0, startend[1]))
       end_winners_cutoff <- as.integer(min(max(cpaf[cpaf$tname == winner_chr, "tend"]), startend[2] - 1))
+      print(max(cpaf[cpaf$tname == winner_chr, "tend"]))
+      print(paste0("start_winners_cutoff: ", start_winners_cutoff))
+      print(paste0("end_winners_cutoff: ", end_winners_cutoff))
+      
+
     } else {
+      print('now in else')
       start_winners_cutoff <- as.integer(max(0, startend[1]))
       end_winners_cutoff <- as.integer(min(cpaf[cpaf$tname == winner_chr, ][1, "qlen"] + startend[1] - 1, startend[2] - 1))
     }
@@ -443,9 +462,7 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
   # Here is that part...
   liftover_coords_maxseq <- liftover_coords_maxseq[mad_mask_outliers(liftover_coords_maxseq$liftover_coord), ]
 
-  # The region is now the region, with little local extrapolations
-
-  direction_plus = sign(sum(sign(diff(liftover_coords_maxseq$liftover_coord))) + 1e-5)
+  direction = sign(sum(sign(diff(liftover_coords_maxseq$liftover_coord))) + 1e-5)
 
   steplength = abs(min(abs(diff(liftover_coords_maxseq$liftover_coord - min(abs(liftover_coords_maxseq$liftover_coord))))))
 
@@ -474,17 +491,46 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
     (start_pointers_arrived) & (end_pointers_arrived) #& start_end_ok
 
   if ((success == F) & (liftover_run == F)) {
+    print("exiting")
     return(NULL)
   }
 
-  start_winners = liftover_coords_maxseq[1,'liftover_coord'] - 
-        (direction_plus * 
-         (min(as.numeric(rownames(liftover_coords_maxseq)))-1) * 
-        steplength)
-  end_winners = liftover_coords_maxseq[nrow(liftover_coords_maxseq),'liftover_coord'] + 
-         (direction_plus * 
-          (100 - max(as.numeric(rownames(liftover_coords_maxseq)))) * 
-         steplength)
+  print('Here it will be decided')
+  print(liftover_coords_maxseq)
+
+
+  mode = 'letstry'
+  if (mode == 'pre_december'){
+
+
+  if (direction == 1){
+    start_winners = liftover_coords_maxseq[1,'liftover_coord'] - 
+      ((min(as.numeric(rownames(liftover_coords_maxseq)))-1) * steplength)
+
+    end_winners = liftover_coords_maxseq[nrow(liftover_coords_maxseq),'liftover_coord'] + 
+      ((100 - max(as.numeric(rownames(liftover_coords_maxseq)))) *  steplength)
+      
+  } else if (direction == -1){
+
+    start_winners = liftover_coords_maxseq[nrow(liftover_coords_maxseq),'liftover_coord'] - 
+    ((min(as.numeric(rownames(liftover_coords_maxseq)))-1) * steplength)
+
+    end_winners = liftover_coords_maxseq[1,'liftover_coord'] + 
+    ((100 - max(as.numeric(rownames(liftover_coords_maxseq)))) *  steplength)
+
+  }
+  
+  } else {
+
+
+      start_winners = min(liftover_coords_maxseq[,'liftover_coord'])# - 
+       # ((min(as.numeric(rownames(liftover_coords_maxseq)))-1) * steplength)
+
+      end_winners = max(liftover_coords_maxseq[,'liftover_coord'])# + 
+        #((100 - max(as.numeric(rownames(liftover_coords_maxseq)))) *  steplength)
+        
+  } 
+
   
   
   if (liftover_run == F) {
@@ -508,6 +554,8 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
   }
 
 
+  print('And the winners are:')
+  print(c(start_winners, end_winners))
   return(c(start_winners, end_winners))
 }
 

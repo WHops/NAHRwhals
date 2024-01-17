@@ -12,7 +12,8 @@ compress_paf_fnct(
   n_quadrants_per_axis = NULL,
   second_run = F,
   inparam_chunklen = NULL,
-  inparam_compression = NULL
+  inparam_compression = NULL,
+  qname = NULL
 )
 }
 \arguments{

@@ -2,7 +2,8 @@
 % Please edit documentation in R/fasta_extraction_functions.R
 \name{find_coords_mad}
 \alias{find_coords_mad}
-\title{find_coords_mad
+\title{find_coords_sane
+find_coords_mad
 This function finds the coordinates of a region given a set of liftover coordinates and other parameters.}
 \usage{
 find_coords_mad(liftover_coords, cpaf, winner_chr, start, end, liftover_run)
@@ -24,6 +25,7 @@ find_coords_mad(liftover_coords, cpaf, winner_chr, start, end, liftover_run)
 A numeric vector containing the start and end coordinates of the region
 }
 \description{
+find_coords_sane
 find_coords_mad
 This function finds the coordinates of a region given a set of liftover coordinates and other parameters.
 }

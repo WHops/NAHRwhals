@@ -44,7 +44,13 @@ nahrwhals(
   testrun_std = FALSE,
   testrun_fullfa = FALSE,
   minimap2_bin = "default",
-  bedtools_bin = "default"
+  bedtools_bin = "default",
+  julia_bin = "/home/hoeps/.juliaup/bin/julia",
+  solverscript = "scripts/solver.jl",
+  noclutterplots = T,
+  maxdup = 2,
+  minreport = 0.98,
+  init_width = 1000
 )
 }
 \arguments{

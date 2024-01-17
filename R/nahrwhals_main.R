@@ -63,7 +63,7 @@ nahrwhals <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, end_x,
                       hltrack = FALSE, hllink = FALSE, aln_pad_factor = 1.0,
                       debug = FALSE, clean_after_yourself = FALSE, testrun_std = FALSE,
                       testrun_fullfa = FALSE, minimap2_bin = "default", bedtools_bin = "default",
-                      julia_bin = '/Users/hoeps/.juliaup/bin/julia', solverscript = 'scripts/solver.jl',
+                      julia_bin = '/home/hoeps/.juliaup/bin/julia', solverscript = 'scripts/solver.jl',
                       noclutterplots = T,   maxdup = 2, minreport = 0.98, init_width = 1000) {
 
   # Dev off
@@ -102,6 +102,9 @@ nahrwhals <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, end_x,
     cat('Testmode! Running a "full fasta to full fasta" testrun with sample data.')
     params$genome_x_fa <- system.file("extdata/extracted_fastas", "sequence1.fa", package = "nahrwhals")
     params$genome_y_fa <- system.file("extdata/extracted_fastas", "sequence2.fa", package = "nahrwhals")
+
+    params$genome_x_fa <- "/mnt/c/Users/Z364220/projects/SD_mapping/simulation/res/seq_sim/single_pair_100kbp.fa"
+    params$genome_y_fa <- "/mnt/c/Users/Z364220/projects/SD_mapping/simulation/res/seq_sim/single_pair_100kbp.fa"
     params$compare_full_fastas <- T
     params$seqname_x <- "fullfa"
     params$start_x <- 0

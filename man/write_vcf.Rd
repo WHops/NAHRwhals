@@ -4,7 +4,13 @@
 \alias{write_vcf}
 \title{Write VCF file}
 \usage{
-write_vcf(input_file, output_file, res_max_threshold = 0.98, sort = F)
+write_vcf(
+  input_file,
+  output_file,
+  res_max_threshold = 0.98,
+  sort = F,
+  ps_colname = "start"
+)
 }
 \arguments{
 \item{input_file}{A character string specifying the path to the input file}

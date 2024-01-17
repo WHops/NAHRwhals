@@ -55,8 +55,8 @@ bressiwrap <- function(paf_df, gxy) {
 #' @param y_in numeric vector of the y coordinates of the points to be joined.
 #' @param gridpoints_x numeric vector of the x coordinates of the grid points.
 #' @param gridpoints_y numeric vector of the y coordinates of the grid points.
-#' @param griddiffs_x
-#' @param griddiffs_y
+#' @param griddiffs_x numeric vector of the differences between the x coordinates
+#' @param griddiffs_y numeric vector of the differences between the y coordinates
 #'
 #' @return A list of length 2 with \code{integer} \code{x,y} coordinates connecting
 #'   the vertices
