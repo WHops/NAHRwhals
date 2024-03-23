@@ -153,7 +153,10 @@ wrapper_aln_and_analyse <- function(params) {
     if (!all((dim(res_julia)) == c(1,3))){
       if (!'ref' %in% res_julia$mut1){
         res_julia = rbind(res_julia, c(res[res$mut1 == 'ref', 'eval'], 'ref', rep(NA,ncol(res_julia)-2)))
-        res <- res_julia[order(-as.numeric(res_julia$eval), -rowSums(is.na(res_julia))), ]
+        
+        res_julia$eval <- as.numeric(as.character(res_julia$eval))
+        res = res_julia[order(res_julia$eval > params$eval_th, rowSums(is.na(res_julia)), -res_julia$eval, decreasing = TRUE), ]
+        #res <- res_julia[order(-as.numeric(res_julia$eval), -rowSums(is.na(res_julia))), ]
       } else  {
         res = res_julia
       }
