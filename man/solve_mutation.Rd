@@ -4,7 +4,14 @@
 \alias{solve_mutation}
 \title{Alternative wrapper for calling dfs several times.}
 \usage{
-solve_mutation(bitlocus, maxdepth_input, earlystop = Inf, solve_th = 98)
+solve_mutation(
+  bitlocus,
+  maxdepth_input,
+  earlystop = Inf,
+  solve_th = 98,
+  compression = 1000,
+  is_cluttered_already_paf = F
+)
 }
 \arguments{
 \item{bitlocus}{A bit locus to be worked on}

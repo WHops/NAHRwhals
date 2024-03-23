@@ -103,6 +103,9 @@ nahrwhals <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, end_x,
     cat('Testmode! Running a "full fasta to full fasta" testrun with sample data.')
     params$genome_x_fa <- system.file("extdata/extracted_fastas", "sequence1.fa", package = "nahrwhals")
     params$genome_y_fa <- system.file("extdata/extracted_fastas", "sequence2.fa", package = "nahrwhals")
+
+    params$genome_x_fa <- "/mnt/c/Users/Z364220/projects/SD_mapping/simulation/res/seq_sim/single_pair_100kbp.fa"
+    params$genome_y_fa <- "/mnt/c/Users/Z364220/projects/SD_mapping/simulation/res/seq_sim/single_pair_100kbp.fa"
     params$compare_full_fastas <- T
     params$seqname_x <- "fullfa"
     params$start_x <- 0

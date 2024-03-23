@@ -7,7 +7,7 @@
 
 minimap2_bin = default
 bedtools_bin = default
-julia_bin = '/Users/hoeps/.juliaup/bin/julia'
+julia_bin = '/home/hoeps/.juliaup/bin/julia'
 
 genome_x_fa = 'testdata/assemblies/hg38_partial.fa'
 genome_y_fa = 'testdata/assemblies/assembly_partial.fa'

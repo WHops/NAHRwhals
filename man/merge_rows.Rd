@@ -4,7 +4,7 @@
 \alias{merge_rows}
 \title{Merge paired alignment rows in PAF file}
 \usage{
-merge_rows(paffile, pairs)
+merge_rows(paffile, pairs, reduced_qnames = F)
 }
 \arguments{
 \item{paffile}{PAF file data frame with column names}

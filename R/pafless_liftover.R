@@ -25,6 +25,7 @@ create_mmi_if_doesnt_exists <- function(params) {
 #' @export
 make_params_conversionpaf <- function(params, outlinks) {
   # Write hg38 to file
+
   extract_subseq_bedtools(
     params$genome_x_fa,
     params$seqname_x,
@@ -34,11 +35,11 @@ make_params_conversionpaf <- function(params, outlinks) {
     params
   )
 
-    extract_subseq_bedtools(
+  extract_subseq_bedtools(
     params$genome_x_fa,
     params$seqname_x,
-    params$start_x - ((end_x - start_x) * 0.2),
-    params$end_x + ((end_x - start_x) * 0.2),
+    params$start_x - ((params$end_x - params$start_x) * 0.2),
+    params$end_x + ((params$end_x - params$start_x) * 0.2),
     paste0(outlinks$genome_x_fa_subseq, '_elongate.fa'),
     params
   )
