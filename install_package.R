@@ -6,3 +6,5 @@
 # Use devtools to install the package. 
 #devtools::document()
 devtools::install()
+julia -e 'using Pkg; Pkg.add("DelimitedFiles"); Pkg.add("ProgressMeter"); Pkg.add("ArgParse")'
+

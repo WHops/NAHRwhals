@@ -8,6 +8,7 @@ dependencies:
   - minimap2
   - bedtools
   - gawk
+  - julia
   - r-base
   - r-devtools
   - r-stringr
@@ -38,6 +39,9 @@ dependencies:
   - r-bitops
   - r-reshape2
   - r-RCurl
+  - r-filelock
+  - r-foreach
+  - r-parallel
   - bioconductor-zlibbioc
   - bioconductor-GenomeInfoDbData
   - bioconductor-BiocGenerics
