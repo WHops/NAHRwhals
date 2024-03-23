@@ -12,8 +12,8 @@ solve_mutation_julia_wrapper <- function(params, mat, gridlines_x, inmat_path, i
 #' @export
 run_solver_julia <- function(params, inmat_path, inlens_path, outpath){
   # Run julia
-  julia_path = params$julia_bin  #'/Users/hoeps/.juliaup/bin/julia'
-  solver_path = params$solverscript #'~/Programs/mutation-matrices/src/solver.jl'
+  julia_path = 'julia'
+  solver_path = system.file('extdata', 'scripts', 'scripts_nw_main', 'solver.jl', package='nahrwhals')
   maxdepth = params$depth
   maxdup = params$maxdup
   minreport = params$minreport

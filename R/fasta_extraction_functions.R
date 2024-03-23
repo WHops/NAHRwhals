@@ -11,48 +11,44 @@
 #'
 #' @author Wolfram Hoeps
 #' @export
-extract_subseq_bedtools <-
-  function(infasta, seqname, start, end, outfasta, params) {
-    # Where is bedtools?
-    bedtoolsloc <- params$bedtools_bin
-    # we need to create a temporary bedfile that will be deleted in a few lines.
-    random_tag <- as.character(runif(1, 1e10, 1e11))
-    tmp_bedfile <- paste0("region2_", random_tag, ".bed")
-    # Write coordinates into temporary bedfile
-
-    region <- paste0(
-      seqname,
-      "\t",
-      format(start, scientific = F),
-      "\t",
-      format(end, scientific = F)
-    )
-    system(paste0('echo "', region, '" > ', tmp_bedfile))
-    # Run bedtools
-
-    system(paste0(
-      bedtoolsloc,
-      " getfasta -fi ",
-      infasta,
-      " -bed ",
-      tmp_bedfile,
-      " > ",
-      outfasta
-    ))
-
-    # Delete tmp file
-    system(paste0("rm ", tmp_bedfile))
-
-    # Check if run was successful.
-    stopifnot(
-      "Error: Bedtools was unable to extract sequence. Please make sure a) Your input fasta paths are correct, b) target and queryfasta are different and c) your input fastas and the conversionpaf are matching." =
-        file.size(outfasta) > 0
-    )
-
-    # Report your success :)
-    # print(paste0('Subsequence extracted and saved to ', outfasta))
+extract_subseq_bedtools <- function(infasta, seqname, start, end, outfasta, params) {
+  # Where is bedtools?
+  bedtoolsloc <- params$bedtools_bin
+  
+  # Generate a random tag for temporary files to avoid conflicts
+  random_tag <- as.character(runif(1, 1e10, 1e11))
+  
+  # Temporary files for BED and sequence length information
+  tmp_bedfile <- paste0("region2_", random_tag, ".bed")
+  tmp_seq_length_file <- paste0("seq_length_", random_tag, ".txt")
+  
+  # Get sequence lengths using bedtools faidx and store in a temporary file
+  system(paste0("samtools faidx ", infasta))
+  system(paste0("cut -f1,2 ", infasta, ".fai > ", tmp_seq_length_file))
+  
+  # Read the sequence lengths into R
+  seq_lengths <- read.table(tmp_seq_length_file, stringsAsFactors = FALSE, col.names = c("seqname", "length"))
+  
+  # Adjust the 'end' position if it exceeds the contig length
+  contig_length <- seq_lengths[seq_lengths$seqname == seqname, "length"]
+  if (!is.na(contig_length) && contig_length < end) {
+    end <- contig_length
   }
-
+  
+  # Write coordinates into the temporary BED file
+  write.table(data.frame(seqname, start, end), file = tmp_bedfile, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
+  
+  # Run bedtools getfasta
+  system(paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", tmp_bedfile, " -fo ", outfasta))
+  
+  # Delete temporary files
+  file.remove(tmp_bedfile, tmp_seq_length_file)
+  
+  # Check if run was successful by confirming the output file size is greater than 0
+  if (file.size(outfasta) <= 0) {
+    stop("Error: Bedtools was unable to extract sequence. Please make sure a) Your input fasta paths are correct, b) target and queryfasta are different, and c) your input fastas and the conversionpaf are matching.")
+  }
+}
 
 #' find_punctual_liftover
 #'
@@ -208,7 +204,6 @@ liftover_coarse <-
 
     liftover_coords <- na.omit(liftover_coords)
 
-    print(liftover_coords)
     # Make sure we got any results.
     if (nrow(liftover_coords) <= 1) {
       print("Error: Unsuccessful liftover of the input sequence: Sequence not found on query.")
@@ -225,16 +220,12 @@ liftover_coarse <-
     # if (whole_chr){
     #   start_winners = 1
     #   end_winners = min(28500000,max(liftover_coords[liftover_coords$seqname == winner_chr,]$liftover_coord))
-    print(search_mode)
     if (search_mode == "extrapolation") {
       startend <- find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end)
-      print('extrapolated')
     } else if (search_mode == "mad") { # mad = mean absolute deviation.
       startend <- find_coords_mad(liftover_coords, cpaf, winner_chr, start, end, refine_runnr != 1)
       if (is.null(startend)) {
-        print("MAD failed. Going for extrapolation instead.")
         startend <- find_coords_extrapolated(liftover_coords, cpaf, winner_chr, start, end, refine_runnr != 1)
-        print("extrapolated")
       }
     }
 
@@ -267,28 +258,18 @@ liftover_coarse <-
       start_winners <- startend[1] - (length * ((shift_fact - 1) * 0.5))
       end_winners <- startend[2] + (length * ((shift_fact - 1) * 0.5))
 
-      print('extending')
       # Make sure we don't exceed chromosome boundaries in the query.
       start_winners_cutoff <- as.integer(max(0, start_winners))
       end_winners_cutoff <- as.integer(min(cpaf[cpaf$tname == winner_chr, ][1, "tlen"] - 1, end_winners - 1))
 
-      #print for debug
-      print(paste0("start_winners: ", start_winners))
-      print(paste0("end_winners: ", end_winners))
-      print(paste0("start_winners_cutoff: ", start_winners_cutoff))
-      print(paste0("end_winners_cutoff: ", end_winners_cutoff))
-      print(cpaf[cpaf$tname == winner_chr, ][1, "tlen"])
+
     } else if (refine_runnr == 2) {
-      print('now in number 2')
       start_winners_cutoff <- as.integer(max(0, startend[1]))
       end_winners_cutoff <- as.integer(min(max(cpaf[cpaf$tname == winner_chr, "tend"]), startend[2] - 1))
-      print(max(cpaf[cpaf$tname == winner_chr, "tend"]))
-      print(paste0("start_winners_cutoff: ", start_winners_cutoff))
-      print(paste0("end_winners_cutoff: ", end_winners_cutoff))
+
       
 
     } else {
-      print('now in else')
       start_winners_cutoff <- as.integer(max(0, startend[1]))
       end_winners_cutoff <- as.integer(min(cpaf[cpaf$tname == winner_chr, ][1, "qlen"] + startend[1] - 1, startend[2] - 1))
     }
@@ -495,9 +476,6 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
     return(NULL)
   }
 
-  print('Here it will be decided')
-  print(liftover_coords_maxseq)
-
 
   mode = 'letstry'
   if (mode == 'pre_december'){
@@ -554,8 +532,7 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
   }
 
 
-  print('And the winners are:')
-  print(c(start_winners, end_winners))
+
   return(c(start_winners, end_winners))
 }
 

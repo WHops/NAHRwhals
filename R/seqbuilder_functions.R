@@ -138,7 +138,7 @@ make_chunked_minimap_alnment <-
     )
 
     if (saveplot == F) {
-      print("returning your plot")
+      #print("returning your plot")
       return(miniplot)
     } else {
       ggplot2::ggsave(
@@ -148,7 +148,7 @@ make_chunked_minimap_alnment <-
         width = 10,
         device = "pdf"
       )
-      print("Saving")
+      #print("Saving")
     }
   }
 
@@ -274,10 +274,10 @@ run_minimap2 <-
   function(targetfasta,
            queryfasta,
            outpaf,
-           params,
-           nthreads = 4) {
+           params) {
     # system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
 
+    nthreads = params$minimap_cores
     minimap2loc <- params$minimap2_bin
 
     # Some self-defined parameters
@@ -291,7 +291,7 @@ run_minimap2 <-
         " ",
         queryfasta,
         " > ",
-        outpaf
+        outpaf 
       )
     ))
     # Check if that was successful.

@@ -5,8 +5,6 @@
 \title{align_all_vs_all_using_minimap2}
 \usage{
 align_all_vs_all_using_minimap2_shred_merge(
-  minimap2_bin,
-  bedtools_bin,
   awkscript,
   reference_fasta,
   asm_fasta,
@@ -15,8 +13,6 @@ align_all_vs_all_using_minimap2_shred_merge(
 )
 }
 \arguments{
-\item{minimap2_bin}{Path to the minimap2 binary}
-
 \item{reference_fasta}{Path to the reference fasta}
 
 \item{asm_fasta}{Path to the assembly fasta}
@@ -24,6 +20,8 @@ align_all_vs_all_using_minimap2_shred_merge(
 \item{out_paf}{Path to the output paf file}
 
 \item{threads}{Number of threads to use}
+
+\item{minimap2_bin}{Path to the minimap2 binary}
 }
 \value{
 Nothing

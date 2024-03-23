@@ -7,11 +7,12 @@
 extract_test_list_from_paf(
   all_vs_all_paf,
   out_dir,
+  out_file,
   genome_path,
   bedtools_bin,
   merge_distance,
   indel_ignore_distance,
-  exclusion_mask
+  exclusion_mask = "none"
 )
 }
 \arguments{

@@ -69,9 +69,9 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
     # solve_th = params$eval_th# find_threshold(bitlocus, current_depth)
     conclusion_found <- (max(as.numeric(res_df$eval)) >= solve_th)
 
-    if (conclusion_found) {
-      print("Conclusion found!!")
-    }
+    #if (conclusion_found) {
+    #  print("SV found")
+    #}
 
     # Higher depth for next iteration!
     current_depth <- current_depth + 1
@@ -107,10 +107,6 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
     log_collection$mut_tested <<- dim(res_df)[1]
   }
 
-  print(paste0('Nodes considered: ', n_eval_total + n_hash_excluded))
-  print(paste0('Eval attempted: ', n_eval_total))
-  print(paste0('Eval calced: ', n_eval_calc))
-  print(paste0('Hash excluded: ', n_hash_excluded))
 
   return(res_out)
 }

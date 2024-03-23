@@ -41,8 +41,7 @@ Rscript install_package.R
 ```
 
 
-
-# Test & Example runs
+### (4) Test your installation
 
 To confirm that NAHRwhals has been correctly installed, run a testrun inside R which will produce output files and plots in the `./res` folder. This should take around 1 minute. 
 
@@ -52,7 +51,39 @@ R
 > nahrwhals(testrun_std=T)
 ```
 
+# Usage
 
+Whole-genome run: 
+```
+R
+> library(nahrwhals)
+> nahrwhals(ref_fa = 'ref.fa', 
+            alt_fa = 'alt.fa,
+            ourdir = 'res',
+            threads = 8)
+```
+
+Other run:
+```
+R
+> library(nahrwhals)
+> nahrwhals(ref_fa = 'ref.fa', 
+            alt_fa = 'alt.fa,
+            genotype_regions = 'regions.bed',
+            outdir = 'res',
+            threads = 8)
+```
+
+Optional: 
+```
+R
+> library(nahrwhals)
+> scan_for_windows(ref_fa = 'ref.fa', 
+            alt_fa = 'alt.fa,
+            outfile = 'out.bed')
+```
+
+# Output
 
 Key results in the .res folder are:
 

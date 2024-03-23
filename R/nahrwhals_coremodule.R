@@ -48,7 +48,7 @@
 #'
 #'
 #' @export
-nahrwhals <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, end_x,
+nahrwhals_singlerun <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, end_x,
                       genome_y_fa_mmi = "default", anntrack = FALSE,
                       logfile = "res/res.tsv", samplename_x = "Fasta_x",
                       samplename_y = "Fasta_y", compare_full_fastas = FALSE,
@@ -62,31 +62,33 @@ nahrwhals <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, end_x,
                       baseline_log_minsize_max = FALSE, discovery_exact = FALSE,
                       hltrack = FALSE, hllink = FALSE, aln_pad_factor = 1.0,
                       debug = FALSE, clean_after_yourself = FALSE, testrun_std = FALSE,
-                      testrun_fullfa = FALSE, minimap2_bin = "default", bedtools_bin = "default",
-                      julia_bin = '/Users/hoeps/.juliaup/bin/julia', solverscript = 'scripts/solver.jl',
+                      testrun_fullfa = FALSE, minimap2_bin = "minimap2", bedtools_bin = 'bedtools',
                       noclutterplots = T,   maxdup = 2, minreport = 0.98, init_width = 1000,
                       minimap_cores = 1) {
 
+
   # Dev off
-  while(!is.null(dev.list())){dev.off()}
+  #while(!is.null(dev.list())){dev.off()}
 
-  # Get the function call
-  call <- match.call()
-
-  # Get the formal arguments with their default values
-  defaults <- formals(nahrwhals)
-
-  # Remove the first element (function name)
-  call <- as.list(call)[-1]
-
-  # Evaluate the call in the parent frame
-  call_evaluated <- do.call(
-    function(...) list(...),
-    eval(call, envir = parent.frame())
-  )
-
-  # Merge the provided parameters and default values
-  params <- modifyList(defaults, call_evaluated)
+  params <- list(genome_x_fa = genome_x_fa, genome_y_fa = genome_y_fa, seqname_x = seqname_x, 
+                start_x = start_x, end_x = end_x, genome_y_fa_mmi = genome_y_fa_mmi, 
+                anntrack = anntrack, logfile = logfile, samplename_x = samplename_x, 
+                samplename_y = samplename_y, compare_full_fastas = compare_full_fastas, 
+                plot_only = plot_only, self_plots = self_plots, plot_xy_segmented = plot_xy_segmented, 
+                eval_th = eval_th, depth = depth, chunklen = chunklen, minlen = minlen, 
+                compression = compression, max_size_col_plus_rows = max_size_col_plus_rows, 
+                max_n_alns = max_n_alns, use_paf_library = use_paf_library, 
+                conversionpaf_link = conversionpaf_link, xpad = xpad, plot_minlen = plot_minlen, 
+                maxlen_refine = maxlen_refine, n_tests = n_tests, n_max_testchunks = n_max_testchunks, 
+                baseline_log_minsize_min = baseline_log_minsize_min, 
+                baseline_log_minsize_max = baseline_log_minsize_max, discovery_exact = discovery_exact, 
+                hltrack = hltrack, hllink = hllink, aln_pad_factor = aln_pad_factor, 
+                debug = debug, clean_after_yourself = clean_after_yourself, 
+                testrun_std = testrun_std, testrun_fullfa = testrun_fullfa, 
+                minimap2_bin = minimap2_bin, bedtools_bin = bedtools_bin, 
+                noclutterplots = noclutterplots, 
+                maxdup = maxdup, minreport = minreport, init_width = init_width, 
+                minimap_cores = minimap_cores)
   
   if (testrun_std && testrun_fullfa) {
     stop("Parameters testrun_std and testrun_fullfa cannot both be TRUE.")

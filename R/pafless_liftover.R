@@ -3,7 +3,7 @@
 #' @export
 create_mmi_if_doesnt_exists <- function(params) {
   if (file.exists(params$genome_y_fa_mmi)) {
-    print('Found existing minimap2 index ".mmi" file. Skipping re-calculation.')
+    #print('Found existing minimap2 index ".mmi" file. Skipping re-calculation.')
     return()
   }
 
@@ -34,12 +34,11 @@ make_params_conversionpaf <- function(params, outlinks) {
     outlinks$genome_x_fa_subseq,
     params
   )
-
   extract_subseq_bedtools(
     params$genome_x_fa,
     params$seqname_x,
-    params$start_x - ((params$end_x - params$start_x) * 0.2),
-    params$end_x + ((params$end_x - params$start_x) * 0.2),
+    as.integer(max(0,params$start_x - ((params$end_x - params$start_x) * 0.2))),
+    as.integer(min(params$end_x + ((params$end_x - params$start_x) * 0.2))),
     paste0(outlinks$genome_x_fa_subseq, '_elongate.fa'),
     params
   )

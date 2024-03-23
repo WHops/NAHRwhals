@@ -35,7 +35,7 @@ wrapper_aln_and_analyse <- function(params) {
   
   # Define output files
   outlinks <- define_output_files(sequence_name_output, paste0(params$samplename_x, "_", params$samplename_y))
-  for (i in 1:10){try(dev.off())}
+  while(!is.null(dev.list())){dev.off()}
   pdf(file = outlinks$outpdf_main)
 
   
@@ -145,8 +145,7 @@ wrapper_aln_and_analyse <- function(params) {
   
   res <- solve_mutation(gridmatrix, maxdepth = 1, solve_th = params$eval_th, compression = params$compression, is_cluttered_already_paf = log_collection$cluttered_boundaries==T)
   if (max(res$eval) < 99.8){
-    # Fahre schwere Geschuetze auf
-    print('No easy solution found. Starting the much more powerful julia implementation.')
+    #print('No easy solution found. Starting the much more powerful julia implementation.')
 
     res_julia <- solve_mutation_julia_wrapper(params, gridmatrix, grid_xy[[1]], outlinks$solver_inmat_path, outlinks$solver_inlens_path, outlinks$solver_juliares_path)
     
@@ -161,25 +160,9 @@ wrapper_aln_and_analyse <- function(params) {
     }
   }
 
-  print("got so faaaaar")
 
-  
-  # write.table(gridmatrix, file=paste0('testcases/',params$seqname_x,'_',params$start_x,'_',params$end_x, '_',params$samplename_y, '.tsv'),
-  #             row.names=F, col.names = F, sep='\t', quote = F)
-  # 
-  # # Extract column names and row names
-  # column_names <- colnames(gridmatrix)
-  # row_names <- row.names(gridmatrix)
-  # 
-  # # Convert to a single character vector with tab-separated values
-  # column_string <- paste(column_names, collapse = "\t")
-  # row_string <- paste(row_names, collapse = "\t")
-  # 
-  # # Write the two lines to a file
-  # writeLines(c(row_string, column_string),
-  #            paste0('testcases/',params$seqname_x,'_',params$start_x,'_',params$end_x, '_',params$samplename_y, '_rows_cols.tsv'))
   make_modified_grid_plot(res, gridmatrix, outlinks)
-  Sys.sleep(2)  # Step 5: Save
+  Sys.sleep(1)  # Step 5: Save
   write_results(res, outlinks, params)
 
   #while(!is.null(dev.list())){dev.off()}
@@ -358,17 +341,17 @@ manufacture_output_res_name <- function(seqname_x, start_x, end_x) {
 #'
 #' @export
 make_output_folder_structure <- function(sequence_name_output) {
-  # Create a lot of subfolders
-  dir.create("res")
-  dir.create(sequence_name_output)
-  dir.create(paste0(sequence_name_output, "/self"))
-  dir.create(paste0(sequence_name_output, "/self/pdf"))
-  dir.create(paste0(sequence_name_output, "/self/paf"))
-  dir.create(paste0(sequence_name_output, "/diff"))
-  dir.create(paste0(sequence_name_output, "/diff/pdf"))
-  dir.create(paste0(sequence_name_output, "/diff/pdf/grid"))
-  dir.create(paste0(sequence_name_output, "/diff/paf"))
-  dir.create(paste0(sequence_name_output, "/fasta"))
+  # Create a lot of subfolders silently, without showing warnings if they already exist
+  dir.create("res", showWarnings = FALSE)
+  dir.create(sequence_name_output, showWarnings = FALSE)
+  dir.create(paste0(sequence_name_output, "/self"), showWarnings = FALSE)
+  dir.create(paste0(sequence_name_output, "/self/pdf"), showWarnings = FALSE)
+  dir.create(paste0(sequence_name_output, "/self/paf"), showWarnings = FALSE)
+  dir.create(paste0(sequence_name_output, "/diff"), showWarnings = FALSE)
+  dir.create(paste0(sequence_name_output, "/diff/pdf"), showWarnings = FALSE)
+  dir.create(paste0(sequence_name_output, "/diff/pdf/grid"), showWarnings = FALSE)
+  dir.create(paste0(sequence_name_output, "/diff/paf"), showWarnings = FALSE)
+  dir.create(paste0(sequence_name_output, "/fasta"), showWarnings = FALSE)
 }
 
 #' Define output file paths for NAHRwhals output

@@ -177,9 +177,9 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
     }
 
     # Be verbose
-    if (depth == 0) {
-      print(paste0("Processing branch ", npair, " of ", dim(pairs)[1]))
-    }
+    #if (depth == 0) {
+    #  print(paste0("Processing branch ", npair, " of ", dim(pairs)[1]))
+    #}
 
     if ((depth == 0) & (npair == earlystop)) {
       return(list(visited, df_output))

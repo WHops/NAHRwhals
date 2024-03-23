@@ -169,10 +169,7 @@ dotplotly_dotplot_return_aln <- function(opt) {
   alignments$queryStart[which(alignments$strand == "-")] <- alignments$queryEnd[which(alignments$strand == "-")]
   alignments$queryEnd[which(alignments$strand == "-")] <- queryStartTemp[which(alignments$strand == "-")]
   rm(queryStartTemp)
-  cat(paste0("\nNumber of alignments: ", nrow(alignments), "\n"))
-  cat(paste0("Number of query sequences: ", length(unique(
-    alignments$queryID
-  )), "\n"))
+
 
   # sort by ref chromosome sizes, keep top X chromosomes OR keep specified IDs
   if (is.null(opt$refIDs)) {
@@ -198,16 +195,7 @@ dotplotly_dotplot_return_aln <- function(opt) {
   queryLenAgg <- tapply(alignments$lenAln, alignments$queryID, sum)
   alignments <- alignments[which(alignments$queryID %in% names(queryLenAgg)[which(queryLenAgg > opt$min_query_aln)]), ]
 
-  cat(paste0(
-    "\nAfter filtering... Number of alignments: ",
-    nrow(alignments),
-    "\n"
-  ))
-  cat(paste0(
-    "After filtering... Number of query sequences: ",
-    length(unique(alignments$queryID)),
-    "\n\n"
-  ))
+
 
   # sort df on ref
   alignments$refID <- factor(alignments$refID, levels = refIDsToKeepOrdered) # set order of refID

@@ -13,24 +13,24 @@ align_all_vs_all_using_minimap2 <- function(minimap2_bin, reference_fasta, asm_f
     reference_mmi = paste0(dirname(reference_fasta), "/", sub(pattern = "^(.*)\\.[^\\.]+$", replacement = "\\1", basename(reference_fasta)), ".mmi")
     if(!file.exists(reference_mmi)){
         # Inform the user what happened and what we do 
-        message("Reference index ", reference_mmi, " does not exist. Creating it now.")
+        #message("Reference index ", reference_mmi, " does not exist. Creating it now.")
         minimap2_indexing_command <- paste0(minimap2_bin, " -k 28 -w 255 -H -d ", reference_mmi, " ", reference_fasta)
         system(minimap2_indexing_command)
-    } else {
+    } #else {
         # Inform the user what happened and what we do
-        message("Found existing reference index ", reference_mmi, ". Skipping re-calculation.")
-    }
+        #message("Found existing reference index ", reference_mmi, ". Skipping re-calculation.")
+    #}
 
     # Check if the out_paf exists already. If it does, explain to the user and do not run the code. 
     if(file.exists(out_paf)){
-        message("Output file ", out_paf, " already exists. Skipping minimap2.")
+        #message("Output file ", out_paf, " already exists. Skipping minimap2.")
         return()
     }
     minimap2_cmd = paste0(minimap2_bin, " -x asm5 -t ",threads, " -c ", reference_mmi, " ", asm_fasta, " > ", out_paf)
     system(minimap2_cmd)
 
     # Inform the user
-    message("Minimap2 finished successfully. The output is in ", out_paf)
+    #message("Minimap2 finished successfully. The output is in ", out_paf)
 }
 
 #' align_all_vs_all_using_minimap2
@@ -41,8 +41,10 @@ align_all_vs_all_using_minimap2 <- function(minimap2_bin, reference_fasta, asm_f
 #' @param threads Number of threads to use
 #' @return Nothing
 #' @export
-align_all_vs_all_using_minimap2_shred_merge <- function(minimap2_bin, bedtools_bin, awkscript, reference_fasta, asm_fasta, out_paf, threads){
+align_all_vs_all_using_minimap2_shred_merge <- function(awkscript, reference_fasta, asm_fasta, out_paf, threads){
 
+    minimap2_bin = 'minimap2'
+    bedtools_bin = 'bedtools'
     # Search for a reference_mmi in the same folder as the reference_fasta. If it does not exist, create it.
     # for example for a file reference.fa, we want to create reference.mmi
     reference_mmi = paste0(dirname(reference_fasta), "/", sub(pattern = "^(.*)\\.[^\\.]+$", replacement = "\\1", basename(reference_fasta)), ".mmi")
@@ -51,14 +53,14 @@ align_all_vs_all_using_minimap2_shred_merge <- function(minimap2_bin, bedtools_b
         message("Reference index ", reference_mmi, " does not exist. Creating it now.")
         minimap2_indexing_command <- paste0(minimap2_bin, " -k 28 -w 20 -H -d ", reference_mmi, " ", reference_fasta)
         system(minimap2_indexing_command)
-    } else {
+    } #else {
         # Inform the user what happened and what we do
-        message("Found existing reference index ", reference_mmi, ". Skipping re-calculation.")
-    }
+        #message("Found existing reference index ", reference_mmi, ". Skipping re-calculation.")
+    #}
 
     # Check if the out_paf exists already. If it does, explain to the user and do not run the code. 
     if(file.exists(out_paf)){
-        message("Output file ", out_paf, " already exists. Skipping minimap2.")
+        #message("Output file ", out_paf, " already exists. Skipping minimap2.")
         return()
     }
 
@@ -98,10 +100,9 @@ align_all_vs_all_using_minimap2_shred_merge <- function(minimap2_bin, bedtools_b
 
     for (row in 1:length(unique(paf$qname))){
         compress_paf_fnct(inpaf_link = NULL, outpaf_link = out_paf, inpaf_df = paf, inparam_chunklen = 10000, n_quadrants_per_axis = 10, qname=unique(paf$qname)[row])
-        print(row)
     }
     # Inform the user
-    message("Minimap2 finished successfully. The output is in ", out_paf)
+    #message("Minimap2 finished successfully. The output is in ", out_paf)
 }
 
 
@@ -113,16 +114,20 @@ align_all_vs_all_using_minimap2_shred_merge <- function(minimap2_bin, bedtools_b
 #' @param merge_distance Distance to merge overlapping intervals
 #' @return Nothing
 #' @export
-extract_test_list_from_paf <- function(all_vs_all_paf, out_dir, genome_path, bedtools_bin, merge_distance, indel_ignore_distance, exclusion_mask){
+extract_test_list_from_paf <- function(all_vs_all_paf, out_dir, out_file, genome_path, bedtools_bin, merge_distance, indel_ignore_distance, exclusion_mask='none'){
 
-    command = paste0('bash scripts/wg_run_all.sh ', all_vs_all_paf, ' ', out_dir, ' ', genome_path, ' ', bedtools_bin, ' ', merge_distance, ' ', indel_ignore_distance, ' ', exclusion_mask)
+  
+    bashscripts_base = system.file('extdata', 'scripts', 'scripts_whole_genome', package='nahrwhals')
+    wg_run_all_script = system.file('extdata', 'scripts', 'scripts_whole_genome', 'wg_run_all.sh', package='nahrwhals')
+    bedtools_bin = 'bedtools'
+
+    command = paste0('bash ',wg_run_all_script, ' ', all_vs_all_paf, ' ', out_dir, ' ', out_file, ' ', genome_path, ' ', bedtools_bin, ' ', merge_distance, ' ', indel_ignore_distance, ' ', exclusion_mask, ' ', bashscripts_base)
     system(command)
 
     # Inform the user
-    message("Done. The output is in ", out_dir)
 }
 
-#' Turn fasta.fai into genome file
+  #' Turn fasta.fai into genome file
 #' @param fasta_fai Path to the fasta.fai
 #' @param out_path Path to the output file
 #' @return Nothing
@@ -133,9 +138,9 @@ make_genome_file <- function(fasta, out_path){
     if(!file.exists(paste0(fasta,'.fai'))){
         message("Fasta index ", paste0(fasta,'.fai'), " does not exist. Creating it now.")
         system(paste0("samtools faidx ", fasta))
-    } else {
-        message("Found existing fasta index ", paste0(fasta,'.fai'), ". Skipping re-calculation.")
-    }
+    } #else {
+    #    message("Found existing fasta index ", paste0(fasta,'.fai'), ". Skipping re-calculation.")
+    #}
     # Read the fai file
     fai = read.table(paste0(fasta,'.fai'), sep="\t", header=F, stringsAsFactors=F)
     # Extract the first column
@@ -149,29 +154,25 @@ make_genome_file <- function(fasta, out_path){
 }
 
 #' @export
-wga_write_interval_list <- function(ref_fa, asm_fa, outdir, merge_distance, indel_ignore_distance, exclusion_mask, threads,
-                                    bedtools_bin = 'bedtools', 
-                                    minimap2_bin = '/Users/hoeps/opt/anaconda3/envs/snakemake/envs/nahrwhalsAPR/bin/minimap2',
-                                    awkscript = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/scripts/awk_on_fasta_gpt4.sh'
-){
-    system(paste0("mkdir -p ", outdir))
+wga_write_interval_list <- function(ref_fa, asm_fa, outdir, outfile, merge_distance, indel_ignore_distance, exclusion_mask='none', threads = 1){
+    system(paste0("mkdir -p ", outdir , ' 2>&1'))
 
     allpaf = paste0(outdir, "/fullaln.paf")
     #allpaf = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/out.paf'
     genome_file = paste0(outdir, "/ref.genome")
     # Make all-vs-all alignemnt
-    #align_all_vs_all_using_minimap2(minimap2_bin, ref_fa, asm_fa, allpaf, threads)
-    align_all_vs_all_using_minimap2_shred_merge(minimap2_bin, bedtools_bin, awkscript, ref_fa, asm_fa, allpaf, threads)
+
+    awkscript = system.file('extdata', 'scripts', 'scripts_nw_main', 'awk_on_fasta_gpt4.sh', package='nahrwhals')
+    
+    align_all_vs_all_using_minimap2_shred_merge(awkscript, ref_fa, asm_fa, allpaf, threads)
     
     # Write the genome file
     make_genome_file(ref_fa, genome_file)
     # Extract list of breakpoint clusters
-    print(paste0('Using merge distance: ', merge_distance))
-    print(paste0('Using indel ignore distance: ', indel_ignore_distance))
-    extract_test_list_from_paf(allpaf, outdir, genome_file, bedtools_bin, merge_distance, indel_ignore_distance, exclusion_mask)
+    extract_test_list_from_paf(allpaf, outdir, outfile, genome_file, bedtools_bin, merge_distance, indel_ignore_distance, exclusion_mask)
 
     # return the name of the final output list, which is in outdir/list_final.txt
-    return(paste0(outdir, "/list_cut_final.bed"))
+    return(outfile)
 }
 
 #' @export

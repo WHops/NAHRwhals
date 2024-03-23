@@ -7,7 +7,7 @@
 write_vcf(
   input_file,
   output_file,
-  res_max_threshold = 0.98,
+  res_max_threshold = 98,
   sort = F,
   ps_colname = "start"
 )
