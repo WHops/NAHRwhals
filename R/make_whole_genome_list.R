@@ -245,7 +245,7 @@ make_karyogram <- function(test_list_file, genome_file, second_list = NULL, spec
     tests2$newstart = NULL
     tests2$newend = NULL
 
-    pp <- getDefaultPlotParams(plot.type=2)
+    pp <- karyoploteR::getDefaultPlotParams(plot.type=2)
     pp$data1outmargin <- 100
     pp$data2outmargin <- 100
     pp$topmargin <- 450

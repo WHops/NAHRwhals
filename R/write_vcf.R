@@ -13,12 +13,12 @@
     df <- df[!grepl("\\.alt$", df$sample),]
     df[df$res_max < res_max_threshold,]$mut_max <- 'UNK'
     #browser()
-    df <- df %>%
-      dplyr::mutate(sample_id = sub("(\\.|_)([^0-9]).*$", "", df$sample), 
-                   phase = ifelse(grepl("h[ap]{0,2}2", df$sample), 2, 1)) 
     #df <- df %>%
-    #  dplyr::mutate(sample_id = sub("^[^_]+_([^\\._]+).*", "\\1", sample),
-    #         phase = ifelse(grepl("h[ap]{0,2}2", df$sample), 2, 1))
+    #  dplyr::mutate(sample_id = sub("(\\.|_)([^0-9]).*$", "", df$sample), 
+    #               phase = ifelse(grepl("h[ap]{0,2}2", df$sample), 2, 1)) 
+    df <- df %>%
+      dplyr::mutate(sample_id = sub("^[^_]+_([^\\._]+).*", "\\1", sample),
+             phase = ifelse(grepl("h[ap]{0,2}2", df$sample), 2, 1))
     return(df)
   }
   
@@ -39,13 +39,13 @@
 
       df_subset <- df[df$ID == ID,]
       df_subset$mut_maxsimple <- gsub("[0-9_]+", "", df_subset$mut_max)
-      
+      print(ID)
       for (mutation in unique(df_subset$mut_maxsimple)){
-        
+        browser()
         if (mutation %in% c('ref', 'UNK', '.')){
           next()
         }
-        
+        print(mutation)
         df_temp <- df_subset
         df_temp[df_temp$mut_maxsimple == mutation, 'GT'] <- 1
         df_temp[df_temp$mut_maxsimple != mutation, 'GT'] <- 0
@@ -173,9 +173,9 @@
   #' @param res_max_threshold A numeric value specifying the res_max threshold for assigning 'UNK' to mut_max
   #' @author Wolfram Hoeps
   #' @export
-  write_vcf <- function(input_file, output_file, res_max_threshold = 0.98, sort = F, ps_colname = 'start'){
+  write_vcf <- function(input_file, output_file, res_max_threshold = 98, sort = F, ps_colname = 'start'){
     # Preprocess the data
-
+    
     df <- preprocess_data(input_file, res_max_threshold)
     
     # Generate unique lists for samples and haplotypes
@@ -208,6 +208,7 @@
   }
   
   # Make a debug sample run
-  #input_file = '/Users/hoeps/PhD/projects/nahrcall/vcflab/new_vcf/res.tsv'
-  #output_file = '/Users/hoeps/PhD/projects/nahrcall/vcflab/new_vcf/all.vcf'
-  #write_vcf(input_file, output_file, res_max_threshold = 0.98, sort = T, ps_colname='start')
+  #input_file =  '/Users/hoeps/PhD/projects/nahrcall/revisions/popgen/hufsah_plot/data/chr15-82/res.tsv'
+  #output_file = '/Users/hoeps/PhD/projects/nahrcall/revisions/popgen/hufsah_plot/data/chr15-82/nw_all.vcf'
+  #
+  #write_vcf(input_file, output_file, res_max_threshold = 98, sort = T, ps_colname='start')

@@ -4,7 +4,7 @@ input_file=$1
 output_file="merged_intervals.bed"
 
 # Sort the file by chromosome and start position
-sort -k1,1 -k9,9n -k4,4n "$input_file" > sorted_input.bed
+sort -k1,1 -k2,2n "$input_file" > sorted_input.bed
 
 # Use awk to process the sorted file
 awk 'BEGIN {OFS="\t"}
