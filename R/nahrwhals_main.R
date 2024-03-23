@@ -63,8 +63,9 @@ nahrwhals <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, end_x,
                       hltrack = FALSE, hllink = FALSE, aln_pad_factor = 1.0,
                       debug = FALSE, clean_after_yourself = FALSE, testrun_std = FALSE,
                       testrun_fullfa = FALSE, minimap2_bin = "default", bedtools_bin = "default",
-                      julia_bin = '/home/hoeps/.juliaup/bin/julia', solverscript = 'scripts/solver.jl',
-                      noclutterplots = T,   maxdup = 2, minreport = 0.98, init_width = 1000) {
+                      julia_bin = '/Users/hoeps/.juliaup/bin/julia', solverscript = 'scripts/solver.jl',
+                      noclutterplots = T,   maxdup = 2, minreport = 0.98, init_width = 1000,
+                      minimap_cores = 1) {
 
   # Dev off
   while(!is.null(dev.list())){dev.off()}

@@ -121,7 +121,7 @@ turn_mut_max_into_svdf <- function(t, correction=T, return_string=F){
   
   svdf$start = as.numeric(svdf$start)
   svdf$end = as.numeric(svdf$end)
-  svdf$n = 1: dim(svdf)[1]
+  svdf$depth = 1: dim(svdf)[1]
   
   
   if (correction == F){
@@ -137,52 +137,39 @@ turn_mut_max_into_svdf <- function(t, correction=T, return_string=F){
   }
 
   # Iterate over each sv
-  for (target_coord_system in nrow(svdf)[1]-1:1){
-    
-    sv = svdf[target_coord_system,'sv']
-    sv_start = svdf[target_coord_system,'start']
-    sv_end = svdf[target_coord_system,'end']
-    n = svdf[target_coord_system,'n']
+  for (nsv in 1:(nrow(svdf)-1)){
+    sv = svdf[nsv,'sv']
+    sv_start = svdf[nsv,'start']
+    sv_end = svdf[nsv,'end']
+    depth = svdf[nsv,'depth']
 
     svdf_allstarts = svdf$start
     svdf_allends = svdf$end
-    svdf_allns = svdf$n 
+    svdf_alldepths = svdf$depth
 
     # if it's an inv, complicated changes have to happen.
     if (sv == 'inv'){
-      
-      # We work only on things that are inside of the inversion. Stuff that partially
-      # overlaps it are simply too complicated to deal with.
-      
-      #end breakpoints get mirrored
-      # In words: the new end of interval that overlap with the inv, 
-      # # is the old end plus the difference in start between the two intervals (??)
-
-      # # For those below that are completely inside
-      # both_bp_inside = (svdf_allstarts >= sv_start) & (svdf_allstarts <= sv_end) & (svdf_allends <= sv_end) & (svdf_allends >= sv_start) & (svdf_allns > target_coord_system)
-      # only_first_bp_inside = (svdf_allstarts >= sv_start) & (svdf_allstarts <= sv_end) & (svdf_allends > sv_end) & (svdf_allns > target_coord_system)
-      # only_second_bp_inside = (svdf_allstarts < sv_start) & (svdf_allends <= sv_end) & (svdf_allends >= sv_start) & (svdf_allns > target_coord_system)
-
-      # svdf[both_bp_inside,'newend'] = sv_end - (svdf[both_bp_inside,'end'] - sv_start)
-      # svdf[both_bp_inside,'newstart'] = sv_end - (svdf[both_bp_inside,'start'] - sv_start)
-
-      # svdf[only_first_bp_inside,'newend'] = sv_end - (svdf[only_first_bp_inside,'end'] - sv_start)
-      # svdf[only_first_bp_inside,'newstart'] = svdf[only_first_bp_inside,'start'] - (sv_start - sv_end)
-
-
-     
+           
       #start breakpoint gets mirrored
-      svdf[(svdf_allstarts > sv_start) & (svdf_allstarts < sv_end) & (svdf_allns > target_coord_system),'newstart'] =
+      svdf[(svdf_allstarts > sv_start) & 
+           (svdf_allstarts < sv_end) & 
+           (svdf_alldepths > depth),'newstart'] =
         sv_end - 
-          (svdf[(svdf_allstarts > sv_start) & (svdf_allstarts < sv_end) & (svdf_allns > target_coord_system),'start'] - sv_start)
+          (svdf[(svdf_allstarts > sv_start) & 
+                (svdf_allstarts < sv_end) & 
+                (svdf_alldepths > depth),'start']
+                - sv_start)
 
       # end breakpoint
-      svdf[(svdf_allends > sv_start) & (svdf_allends < sv_end) & (svdf_allns > target_coord_system),'newend'] =
+      svdf[(svdf_allends > sv_start) & 
+           (svdf_allends < sv_end) & 
+           (svdf_alldepths > depth),'newend'] =
         sv_end - 
-          (svdf[(svdf_allends > sv_start) & (svdf_allends < sv_end) & (svdf_allns > target_coord_system),'end'] - sv_start)
+          (svdf[(svdf_allends > sv_start) & 
+                (svdf_allends < sv_end) & 
+                (svdf_alldepths > depth),'end'] 
+                - sv_start)
       
-
-
       newend_no_nas = !is.na(svdf$newend)
       newstart_no_nas = !is.na(svdf$newstart)
       svdf[newend_no_nas,'end'] = svdf[newend_no_nas,'newend']
@@ -199,22 +186,22 @@ turn_mut_max_into_svdf <- function(t, correction=T, return_string=F){
     if (sv == 'del'){
       
       #start breakpoints after the beginning of del get a plus
-      svdf[(svdf_allstarts > sv_start) & (svdf_allns > target_coord_system),'start'] =
-        svdf[(svdf_allstarts > sv_start) & (svdf_allns > target_coord_system),'start'] + (sv_end - sv_start)
+      svdf[(svdf_allstarts > sv_start) & (svdf_alldepths > depth),'start'] =
+        svdf[(svdf_allstarts > sv_start) & (svdf_alldepths > depth),'start'] + (sv_end - sv_start)
       
       #end breakpoints after the beginning of del get a plus
-      svdf[(svdf_allends > sv_start) & (svdf_allns > target_coord_system),'end'] =
-        svdf[(svdf_allends > sv_start) & (svdf_allns > target_coord_system),'end'] + (sv_end - sv_start)
+      svdf[(svdf_allends > sv_start) & (svdf_alldepths > depth),'end'] =
+        svdf[(svdf_allends > sv_start) & (svdf_alldepths > depth),'end'] + (sv_end - sv_start)
       
     } else if (sv == 'dup'){
       
       # start breakpoints after the dup get a minus
-      svdf[(svdf_allstarts > sv_end) & (svdf_allns > target_coord_system),'start'] =
-        svdf[(svdf_allstarts > sv_end) & (svdf_allns > target_coord_system),'start'] - (sv_end - sv_start)
+      svdf[(svdf_allstarts > sv_end) & (svdf_alldepths > depth),'start'] =
+        svdf[(svdf_allstarts > sv_end) & (svdf_alldepths > depth),'start'] - (sv_end - sv_start)
       
       # end breakpoints after thhe dup get a minus
-      svdf[(svdf_allends > sv_end) & (svdf_allns > target_coord_system),'end'] =
-        svdf[(svdf_allends > sv_end) & (svdf_allns > target_coord_system),'end'] - (sv_end - sv_start)
+      svdf[(svdf_allends > sv_end) & (svdf_alldepths > depth),'end'] =
+        svdf[(svdf_allends > sv_end) & (svdf_alldepths > depth),'end'] - (sv_end - sv_start)
     }
   }
 
