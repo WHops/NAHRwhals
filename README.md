@@ -29,6 +29,8 @@ We recommend using mamba to install dependencies:
 conda config --set channel_priority flexible
 mamba env create --file env_nahrwhals.yml
 conda activate nahrwhals
+
+julia -e 'using Pkg; Pkg.add("DelimitedFiles"); Pkg.add("ProgressMeter"); Pkg.add("ArgParse")'
 ```
 
 
@@ -145,39 +147,50 @@ Figures and results from the NAHRwhals manuscript can be replicated by querying 
 
 
 
-## Recommended parameters
+Based on your updated function parameters and their descriptions, here's a revised README section:
 
+# Parameters
+
+## Required
+
+| Variable name | Description | Default value|
+|-|-|--|
+| ref_fa | Path to the reference genome FASTA file. | - |
+| asm_fa | Path to the assembly genome FASTA file for comparison. | - |
+| outdir | Basedirectory to store output files and plots. | - |
+
+## Recommended parameters
 
 | Variable name | Description | Default value |
 |-------|---|-------|
-| samplename_x| Set a name for the genome_x sequence (e.g., samplename) to appear in the results.| 'Fasta_x' |
-| samplename_y| Set a name for the genome_y sequence (e.g., samplename) to appear in the results.| 'Fasta_y' |
-| anntrack| You can supply a .bed file (seqname, start, end, featurename) for annotations to appear in the dotplot. Typically used to indicate e.g. genes in a dotplot.| F|
-| logfile | Output file to which sSV calls will be written.| 'res/res.tsv' |
-
+| samplename_x | Reference genome label for outputs. | 'Fasta_x' |
+| samplename_y | Assembly genome label for outputs. | 'Fasta_y' |
+| region | Region to genotype in the format "chr:start-end". Mutually exclusive with 'regionfile' | [optional] |
+| regionfile | Path to a file listing regions to genotype in bed format. Mutually exclusive with 'region' | [optional] |
+| anntrack | Includes annotation tracks (e.g., genes) in dotplot. Specify as 4-column bedfile (col 4: displayed name). | FALSE |
 
 ## Advanced parameters
 
-
 | Variable name | Description | Default value |
 |---|-------|-------|
-| genome_y_fa_mmi | Link to minimap2 index mmi file of genome_y_fa, which is needed for fast alignments. If the mmi does not exist, NAHRwhals will invoke minimap2 to create it at the link location. | 'default' (By default, it is searched/created in the same directory as genome_y_fa). |
-| plot_only | If TRUE, NAHRwhals creates only dotplots but does not attempt SV calling.| F |
-| self_plots| If TRUE, NAHRwhals automatically creates a self-dotplot (aligning sequence to itself) of both the reference and homologous region of interest. Will be saved in res/chrX-start-end/self. | T |
-| plot_xy_segmented | If TRUE, NAHRwhals outputs a plot indicating obtained segmentation. | T |
-| eval_th | Set the threshold (in percent) for when NAHRwhals considers two sequences equal. Lower thresholds lead to missed SVs, higher thresholds to more 'unexplained' loci. Consider lowering to e.g. 95% for cross-species analyses. | 98|
-| depth | Maximum number of consecutive SVs to model. | 3 |
-| chunklen| Length of sequence chunks which are separately aligned to each other. By default, this is a function of the total sequence length and typically 1000 bp or 10.000 bp. It is typically not necessary to touch this parameter, as pairwise alignments are robust.| 'auto'|
-| minlen| Minimum alignment length to consider when searching for sSVs. By default, this is a function of the total sequence length and typically 1000 bp or 10.000 bp. Lower values can lead to finer alignments but high computation times and false positive calls.| 'auto'|
-| compression | Minimum segment length to consider when segmenting a dotplot. By default, this is a function of the total sequence length and typically 1000 bp or 10.000 bp. Lower values can lead to finer segmented dotplots but high computation times and false positive calls.| 'auto'|
-| max_size_col_plus_rows| Maximum acceptable size for the segmented dotplot (rows + columns). Is set to prevent computation / memory overflow. If this value is overstepped, minlen and chunklen are doubled until the resulting segmented dotplot is in the maximum dimensions. | 250 |
-| max_n_alns| Maximum number of individual alignments that can participate in dotplot segmentation. If this value is overstepped, minlen and chunklen are doubled until the resulting segmented dotplot is in the maximum dimensions. | 150 |
-| testrun_std | Runs a testrun with example data. | F |
-| testrun_fatofa| Runs a testrun with example data, but with the mode activated that compares full fastas to each other.| F |
-| compare_full_fastas| If TRUE, seqname_x, start_x, and end_x are ignored, and instead the whole genome_x_fa is aligned to the whole genome_y_fa. Use this if you have two regional fasta files that you want to compare. Do NOT use this when dealing with whole genome assemblies. | F |
- minimap2_bin| Link to the minimap2 binary. If minimap2 is in $PATH, keep the value 'default'. | default|
-| bedtools_bin| Link to the bedtools binary. If bedtools is in $PATH, keep the value 'default'. | default|
-
+| depth | Depth of the BFS mutation search. | 3 |
+| eval_th | Evaluation threshold as a percentage. | 98 |
+| chunklen | Sequence chunk length alignment, "default" means automatic determination based on sequence length. | auto-detection |
+| minlen | Disregard alignments shorter than this from the segmentation. | 350 |
+| compression | Minimum segment length. | auto-detection |
+| max_size_col_plus_rows | Maximum size for the alignment matrix. | 250 |
+| max_n_alns | Maximum number of alignments for a single query sequence. | 150 |
+| self_plots | Generates self-comparison plots for the assembly and ref. | TRUE |
+| plot_only | Skip BFS/genotyping, just create dotplots. | FALSE |
+| use_paf_library | Use an external PAF library for alignments. | FALSE |
+| conversionpaf_link | If use_paf_library: provide link to whole-genome paf here. | FALSE |
+| maxdup | BFS: max number of duplications per chain. | 2 |
+| init_width | BFS: follow up only init_width best-scoring nodes per depth. | 1000 |
+| region_maxlen | Maximum length of a window that can be analysed. Larger windows will be split into overlapping fragments. | 5000000 |
+| testrun_std | Test the NAHRwhals installation. | FALSE |
+| threads | Number of windows to parallel genotype. | 1 |
+| minimap_cores_per_thread | Number of cores to give to minimap PER THREAD. | 1 |
+| genome_y_fa_mmi | Path to pre-indexed assembly genome with minimap2. | "default" |
 
 
 # Output columns

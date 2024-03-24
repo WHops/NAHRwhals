@@ -4,7 +4,6 @@
 #install.packages("reshape2", repos="https://cran.us.r-project.org")
 
 # Use devtools to install the package. 
-#devtools::document()
-devtools::install()
-julia -e 'using Pkg; Pkg.add("DelimitedFiles"); Pkg.add("ProgressMeter"); Pkg.add("ArgParse")'
+devtools::document()
+#devtools::install()
 

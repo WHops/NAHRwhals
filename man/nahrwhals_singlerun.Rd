@@ -5,13 +5,14 @@
 \title{Nahrwhals: A function for analyzing genomic alignments and visualizing results}
 \usage{
 nahrwhals_singlerun(
-  genome_x_fa,
-  genome_y_fa,
-  seqname_x,
-  start_x,
-  end_x,
+  genome_x_fa = "default",
+  genome_y_fa = "default",
+  seqname_x = "default",
+  start_x = "default",
+  end_x = "default",
   genome_y_fa_mmi = "default",
   anntrack = FALSE,
+  outdir = "res",
   logfile = "res/res.tsv",
   samplename_x = "Fasta_x",
   samplename_y = "Fasta_y",
@@ -49,7 +50,8 @@ nahrwhals_singlerun(
   maxdup = 2,
   minreport = 0.98,
   init_width = 1000,
-  minimap_cores = 1
+  minimap_cores = 1,
+  silent = F
 )
 }
 \arguments{

@@ -2,7 +2,7 @@
 % Please edit documentation in R/seqbuilder_functions.R
 \name{run_minimap2}
 \alias{run_minimap2}
-\title{Submit a system command to run minimap2}
+\title{Submit a run_silent command to run minimap2}
 \usage{
 run_minimap2(targetfasta, queryfasta, outpaf, params)
 }

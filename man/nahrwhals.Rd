@@ -2,54 +2,97 @@
 % Please edit documentation in R/nahrwhals.R
 \name{nahrwhals}
 \alias{nahrwhals}
-\title{NW main}
+\title{Nahrwhals: Comparative Genomics Analysis Tool}
 \usage{
 nahrwhals(
   ref_fa,
   asm_fa,
-  regions = NULL,
-  genome_y_fa_mmi = "default",
+  outdir,
+  region = NULL,
+  regionfile = NULL,
   anntrack = FALSE,
-  logfile = "res/res.tsv",
-  res_bedfile = "res/res_all.bed",
-  samplename_x = "Fasta_x",
-  samplename_y = "Fasta_y",
-  compare_full_fastas = FALSE,
-  plot_only = FALSE,
-  self_plots = TRUE,
-  plot_xy_segmented = TRUE,
-  eval_th = 98,
   depth = 3,
+  eval_th = 98,
   chunklen = "default",
   minlen = "default",
   compression = "default",
   max_size_col_plus_rows = 250,
   max_n_alns = 150,
+  self_plots = TRUE,
+  plot_only = FALSE,
+  samplename_x = "Fasta_x",
+  samplename_y = "Fasta_y",
   use_paf_library = FALSE,
   conversionpaf_link = FALSE,
-  xpad = 1,
-  plot_minlen = 350,
-  maxlen_refine = 1e+10,
-  n_tests = 10,
-  n_max_testchunks = 5,
-  baseline_log_minsize_min = 8,
-  baseline_log_minsize_max = FALSE,
-  discovery_exact = FALSE,
-  hltrack = FALSE,
-  hllink = FALSE,
-  aln_pad_factor = 1,
-  debug = FALSE,
-  clean_after_yourself = FALSE,
-  testrun_std = FALSE,
-  testrun_fullfa = FALSE,
-  threads = 1,
-  noclutterplots = T,
   maxdup = 2,
-  minreport = 0.98,
   init_width = 1000,
-  minimap_cores = 1
+  region_maxlen = 5e+06,
+  testrun_std = FALSE,
+  threads = 1,
+  minimap_cores_per_thread = 1,
+  genome_y_fa_mmi = "default"
 )
 }
+\arguments{
+\item{ref_fa}{Path to the reference genome FASTA file. \link{required}}
+
+\item{asm_fa}{Path to the assembly genome FASTA file for comparison. \link{required}}
+
+\item{outdir}{Basedirectory to store output files and plots. \link{required}}
+
+\item{region}{Region to genotype in the format "chr:start-end". Specify this or regionfile, not both. \link{optional}}
+
+\item{regionfile}{Region to genotype in the format "chr:start-end". Specify this or region, not both. \link{optional}}
+
+\item{anntrack}{Includes annotation tracks (e.g. genes) in dotplot. Specify as 4-column bedfile (col 4: displayed name) \link{default: FALSE}}
+
+\item{depth}{depth of the BFS mutation search \link{default: 3}}
+
+\item{eval_th}{Evaluation threshold as a percentage. \link{default: 98}}
+
+\item{chunklen}{Sequence chunk length alignment, "default" means automatic determination based on sequence length. \link{default: auto-detection}}
+
+\item{minlen}{Disregard alignments shorter than this from the segmentation. \link{default: 350}}
+
+\item{compression}{Minimum segment length. \link{default: auto-detection}}
+
+\item{max_size_col_plus_rows}{Maximum size for the alignment matrix \link{default: 250}}
+
+\item{max_n_alns}{Maximum number of alignments for a single query sequence \link{default: 150}}
+
+\item{self_plots}{Generates self-comparison plots for the assembly and ref \link{default: TRUE}}
+
+\item{plot_only}{Skip BFS/genotyping, just create dotplots \link{default: FALSE}}
+
+\item{samplename_x}{Reference genome label for outputs \link{default: "Fasta_x"}}
+
+\item{samplename_y}{Assembly genome label for outputs \link{default: "Fasta_y"}}
+
+\item{use_paf_library}{Use an external PAF library for alignments \link{default: FALSE}}
+
+\item{conversionpaf_link}{if use_paf_library: provide link to whole-genome paf here \link{default: FALSE}}
+
+\item{maxdup}{BFS: max number of duplications per chain \link{default: 2}}
+
+\item{init_width}{BFS: follow up only init_width best-scoring nodes per depth \link{default: 1000}}
+
+\item{region_maxlen}{Maximum length of a window that can be analysied. Larger windows will be split into overlapping fragments \link{default: 5000000}}
+
+\item{testrun_std}{Test the NAHRwhals installation \link{default: FALSE}}
+
+\item{threads}{Number of windows to parallel genotype \link{default: 1}}
+
+\item{minimap_cores_per_thread}{Number of cores to give to minimap PER THREAD \link{default: 1}}
+
+\item{genome_y_fa_mmi}{Path to pre-indexed assembly genome with minimap2 \link{default: "default"}}
+}
+\value{
+Performs the specified comparative genomics analysis, generating relevant output files and plots.
+}
 \description{
-NW main
+This function facilitates comparative genomics analysis by comparing a reference genome against an assembly genome. It supports detailed analysis options, including region-specific analysis, and provides extensive visualization features.
+}
+\examples{
+nahrwhals(ref_fa="path/to/ref_genome.fasta", asm_fa="path/to/asm_genome.fasta", outdir="path/to/output")
+
 }

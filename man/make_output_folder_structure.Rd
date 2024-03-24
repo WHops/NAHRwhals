@@ -4,7 +4,7 @@
 \alias{make_output_folder_structure}
 \title{Create empty output folders for NAHRwhals output files}
 \usage{
-make_output_folder_structure(sequence_name_output)
+make_output_folder_structure(outdir, sequence_name_output)
 }
 \arguments{
 \item{sequence_name_output}{The output directory path for the files.}

@@ -14,25 +14,52 @@
 
 
 
-#' NW main
+#' Nahrwhals: Comparative Genomics Analysis Tool
+#'
+#' This function facilitates comparative genomics analysis by comparing a reference genome against an assembly genome. It supports detailed analysis options, including region-specific analysis, and provides extensive visualization features.
+#'
+#' @param ref_fa Path to the reference genome FASTA file. [required]
+#' @param asm_fa Path to the assembly genome FASTA file for comparison. [required]
+#' @param outdir Basedirectory to store output files and plots. [required]
+#' @param samplename_x Reference genome label for outputs [default: "Fasta_x"]
+#' @param samplename_y Assembly genome label for outputs [default: "Fasta_y"]
+#' @param region Region to genotype in the format "chr:start-end". Specify this or regionfile, not both. [optional]
+#' @param regionfile Region to genotype in the format "chr:start-end". Specify this or region, not both. [optional]
+#' @param anntrack Includes annotation tracks (e.g. genes) in dotplot. Specify as 4-column bedfile (col 4: displayed name) [default: FALSE]
+#' @param depth depth of the BFS mutation search [default: 3]
+#' @param eval_th Evaluation threshold as a percentage. [default: 98]
+#' @param chunklen Sequence chunk length alignment, "default" means automatic determination based on sequence length. [default: auto-detection]
+#' @param minlen Disregard alignments shorter than this from the segmentation. [default: 350]
+#' @param compression Minimum segment length. [default: auto-detection]
+#' @param max_size_col_plus_rows Maximum size for the alignment matrix [default: 250]
+#' @param max_n_alns Maximum number of alignments for a single query sequence [default: 150]
+#' @param self_plots Generates self-comparison plots for the assembly and ref [default: TRUE]
+#' @param plot_only Skip BFS/genotyping, just create dotplots [default: FALSE]
+#' @param use_paf_library Use an external PAF library for alignments [default: FALSE]
+#' @param conversionpaf_link if use_paf_library: provide link to whole-genome paf here [default: FALSE]
+#' @param maxdup BFS: max number of duplications per chain [default: 2]
+#' @param init_width BFS: follow up only init_width best-scoring nodes per depth [default: 1000] 
+#' @param region_maxlen Maximum length of a window that can be analysied. Larger windows will be split into overlapping fragments [default: 5000000]
+#' @param testrun_std Test the NAHRwhals installation [default: FALSE]
+#' @param threads Number of windows to parallel genotype [default: 1]
+#' @param minimap_cores_per_thread Number of cores to give to minimap PER THREAD [default: 1]
+#' @param genome_y_fa_mmi Path to pre-indexed assembly genome with minimap2 [default: "default"]
+#' @return Performs the specified comparative genomics analysis, generating relevant output files and plots.
 #' @export
-#' 
-nahrwhals <- function(ref_fa, asm_fa, outdir, region=NULL, regionfile=NULL, 
-                      genome_y_fa_mmi = "default", anntrack = FALSE, samplename_x = "Fasta_x",
-                      samplename_y = "Fasta_y", compare_full_fastas = FALSE,
-                      plot_only = FALSE, self_plots = TRUE,
-                      plot_xy_segmented = TRUE, eval_th = 98, depth = 3,
-                      chunklen = "default", minlen = "default", compression = "default",
-                      max_size_col_plus_rows = 250, max_n_alns = 150,
+#'
+#' @examples
+#' nahrwhals(ref_fa="path/to/ref_genome.fasta", asm_fa="path/to/asm_genome.fasta", outdir="path/to/output")
+#'
+nahrwhals <- function(ref_fa, asm_fa, outdir, region=NULL, regionfile=NULL, anntrack = FALSE, 
+                      depth = 3, eval_th = 98, chunklen = "default", minlen = "default", compression = "default",
+                      max_size_col_plus_rows = 250, max_n_alns = 150, 
+                      self_plots = TRUE, plot_only = FALSE,
+                      samplename_x = "Fasta_x", samplename_y = "Fasta_y",
                       use_paf_library = FALSE, conversionpaf_link = FALSE,
-                      xpad = 1, plot_minlen = 350, maxlen_refine = 1e10,
-                      n_tests = 10, n_max_testchunks = 5, baseline_log_minsize_min = 8,
-                      baseline_log_minsize_max = FALSE, discovery_exact = FALSE,
-                      hltrack = FALSE, hllink = FALSE, aln_pad_factor = 1.0,
-                      debug = FALSE, clean_after_yourself = FALSE, testrun_std = FALSE,
-                      testrun_fullfa = FALSE, threads = 1,
-                      noclutterplots = T,   maxdup = 2, minreport = 0.98, init_width = 1000,
-                      minimap_cores = 1, region_maxlen = 5000000 ){
+                      maxdup = 2, init_width = 1000, region_maxlen = 5000000, testrun_std = FALSE,
+                      threads = 1, minimap_cores_per_thread = 1, genome_y_fa_mmi = "default") {
+
+
   
                         
     # Avoid scientific notations
@@ -40,59 +67,62 @@ nahrwhals <- function(ref_fa, asm_fa, outdir, region=NULL, regionfile=NULL,
     library(doParallel)
 
     
-
-
-  
     if (is.null(region) && is.null(regionfile)){
+        print('No region or regionfile provided. Running whole genome discovery mode.')
         NW_mode = 'whole-genome'
     } else if (!is.null(region) && is.null(regionfile)){
+        print('Coordinates provided. Genotyping that region.')
         NW_mode = 'genotype_1region'
     } else if (is.null(region) && !is.null(regionfile)){
+        print('Regionfile provided. Genotyping all regions in that file.')
         NW_mode = 'genotype_regionfile'
     } else {
         stop('Please provide either a region or a regionfile, not both.')
     }
 
+    
+    # Take some of the more outlandish parameters out of the users hands.
+    # TODO: a gardening trip to eradicate some of these parameters
+    xpad = 1
+    plot_minlen = 350
+    maxlen_refine = 1e10
+    n_tests = 10
+    n_max_testchunks = 5
+    baseline_log_minsize_min = 8
+    baseline_log_minsize_max = FALSE
+    discovery_exact = FALSE
+    hltrack = FALSE
+    hllink = FALSE
+    aln_pad_factor = 1.0
+    debug = FALSE
+    clean_after_yourself = FALSE
+    compare_full_fastas = FALSE
+    testrun_fullfa = FALSE
+    minreport = 0.98
+    noclutterplots = T
+    plot_xy_segmented = TRUE
+    minimap2_bin = 'minimap2'
+    bedtools_bin = 'bedtools'
 
     logfile = paste0(outdir, '/nahrwhals_res.tsv')
     res_bedfile = paste0(outdir, '/nahrwhals_res.bed')
 
     # Little intermezzo to check if the minimap2 index file exists.
     # If no, make it now, before the parallel workers start.
-    if (params$genome_y_fa_mmi %in% default_param_values){
-        genome_y_fa_mmi = paste0(params$outdir,'/intermediate/mmis/', basename(asm_fa), '.mmi')
+    if (genome_y_fa_mmi != 'default'){
+        genome_y_fa_mmi = paste0(outdir,'/intermediate/mmis/', basename(asm_fa), '.mmi')
     }
     
-    mmi_params = c('minimap2_bin' = minimap2_bin, 
-                    'genome_y_fa' = genome_y_fa,
+    mmi_params = list('minimap2_bin' = minimap2_bin, 
+                    'genome_y_fa' = asm_fa,
                     'genome_y_fa_mmi' = genome_y_fa_mmi)
 
     create_mmi_if_doesnt_exists(mmi_params)
 
 
-    #' Creates a minimap2 index (.mmi) file for a genome assembly if it doesn't exist.
-#' @param params A list containing parameters for the function.
-#' @export
-create_mmi_if_doesnt_exists <- function(params) {
-  if (file.exists(params$genome_y_fa_mmi)) {
-    #print('Found existing minimap2 index ".mmi" file. Skipping re-calculation.')
-    return()
-  }
-
-
-  print('No minimap2 index ".mmi" file of the assembly fasta found. Creating one now (takes around 1 minute for a whole genome assembly.)')
-
-  minimap2_indexing_command <- paste0(params$minimap2_bin, " -k 28 -w 255 --idx-no-seq -H -d ", params$genome_y_fa_mmi, " ", params$genome_y_fa)
-  run_silent(minimap2_indexing_command)
-}
-
-
-
     if (NW_mode == 'whole-genome'){
 
-
-
-
+        # Step 1: Scan the whole genome for windows to genotype
         window_dir = paste0(outdir, '/whole-genome-windows/', samplename_x, '_', samplename_y)
         dir.create(window_dir, showWarnings = F, recursive = T)
 
@@ -137,7 +167,7 @@ create_mmi_if_doesnt_exists <- function(params) {
                               baseline_log_minsize_max=baseline_log_minsize_max, discovery_exact=discovery_exact, hltrack=hltrack, 
                               hllink=hllink, aln_pad_factor=aln_pad_factor, debug=debug, clean_after_yourself=clean_after_yourself, 
                               testrun_std=testrun_std, testrun_fullfa=testrun_fullfa, noclutterplots=noclutterplots, maxdup=maxdup, 
-                              minreport=minreport, init_width=init_width, minimap_cores=minimap_cores, silent=T)
+                              minreport=minreport, init_width=init_width, minimap_cores=minimap_cores_per_thread, silent=T)
 
             
             )
@@ -159,6 +189,10 @@ create_mmi_if_doesnt_exists <- function(params) {
 
     } else if (NW_mode == 'genotype_regionfile'){ 
         # Step 1: alternative: just load the genotype bedfile
+
+        print('servus!')
+        print(regionfile)
+        print("32")
         regions_to_genotype_df = read.table(regionfile, sep='\t', header=F)
         colnames(regions_to_genotype_df) = c('chr','start', 'end')
 
@@ -201,7 +235,7 @@ create_mmi_if_doesnt_exists <- function(params) {
                               baseline_log_minsize_max=baseline_log_minsize_max, discovery_exact=discovery_exact, hltrack=hltrack, 
                               hllink=hllink, aln_pad_factor=aln_pad_factor, debug=debug, clean_after_yourself=clean_after_yourself, 
                               testrun_std=testrun_std, testrun_fullfa=testrun_fullfa, noclutterplots=noclutterplots, maxdup=maxdup, 
-                              minreport=minreport, init_width=init_width, minimap_cores=minimap_cores, silent=T)
+                              minreport=minreport, init_width=init_width, minimap_cores=minimap_cores_per_thread, silent=T)
 
             
             )
@@ -215,9 +249,7 @@ create_mmi_if_doesnt_exists <- function(params) {
 
         stopCluster(cl)
         close(pb)
-        # Inform user
-        print('')
-        print('Finished running nahrwhals on all regions.')
+
 
         tsv_to_bed_regional_dominance(logfile, res_bedfile)
 
@@ -240,7 +272,7 @@ create_mmi_if_doesnt_exists <- function(params) {
                     baseline_log_minsize_max=baseline_log_minsize_max, discovery_exact=discovery_exact, hltrack=hltrack, 
                     hllink=hllink, aln_pad_factor=aln_pad_factor, debug=debug, clean_after_yourself=clean_after_yourself, 
                     testrun_std=testrun_std, testrun_fullfa=testrun_fullfa, noclutterplots=noclutterplots, maxdup=maxdup, 
-                    minreport=minreport, init_width=init_width, minimap_cores=minimap_cores))
+                    minreport=minreport, init_width=init_width, minimap_cores=minimap_cores_per_thread))
     }
     
 
