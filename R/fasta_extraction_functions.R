@@ -13,6 +13,8 @@
 #' @export
 extract_subseq_bedtools <- function(infasta, seqname, start, end, outfasta, params) {
   # Where is bedtools?
+
+
   bedtoolsloc <- params$bedtools_bin
   
   # Generate a random tag for temporary files to avoid conflicts
@@ -35,7 +37,7 @@ extract_subseq_bedtools <- function(infasta, seqname, start, end, outfasta, para
     end <- contig_length
   }
   
-  # Write coordinates into the temporary BED file
+  # Write coordinates into the temporary BED file. Make sure to write out numbers in non-scientific
   write.table(data.frame(seqname, start, end), file = tmp_bedfile, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
   
   # Run bedtools getfasta

@@ -14,7 +14,7 @@
 #' NW main
 #' @export
 #' 
-nahrwhals <- function(ref_fa, asm_fa, regions=NULL,
+nahrwhals <- function(ref_fa, asm_fa, region=NULL, regionfile=NULL, 
                       genome_y_fa_mmi = "default", anntrack = FALSE,
                       logfile = "res/res.tsv", res_bedfile = 'res/res_all.bed', samplename_x = "Fasta_x",
                       samplename_y = "Fasta_y", compare_full_fastas = FALSE,
@@ -32,32 +32,67 @@ nahrwhals <- function(ref_fa, asm_fa, regions=NULL,
                       noclutterplots = T,   maxdup = 2, minreport = 0.98, init_width = 1000,
                       minimap_cores = 1 ){
   
-
+                        
+    # Avoid scientific notations
+    options(scipen=999)
+    
     library(foreach)
   
-    if (is.null(regions)){
+    if (is.null(region) && is.null(regionfile)){
         NW_mode = 'whole-genome'
+    } else if (!is.null(region) && is.null(regionfile)){
+        NW_mode = 'genotype_1region'
+    } else if (is.null(region) && !is.null(regionfile)){
+        NW_mode = 'genotype_regionfile'
     } else {
-        NW_mode = 'genotype'
+        stop('Please provide either a region or a regionfile, not both.')
     }
 
     if (NW_mode == 'whole-genome'){
       # Step 1: define our windows
       regions_to_genotype_df = scan_for_windows(fasta_x, fasta_y, threads, outfile) #Outfile is optional
-    } else if (NW_mode == 'genotype'){ 
+
+            # Step 2: run each one
+      cl <- parallel::makePSOCKcluster(threads)
+      foreach::foreach(idx = 1:nrow(regions_to_genotype_df)) %dopar% {
+
+          row <- regions_to_genotype_df[idx, ]
+          chr <- row$chr
+          start <- row$start
+          end <- row$end
+
+          (nahrwhals_singlerun(genome_x_fa=ref_fa, genome_y_fa=asm_fa, seqname_x=seqname_x, start_x=start_x, end_x=end_x, 
+                              genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=samplename_x, 
+                              samplename_y=samplename_y, compare_full_fastas=compare_full_fastas, plot_only=plot_only, 
+                              self_plots=self_plots, plot_xy_segmented=plot_xy_segmented, eval_th=eval_th, depth=depth, 
+                              chunklen=chunklen, minlen=minlen, compression=compression, max_size_col_plus_rows=max_size_col_plus_rows, 
+                              max_n_alns=max_n_alns, use_paf_library=use_paf_library, conversionpaf_link=conversionpaf_link, 
+                              xpad=xpad, plot_minlen=plot_minlen, maxlen_refine=maxlen_refine, n_tests=n_tests, 
+                              n_max_testchunks=n_max_testchunks, baseline_log_minsize_min=baseline_log_minsize_min, 
+                              baseline_log_minsize_max=baseline_log_minsize_max, discovery_exact=discovery_exact, hltrack=hltrack, 
+                              hllink=hllink, aln_pad_factor=aln_pad_factor, debug=debug, clean_after_yourself=clean_after_yourself, 
+                              testrun_std=testrun_std, testrun_fullfa=testrun_fullfa, noclutterplots=noclutterplots, maxdup=maxdup, 
+                              minreport=minreport, init_width=init_width, minimap_cores=minimap_cores)
+        )
+    }
+
+    # Stop the parallel backend after you're done to free up resources
+    parallel::stopCluster(cl)
+    tsv_to_bed_regional_dominance(logfile, res_bedfile)
+
+    } else if (NW_mode == 'genotype_regionfile'){ 
       # Step 1: alternative: just load the genotype bedfile
       regions_to_genotype_df = read.table(regions, sep='\t', header=F)
       colnames(regions_to_genotype_df) = c('chr','start', 'end')
-    }
-    
-    # Step 2: run each one
+
+          # Step 2: run each one
     cl <- parallel::makePSOCKcluster(threads)
     foreach::foreach(idx = 1:nrow(regions_to_genotype_df)) %dopar% {
 
         row <- regions_to_genotype_df[idx, ]
-        seqname_x <- row$chr
-        start_x <- row$start
-        end_x <- row$end
+        chr <- row$chr
+        start <- row$start
+        end <- row$end
 
         (nahrwhals_singlerun(genome_x_fa=ref_fa, genome_y_fa=asm_fa, seqname_x=seqname_x, start_x=start_x, end_x=end_x, 
                             genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=samplename_x, 
@@ -76,9 +111,33 @@ nahrwhals <- function(ref_fa, asm_fa, regions=NULL,
 
     # Stop the parallel backend after you're done to free up resources
     parallel::stopCluster(cl)
-    
-    # Step 4: Run 'regional dominance' analysis
     tsv_to_bed_regional_dominance(logfile, res_bedfile)
+
+    } else if (NW_mode == 'genotype_1region'){
+      # Step 1: alternative: just load the genotype bedfile
+      # Region is in format chr:start-end. Split it up.
+      region = unlist(strsplit(region, ':|-'))
+      chr=region[1]
+      start=as.numeric(region[2])
+      end=as.numeric(region[3])
+
+      nahrwhals_singlerun(genome_x_fa=ref_fa, genome_y_fa=asm_fa, seqname_x=chr, start_x=start, end_x=end, 
+                    genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=samplename_x, 
+                    samplename_y=samplename_y, compare_full_fastas=compare_full_fastas, plot_only=plot_only, 
+                    self_plots=self_plots, plot_xy_segmented=plot_xy_segmented, eval_th=eval_th, depth=depth, 
+                    chunklen=chunklen, minlen=minlen, compression=compression, max_size_col_plus_rows=max_size_col_plus_rows, 
+                    max_n_alns=max_n_alns, use_paf_library=use_paf_library, conversionpaf_link=conversionpaf_link, 
+                    xpad=xpad, plot_minlen=plot_minlen, maxlen_refine=maxlen_refine, n_tests=n_tests, 
+                    n_max_testchunks=n_max_testchunks, baseline_log_minsize_min=baseline_log_minsize_min, 
+                    baseline_log_minsize_max=baseline_log_minsize_max, discovery_exact=discovery_exact, hltrack=hltrack, 
+                    hllink=hllink, aln_pad_factor=aln_pad_factor, debug=debug, clean_after_yourself=clean_after_yourself, 
+                    testrun_std=testrun_std, testrun_fullfa=testrun_fullfa, noclutterplots=noclutterplots, maxdup=maxdup, 
+                    minreport=minreport, init_width=init_width, minimap_cores=minimap_cores)
+    }
+    
+
+    # Step 4: Run 'regional dominance' analysis
+    
         
         
 
