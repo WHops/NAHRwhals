@@ -11,7 +11,7 @@
 #' @return A data frame that stores the search results
 #'
 #' @export
-solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th = 98) {
+solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th = 98, compression=1000, is_cluttered_already_paf=F) {
   #
   # browser()
   # bitlocus = readRDS('bitme_large')
@@ -26,7 +26,7 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
   n_discontinued <<- 0
 
   # reject bitloci with cut-off alignments at the borders ('clutter')
-  if (is_cluttered(bitlocus)) {
+  if (is_cluttered(bitlocus)){#} | is_cluttered_already_paf) {
     print("Alignments overlap with borders. Make frame larger!")
     res_out <- data.frame(eval = 0, mut1 = "ref")
     res_out <- annotate_res_out_with_positions_lens(res_out, bitlocus)
@@ -42,6 +42,12 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
   # deeper once a good solution is found.
   conclusion_found <- F
   current_depth <- 1
+  
+  # If the thingy is SO big that even the first stage will take very long,
+  # Then we want to run only one slim run in which the 'ref' gets its eval. 
+  if (maxdepth == 0){
+    current_depth = 0
+  }
 
   # The tree is explored in an iterative manner, in which all mutations from the one depth are
   # explored. If one depth does not yield a solution, the next depth is explored, until
@@ -52,7 +58,7 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
   # local minima in rare instances. Additionally, it is not guaranteed that all alternative paths to an
   # optimal result are identified with this.
   while ((!conclusion_found) & (current_depth <= maxdepth)) {
-    print(paste0("Running depth layer: ", current_depth))
+    #print(paste0("Running depth layer: ", current_depth))
 
     # Run the dfs machinery (main work horse)
     vis_list <- (dfs(bitlocus, maxdepth = current_depth, increase_only = F, earlystop = earlystop))
@@ -63,9 +69,9 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
     # solve_th = params$eval_th# find_threshold(bitlocus, current_depth)
     conclusion_found <- (max(as.numeric(res_df$eval)) >= solve_th)
 
-    if (conclusion_found) {
-      print("Conclusion found!!")
-    }
+    #if (conclusion_found) {
+    #  print("SV found")
+    #}
 
     # Higher depth for next iteration!
     current_depth <- current_depth + 1
@@ -87,7 +93,7 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
   }
 
   # Prepare output for returns
-  res_df_sort <- sort_new_by_penalised(bitlocus, res_df)
+  res_df_sort <- sort_new_by_penalised(bitlocus, res_df, compression)
   res_out <- transform_res_new_to_old(res_df_sort)
   res_out$eval <- as.numeric(res_out$eval)
 
@@ -101,10 +107,6 @@ solve_mutation <- function(bitlocus, maxdepth_input, earlystop = Inf, solve_th =
     log_collection$mut_tested <<- dim(res_df)[1]
   }
 
-  # print(paste0('Nodes considered: ', n_eval_total + n_hash_excluded))
-  # print(paste0('Eval attempted: ', n_eval_total))
-  # print(paste0('Eval calced: ', n_eval_calc))
-  # print(paste0('Hash excluded: ', n_hash_excluded))
 
   return(res_out)
 }

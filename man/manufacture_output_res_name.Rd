@@ -4,7 +4,7 @@
 \alias{manufacture_output_res_name}
 \title{Create output file name for NAHRwhals results}
 \usage{
-manufacture_output_res_name(seqname_x, start_x, end_x)
+manufacture_output_res_name(out_dir, seqname_x, start_x, end_x)
 }
 \arguments{
 \item{seqname_x}{The name of the input sequence.}

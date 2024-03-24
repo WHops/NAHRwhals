@@ -1,4 +1,6 @@
 #!/usr/bin/env Rscript
 
 # Use devtools to install the package. 
-devtools::install(dependencies = FALSE)
+#devtools::document()
+devtools::install()
+

@@ -10,70 +10,143 @@
 #'
 #' @author Wolfram Hoeps
 #' @export
-merge_rows <- function(paffile, pairs) {
+merge_rows <- function(paffile, pairs, reduced_qnames = F) {
+
   count <- 0
+
+  # Accessing the large paffile should be minimized!
+  # We pull out the relevant columns here instead - much faster to work with them!
+  qnames = paffile$qname
+  qstarts = paffile$qstart
+  qends = paffile$qend
+  tstarts = paffile$tstart
+  tends = paffile$tend
+  strands = paffile$strand
+  nmatches = as.numeric(paffile$nmatch)
+  alens = as.numeric(paffile$alen)
+  
   for (i in dim(pairs)[1]:1) {
-    if (count %% 100 == 0) {
-      print(paste0("Merging pair ", count, " out of ", dim(pairs)[1]))
-    }
+    #if (count %% 100 == 0) {
+    #  print(paste0("Merging pair ", count, " out of ", dim(pairs)[1]))
+    #}
+
     nl1 <- (pairs[i, 1])
     nl2 <- (pairs[i, 2])
-    paf_work <- paffile[c(nl1, nl2), ]
-    if (paf_work[1, "strand"] == "+") {
-      paf_work[1, ]$qname <- paste0(
-        sub("_.*", "", paf_work[1, ]$qname),
+    nl1_bu = nl1
+    
+    if (strands[nl1] == "+") {
+      
+      qname1 = qnames[nl1]
+      qstart1 = qstarts[nl1]
+      qstart2 = qstarts[nl2]
+      qend1 = qends[nl1]
+      qend2 = qends[nl2]
+      tstart1 = tstarts[nl1]
+      tstart2 = tstarts[nl2]
+      tend1 = tends[nl1]
+      tend2 = tends[nl2]
+      
+      if (reduced_qnames){
+        qnames[nl1_bu] <- qname1
+      } else {
+        qnames[nl1_bu] <- paste0(
+        sub("_[^_]*$", "", qname1),
         "_",
-        paf_work[1, ]$qstart,
+        qstart1,
         "-",
-        paf_work[2, ]$qend - 1
-      )
+        qend2 - 1
+        )
+      }
 
-      paf_work_bu <- paf_work
       # query coordinates
-      paf_work[1, ]$qend <- max(paf_work_bu[1, ]$qend, paf_work_bu[2, ]$qend)
-      paf_work[1, ]$qstart <- min(paf_work_bu[1, ]$qstart, paf_work_bu[2, ]$qstart)
+      qends[nl1_bu] <- max(qend1, qend2)
+      qstarts[nl1_bu] <- min(qstart1, qstart2)
 
       # target coordinates
-      paf_work[1, ]$tend <- max(paf_work_bu[1, ]$tend, paf_work_bu[2, ]$tend)
-      paf_work[1, ]$tstart <- min(paf_work_bu[1, ]$tstart, paf_work_bu[2, ]$tstart)
-    } else if (paf_work[1, "strand"] == "-") {
+      tends[nl1_bu] <- max(tend1, tend2)
+      tstarts[nl1_bu] <- min(tstart1, tstart2)
+      
+      
+    } else if (strands[nl1] == "-") {
+
       # Sort by t, because this is increasing
-      paf_work <- paf_work[order(paf_work$tstart), ]
-      paf_work[1, ]$qname <- paste0(
-        sub("_.*", "", paf_work[1, ]$qname),
-        "_",
-        paf_work[2, ]$qend,
-        "-",
-        paf_work[2, ]$qstart
-      )
-      paf_work_bu <- paf_work
+      if (tstarts[nl1] > tstarts[nl2]){
+        # Switch the values of nl1 and nl2
+        nl1 = nl2
+        nl2 = nl1_bu
+      }
+
+      qname1 = qnames[nl1]
+      qstart1 = qstarts[nl1]
+      qstart2 = qstarts[nl2]
+      qend1 = qends[nl1]
+      qend2 = qends[nl2]
+      tstart1 = tstarts[nl1]
+      tstart2 = tstarts[nl2]
+      tend1 = tends[nl1]
+      tend2 = tends[nl2]
+
+      if (reduced_qnames){
+        qnames[nl1_bu] <- qname1
+      } else {
+        qnames[nl1_bu] <- paste0(
+           sub("_[^_]*$", "", qname1),
+           "_",
+           qend2,
+           "-",
+           qstart2
+          )
+      }
+      qnames[nl1_bu] <- qname1#
+
       # query coordinates
-      paf_work[1, ]$qend <- min(paf_work_bu[1, ]$qend, paf_work_bu[2, ]$qend)
-      paf_work[1, ]$qstart <- max(paf_work_bu[1, ]$qstart, paf_work_bu[2, ]$qstart)
+      qends[nl1_bu] <- min(qend1, qend2)
+      qstarts[nl1_bu] <- max(qstart1, qstart2)
 
       # target coordinates
-      paf_work[1, ]$tend <- max(paf_work_bu[1, ]$tend, paf_work_bu[2, ]$tend)
-      paf_work[1, ]$tstart <- min(paf_work_bu[1, ]$tstart, paf_work_bu[2, ]$tstart)
+      tends[nl1_bu] <- max(tend1, tend2)
+      tstarts[nl1_bu] <- min(tstart1, tstart2)
     }
 
-
-    # nmatch
-    paf_work[1, ]$nmatch <- paf_work[1, ]$nmatch + paf_work[2, ]$nmatch
-    # alen
-    paf_work[1, ]$alen <- paf_work[1, ]$alen + paf_work[2, ]$alen
-
-    # Now process the main paf thing
-    paffile[nl1, ] <- paf_work[1, ]
-
+    # nmatches and alens
+    nmatches[nl1_bu] <- nmatches[nl1] + nmatches[nl2]
+    alens[nl1_bu] <- alens[nl1] + alens[nl2]
+  
+    
     count <- count + 1
   }
+
+  # Re-construct a paffile out of the columns
+  paffile = data.frame(qname = qnames,
+                       qlen = paffile$qlen,
+                       qstart = qstarts,
+                       qend = qends,
+                       strand = strands,
+                       tname = paffile$tname,
+                       tlen = paffile$tlen,
+                       tstart = tstarts,
+                       tend = tends,
+                       nmatch = nmatches,
+                       alen = alens,
+                       mapq = paffile$mapq
+                       )
+  
+  
+
 
   paffile <- paffile[!(row.names(paffile) %in% pairs$col), ]
 
   # Filter
-  paffile <- paffile[dplyr::between((abs(paffile$tend - paffile$tstart) /
-    abs(paffile$qend - paffile$qstart)), 0.5, 2), ]
+  paffile <- paffile[dplyr::between((abs(as.numeric(paffile$tend) - as.numeric(paffile$tstart)) /
+    abs(as.numeric(paffile$qend) - as.numeric(paffile$qstart))), 0.5, 2), ]
 
+  # Print out the longest t length of the paffile
+  max_tlen = max(abs(as.numeric(paffile$tend) - as.numeric(paffile$tstart)))
+  # Print out the number of alingments in the paffile
+  # print(paste0("Number of alignments: ", dim(paffile)[1]))
+  # Print this result
+  # print(paste0("Max tlen: ", max_tlen))
+  # print('done')
   return(paffile)
 }
 
@@ -105,8 +178,10 @@ compress_paf_fnct <-
            n_quadrants_per_axis = NULL,
            second_run = F,
            inparam_chunklen = NULL,
-           inparam_compression = NULL) {
-    if (is.null(inpaf_df)) {
+           inparam_compression = NULL,
+           qname = NULL) {
+
+      if (is.null(inpaf_df)) {
       # Read and col-annotate the input paf
       inpaf <- read.table(inpaf_link, sep = "\t")
       # Remove redundant rows
@@ -145,6 +220,34 @@ compress_paf_fnct <-
       row.names(inpaf) <- 1:dim(inpaf)[1]
     }
 
+    if (!is.null(qname)){
+      inpaf = inpaf[inpaf$qname == qname,,drop=F]
+      row.names(inpaf) = NULL
+    }
+    
+    if (nrow(inpaf) <= 1){
+      if (save_outpaf) {
+        inpaf <- transform(
+          inpaf,
+          qend = ifelse(strand == "-", qstart, qend),
+          qstart = ifelse(strand == "-", qend, qstart)
+        )
+        write.table(
+          inpaf,
+          file = outpaf_link,
+          quote = F,
+          col.names = F,
+          row.names = F,
+          sep = "\t",
+          append=!is.null(qname)
+        )
+        return()
+        
+      }
+      
+      return(inpaf)
+      
+    }
     # In paf, start is always smaller than end. For our slope etc calculation, it will be easier
     # to change the order of start and end, if the orientation of the alignment is negative.
     # inpaf = transform(
@@ -152,8 +255,8 @@ compress_paf_fnct <-
     #   qend = ifelse(strand == '-', qstart, qend),
     #   qstart = ifelse(strand == '-', qend, qstart)
     # )
-    # For safety: sort entries by qstart. Reset row names so they start at 1.
-    inpaf <- inpaf[order(inpaf$qstart), ]
+    # For safety: sort entries by tstart. Reset row names so they start at 1.
+    inpaf <- inpaf[order(inpaf$tstart), ]
     rownames(inpaf) <- NULL
 
     # We identify rowpairs now.
@@ -180,44 +283,59 @@ compress_paf_fnct <-
     inpaf <- inpaf[inpaf$alen > minlen_for_merge, ]
     row.names(inpaf) <- NULL
     tsteps <- round(seq(1, range[1], length.out = n_quadrants_per_axis))
-    qsteps <- round(seq(1, range[2], length.out = n_quadrants_per_axis))
     tstepsize <- unique(diff(tsteps))[1]
-    qstepsize <- unique(diff(qsteps))[1]
     if (n_quadrants_per_axis == 1) {
       tstepsize <- 1e10
-      qstepsize <- 1e10
     }
-    n_steps <- length(tsteps) * length(qsteps)
     rowpairs <- data.frame()
     count <- 0
 
+    tstarts = inpaf$tstart
+    tends = inpaf$tend
+    qstarts = inpaf$qstart
+    qends = inpaf$qend
+
+    
     for (tstep in tsteps[1:length(tsteps) - 1]) {
-      for (qstep in qsteps[1:length(qsteps) - 1]) {
         # Input: we take any alignment that touches our box.
+        
+        #print(p + geom_rect(aes(xmin=tstep, xmax=tstep+tstepsize, ymin=qstep,ymax=qstep+qstepsize), color='green', alpha=0.1))
+        inpaf_q <- inpaf[((tstarts >= tstep) & (tstarts <= tstep + tstepsize) | (tends  >= tstep) & (tends <= tstep + tstepsize)),] 
 
+        if (nrow(inpaf_q) > 1){
+          rowpairs <- rbind(rowpairs, merge_paf_entries_intraloop(inpaf_q, second_run, inparam_chunklen, inparam_compression))
+          #rowpairs <- merge_paf_entries_intraloop(inpaf_q, second_run, inparam_chunklen, inparam_compression)
 
-
-        inpaf_q <- inpaf[(
-          (inpaf$tstart >= tstep) & (inpaf$tstart <= tstep + tstepsize) &
-            (inpaf$qstart >= qstep) &
-            (inpaf$qstart <= qstep + qstepsize)
-        ) |
-          (
-            (inpaf$tend >= tstep) & (inpaf$tend <= tstep + tstepsize) &
-              (inpaf$qend >= qstep) &
-              (inpaf$qend <= qstep + qstepsize)
-          ), ]
-
-        # print(ggplot() + geom_segment(data=inpaf, aes(x=tstart, xend=tend, y=qstart, yend=qend)) +
-        #   geom_segment(data=inpaf_q, aes(x=tstart, xend=tend, y=qstart, yend=qend), color='red') +
-        #   geom_rect(aes(xmin=tstep, xmax=tstep+tstepsize, ymin=qstep, ymax=qstep+qstepsize), alpha=0.5))
-
-
-        rowpairs <- rbind(rowpairs, merge_paf_entries_intraloop(inpaf_q, second_run, inparam_chunklen, inparam_compression))
+        } 
         count <- count + 1
         # print(paste0('Merging step ', count, ' out of ', n_steps))
-      }
     }
+    
+    
+    if(nrow(rowpairs) == 0){
+      if (save_outpaf) {
+        inpaf <- transform(
+          inpaf,
+          qend = ifelse(strand == "-", qstart, qend),
+          qstart = ifelse(strand == "-", qend, qstart)
+        )
+        write.table(
+          inpaf,
+          file = outpaf_link,
+          quote = F,
+          col.names = F,
+          row.names = F,
+          sep = "\t",
+          append=!is.null(qname)
+        )
+        
+        return()
+        
+      }
+      
+      return(inpaf)
+    }
+    #print('pairs found!')
     # Sort once again, by row.
     rowpairs <- rowpairs[order(rowpairs$col), ]
     row.names(rowpairs) <- NULL
@@ -247,13 +365,12 @@ compress_paf_fnct <-
     )
 
 
-
     # Go through each pair, make the merge. We go through the lines backwards,
     # so that previous merges don't disturb later ones.
     # old_len = sum(inpaf$tend - inpaf$tstart) + sum(inpaf$qend - inpaf$qstart)
     count <- 0
     if (dim(rowpairs_singular)[1] > 0) {
-      inpaf <- merge_rows(inpaf, rowpairs_singular)
+      inpaf <- merge_rows(inpaf, rowpairs_singular, !is.null(qname))
     }
 
     # Re-merge with old thing
@@ -266,7 +383,7 @@ compress_paf_fnct <-
     #   qstart = ifelse(strand == '-', qend, qstart)
     # )
 
-    print(paste0("PAF compressed to ", dim(inpaf)[1], " alignments."))
+    #print(paste0("PAF compressed to ", dim(inpaf)[1], " alignments."))
     # Save
     if (save_outpaf) {
       inpaf <- transform(
@@ -280,9 +397,11 @@ compress_paf_fnct <-
         quote = F,
         col.names = F,
         row.names = F,
-        sep = "\t"
+        sep = "\t",
+        append=!is.null(qname)
       )
     } else {
       return(inpaf)
     }
   }
+

@@ -19,7 +19,7 @@ matrix_remove_zero_pads <- function(bitl_f) {
   bitl_f <- as.matrix(bitl_f)
 
   empty_rows_bool <- as.numeric(apply(bitl_f == 0, 1, all))
-  empty_cols_bool <- as.numeric(apply(bitl_f == 0, 2, all))
+  empty_cols_bool <- as.numeric(apply(bitl_f == -1, 2, all))
 
   # Filter down to only intervals touching the border.
   leading_rows_to_rm <- which(cumprod(empty_rows_bool) > 0)

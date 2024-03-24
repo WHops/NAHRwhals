@@ -9,6 +9,7 @@ liftover_coarse(
   start,
   end,
   conversionpaf_link,
+  external_paf_bool,
   n_probes = 100,
   lenfactor = 1.2,
   whole_chr = F,

@@ -123,9 +123,8 @@ modify_gridmatrix <- function(gmx, r1) {
   }
 
   # How many mutations do we have to run?
-
   # nmut = length(r1[, colSums(is.na(r1)) == 0]) - 1 # Outdated since res has gotten more columns
-  nmut <- sum(c("mut1", "mut2", "mut3") %in% colnames(r1[, colSums(is.na(r1)) < nrow(r1)]))
+  nmut = sum(paste0("mut", 1:100) %in% colnames(r1[, colSums(is.na(r1)) < nrow(r1)]))
   # Run each mutation.
   for (i in 1:nmut) {
     instr <- r1[, paste0("mut", i)]

@@ -43,7 +43,7 @@ translate_t2t_chr_to_readable <- function(chrname) {
   if (chrname %in% colnames(t2t_chrs_translate)) {
     return(as.character(t2t_chrs_translate[chrname]))
   } else { # If input name is not a contig name in T2T (ideally this is never called...)
-    print("Chromsosome name unknown. Not attemptying to translate name.")
+    #print("Chromsosome name unknown. Not attemptying to translate name.")
     return(chrname)
   }
 }

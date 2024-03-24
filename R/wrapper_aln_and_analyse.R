@@ -7,20 +7,7 @@ wrapper_aln_and_analyse <- function(params) {
   # Directly enter debug mode?
   if (params$debug) {
     print("Debug mode!")
-    browser()
   }
-
-  # Work out some reference genome things...
-  # if (params$reference_genome == 'hg38'){
-  #  params$alt_ref_sample = F
-  # } else if (params$reference_genome == 'T2T'){
-  #  print('T2T chosen. Translating reference coodinates...')
-  #  params$alt_ref_sample = 'T2T'
-  # } else {
-  #  print('Error: reference_genome must be "hg38" or "T2T".')
-  #  return()
-  # }
-
   # Start writing a log file.
   log_collection <<- init_log_with_def_values()
   log_collection[c(
@@ -36,40 +23,73 @@ wrapper_aln_and_analyse <- function(params) {
       params$seqname_x, params$start_x, params$end_x, params$xpad,
       params$chunklen, paste0(params$samplename_x, "_", params$samplename_y), params$depth
     )
-
+  
   # Determine 'main' output name for this run
   sequence_name_output <- manufacture_output_res_name(
-    params$seqname_x, params$start_x, params$end_x
+    params$outdir, params$seqname_x, params$start_x, params$end_x
   )
+  
   # Create output folder tree
-  make_output_folder_structure(sequence_name_output)
+  make_output_folder_structure(params$outdir, sequence_name_output)
+  
+  
   # Define output files
   outlinks <- define_output_files(sequence_name_output, paste0(params$samplename_x, "_", params$samplename_y))
-
+  while(!is.null(dev.list())){dev.off()}
   pdf(file = outlinks$outpdf_main)
+
+
+  # Print only if params$silent is FALSE
+  if (!params$silent) {
+    print("Step 1: Identifying homologous regions in the y assembly")
+  }
 
   if (params$compare_full_fastas == T) {
     print("Option pairwise_fasta_direct recognized. Comparing entire fasta files.")
     chr_start_end_pad <- list(chr = "seqname", start = "1", end = as.numeric(nchar(read.table(params$genome_x_fa))))
-    system(paste0("cp ", params$genome_x_fa, " ", outlinks$genome_x_fa_subseq))
-    system(paste0("cp ", params$genome_y_fa, " ", outlinks$genome_y_fa_subseq))
+    run_silent(paste0("cp ", params$genome_x_fa, " ", outlinks$genome_x_fa_subseq))
+    run_silent(paste0("cp ", params$genome_y_fa, " ", outlinks$genome_y_fa_subseq))
   } else if (params$use_paf_library == T) {
-    # Step 1: Get the sequences (write to disk)
+    
     chr_start_end_pad_params <- extract_sequence_wrapper(params, outlinks)
     chr_start_end_pad <- chr_start_end_pad_params[[1]]
     params <- chr_start_end_pad_params[[2]]
   } else if (params$use_paf_library == F) {
     create_mmi_if_doesnt_exists(params)
     params <- make_params_conversionpaf(params, outlinks)
+    
+    if (is.na(params$conversionpaf_link)){
+      res_empty <- data.frame(eval = 0, mut1 = "ref")
+      res_empty <- annotate_res_out_with_positions_lens(res_empty, NULL)
+      write_results(res_empty, outlinks, params)
+      return()
+    }
     chr_start_end_pad_params <- extract_sequence_wrapper(params, outlinks)
+    
+    if (is.null(chr_start_end_pad_params)){
+      res_empty <- data.frame(eval = 0, mut1 = "ref")
+      res_empty <- annotate_res_out_with_positions_lens(res_empty, NULL)
+      write_results(res_empty, outlinks, params)
+      return()
+    }
     chr_start_end_pad <- chr_start_end_pad_params[[1]]
     params <- chr_start_end_pad_params[[2]]
-    system(paste0("rm ", params$conversionpaf_link))
+    run_silent(paste0("rm ", params$conversionpaf_link))
   }
-  # Step 2: Run the alignments
+
+  if (log_collection$cluttered_boundaries == T){
+    write_results(data.frame(), outlinks, params)
+    log_collection <<- init_log_with_def_values()
+    return('EARLY FINISH!')
+  }
+
+  if (!params$silent) {
+  print("Step 2: Computing detailed pairwise alignment")
+  }
   plot_x_y <- produce_pairwise_alignments_minimap2(params, outlinks, chr_start_end_pad)
 
-  # Step 2.1: If plot_only, exit. No SV calls.
+
+  # Step 2.1: If plot_only, exit. No SV call
   if (params$plot_only) {
     print("Plots done. Not attemptying to produce SV calls (plot_only is set to TRUE).")
     if (params$clean_after_yourself) {
@@ -78,7 +98,9 @@ wrapper_aln_and_analyse <- function(params) {
     return()
   }
 
-
+  if (exists("log_collection")) {
+    log_collection$exceeds_y <<- F
+  }
   # Step 2.2: If alignment has a contig break, exit. No SV calls.
   if (log_collection$exceeds_y) {
     print("Assembly contig is broken. Not attempting to produce SV calls")
@@ -89,7 +111,10 @@ wrapper_aln_and_analyse <- function(params) {
     return()
   }
 
-  # Step 3: Condense and make a condensed plot
+  if (!params$silent) {
+  print('Step 3: Segmenting pairwise alignment')
+  }
+
   grid_xy <- wrapper_condense_paf(params, outlinks)
   # Step 3.1: If the alignment is cluttered, exit. No SV calls.
   if (is.null(grid_xy)) {
@@ -107,6 +132,8 @@ wrapper_aln_and_analyse <- function(params) {
   make_segmented_pairwise_plot(grid_xy, plot_x_y, outlinks)
 
   # Make in between another plot
+
+  suppressMessages(suppressWarnings({
   p <- plot_matrix_ggplot_named(grid_xy[[3]], grid_xy[[1]], grid_xy[[2]])
   print(p)
   ggplot2::ggsave(
@@ -117,22 +144,44 @@ wrapper_aln_and_analyse <- function(params) {
     units = "cm",
     device = "pdf"
   )
-
+  }))
   gridmatrix <- gridlist_to_gridmatrix(grid_xy)
-  # saveRDS(gridmatrix, file='~/Desktop/sec_advanced')
-  # Step 4: Solve and make a solved plot
-  # res = solve_mutation_old(gridmatrix, depth = params$depth, discovery_exact = params$discovery_exact)
-  res <- solve_mutation(gridmatrix, maxdepth = params$depth, solve_th = params$eval_th) # , discovery_exact = params$discovery_exact)
+
+  
+  # reject bitloci with cut-off alignments at the borders ('clutter')
+  if (is_cluttered(gridmatrix)){#} | log_collection$cluttered_boundaries==T) {
+    print("Alignments overlap with borders. Make frame larger!")
+    res_empty <- data.frame(eval = 0, mut1 = "ref")
+    res_empty <- annotate_res_out_with_positions_lens(res_empty, NULL)
+    write_results(res_empty, outlinks, params)
+    return()
+  }
+  if (!params$silent) {
+  print('Step 4: BFS search for mutation chains.')
+  }
+  res <- solve_mutation(gridmatrix, maxdepth = 1, solve_th = params$eval_th, compression = params$compression, is_cluttered_already_paf = log_collection$cluttered_boundaries==T)
+  if (max(res$eval) < 99.8){
+    # Fahre schwere Geschuetze auf
+
+    res_julia <- solve_mutation_julia_wrapper(params, gridmatrix, grid_xy[[1]], outlinks$solver_inmat_path, outlinks$solver_inlens_path, outlinks$solver_juliares_path)
+    
+    if (!all((dim(res_julia)) == c(1,3))){
+      if (!'ref' %in% res_julia$mut1){
+        res_julia = rbind(res_julia, c(res[res$mut1 == 'ref', 'eval'], 'ref', rep(NA,ncol(res_julia)-2)))
+        res_julia$eval <- as.numeric(as.character(res_julia$eval))
+        res <- res_julia[order(res_julia$eval > params$eval_th, -rowSums(is.na(res_julia)), -res_julia$eval, decreasing = TRUE), ]
+      } else  {
+        res = res_julia
+      }
+    }
+  }
+
+
 
   make_modified_grid_plot(res, gridmatrix, outlinks)
-
-  # Step 5: Save
+  Sys.sleep(2)  # Step 5: Save
   write_results(res, outlinks, params)
 
-
-  dev.off()
-
-  return("DONE")
 }
 
 
@@ -268,7 +317,7 @@ save_plot_custom <-
       dpi = 300,
       device = device
     )
-    print("plot saved.")
+    #print("plot saved.")
   }
 
 
@@ -284,10 +333,10 @@ save_plot_custom <-
 #' @return The output file name for the NAHRwhals results.
 #'
 #' @export
-manufacture_output_res_name <- function(seqname_x, start_x, end_x) {
+manufacture_output_res_name <- function(out_dir, seqname_x, start_x, end_x) {
   # Manufacture the name
   sequence_name_output <- paste(
-    paste0("res/", seqname_x),
+    paste0(out_dir, "/", seqname_x),
     format(start_x, scientific = F),
     format(end_x, scientific = F),
     sep = "-"
@@ -304,18 +353,23 @@ manufacture_output_res_name <- function(seqname_x, start_x, end_x) {
 #' @param sequence_name_output The output directory path for the files.
 #'
 #' @export
-make_output_folder_structure <- function(sequence_name_output) {
+make_output_folder_structure <- function(outdir, sequence_name_output) {
   # Create a lot of subfolders
-  dir.create("res")
-  dir.create(sequence_name_output)
-  dir.create(paste0(sequence_name_output, "/self"))
-  dir.create(paste0(sequence_name_output, "/self/pdf"))
-  dir.create(paste0(sequence_name_output, "/self/paf"))
-  dir.create(paste0(sequence_name_output, "/diff"))
-  dir.create(paste0(sequence_name_output, "/diff/pdf"))
-  dir.create(paste0(sequence_name_output, "/diff/pdf/grid"))
-  dir.create(paste0(sequence_name_output, "/diff/paf"))
-  dir.create(paste0(sequence_name_output, "/fasta"))
+
+  subfolders_to_create = c(
+    "self/pdf",
+    "self/paf",
+    "diff/pdf/grid",
+    "diff/paf",
+    "fasta"
+  )
+
+  for (subfolder in subfolders_to_create) {
+    dir.create(paste0(sequence_name_output, "/", subfolder), showWarnings = F, recursive = T)
+  }
+
+  # also the folder for the mmi
+  dir.create(paste0(outdir, "/intermediate/mmis"), showWarnings = F, recursive = T)
 }
 
 #' Define output file paths for NAHRwhals output
@@ -372,6 +426,10 @@ define_output_files <- function(sequence_name_output, samplename) {
     "_x_y_grid_mut.pdf"
   )
 
+  outlinks$solver_inmat_path <- paste0(sequence_name_output, "/diff/", samplename, "_x_y_grid_mut.tsv")
+  outlinks$solver_inlens_path <- paste0(sequence_name_output, "/diff/", samplename, "_x_y_grid_mut_lens.tsv")
+  outlinks$solver_juliares_path <- paste0(sequence_name_output, "/diff/", samplename, "_x_y_grid_mut_juliares.tsv")
+
   outlinks$genome_x_fa_subseq <- paste0(sequence_name_output, "/fasta/", samplename, "_x.fa")
   outlinks$genome_y_fa_subseq <- paste0(sequence_name_output, "/fasta/", samplename, "_y.fa")
 
@@ -390,16 +448,16 @@ define_output_files <- function(sequence_name_output, samplename) {
 #' @export
 clean_after_yourself <- function(outlinks) {
   if (!is.na(file.size(outlinks$genome_x_fa_subseq))) {
-    system(paste0("rm ", outlinks$genome_x_fa_subseq))
+    run_silent(paste0("rm ", outlinks$genome_x_fa_subseq))
   }
   if (!is.na(file.size(outlinks$genome_y_fa_subseq))) {
-    system(paste0("rm ", outlinks$genome_y_fa_subseq))
+    run_silent(paste0("rm ", outlinks$genome_y_fa_subseq))
   }
   if (!is.na(file.size(paste0(outlinks$genome_x_fa_subseq, ".chunk.fa")))) {
-    system(paste0("rm ", outlinks$genome_x_fa_subseq, ".chunk.fa"))
+    run_silent(paste0("rm ", outlinks$genome_x_fa_subseq, ".chunk.fa"))
   }
   if (!is.na(file.size(paste0(outlinks$genome_x_fa_subseq, ".chunk.fa")))) {
-    system(paste0("rm ", outlinks$genome_y_fa_subseq, ".chunk.fa"))
+    run_silent(paste0("rm ", outlinks$genome_y_fa_subseq, ".chunk.fa"))
   }
 }
 

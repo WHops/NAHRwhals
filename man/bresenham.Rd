@@ -4,20 +4,29 @@
 \alias{bresenham}
 \title{Bresenham's Integer Line Drawing Algorithm}
 \usage{
-bresenham(x, y = NULL, gridpoints_x, gridpoints_y, close = TRUE, debug = F)
+bresenham(
+  x_in,
+  y_in,
+  gridpoints_x,
+  gridpoints_y,
+  griddiffs_x,
+  griddiffs_y,
+  x_grididx,
+  y_grididx
+)
 }
 \arguments{
-\item{x}{numeric vector of the x coordinates of the points to be joined.}
+\item{x_in}{numeric vector of the x coordinates of the points to be joined.}
 
-\item{y}{numeric vector of the y coordinates of the points to be joined.}
+\item{y_in}{numeric vector of the y coordinates of the points to be joined.}
 
 \item{gridpoints_x}{numeric vector of the x coordinates of the grid points.}
 
 \item{gridpoints_y}{numeric vector of the y coordinates of the grid points.}
 
-\item{close}{logical value indicating if the points form a closed polygon.}
+\item{griddiffs_x}{numeric vector of the differences between the x coordinates}
 
-\item{debug}{logical value indicating whether to enter debugging mode or not.}
+\item{griddiffs_y}{numeric vector of the differences between the y coordinates}
 }
 \value{
 A list of length 2 with \code{integer} \code{x,y} coordinates connecting

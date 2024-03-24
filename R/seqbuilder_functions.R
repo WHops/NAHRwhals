@@ -9,7 +9,7 @@ confirm_loaded_nw <- function() {
 #' @author Wolfram Hoeps
 #' @export
 version_nw <- function() {
-  print("This is version 1.2 from Apr 29, 2023.")
+  print("This is version 1.2X from Jul 31st, 2023.")
 }
 
 #' Perform Chunked Minimap2 Alignment and Generate Dotplot
@@ -71,6 +71,7 @@ make_chunked_minimap_alnment <-
            hltrack = NULL,
            onlypafreturn = F,
            aln_type_xx_yy_xy = "xy") {
+
     # Define intermediate files
     queryfasta_chunk <- paste0(queryfasta, ".chunk.fa")
     outpaf_chunk <- paste0(outpaf, ".chunk")
@@ -91,8 +92,21 @@ make_chunked_minimap_alnment <-
     # gawk is used to correct the sequence names. This is because I know only there
     # how to use regex...
     correct_paf(outpaf_chunk, outpaf_filter)
+
+    # Check if abandon
+    # pafin = read_and_prep_paf(outpaf_filter)
+    # if (is_cluttered_paf(pafin) & (onlypafreturn == T | params$noclutterplots == T)){
+    #   print('Ok we are in overly cluttery regions; abandon!')
+    #   log_collection$cluttered_boundaries <<- T
+    #   return(NULL)
+    # }
+    
+    
+
     # paf of fragmented paf gets put back together.
     compress_paf_fnct(inpaf_link = outpaf_filter, outpaf_link = outpaf, inparam_chunklen = chunklen)
+    run_silent(paste0('rm ',outpaf_chunk))
+    run_silent(paste0('rm ',outpaf_filter))
 
     if (onlypafreturn) {
       return(outpaf)
@@ -121,7 +135,7 @@ make_chunked_minimap_alnment <-
     )
 
     if (saveplot == F) {
-      print("returning your plot")
+      #print("returning your plot")
       return(miniplot)
     } else {
       ggplot2::ggsave(
@@ -131,7 +145,7 @@ make_chunked_minimap_alnment <-
         width = 10,
         device = "pdf"
       )
-      print("Saving")
+      #print("Saving")
     }
   }
 
@@ -154,7 +168,7 @@ get_fasta_info <- function(inputfa, outputinfo) {
     "gawk '/^>/{if (l!=\"\") print l; print; l=0; next}{l+=length($0)}END{print l}' ",
     inputfa, " > ", outputinfo
   )
-  system(cmd)
+  run_silent(cmd)
 }
 
 #' Corrects a PAF file if it's made on scattered input.
@@ -176,7 +190,7 @@ correct_paf <- function(inputpaf, outputpaf) {
     "gawk '{FS=OFS=\"\\t\"} match($1, /_([0-9]*)?-/,a){$3 = $3+a[1]; $4 = $4+a[1]; print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' ",
     inputpaf, " > ", outputpaf
   )
-  system(cmd)
+  run_silent(cmd)
 }
 
 #' Chunkify query fasta
@@ -202,8 +216,8 @@ shred_seq_bedtools <- function(infasta,
   # Write a temporary bedfile that will be removed at the end of the function
   bed_tmp_file <- paste0("tmpbed_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
   fasta_awk_tmp_file <- paste0("tmpinfo_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
-
-  # system(paste0(fasta_awk_script, ' ', infasta, ' ', fasta_awk_tmp_file))
+  
+  # run_silent(paste0(fasta_awk_script, ' ', infasta, ' ', fasta_awk_tmp_file))
   get_fasta_info(infasta, fasta_awk_tmp_file)
   # Collect information about the fasta we want to chop. This info is needed for bedtools getfasta
   # To work well.
@@ -219,18 +233,24 @@ shred_seq_bedtools <- function(infasta,
 
   write.table(bed_df, file = bed_tmp_file, sep = "\t", quote = F, row.names = F, col.names = F)
 
-
-  system(paste0("rm ", infasta, ".fai"))
+  run_silent(paste0("rm ", infasta, ".fai"))
 
   sedcmd <- "sed -r \'s/(.*):/\\1_/'"
-  system(paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " | ", sedcmd, " > ", outfasta_chunk))
 
-  system(paste0("rm ", bed_tmp_file))
-  system(paste0("rm ", fasta_awk_tmp_file))
+  cmd = paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " | ", sedcmd, " > ", outfasta_chunk)
+
+  run_silent(paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " 2>/dev/null | ", sedcmd, " > ", outfasta_chunk))
+
+  run_silent(paste0("rm ", bed_tmp_file))
+  run_silent(paste0("rm ", fasta_awk_tmp_file))
 }
 
+#' @export
+run_silent <- function(cmd) {
+  system(paste0(cmd, " 2>/dev/null"))
+}
 
-#' Submit a system command to run minimap2
+#' Submit a run_silent command to run minimap2
 #'
 #' @description This is a helperfunction to run minimap2. Also check out:
 #' https://github.com/PacificBiosciences/pbmm2/ . Minimap2 parameters:
@@ -257,14 +277,14 @@ run_minimap2 <-
   function(targetfasta,
            queryfasta,
            outpaf,
-           params,
-           nthreads = 4) {
-    # system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
+           params) {
+    # run_silent(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
 
+    nthreads = params$minimap_cores
     minimap2loc <- params$minimap2_bin
 
     # Some self-defined parameters
-    invisible(system(
+    run_silent(
       paste0(
         minimap2loc,
         " -x asm20 -P -c -s 0 -M 0.2 -t ",
@@ -274,9 +294,9 @@ run_minimap2 <-
         " ",
         queryfasta,
         " > ",
-        outpaf
+        outpaf 
       )
-    ))
+    )
     # Check if that was successful.
     stopifnot(
       "Alignment error: Minimap2 has not reported any significant alignment.
@@ -364,3 +384,66 @@ rc <- function(z) {
 colMax <- function(data) {
   sapply(data, max, na.rm = TRUE)
 }
+
+#' shred_seq_bedtools_multifasta
+#' @description This is a helperfunction calling bedtools to
+#' chop a query sequence into chunks.
+#'
+#' @param infasta A link to a multi-seq fasta to be chopped
+#' @param outfasta_chunk A link to the output path for a chopped multi-seq fasta.
+#' @param chunklen length of sequence chunks in bp
+#' @param params a list with all NAHRwhals parameters
+#' @return nothing. But output files written.
+#'
+#' @author Wolfram Hoeps
+shred_seq_bedtools_multifasta <- function(infasta,
+                                outfasta_chunk,
+                                chunklen,
+                                params) {
+  bedtoolsloc <- params$bedtools_bin
+  fasta_awk_script <- params$awkscript_fasta
+  # Write a temporary bedfile that will be removed at the end of the function
+  bed_tmp_file <- paste0("tmpbed_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
+  fasta_awk_tmp_file <- paste0("tmpinfo_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
+
+  get_fasta_info_multi(infasta, fasta_awk_tmp_file)
+
+  # Collect information about the fasta we want to chop. This info is needed for bedtools getfasta to work well.
+  name_len_df <- read.table(fasta_awk_tmp_file, stringsAsFactors = FALSE)
+  
+  bed_df_list <- lapply(1:nrow(name_len_df), function(i) {
+    contigname <- sub(">", "", name_len_df[i, 1])
+    contiglen <- as.numeric(name_len_df[i, 2])
+    data.frame(
+      seqnames = contigname,
+      start = sprintf("%d", seq(0, contiglen - (contiglen %% chunklen), by = chunklen)),
+      end = sprintf("%d", pmin(seq(0, contiglen - (contiglen %% chunklen), by = chunklen) + (chunklen - 1), contiglen))
+    )
+  })
+
+  bed_df <- do.call(rbind, bed_df_list)
+
+  write.table(bed_df, file = bed_tmp_file, sep = "\t", quote = F, row.names = F, col.names = F)
+
+  run_silent(paste0("rm ", infasta, ".fai"))
+
+  sedcmd <- "sed -r \'s/(.*):/\\1_/'"
+  run_silent(paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " | ", sedcmd, " > ", outfasta_chunk))
+
+  run_silent(paste0("rm ", bed_tmp_file))
+  run_silent(paste0("rm ", fasta_awk_tmp_file))
+}
+
+get_fasta_info_multi <- function(inputfa, outputinfo) {
+  # Run the gawk command to get the fasta file info
+  cmd <- paste0(
+    "gawk '/^>/{if (l!=\"\") {print seqname, l} seqname=$0; l=0; next}{l+=length($0)}END{print seqname, l}' ",
+    inputfa, " > ", outputinfo
+  )
+  run_silent(cmd)
+}
+
+# in_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/chunk_lab/NA12878_giab_pbsq2-ccs_1000-hifiasm.h1-un.fasta'
+# out_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/chunk_lab/NA12878_giab_pbsq2-ccs_1000-hifiasm.h1-un_chunked.fasta'
+# params = list(bedtools_bin = 'bedtools', awkscript_fasta = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/scripts/awk_on_fasta_gpt4.sh')
+# shred_seq_bedtools_multifasta(in_fa, out_fa, 10000, params)

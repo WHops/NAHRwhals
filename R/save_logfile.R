@@ -12,11 +12,13 @@
 #' @author Wolfram Hoeps
 #' @export
 save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
+
+
+  options(scipen=999)
+  res$mut_mat = NULL
   res_ref <- res[res$mut1 == "ref", "eval"]
   res_max <- res[1, "eval"]
   n_res_max <- dim(res[res$eval == max(res$eval), ])[1]
-
-
   maxres <- res[
     which.max(
       rowSums(
@@ -29,11 +31,10 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
       )
     ),
   ]
-
   if (is.null(log$compression)) {
     log$compression <- 0
   }
-  stopifnot(ncol(maxres) >= 2)
+  #stopifnot(ncol(maxres) >= 2)
 
 
   # Find the result with the fewest steps.
@@ -45,45 +46,119 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
     mut_max <- paste0(maxres[, mut_cols], collapse = "+")
   } else if (ncol(maxres) == 2) {
     mut_max <- paste0(maxres[1, 2])
+  } else {
+    mut_max = "ref"
   }
 
-  ###### TBD ###########
-  to_append <- data.frame(
-    log$chr,
-    log$start,
-    log$end,
-    log$samplename,
-    as.numeric(log$end) - as.numeric(log$start),
-    log$xpad,
-    res_ref,
-    res_max,
-    n_res_max,
-    mut_max,
-    log$mut_simulated,
-    log$mut_tested,
-    log$depth,
-    log$compression,
-    log$exceeds_x,
-    log$exceeds_y,
-    log$grid_inconsistency,
-    log$flip_unsure,
-    log$cluttered_boundaries,
-    maxres$mut1_start,
-    maxres$mut1_end,
-    maxres$mut1_pos_pm,
-    maxres$mut1_len,
-    maxres$mut1_len_pm,
-    maxres$mut2_len,
-    maxres$mut2_len_pm,
-    maxres$mut3_len,
-    maxres$mut3_len_pm
-  )
+
+
+# Ensure the 'log' list exists
+if (!exists("log", envir = .GlobalEnv)) {
+  log <- list()
+}
+
+# Ensure the 'maxres' list exists
+if (!exists("maxres")) {
+  maxres <- list()
+}
+
+# List of elements in 'log' to check
+log_elements <- c("chr", "start", "end", "samplename", "y_seqname", "y_start", "y_end", 
+                  "xpad", "mut_simulated", "mut_tested", "depth", "compression", "exceeds_x",
+                  "exceeds_y", "grid_inconsistency", "flip_unsure", "cluttered_boundaries")
+
+# Ensure each element in 'log' exists
+for (elem in log_elements) {
+  if (!is.null(log) && !elem %in% names(log)) {
+    log[[elem]] <- NA
+  }
+}
+
+# List of elements in 'maxres' to check
+maxres_elements <- c("mut1_start", "mut1_end", "mut1_pos_pm", "mut1_len", "mut1_len_pm", 
+                     "mut2_start", "mut2_end", "mut2_pos_pm", "mut2_len", "mut2_len_pm",
+                     "mut3_start", "mut3_end", "mut3_pos_pm", "mut3_len", "mut3_len_pm")
+
+# Ensure each element in 'maxres' exists
+for (elem in maxres_elements) {
+  if (!is.null(maxres) && !elem %in% names(maxres)) {
+    maxres[[elem]] <- NA
+  }
+}
+
+# Check standalone variables
+standalone_vars <- c("res_ref", "res_max", "n_res_max", "mut_max")
+for (var in standalone_vars) {
+  if (!exists(var) | is.null(var)) {
+    assign(var, NA)
+  }
+}
+
+if (is.null(res_ref)){
+  res_ref = NA
+}
+
+if (is.null(res_max)){
+  res_max = NA
+}
+
+if (is.null(n_res_max)){
+  n_res_max = NA
+}
+
+if (is.null(mut_max)){
+  mut_max = NA
+}
+
+# Create your data frame
+to_append <- data.frame(
+  log$chr,
+  log$start,
+  log$end,
+  log$samplename,
+  log$y_seqname,
+  log$y_start,
+  log$y_end,
+  as.numeric(log$end) - as.numeric(log$start),
+  log$xpad,
+  res_ref,
+  res_max,
+  n_res_max,
+  mut_max,
+  log$mut_simulated,
+  log$mut_tested,
+  log$depth,
+  log$compression,
+  log$exceeds_x,
+  log$exceeds_y,
+  log$grid_inconsistency,
+  log$flip_unsure,
+  log$cluttered_boundaries,
+  as.character(as.numeric(maxres$mut1_start) + as.numeric(log$start)),
+  as.character(as.numeric(maxres$mut1_end) + as.numeric(log$start)),
+  maxres$mut1_pos_pm,
+  maxres$mut1_len,
+  maxres$mut1_len_pm,
+  as.character(as.numeric(maxres$mut2_start) + as.numeric(log$start)),
+  as.character(as.numeric(maxres$mut2_end) + as.numeric(log$start)),
+  maxres$mut2_pos_pm,
+  maxres$mut2_len,
+  maxres$mut2_len_pm,
+  as.character(as.numeric(maxres$mut3_start) + as.numeric(log$start)),
+  as.character(as.numeric(maxres$mut3_end) + as.numeric(log$start)),
+  maxres$mut3_pos_pm,
+  maxres$mut3_len,
+  maxres$mut3_len_pm
+)
 
   colnames_ <- data.frame(
     "seqname",
     "start",
     "end",
     "sample",
+    "y_seqname",
+    'y_start',
+    'y_end',
     "width_orig",
     "xpad",
     "res_ref",
@@ -104,11 +179,18 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
     "mut1_pos_pm",
     "mut1_len",
     "mut1_len_pm",
+    "mut2_start",
+    "mut2_end",
+    "mut2_pos_pm",
     "mut2_len",
     "mut2_len_pm",
+    "mut3_start",
+    "mut3_end",
+    "mut3_pos_pm",
     "mut3_len",
     "mut3_len_pm"
   )
+
 
   if (alt_x) {
     to_append <- cbind(params$seqname_x_alt, params$start_x_alt, params$end_x_alt, to_append)
@@ -118,10 +200,35 @@ save_to_logfile <- function(log, res, logfile, params, alt_x = F) {
   if (is.na(file.size(logfile)) | (file.size(logfile) == 0)) {
     write.table(colnames_, file = logfile, append = TRUE, sep = "\t", col.names = F, row.names = F, quote = F)
   }
+  # write to_apped to file logfile, with append = TRUE, and making sure numericals are written out
+  max_retries <- 5
+  retry_count <- 0
 
-  write.table(to_append, file = logfile, append = TRUE, sep = "\t", col.names = F, row.names = F, quote = F)
+  while (retry_count < max_retries) {
+    # Attempt to acquire an exclusive lock for writing
+    lock <- filelock::lock(logfile, timeout = 0)  # timeout = 0 means it won't wait
 
-  print("Logfile written.")
+    if (!is.null(lock)) {
+      # Lock acquired successfully; write the content and then release the lock
+      write.table(to_append, file = logfile, append = TRUE, sep = "\t", 
+                  col.names = FALSE, row.names = FALSE, quote = FALSE)
+      filelock::unlock(lock)
+      break
+    } else {
+      # Lock is held by another process; sleep for a random interval and retry
+      Sys.sleep(runif(1, 0.5, 2))  # Sleep for a random time between 0.5 to 2 seconds
+      retry_count <- retry_count + 1
+    }
+}
+
+  if (retry_count == max_retries) {
+    warning("Failed to acquire lock after maximum retries. Data might not be written.")
+  }
+
+  # Inform the user: name of logfile, samplex, sampley, region, and name of mut_max.
+  if (!params$silent) {
+    print(paste0("Run successful! Results saved to logfile: ", logfile))
+  } 
 }
 
 

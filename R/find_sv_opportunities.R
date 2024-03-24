@@ -25,47 +25,47 @@ find_sv_opportunities <- function(sample) {
   # For every row of the dot matrix, check first if this row
   # has more than one non-zero value in the matrix.
   for (nrow in 1:dim(sample)[1]) {
-    if (!(nrow %in% double_SD_rows)) {
-      next()
-    }
-
-    # ... If if does, now find the colnames of all those.
-    identical_columns <- as.numeric(which(sample[nrow, ] != 0))
-
-    # make a matrix containing every combination of identical columns.
-    # Imagine we have one segment repeated in columns 4, 5 and 9.
-    # Then we get NAHR possibilities in 4-5, 4-9 and 5-9.
-    # If this is only one pair, then the one pair stays the same.
-    combs <- combn(identical_columns, 2)
-
-    for (ncomb in (1:dim(combs)[2])) {
-      if (n_opportunity == all_opp_len) {
-        print("[Debug]: Extending size of all-opp matrix.")
-        all_opportunities_addendum <- replicate(3,
-          rep(NA, dim(all_opportunities)[1]),
-          simplify = T
-        )
-
-        all_opportunities <- rbind(
-          all_opportunities,
-          all_opportunities_addendum
-        )
-
-        all_opp_len <- dim(all_opportunities)[1]
+      if (!(nrow %in% double_SD_rows)) {
+        next()
       }
 
-      identical_column_pair <- combs[, ncomb]
-      row_of_interest <- sample[nrow, ]
+      row_of_interest = sample[nrow, ]
+      # ... If if does, now find the colnames of all those.
+      identical_columns <- as.numeric(which(row_of_interest != 0))
 
-      # Determine relative orientation
-      orientation <- sign(row_of_interest[identical_column_pair[1]] * row_of_interest[identical_column_pair[2]])
+      # make a matrix containing every combination of identical columns.
+      # Imagine we have one segment repeated in columns 4, 5 and 9.
+      # Then we get NAHR possibilities in 4-5, 4-9 and 5-9.
+      # If this is only one pair, then the one pair stays the same.
+      combs <- combn(identical_columns, 2)
 
-      result_pair <- c(identical_column_pair, orientation)
-      all_opportunities[n_opportunity, ] <- result_pair
+      for (ncomb in (1:dim(combs)[2])) {
+        if (n_opportunity == all_opp_len) {
+          #print("[Debug]: Extending size of all-opp matrix.")
+          all_opportunities_addendum <- replicate(3,
+            rep(NA, dim(all_opportunities)[1]),
+            simplify = T
+          )
 
-      n_opportunity <- n_opportunity + 1
+          all_opportunities <- rbind(
+            all_opportunities,
+            all_opportunities_addendum
+          )
+
+          all_opp_len <- dim(all_opportunities)[1]
+        }
+
+        identical_column_pair <- combs[, ncomb]
+
+        # Determine relative orientation
+        orientation <- prod(sign(row_of_interest[identical_column_pair]))
+
+        result_pair <- c(identical_column_pair, orientation)
+        all_opportunities[n_opportunity, ] <- result_pair
+
+        n_opportunity <- n_opportunity + 1
+      }
     }
-  }
 
 
   # all_opportunities = all_opportunities[rowSums(is.na(all_opportunities)) != ncol(all_opportunities),]

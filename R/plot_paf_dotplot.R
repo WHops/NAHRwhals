@@ -44,7 +44,7 @@ add_file_highlight <- function(gp, opt) {
   # Filter out rows with length less than the specified minimum length
   highlight_data <- highlight_data[((highlight_data$chromEnd - highlight_data$chromStart) > opt$minsdlen), ]
 
-  cat(paste0("Printing a final thing with ", nrow(highlight_data), " entries.\n"))
+  #cat(paste0("Printing a final thing with ", nrow(highlight_data), " entries.\n"))
 
   # Add geom_rect layers to the ggplot object for the file-based highlights
   gp <- gp + ggplot2::geom_rect(
@@ -169,10 +169,7 @@ dotplotly_dotplot_return_aln <- function(opt) {
   alignments$queryStart[which(alignments$strand == "-")] <- alignments$queryEnd[which(alignments$strand == "-")]
   alignments$queryEnd[which(alignments$strand == "-")] <- queryStartTemp[which(alignments$strand == "-")]
   rm(queryStartTemp)
-  cat(paste0("\nNumber of alignments: ", nrow(alignments), "\n"))
-  cat(paste0("Number of query sequences: ", length(unique(
-    alignments$queryID
-  )), "\n"))
+
 
   # sort by ref chromosome sizes, keep top X chromosomes OR keep specified IDs
   if (is.null(opt$refIDs)) {
@@ -198,16 +195,7 @@ dotplotly_dotplot_return_aln <- function(opt) {
   queryLenAgg <- tapply(alignments$lenAln, alignments$queryID, sum)
   alignments <- alignments[which(alignments$queryID %in% names(queryLenAgg)[which(queryLenAgg > opt$min_query_aln)]), ]
 
-  cat(paste0(
-    "\nAfter filtering... Number of alignments: ",
-    nrow(alignments),
-    "\n"
-  ))
-  cat(paste0(
-    "After filtering... Number of query sequences: ",
-    length(unique(alignments$queryID)),
-    "\n\n"
-  ))
+
 
   # sort df on ref
   alignments$refID <- factor(alignments$refID, levels = refIDsToKeepOrdered) # set order of refID
@@ -316,6 +304,8 @@ plot_alignments <- function(alignments, opt) {
     samplename_y <- opt$samplename_y
   }
 
+  suppressWarnings(suppressMessages({
+
   # Create the ggplot object
   gp <- ggplot2::ggplot(alignments) +
     ggplot2::geom_segment(
@@ -325,16 +315,6 @@ plot_alignments <- function(alignments, opt) {
         x = refStart,
         xend = refEnd,
         color = percentID,
-        text = sprintf(
-          "Query ID: %s<br>Query Start Pos: %s<br>Query End Pos: %s<br>Target ID: %s<br>Target Start Pos: %s<br>Target End Pos: %s<br>Length: %s kb",
-          queryID,
-          queryStart,
-          queryEnd,
-          refID,
-          refStart,
-          refEnd,
-          round(lenAln / 1000, 1)
-        )
       )
     ) +
     ggplot2::labs(
@@ -374,6 +354,7 @@ plot_alignments <- function(alignments, opt) {
     gp <- add_annotation_blocks(gp, opt)
   }
 
+  }))
   return(gp)
 }
 

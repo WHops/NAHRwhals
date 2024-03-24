@@ -39,6 +39,7 @@ write_x_y_sequences <- function(seqname_x,
       start_x_pad,
       end_x_pad,
       conversionpaf_link,
+      external_paf_bool = params$use_paf_library,
       lenfactor = 1, # Unneeded parameter
       whole_chr = F, # (params$start_x %in% c(0, 1)),
       refine_runnr = refine_runnr
@@ -76,7 +77,8 @@ write_x_y_sequences <- function(seqname_x,
     ))
   }
 
-  extract_subseq_bedtools(
+  if (!(refine_runnr == 1 & params$use_paf_library == F)) {
+    extract_subseq_bedtools(
     genome_y_fa,
     coords_liftover$lift_contig,
     coords_liftover$lift_start,
@@ -84,9 +86,28 @@ write_x_y_sequences <- function(seqname_x,
     genome_y_fa_subseq,
     params
   )
+  }
 
-  if (refine_runnr == 1) {
+  if (refine_runnr == 1 & params$use_paf_library == F) {
     # Special stuff
+    len_lift = coords_liftover$lift_end - coords_liftover$lift_start
+    # elongate lift_start and lift_end by 2% on each side
+    lift_start_plus = as.integer(coords_liftover$lift_start - (len_lift * 0.02))
+    lift_end_plus = as.integer(coords_liftover$lift_end + (len_lift * 0.02))
+
+    if (lift_start_plus < 0) {
+      lift_start_plus = 0
+    }
+
+    extract_subseq_bedtools(
+      genome_y_fa,
+      coords_liftover$lift_contig,
+      lift_start_plus,
+      lift_end_plus,
+      genome_y_fa_subseq,
+      params
+    )
+    
     paf <- make_chunked_minimap_alnment(
       params,
       genome_x_fa_subseq,
@@ -106,17 +127,28 @@ write_x_y_sequences <- function(seqname_x,
       hltrack = params$hltrack,
       onlypafreturn = T
     )
-    coords_liftover_2nd <- liftover_coarse("None",
+
+    if (is.null(paf)) {
+      return(list(
+        new_seqname = coords_liftover$lift_contig,
+        new_x_start = coords_liftover$lift_start,
+        new_x_end = coords_liftover$lift_end
+      ))
+    }
+    
+    coords_liftover_2nd <- liftover_coarse(
+      "None",
       "none",
       "nonepaflink",
       paf,
+      params$use_paf_library,
       refine_runnr = 2
     )
     if (is.null(coords_liftover_2nd)) {
       return(NULL)
     }
 
-
+    
     extract_subseq_bedtools(
       genome_y_fa,
       coords_liftover_2nd$lift_contig,

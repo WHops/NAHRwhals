@@ -49,7 +49,12 @@ absmin <- function(x) {
 #' @author  Wolfram Hoeps
 #' @export
 calculate_estimated_aln_score <- function(mat) {
-  matdiag <- diagonalize(mat, 0.25)
+
+  diagonalize_fact = 0.25
+  if (dim(mat)[1] < 10){
+    diagonalize_fact = 1
+  }
+  matdiag <- diagonalize(mat, diagonalize_fact)
   sum_of_rows_with_pos_aln_bp <- sum(matrixStats::rowMaxs(matdiag))
   alt_seq_len_bp <- sum(as.numeric(rownames(mat)))
 
@@ -86,7 +91,7 @@ calc_coarse_grained_aln_score <-
            forcecalc = F,
            orig_symm = 1) {
     # Remove zero-pads.
-    mat <- matrix_remove_zero_pads(mat)
+    #mat <- matrix_remove_zero_pads(mat)
 
     n_eval_total <<- n_eval_total + 1
 
@@ -143,21 +148,25 @@ calc_coarse_grained_aln_score <-
 
 
     # If all this, then one more chance is to throw stuff
-
     est <- calculate_estimated_aln_score(mat)
     if (forcecalc) {
       est_highest <<- est
     }
 
-    if (est < (est_highest * 0.9)) {
-      return(1) # est)
+    est_threshold = 1
+    if (dim(mat)[1] < 10){
+      est_threshold = 0.9
+    }
+    if ((est < (est_highest * est_threshold)) & (forcecalc == F)) {
+      return(1) # est) # [W, 2nd Aug 2023: why we return 1 here and not est? (I believe it's to distinguish estimated solutions?)]
       # print('hi')
-    } else if (est >= (est_highest * 0.9)) {
+    } 
+    
+    if (est > est_highest) {
       est_highest <<- est
     }
 
     n_eval_calc <<- n_eval_calc + 1
-
     # Construct our three cost matrices:
     # cost_u, if you want to go 'up'
     # cost_r, if you want to go 'right'
@@ -262,7 +271,7 @@ calc_coarse_grained_aln_score <-
     # }
 
     if (verbose) {
-      print(cost_res)
+      #print(cost_res)
       print(paste0(
         "Unmatching: ca ",
         cost_res[row, col],
@@ -273,7 +282,19 @@ calc_coarse_grained_aln_score <-
         "%)"
       ))
     }
+    if(!exists("all_est")) all_est <- list()
+    all_est <<- append(all_est, est) 
 
+    if(!exists("all_real")) all_real <- list()
+    all_real <<- append(all_real, (round((
+      1 - (cost_res[row, col]) / sum(climb_up_cost, walk_right_cost)
+    ) * 100, 3)))
+
+    # print('EST vs REAL')
+    # print(est)
+    # print((round((
+    #   1 - (cost_res[row, col]) / sum(climb_up_cost, walk_right_cost)
+    # ) * 100, 3)))
 
     # Return value: percentage of basepairs not crossed along alignments.
     return(round((

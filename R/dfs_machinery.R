@@ -16,7 +16,7 @@
 dfs <- function(bitlocus, maxdepth = 3, increase_only = F, earlystop = Inf, history = NULL) {
   # Prepare initial bitlocus bit
   bitl <- flip_bitl_y_if_needed(bitlocus)
-  bitl <- matrix_remove_zero_pads(bitl)
+  #bitl <- matrix_remove_zero_pads(bitl)
   # Get the orig_symmm value
   orig_symm <- calc_symm(bitl)
   # Initialize a hash.
@@ -24,7 +24,6 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only = F, earlystop = Inf, hist
   ref_mut_pair <- data.frame(p1 = "1", p2 = "1", sv = "ref")
   ref_mut_pair <- annotate_pairs_with_hash(bitl, ref_mut_pair)
   bitl_ref_mut <- carry_out_compressed_sv(bitl, ref_mut_pair)
-
   # This is if it's called from a history mode
   if (!is.null(history)) {
     print("Continuing a previous run.")
@@ -34,9 +33,9 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only = F, earlystop = Inf, hist
     pairhistory <- paste(ref_mut_pair[, 1:3], collapse = "_")
     depth <- 0
   }
-
+  
   # And enter the dfs rabbithole! (you'll stay there for a while,
-  # if calls itself recursively.)
+  # it calls itself recursively.)
   visited_outputdf_list <- dfsutil(
     visited = visited,
     pair = ref_mut_pair,
@@ -82,12 +81,16 @@ dfs <- function(bitlocus, maxdepth = 3, increase_only = F, earlystop = Inf, hist
 #'
 #' @export
 dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairhistory = NULL, df_output = NULL, increase_only = NULL, orig_symm = 1, last_eval = 0, earlystop = Inf) {
+  
+
   # Calc score of a node. Force the calculation if we have ref (there we definitely want to know the value)
   aln_score <- calc_coarse_grained_aln_score(mutator, forcecalc = (pair$sv == "ref"), orig_symm = orig_symm)
   # if ((depth==2)){#} & (pair$p1 == 25) & (pair$p2 == 41)){#'25_41_inv'){
   #   browser()
   # }
   # Initiate an output_df if there is none
+  
+
   if (is.null(df_output)) {
     df_output <- replicate(4,
       rep(NA, 1000),
@@ -174,9 +177,9 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
     }
 
     # Be verbose
-    if (depth == 0) {
-      print(paste0("Processing branch ", npair, " of ", dim(pairs)[1]))
-    }
+    #if (depth == 0) {
+    #  print(paste0("Processing branch ", npair, " of ", dim(pairs)[1]))
+    #}
 
     if ((depth == 0) & (npair == earlystop)) {
       return(list(visited, df_output))
@@ -193,7 +196,7 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
     node_is_novel_bool <- is.null(visited[[hash]])
     if (!node_is_novel_bool) {
       n_hash_excluded <<- n_hash_excluded + 1
-
+      
       # The value of this hash has been computed
       if ((as.numeric(visited[[hash]][3])) > 1) {
         vector_to_add_to_df_out <- c(
@@ -211,7 +214,7 @@ dfsutil <- function(visited, pair, pairhash, mutator, depth, maxdepth = 3, pairh
       }
       next()
     }
-
+    
 
     # Leave if the mutation is too unsymmetrical (unlikely path)
     node_passes_symmetry_crit <- T # decide_loop_continue_symmetry(bitl_mut, orig_symm = orig_symm)
