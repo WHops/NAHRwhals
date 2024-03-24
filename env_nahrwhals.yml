@@ -1,4 +1,4 @@
-name: nahrwhals2
+name: nahrwhals3
 channels:
   - bioconda
   - conda-forge
@@ -9,6 +9,8 @@ dependencies:
   - minimap2
   - bedtools
   - gawk
+  - sed
+  - samtools
   - julia
   - r-base
   - r-devtools

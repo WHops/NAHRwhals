@@ -25,7 +25,6 @@ create_mmi_if_doesnt_exists <- function(params) {
 #' @export
 make_params_conversionpaf <- function(params, outlinks) {
   # Write hg38 to file
-
   extract_subseq_bedtools(
     params$genome_x_fa,
     params$seqname_x,
@@ -46,9 +45,7 @@ make_params_conversionpaf <- function(params, outlinks) {
   random_tag <- as.character(runif(1, 1e10, 1e11))
   tmp_conversionpaf <- paste0("tmp_conversionpaf", random_tag, ".paf")
   minimap2_mapping_command <- paste0(params$minimap2_bin, " ", params$genome_y_fa_mmi, " ", outlinks$genome_x_fa_subseq, '_elongate.fa', " > ", tmp_conversionpaf)
-
   run_silent(minimap2_mapping_command)
-  
   run_silent(paste0('rm ', paste0(outlinks$genome_x_fa_subseq, '_elongate.fa')))
   if (file.info(tmp_conversionpaf)$size == 0){
     print('Sequence not found!')

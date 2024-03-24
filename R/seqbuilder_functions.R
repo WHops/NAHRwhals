@@ -248,6 +248,7 @@ shred_seq_bedtools <- function(infasta,
 #' @export
 run_silent <- function(cmd) {
   system(paste0(cmd, " 2>/dev/null"))
+  #system(cmd)
 }
 
 #' Submit a run_silent command to run minimap2
@@ -282,7 +283,6 @@ run_minimap2 <-
 
     nthreads = params$minimap_cores
     minimap2loc <- params$minimap2_bin
-
     # Some self-defined parameters
     run_silent(
       paste0(

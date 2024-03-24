@@ -50,7 +50,7 @@
 #' @examples
 #' nahrwhals(ref_fa="path/to/ref_genome.fasta", asm_fa="path/to/asm_genome.fasta", outdir="path/to/output")
 #'
-nahrwhals <- function(ref_fa, asm_fa, outdir, region=NULL, regionfile=NULL, anntrack = FALSE, 
+nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL, anntrack = FALSE, 
                       depth = 3, eval_th = 98, chunklen = "default", minlen = "default", compression = "default",
                       max_size_col_plus_rows = 250, max_n_alns = 150, 
                       self_plots = TRUE, plot_only = FALSE,
@@ -67,10 +67,10 @@ nahrwhals <- function(ref_fa, asm_fa, outdir, region=NULL, regionfile=NULL, annt
     library(doParallel)
 
     
-    if (is.null(region) && is.null(regionfile)){
+    if (is.null(region) && is.null(regionfile) && testrun_std==FALSE){
         print('No region or regionfile provided. Running whole genome discovery mode.')
         NW_mode = 'whole-genome'
-    } else if (!is.null(region) && is.null(regionfile)){
+    } else if ((!is.null(region) && is.null(regionfile))|| testrun_std==TRUE){
         print('Coordinates provided. Genotyping that region.')
         NW_mode = 'genotype_1region'
     } else if (is.null(region) && !is.null(regionfile)){

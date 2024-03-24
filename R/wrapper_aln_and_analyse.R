@@ -57,7 +57,6 @@ wrapper_aln_and_analyse <- function(params) {
   } else if (params$use_paf_library == F) {
     create_mmi_if_doesnt_exists(params)
     params <- make_params_conversionpaf(params, outlinks)
-    
     if (is.na(params$conversionpaf_link)){
       res_empty <- data.frame(eval = 0, mut1 = "ref")
       res_empty <- annotate_res_out_with_positions_lens(res_empty, NULL)
