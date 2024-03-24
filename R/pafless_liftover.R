@@ -11,7 +11,7 @@ create_mmi_if_doesnt_exists <- function(params) {
   print('No minimap2 index ".mmi" file of the assembly fasta found. Creating one now (takes around 1 minute for a whole genome assembly.)')
 
   minimap2_indexing_command <- paste0(params$minimap2_bin, " -k 28 -w 255 --idx-no-seq -H -d ", params$genome_y_fa_mmi, " ", params$genome_y_fa)
-  system(minimap2_indexing_command)
+  run_silent(minimap2_indexing_command)
 }
 
 
@@ -38,7 +38,7 @@ make_params_conversionpaf <- function(params, outlinks) {
     params$genome_x_fa,
     params$seqname_x,
     as.integer(max(0,params$start_x - ((params$end_x - params$start_x) * 0.2))),
-    as.integer(min(params$end_x + ((params$end_x - params$start_x) * 0.2))),
+    as.integer(params$end_x + ((params$end_x - params$start_x) * 0.2)),
     paste0(outlinks$genome_x_fa_subseq, '_elongate.fa'),
     params
   )
@@ -46,13 +46,14 @@ make_params_conversionpaf <- function(params, outlinks) {
   random_tag <- as.character(runif(1, 1e10, 1e11))
   tmp_conversionpaf <- paste0("tmp_conversionpaf", random_tag, ".paf")
   minimap2_mapping_command <- paste0(params$minimap2_bin, " ", params$genome_y_fa_mmi, " ", outlinks$genome_x_fa_subseq, '_elongate.fa', " > ", tmp_conversionpaf)
-  print("Attempting to locate input sequence homolog in y assembly... ")
-  system(minimap2_mapping_command)
+
+  run_silent(minimap2_mapping_command)
   
-  system(paste0('rm ', paste0(outlinks$genome_x_fa_subseq, '_elongate.fa')))
+  run_silent(paste0('rm ', paste0(outlinks$genome_x_fa_subseq, '_elongate.fa')))
   if (file.info(tmp_conversionpaf)$size == 0){
     print('Sequence not found!')
     params$conversionpaf_link <- NA
+    run_silent(paste0('rm ', tmp_conversionpaf))
     return(params)
   }
   
@@ -63,7 +64,7 @@ make_params_conversionpaf <- function(params, outlinks) {
   # 
   # minimap2_mapping_command <- paste0(params$minimap2_bin, " ", params$genome_y_fa_mmi, " ", paste0(outlinks$genome_x_fa_subseq,'_chunked.fa'), " > ", tmp_conversionpaf)
   # print("Attempting to locate input sequence homolog in y assembly... ")
-  # system(minimap2_mapping_command)
+  # run_silent(minimap2_mapping_command)
   # 
   # correct_paf(tmp_conversionpaf, paste0(tmp_conversionpaf, '_filter.paf'))
   # compress_paf_fnct(inpaf_link = paste0(tmp_conversionpaf, '_filter.paf'), outpaf_link =paste0(tmp_conversionpaf, '_filter_stitch.paf') , inparam_chunklen = params$chunklen)

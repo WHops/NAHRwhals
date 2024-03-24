@@ -225,8 +225,10 @@ to_append <- data.frame(
     warning("Failed to acquire lock after maximum retries. Data might not be written.")
   }
 
-
-  print(paste0("Logfile written: ", logfile))
+  # Inform the user: name of logfile, samplex, sampley, region, and name of mut_max.
+  if (!params$silent) {
+    print(paste0("Run successful! Results saved to logfile: ", logfile))
+  } 
 }
 
 

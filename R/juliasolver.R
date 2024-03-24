@@ -20,7 +20,7 @@ run_solver_julia <- function(params, inmat_path, inlens_path, outpath){
   init_width = params$init_width
 # 
   julia_cmd = paste0(julia_path, " ", solver_path, ' -d ', maxdepth, ' -u ', maxdup, ' -w ', init_width, ' -r ', minreport, ' -R 1000 ', inmat_path, ' ', inlens_path, ' ', outpath)
-  system(julia_cmd)
+  run_silent(julia_cmd)
 }
 
 #' @export

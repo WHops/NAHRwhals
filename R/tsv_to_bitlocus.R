@@ -187,7 +187,7 @@ wrapper_paf_to_bitlocus <-
     gridlines.x <- gxy[[1]]
     gridlines.y <- gxy[[2]]
 
-    cat(paste0("Gridline dimensions: ", length(gridlines.x), " and ", length(gridlines.y), "\n"))
+    #cat(paste0("Gridline dimensions: ", length(gridlines.x), " and ", length(gridlines.y), "\n"))
     
     # Check for max grid size
     if ((length(gridlines.x) + length(gridlines.y)) > params$max_size_col_plus_rows) {

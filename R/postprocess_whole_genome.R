@@ -8,6 +8,6 @@ tsv_to_bed_regional_dominance <- function(nahrwhals_res_tsv, nahrwhals_bed){
     # Run the bash script
     command = paste0('bash ', postprocess_main_bash, ' ', nahrwhals_res_tsv, ' ', nahrwhals_bed, ' ', outdir, ' ', SCRIPTDIR_BASE, ' >/dev/null 2>&1')
 
-    system(command)
+    run_silent(command)
 }
 

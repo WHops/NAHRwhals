@@ -304,6 +304,8 @@ plot_alignments <- function(alignments, opt) {
     samplename_y <- opt$samplename_y
   }
 
+  suppressWarnings(suppressMessages({
+
   # Create the ggplot object
   gp <- ggplot2::ggplot(alignments) +
     ggplot2::geom_segment(
@@ -313,16 +315,6 @@ plot_alignments <- function(alignments, opt) {
         x = refStart,
         xend = refEnd,
         color = percentID,
-        text = sprintf(
-          "Query ID: %s<br>Query Start Pos: %s<br>Query End Pos: %s<br>Target ID: %s<br>Target Start Pos: %s<br>Target End Pos: %s<br>Length: %s kb",
-          queryID,
-          queryStart,
-          queryEnd,
-          refID,
-          refStart,
-          refEnd,
-          round(lenAln / 1000, 1)
-        )
       )
     ) +
     ggplot2::labs(
@@ -362,6 +354,7 @@ plot_alignments <- function(alignments, opt) {
     gp <- add_annotation_blocks(gp, opt)
   }
 
+  }))
   return(gp)
 }
 

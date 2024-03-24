@@ -24,6 +24,8 @@ pmsqrt_rev <- function(x) {
 #' @author Wolfram Hoeps
 #' @export
 plot_matrix_ggplot <- function(data_frame_xyz) {
+
+  suppressMessages(suppressWarnings({
   p <- ggplot2::ggplot(data_frame_xyz) +
     ggplot2::geom_tile(ggplot2::aes(
       x = x,
@@ -52,7 +54,7 @@ plot_matrix_ggplot <- function(data_frame_xyz) {
       panel.grid.major = ggplot2::element_blank(),
       panel.grid.minor = ggplot2::element_blank()
     )
-
+  }))
   return(p)
 }
 
@@ -103,6 +105,8 @@ plot_matrix_ggplot_named <- function(data_frame_xyz, colnames_f, rownames_f) {
 
   # limits = limits[abs(limits) > 1000]n
   # Make the plot
+  suppressMessages(suppressWarnings({
+
   p <- ggplot2::ggplot(data_frame_xyz) +
     ggplot2::geom_tile(ggplot2::aes(
       x = x,
@@ -138,14 +142,17 @@ plot_matrix_ggplot_named <- function(data_frame_xyz, colnames_f, rownames_f) {
       axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust = 1, size = 3),
       axis.text.y = ggplot2::element_text(size = 3)
     )
-
+  
   # ... and sort the x and y axes
+
   p <- p + ggplot2::scale_x_discrete(limits = as.character(diff_colnames)) +
     ggplot2::scale_y_discrete(limits = as.character(diff_rownames)) +
     ggplot2::labs(x = "target sequence", y = "query sequence")
 
+  }
+  ))
 
-  p
+  p 
 
 
   return(p)
@@ -211,19 +218,24 @@ make_segmented_pairwise_plot <- function(grid_xy, plot_x_y, outlinks) {
   min_x <- min(ggplot2::layer_scales(plot_x_y)$x$range$range, min(xstart) - likely_stepsize)
   min_y <- min(ggplot2::layer_scales(plot_x_y)$y$range$range, min(ystart) - likely_stepsize)
   
+  suppressWarnings(suppressMessages({
+
   plot_x_y_segmented <- plot_x_y +
     ggplot2::geom_rect(
       data = datx,
       ggplot2::aes(xmin = xstart, xmax = xend, ymin = 0, ymax = ymax, fill = col_vector[1:length(xstart)]),
       alpha = 0.5
     ) +
-    ggplot2::guides(fill = FALSE) +
+    ggplot2::guides(fill = 'none') +
     ggplot2::coord_cartesian(xlim = c(min_x, max_x), ylim = c(min_y, max_y)) +
     ggplot2::scale_x_continuous(labels = scales::comma) +
     ggplot2::scale_y_continuous(labels = scales::comma) + 
     ggplot2::coord_fixed(ratio = 1, xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") 
   # ggplot2::geom_segment(data=daty,
   #             ggplot2::aes(x=0, xend=xmax, y=ystart, yend=ystart), color='grey')
+
+  }
+  ))
   print(plot_x_y_segmented)
   
   ggplot2::ggsave(
@@ -262,7 +274,9 @@ make_modified_grid_plot <- function(res, gridmatrix, outlinks) {
   row.names(grid_modified) <- seq(1, dim(grid_modified)[1])
 
   # Melt the modified grid matrix
-  gm2 <- reshape2::melt(grid_modified)
+  suppressMessages(suppressWarnings({
+    gm2 <- reshape2::melt(grid_modified)
+  }))
   colnames(gm2) <- c("y", "x", "z")
 
   # Create the modified grid plot using non-zero values

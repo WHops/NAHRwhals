@@ -70,15 +70,15 @@ extract_sequence_wrapper <- function(params, outlinks) {
     
   } else if (is.null(params$conversionpaf_link)) {
     # Huh?
-    system(paste0("cp ", genome_x_fa, " ", outlinks$genome_x_fa_subseq))
-    system(paste0("cp ", genome_y_fa, " ", outlinks$genome_y_fa_subseq))
+    run_silent(paste0("cp ", genome_x_fa, " ", outlinks$genome_x_fa_subseq))
+    run_silent(paste0("cp ", genome_y_fa, " ", outlinks$genome_y_fa_subseq))
 
     start_x_pad <- params$start_x
     end_x_pad <- params$end_x
     chr_start_end_pad <- c(params$seqname_x, start_x_pad, end_x_pad)
 
-    system(paste0("cp ", genome_x_fa, " ", outlinks$genome_x_fa_subseq))
-    system(paste0("cp ", genome_y_fa, " ", outlinks$genome_y_fa_subseq))
+    run_silent(paste0("cp ", genome_x_fa, " ", outlinks$genome_x_fa_subseq))
+    run_silent(paste0("cp ", genome_y_fa, " ", outlinks$genome_y_fa_subseq))
   }
   return(list(chr_start_end_pad, params))
 }

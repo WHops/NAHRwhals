@@ -19,11 +19,11 @@ NAHRwhals is an R package providing tools for visualization and automatic detect
 
 ```
 git clone https://github.com/WHops/NAHRwhals.git
-cd NAHRwhals; git checkout main
+cd NAHRwhals
 ```
 ### (2) Install dependencies
  
-NAHRwhals dependencies include [minimap2](https://github.com/lh3/minimap2), [bedtools](https://bedtools.readthedocs.io/en/latest/content/quick-start.html), [gawk](https://formulae.brew.sh/formula/gawk) and a number of R packages. The easiest way to install all is by using the provided conda environment (we use mamba here for faster returns):
+We recommend using mamba to install dependencies:
 
 ```
 conda config --set channel_priority flexible
@@ -34,7 +34,7 @@ conda activate nahrwhals
 
 ### (3) Install NAHRwhals
 
-You can finally install NAHRwhals with the following command. 
+Install NAHRwhals using:
 
 ```
 Rscript install_package.R
@@ -43,8 +43,7 @@ Rscript install_package.R
 
 ### (4) Test your installation
 
-To confirm that NAHRwhals has been correctly installed, run a testrun inside R which will produce output files and plots in the `./res` folder. This should take around 1 minute. 
-
+Confirm the installation with a testrun (producing output files and plots in the `./res` folder). 
 ```
 R
 > library(nahrwhals)
@@ -53,35 +52,39 @@ R
 
 # Usage
 
-Whole-genome run: 
+1) Provide region=chr:start-end coordinates to genotype single region
 ```
 R
 > library(nahrwhals)
 > nahrwhals(ref_fa = 'ref.fa', 
             alt_fa = 'alt.fa,
-            ourdir = 'res',
-            threads = 8)
+            region = 'chr:start-end',
+            outdir = 'res',
+            minimap_cores = 8)
 ```
 
-Other run:
+2) Provide regions_file to coordinate multiple regions at once
 ```
 R
 > library(nahrwhals)
 > nahrwhals(ref_fa = 'ref.fa', 
             alt_fa = 'alt.fa,
-            genotype_regions = 'regions.bed',
+            regions_file = 'regions.bed',
             outdir = 'res',
             threads = 8)
 ```
 
-Optional: 
+3) Provide no region coordinates to invoke whole genome discovery mode
 ```
 R
 > library(nahrwhals)
-> scan_for_windows(ref_fa = 'ref.fa', 
+> nahrwhals(ref_fa = 'ref.fa', 
             alt_fa = 'alt.fa,
-            outfile = 'out.bed')
+            outdir = 'res',
+            threads = 8)
 ```
+
+
 
 # Output
 
@@ -123,28 +126,9 @@ This PDF contains seven plots that document the NAHRwhals run:
 - 2.7. Segmented pairwise alignment AFTER applying the top-scoring mutation
 
 
-# Quick start: your own data (runtime: <1 min)
-
-To run your own data, exchange genome_x_fa (typically a reference, e.g. hg38), genome_y_fa (typically a genome assembly) and your coordinates of interest (seqname_x, start_x, end_x) in the config file. An example run which includes a gene annotation track (optional) could look like this: 
-
-```
-nahrwhals(genome_x_fa = system.file("extdata/assemblies", "hg38_partial.fa", package="nahrwhals"),
-genome_y_fa = system.file("extdata/assemblies", "assembly_partial.fa", package="nahrwhals"),
-seqname_x = 'chr1_partial',
-start_x = 1700000,
-end_x = 3300000,
-anntrack= system.file("extdata/assemblies", "hg38_partial_genes.bed", package="nahrwhals"),
-samplename_x = 'Fasta_x',
-samplename_y = 'Fasta_y'
-)
-```
-
-Resulting in pairwise alignments plots with gene annotations overlaid on the top: 
-
-<img src="https://github.com/WHops/NAHRwhals/blob/main/inst/extdata/output_png/examplerun_output_hg38_T2T.png?raw=true" width="500" height="500">
 
 
-Figures and results from the NAHRwhals manuscript can be replicated by querying coordinates of interest (see supp. Tables) on a reference (parameter: genome_x_fa) against assembly fastas (parameter: genome_y_fa) (see https://doi.org/10.5281/zenodo.7635935). Note that in the majority of cases, T2T is used as reference.
+Figures and results from the NAHRwhals manuscript can be replicated by querying coordinates of interest (see supp. Tables) on a reference (parameter: genome_x_fa) against assembly fastas (parameter: genome_y_fa) (see https://doi.org/10.5281/zenodo.7635935). Note the use of T2T as reference. 
 
 # Parameters
 
@@ -233,21 +217,6 @@ The main output from a nahrwhals run is found in res/res.tsv. Here is a descript
 | mut3_len_pm| The confidence interval of SV length (plus/minus). |
 
 
-# NOTES
-
-
-- In case minimap2 or bedtools are not part of your $PATH (i.e. can not be called from the commandline via `minimap2` and `bedtools`), specify your paths when running nahrwhals:
-
-```
-library(nahrwhals)
-nahrwhals( ... , minimap2_bin = '/path/to/your/minimap2', bedtools_bin = 'path/to/your/bedtools')
-```
-
-- NAHRwhals can also skip the initial search for sub-sequences, and call SVs directly on two regional fasta files by setting `compare_full_fastas = TRUE'. Run an example via: 
-
-```
-> nahrwhals(testrun_fullfa=T)
-```
 
 # Report Errors
 

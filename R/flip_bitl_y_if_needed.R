@@ -61,7 +61,7 @@ flip_bitl_y_if_needed <- function(bitl) {
 
   # Flip if needed (but on the bitl, not on the messed bitl_f.)
   if (neg_aln_sum > pos_aln_sum) {
-    print("Inverse y axis detected. Flipping ... ")
+    #print("Inverse y axis detected. Flipping ... ")
 
     # If the matrix has only one row, we need a special case because apply
     # return a vector in this case, not a matrix.

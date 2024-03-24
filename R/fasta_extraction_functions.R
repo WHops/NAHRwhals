@@ -25,8 +25,8 @@ extract_subseq_bedtools <- function(infasta, seqname, start, end, outfasta, para
   tmp_seq_length_file <- paste0("seq_length_", random_tag, ".txt")
   
   # Get sequence lengths using bedtools faidx and store in a temporary file
-  system(paste0("samtools faidx ", infasta))
-  system(paste0("cut -f1,2 ", infasta, ".fai > ", tmp_seq_length_file))
+  run_silent(paste0("samtools faidx ", infasta))
+  run_silent(paste0("cut -f1,2 ", infasta, ".fai > ", tmp_seq_length_file))
   
   # Read the sequence lengths into R
   seq_lengths <- read.table(tmp_seq_length_file, stringsAsFactors = FALSE, col.names = c("seqname", "length"))
@@ -41,7 +41,7 @@ extract_subseq_bedtools <- function(infasta, seqname, start, end, outfasta, para
   write.table(data.frame(seqname, start, end), file = tmp_bedfile, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
   
   # Run bedtools getfasta
-  system(paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", tmp_bedfile, " -fo ", outfasta))
+  run_silent(paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", tmp_bedfile, " -fo ", outfasta))
   
   # Delete temporary files
   file.remove(tmp_bedfile, tmp_seq_length_file)

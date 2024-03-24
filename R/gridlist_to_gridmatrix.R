@@ -36,7 +36,9 @@ gridlist_to_gridmatrix <- function(grid) {
   grid_list <- remove_duplicates_triple(grid_list)
 
   # list to matrix
-  gridmatrix <- reshape2::dcast(grid_list, y ~ x, fill = 0)
+  suppressMessages(suppressWarnings({
+    gridmatrix <- reshape2::dcast(grid_list, y ~ x, fill = 0)
+  }))
   gridmatrix$x <- NULL
   gridmatrix$y <- NULL
   gridmatrix <- as.matrix(gridmatrix)

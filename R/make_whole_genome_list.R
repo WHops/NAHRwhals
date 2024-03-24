@@ -15,7 +15,7 @@ align_all_vs_all_using_minimap2 <- function(minimap2_bin, reference_fasta, asm_f
         # Inform the user what happened and what we do 
         #message("Reference index ", reference_mmi, " does not exist. Creating it now.")
         minimap2_indexing_command <- paste0(minimap2_bin, " -k 28 -w 255 -H -d ", reference_mmi, " ", reference_fasta)
-        system(minimap2_indexing_command)
+        run_silent(minimap2_indexing_command)
     } #else {
         # Inform the user what happened and what we do
         #message("Found existing reference index ", reference_mmi, ". Skipping re-calculation.")
@@ -27,7 +27,7 @@ align_all_vs_all_using_minimap2 <- function(minimap2_bin, reference_fasta, asm_f
         return()
     }
     minimap2_cmd = paste0(minimap2_bin, " -x asm5 -t ",threads, " -c ", reference_mmi, " ", asm_fasta, " > ", out_paf)
-    system(minimap2_cmd)
+    run_silent(minimap2_cmd)
 
     # Inform the user
     #message("Minimap2 finished successfully. The output is in ", out_paf)
@@ -52,7 +52,7 @@ align_all_vs_all_using_minimap2_shred_merge <- function(awkscript, reference_fas
         # Inform the user what happened and what we do 
         message("Reference index ", reference_mmi, " does not exist. Creating it now.")
         minimap2_indexing_command <- paste0(minimap2_bin, " -k 28 -w 20 -H -d ", reference_mmi, " ", reference_fasta)
-        system(minimap2_indexing_command)
+        run_silent(minimap2_indexing_command)
     } #else {
         # Inform the user what happened and what we do
         #message("Found existing reference index ", reference_mmi, ". Skipping re-calculation.")
@@ -71,7 +71,7 @@ align_all_vs_all_using_minimap2_shred_merge <- function(awkscript, reference_fas
 
     shred_seq_bedtools_multifasta(asm_fasta, asm_fa_shredded, 10000, params)
     minimap2_cmd = paste0(minimap2_bin, " -t ",threads, " ", reference_mmi, " ", asm_fa_shredded, " > ", alignment_chunked)
-    system(minimap2_cmd)
+    run_silent(minimap2_cmd)
 
     correct_paf(alignment_chunked, aligment_chunked_corrected)
 
@@ -122,7 +122,7 @@ extract_test_list_from_paf <- function(all_vs_all_paf, out_dir, out_file, genome
     bedtools_bin = 'bedtools'
 
     command = paste0('bash ',wg_run_all_script, ' ', all_vs_all_paf, ' ', out_dir, ' ', out_file, ' ', genome_path, ' ', bedtools_bin, ' ', merge_distance, ' ', indel_ignore_distance, ' ', exclusion_mask, ' ', bashscripts_base)
-    system(command)
+    run_silent(command)
 
     # Inform the user
 }
@@ -137,7 +137,7 @@ make_genome_file <- function(fasta, out_path){
     # If fasta.fai file does not exist, create it
     if(!file.exists(paste0(fasta,'.fai'))){
         message("Fasta index ", paste0(fasta,'.fai'), " does not exist. Creating it now.")
-        system(paste0("samtools faidx ", fasta))
+        run_silent(paste0("samtools faidx ", fasta))
     } #else {
     #    message("Found existing fasta index ", paste0(fasta,'.fai'), ". Skipping re-calculation.")
     #}
@@ -155,7 +155,7 @@ make_genome_file <- function(fasta, out_path){
 
 #' @export
 wga_write_interval_list <- function(ref_fa, asm_fa, outdir, outfile, merge_distance, indel_ignore_distance, exclusion_mask='none', threads = 1){
-    system(paste0("mkdir -p ", outdir , ' 2>&1'))
+    run_silent(paste0("mkdir -p ", outdir , ' 2>&1'))
 
     allpaf = paste0(outdir, "/fullaln.paf")
     #allpaf = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/out.paf'

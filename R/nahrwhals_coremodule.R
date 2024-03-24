@@ -48,8 +48,8 @@
 #'
 #'
 #' @export
-nahrwhals_singlerun <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, end_x,
-                      genome_y_fa_mmi = "default", anntrack = FALSE,
+nahrwhals_singlerun <- function(genome_x_fa = 'default', genome_y_fa  = 'default', seqname_x  = 'default', start_x  = 'default', end_x  = 'default',
+                      genome_y_fa_mmi = "default", anntrack = FALSE, outdir = "res",
                       logfile = "res/res.tsv", samplename_x = "Fasta_x",
                       samplename_y = "Fasta_y", compare_full_fastas = FALSE,
                       plot_only = FALSE, self_plots = TRUE,
@@ -64,14 +64,14 @@ nahrwhals_singlerun <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, en
                       debug = FALSE, clean_after_yourself = FALSE, testrun_std = FALSE,
                       testrun_fullfa = FALSE, minimap2_bin = "minimap2", bedtools_bin = 'bedtools',
                       noclutterplots = T,   maxdup = 2, minreport = 0.98, init_width = 1000,
-                      minimap_cores = 1) {
+                      minimap_cores = 1, silent=F) {
 
 
   # Dev off
   #while(!is.null(dev.list())){dev.off()}
 
   params <- list(genome_x_fa = genome_x_fa, genome_y_fa = genome_y_fa, seqname_x = seqname_x, 
-                start_x = start_x, end_x = end_x, genome_y_fa_mmi = genome_y_fa_mmi, 
+                start_x = start_x, end_x = end_x, genome_y_fa_mmi = genome_y_fa_mmi, outdir=outdir,
                 anntrack = anntrack, logfile = logfile, samplename_x = samplename_x, 
                 samplename_y = samplename_y, compare_full_fastas = compare_full_fastas, 
                 plot_only = plot_only, self_plots = self_plots, plot_xy_segmented = plot_xy_segmented, 
@@ -88,14 +88,14 @@ nahrwhals_singlerun <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, en
                 minimap2_bin = minimap2_bin, bedtools_bin = bedtools_bin, 
                 noclutterplots = noclutterplots, 
                 maxdup = maxdup, minreport = minreport, init_width = init_width, 
-                minimap_cores = minimap_cores)
+                minimap_cores = minimap_cores, silent=silent)
   
   if (testrun_std && testrun_fullfa) {
     stop("Parameters testrun_std and testrun_fullfa cannot both be TRUE.")
   }
 
   if (testrun_std) {
-    cat("Testmode! Running a standard testrun with sample data.")
+    print("Testmode! Running a standard testrun with sample data. (Expected runtime <1 min)")
     params$genome_x_fa <- system.file("extdata/assemblies", "hg38_partial.fa", package = "nahrwhals")
     params$genome_y_fa <- system.file("extdata/assemblies", "assembly_partial.fa", package = "nahrwhals")
     params$seqname_x <- "chr1_partial"
@@ -106,8 +106,6 @@ nahrwhals_singlerun <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, en
     params$genome_x_fa <- system.file("extdata/extracted_fastas", "sequence1.fa", package = "nahrwhals")
     params$genome_y_fa <- system.file("extdata/extracted_fastas", "sequence2.fa", package = "nahrwhals")
 
-    params$genome_x_fa <- "/mnt/c/Users/Z364220/projects/SD_mapping/simulation/res/seq_sim/single_pair_100kbp.fa"
-    params$genome_y_fa <- "/mnt/c/Users/Z364220/projects/SD_mapping/simulation/res/seq_sim/single_pair_100kbp.fa"
     params$compare_full_fastas <- T
     params$seqname_x <- "fullfa"
     params$start_x <- 0
@@ -128,8 +126,8 @@ nahrwhals_singlerun <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, en
   if (params$compression %in% default_param_values) {
     params$compression <- determine_compression(params$start_x, params$end_x)
   }
-  if (params$genome_y_fa_mmi %in% default_param_values) {
-    params$genome_y_fa_mmi <- paste0(params$genome_y_fa, ".mmi")
+  if (params$genome_y_fa_mmi %in% default_param_values){
+    params$genome_y_fa_mmi = paste0(params$outdir,'/intermediate/mmis/', basename(params$genome_y_fa), '.mmi')
   }
   if (params$bedtools_bin %in% default_param_values) {
     params$bedtools_bin <- "bedtools"
@@ -155,5 +153,4 @@ nahrwhals_singlerun <- function(genome_x_fa, genome_y_fa, seqname_x, start_x, en
   ##### Run the main NAHRwhals wrapper function #####
   wrapper_aln_and_analyse(params)
 
-  print("done!")
 }

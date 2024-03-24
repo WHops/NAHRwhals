@@ -93,8 +93,6 @@ make_chunked_minimap_alnment <-
     # how to use regex...
     correct_paf(outpaf_chunk, outpaf_filter)
 
-
-
     # Check if abandon
     # pafin = read_and_prep_paf(outpaf_filter)
     # if (is_cluttered_paf(pafin) & (onlypafreturn == T | params$noclutterplots == T)){
@@ -107,9 +105,8 @@ make_chunked_minimap_alnment <-
 
     # paf of fragmented paf gets put back together.
     compress_paf_fnct(inpaf_link = outpaf_filter, outpaf_link = outpaf, inparam_chunklen = chunklen)
-
-    system(paste0('rm ',outpaf_chunk))
-    system(paste0('rm ',outpaf_filter))
+    run_silent(paste0('rm ',outpaf_chunk))
+    run_silent(paste0('rm ',outpaf_filter))
 
     if (onlypafreturn) {
       return(outpaf)
@@ -171,7 +168,7 @@ get_fasta_info <- function(inputfa, outputinfo) {
     "gawk '/^>/{if (l!=\"\") print l; print; l=0; next}{l+=length($0)}END{print l}' ",
     inputfa, " > ", outputinfo
   )
-  system(cmd)
+  run_silent(cmd)
 }
 
 #' Corrects a PAF file if it's made on scattered input.
@@ -193,7 +190,7 @@ correct_paf <- function(inputpaf, outputpaf) {
     "gawk '{FS=OFS=\"\\t\"} match($1, /_([0-9]*)?-/,a){$3 = $3+a[1]; $4 = $4+a[1]; print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' ",
     inputpaf, " > ", outputpaf
   )
-  system(cmd)
+  run_silent(cmd)
 }
 
 #' Chunkify query fasta
@@ -219,8 +216,8 @@ shred_seq_bedtools <- function(infasta,
   # Write a temporary bedfile that will be removed at the end of the function
   bed_tmp_file <- paste0("tmpbed_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
   fasta_awk_tmp_file <- paste0("tmpinfo_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
-
-  # system(paste0(fasta_awk_script, ' ', infasta, ' ', fasta_awk_tmp_file))
+  
+  # run_silent(paste0(fasta_awk_script, ' ', infasta, ' ', fasta_awk_tmp_file))
   get_fasta_info(infasta, fasta_awk_tmp_file)
   # Collect information about the fasta we want to chop. This info is needed for bedtools getfasta
   # To work well.
@@ -236,18 +233,24 @@ shred_seq_bedtools <- function(infasta,
 
   write.table(bed_df, file = bed_tmp_file, sep = "\t", quote = F, row.names = F, col.names = F)
 
-
-  system(paste0("rm ", infasta, ".fai"))
+  run_silent(paste0("rm ", infasta, ".fai"))
 
   sedcmd <- "sed -r \'s/(.*):/\\1_/'"
-  system(paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " | ", sedcmd, " > ", outfasta_chunk))
 
-  system(paste0("rm ", bed_tmp_file))
-  system(paste0("rm ", fasta_awk_tmp_file))
+  cmd = paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " | ", sedcmd, " > ", outfasta_chunk)
+
+  run_silent(paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " 2>/dev/null | ", sedcmd, " > ", outfasta_chunk))
+
+  run_silent(paste0("rm ", bed_tmp_file))
+  run_silent(paste0("rm ", fasta_awk_tmp_file))
 }
 
+#' @export
+run_silent <- function(cmd) {
+  system(paste0(cmd, " 2>/dev/null"))
+}
 
-#' Submit a system command to run minimap2
+#' Submit a run_silent command to run minimap2
 #'
 #' @description This is a helperfunction to run minimap2. Also check out:
 #' https://github.com/PacificBiosciences/pbmm2/ . Minimap2 parameters:
@@ -275,13 +278,13 @@ run_minimap2 <-
            queryfasta,
            outpaf,
            params) {
-    # system(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
+    # run_silent(paste0(minimap2loc," -x asm20 -c -z400,50 -s 0 -M 0.2 -N 100 -P --hard-mask-level ", fastatarget, " ", fastaquery, " > ", outpaf))
 
     nthreads = params$minimap_cores
     minimap2loc <- params$minimap2_bin
 
     # Some self-defined parameters
-    invisible(system(
+    run_silent(
       paste0(
         minimap2loc,
         " -x asm20 -P -c -s 0 -M 0.2 -t ",
@@ -293,7 +296,7 @@ run_minimap2 <-
         " > ",
         outpaf 
       )
-    ))
+    )
     # Check if that was successful.
     stopifnot(
       "Alignment error: Minimap2 has not reported any significant alignment.
@@ -422,13 +425,13 @@ shred_seq_bedtools_multifasta <- function(infasta,
 
   write.table(bed_df, file = bed_tmp_file, sep = "\t", quote = F, row.names = F, col.names = F)
 
-  system(paste0("rm ", infasta, ".fai"))
+  run_silent(paste0("rm ", infasta, ".fai"))
 
   sedcmd <- "sed -r \'s/(.*):/\\1_/'"
-  system(paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " | ", sedcmd, " > ", outfasta_chunk))
+  run_silent(paste0(bedtoolsloc, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " | ", sedcmd, " > ", outfasta_chunk))
 
-  system(paste0("rm ", bed_tmp_file))
-  system(paste0("rm ", fasta_awk_tmp_file))
+  run_silent(paste0("rm ", bed_tmp_file))
+  run_silent(paste0("rm ", fasta_awk_tmp_file))
 }
 
 get_fasta_info_multi <- function(inputfa, outputinfo) {
@@ -437,7 +440,7 @@ get_fasta_info_multi <- function(inputfa, outputinfo) {
     "gawk '/^>/{if (l!=\"\") {print seqname, l} seqname=$0; l=0; next}{l+=length($0)}END{print seqname, l}' ",
     inputfa, " > ", outputinfo
   )
-  system(cmd)
+  run_silent(cmd)
 }
 
 # in_fa = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/data/chunk_lab/NA12878_giab_pbsq2-ccs_1000-hifiasm.h1-un.fasta'
