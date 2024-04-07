@@ -49,13 +49,14 @@ wrapper_aln_and_analyse <- function(params) {
     chr_start_end_pad <- list(chr = "seqname", start = "1", end = as.numeric(nchar(read.table(params$genome_x_fa))))
     run_silent(paste0("cp ", params$genome_x_fa, " ", outlinks$genome_x_fa_subseq))
     run_silent(paste0("cp ", params$genome_y_fa, " ", outlinks$genome_y_fa_subseq))
+
+
   } else if (params$use_paf_library == T) {
-    
     chr_start_end_pad_params <- extract_sequence_wrapper(params, outlinks)
     chr_start_end_pad <- chr_start_end_pad_params[[1]]
     params <- chr_start_end_pad_params[[2]]
+
   } else if (params$use_paf_library == F) {
-    create_mmi_if_doesnt_exists(params)
     params <- make_params_conversionpaf(params, outlinks)
     if (is.na(params$conversionpaf_link)){
       res_empty <- data.frame(eval = 0, mut1 = "ref")
@@ -127,7 +128,6 @@ wrapper_aln_and_analyse <- function(params) {
     # What do we need here?
   }
 
-
   make_segmented_pairwise_plot(grid_xy, plot_x_y, outlinks)
 
   # Make in between another plot
@@ -162,7 +162,7 @@ wrapper_aln_and_analyse <- function(params) {
   if (max(res$eval) < 99.8){
     # Fahre schwere Geschuetze auf
 
-    res_julia <- solve_mutation_julia_wrapper(params, gridmatrix, grid_xy[[1]], outlinks$solver_inmat_path, outlinks$solver_inlens_path, outlinks$solver_juliares_path)
+    res_julia <- solve_mutation_julia_wrapper(params, gridmatrix, grid_xy[[1]], outlinks$solver_inmat_path, outlinks$solver_inlens_path, outlinks$solver_juliares_path, params$julia_solver_path)
     
     if (!all((dim(res_julia)) == c(1,3))){
       if (!'ref' %in% res_julia$mut1){
@@ -367,8 +367,7 @@ make_output_folder_structure <- function(outdir, sequence_name_output) {
     dir.create(paste0(sequence_name_output, "/", subfolder), showWarnings = F, recursive = T)
   }
 
-  # also the folder for the mmi
-  dir.create(paste0(outdir, "/intermediate/mmis"), showWarnings = F, recursive = T)
+
 }
 
 #' Define output file paths for NAHRwhals output

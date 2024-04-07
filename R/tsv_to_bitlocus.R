@@ -40,7 +40,7 @@ load_and_prep_paf_for_gridplot_transform <-
       qend = ifelse(strand == "-", qstart, qend),
       qstart = ifelse(strand == "-", qend, qstart)
     )
-    
+
     # Merge before compression.
     paf <- compress_paf_fnct(
       inpaf_df = paf,
@@ -49,7 +49,6 @@ load_and_prep_paf_for_gridplot_transform <-
       inparam_compression = compression,
       inparam_chunklen = inparam_chunklen
     )
-    
     paf <- paf[paf$alen > minlen, ]
     
     if (dim(paf)[1] == 0) {
@@ -166,7 +165,7 @@ wrapper_paf_to_bitlocus <-
   gridlines.y <- rep(NA, 1e4)
 
   while (TRUE) {
-    paf <- load_and_prep_paf_for_gridplot_transform(inpaf, minlen, compression)
+    paf <- load_and_prep_paf_for_gridplot_transform(inpaf, minlen, compression, inparam_chunklen=params$chunklen)
     
     # Check for max number of alignments
     if (dim(paf)[1] > params$max_n_alns) {

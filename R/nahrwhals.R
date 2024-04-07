@@ -57,7 +57,7 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
                       samplename_x = "Fasta_x", samplename_y = "Fasta_y",
                       use_paf_library = FALSE, conversionpaf_link = FALSE,
                       maxdup = 2, init_width = 1000, region_maxlen = 5000000, testrun_std = FALSE,
-                      threads = 1, minimap_cores_per_thread = 1, genome_y_fa_mmi = "default") {
+                      threads = 1, minimap_cores_per_thread = 1, genome_y_fa_mmi = "default", blacklist = NULL) {
 
 
   
@@ -107,49 +107,74 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
     logfile = paste0(outdir, '/nahrwhals_res.tsv')
     res_bedfile = paste0(outdir, '/nahrwhals_res.bed')
 
-    # Little intermezzo to check if the minimap2 index file exists.
-    # If no, make it now, before the parallel workers start.
-    if (genome_y_fa_mmi != 'default'){
-        genome_y_fa_mmi = paste0(outdir,'/intermediate/mmis/', basename(asm_fa), '.mmi')
+    # Check and create fasta indices and minimap2 mmi.  
+    if(!file.exists(paste0(ref_fa,'.fai'))){
+        message("Fasta index ", paste0(ref_fa,'.fai'), " does not exist. Creating it now.")
+        run_silent(paste0("samtools faidx ", ref_fa))
     }
-    
-    mmi_params = list('minimap2_bin' = minimap2_bin, 
-                    'genome_y_fa' = asm_fa,
-                    'genome_y_fa_mmi' = genome_y_fa_mmi)
 
-    create_mmi_if_doesnt_exists(mmi_params)
+    if(!file.exists(paste0(asm_fa,'.fai'))){
+        message("Fasta index ", paste0(asm_fa,'.fai'), " does not exist. Creating it now.")
+        run_silent(paste0("samtools faidx ", asm_fa))
+    }
+
+    if (genome_y_fa_mmi == 'default'){
+        genome_y_fa_mmi = paste0(outdir,'/minimap_idxs/', basename(asm_fa), '.mmi')
+    }
+
+    create_mmi_if_doesnt_exists(asm_fa, genome_y_fa_mmi)
+
+    # 
 
 
     if (NW_mode == 'whole-genome'){
+
+        # If blacklist is not provided, warn the user that this is necessary for whole genomes with centromeres, such as humans.
+        if (is.null(blacklist)){
+            message('Warning: Whole Genome mode selected, but no blacklist was provided. If you are analysing large complex genomes (e.g. human), as mask for centromeres is required.')
+        }
+
+        # Step 0: we also need a ref mmi for whole genome. 
+        genome_x_fa_mmi = paste0(outdir,'/minimap_idxs/', basename(ref_fa), '.mmi')
+        create_mmi_if_doesnt_exists(ref_fa, genome_x_fa_mmi)
 
         # Step 1: Scan the whole genome for windows to genotype
         window_dir = paste0(outdir, '/whole-genome-windows/', samplename_x, '_', samplename_y)
         dir.create(window_dir, showWarnings = F, recursive = T)
 
         windows_file = paste0(window_dir,'/nahrwhals_windows.bed')
-        regions_to_genotype_df = scan_for_windows(fasta_x, fasta_y, threads, windows_file) #Outfile is optional
+        regions_to_genotype_df = scan_for_windows(ref_fa, asm_fa, threads, windows_file, ref_masked_regions=blacklist) #Outfile is optional
 
         # For debug
         #regions_to_genotype_df = regions_to_genotype_df[1:10,]
         #regions_to_genotype_df$end = regions_to_genotype_df$start + 20000
 
 
-        print(paste0('Running nahrwhals on ', nrow(regions_to_genotype_df), ' regions.'))
-        print(regions_to_genotype_df)
+        #print(paste0('Running nahrwhals on ', nrow(regions_to_genotype_df), ' regions.'))
+        #regions_to_genotype_df = regions_to_genotype_df[regions_to_genotype_df$start > 15094630,]
+        #regions_to_genotype_df = regions_to_genotype_df[1,]
 
+
+        #regions_to_genotype_df$start = 18010158
+        #regions_to_genotype_df$end = 18010158 + 500000
+        print(regions_to_genotype_df)
         # Prepare parallel runs
+
+        # Explain to user that we are setting up nthreads parallel workers
+        print(paste0('Initializing ', min(threads,nrow(regions_to_genotype_df)), ' parallel workers.'))
+
         suppressMessages(suppressWarnings({cl <- parallel::makeCluster(min(threads,nrow(regions_to_genotype_df)), outfile = "")}))
         suppressMessages(suppressWarnings({registerDoParallel(cl)}))
 
         # Initialize progress bar
-        pb <- txtProgressBar(0, nrow(regions_to_genotype_df), style = 3) 
+        #pb <- txtProgressBar(0, nrow(regions_to_genotype_df), style = 3) 
+        solver_path = system.file('extdata', 'scripts', 'scripts_nw_main', 'solver.jl', package='nahrwhals')
 
         # Run using parallel workers
         foreach::foreach(idx = 1:nrow(regions_to_genotype_df)) %dopar% {
-
-            setTxtProgressBar(pb, idx)
-
-            suppressMessages(suppressWarnings(devtools::load_all()))
+            #setTxtProgressBar(pb, idx)
+            message(paste0('Running nahrwhals on region ', idx, ' of ', nrow(regions_to_genotype_df)))
+            suppressMessages(suppressWarnings(library(nahrwhals)))
 
             row <- regions_to_genotype_df[idx, ]
             seqname_x <- row$chr
@@ -167,11 +192,12 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
                               baseline_log_minsize_max=baseline_log_minsize_max, discovery_exact=discovery_exact, hltrack=hltrack, 
                               hllink=hllink, aln_pad_factor=aln_pad_factor, debug=debug, clean_after_yourself=clean_after_yourself, 
                               testrun_std=testrun_std, testrun_fullfa=testrun_fullfa, noclutterplots=noclutterplots, maxdup=maxdup, 
-                              minreport=minreport, init_width=init_width, minimap_cores=minimap_cores_per_thread, silent=T)
+                              minreport=minreport, init_width=init_width, minimap_cores=minimap_cores_per_thread, julia_solver_path=solver_path, 
+                              silent=T)
 
-            
             )
 
+            print(paste0('Finished analysis of region ', idx, ' of ', nrow(regions_to_genotype_df)))
 
 
             }))
@@ -180,19 +206,16 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
         }   
 
         stopCluster(cl)
-        close(pb)
+        #close(pb)
         # Inform user
-        print('')
-        print('Finished running nahrwhals on all regions.')
+        message('Finished running nahrwhals on all regions.')
 
-        #tsv_to_bed_regional_dominance(logfile, res_bedfile)
+        tsv_to_bed_regional_dominance(logfile, res_bedfile)
 
     } else if (NW_mode == 'genotype_regionfile'){ 
         # Step 1: alternative: just load the genotype bedfile
 
-        print('servus!')
         print(regionfile)
-        print("32")
         regions_to_genotype_df = read.table(regionfile, sep='\t', header=F)
         colnames(regions_to_genotype_df) = c('chr','start', 'end')
 
@@ -210,14 +233,14 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
         suppressMessages(suppressWarnings({registerDoParallel(cl)}))
 
         # Initialize progress bar
-        pb <- txtProgressBar(0, nrow(regions_to_genotype_df), style = 3) 
+        solver_path = system.file('extdata', 'scripts', 'scripts_nw_main', 'solver.jl', package='nahrwhals')
 
         # Run using parallel workers
         foreach::foreach(idx = 1:nrow(regions_to_genotype_df)) %dopar% {
-
-            setTxtProgressBar(pb, idx)
-
-            suppressMessages(suppressWarnings(devtools::load_all()))
+            #setTxtProgressBar(pb, idx)
+            
+            message(paste0('Running nahrwhals on region ', idx, ' of ', nrow(regions_to_genotype_df)))
+            suppressMessages(suppressWarnings(library(nahrwhals))) #<--- wtf no #TODO
 
             row <- regions_to_genotype_df[idx, ]
             seqname_x <- row$chr
@@ -235,12 +258,13 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
                               baseline_log_minsize_max=baseline_log_minsize_max, discovery_exact=discovery_exact, hltrack=hltrack, 
                               hllink=hllink, aln_pad_factor=aln_pad_factor, debug=debug, clean_after_yourself=clean_after_yourself, 
                               testrun_std=testrun_std, testrun_fullfa=testrun_fullfa, noclutterplots=noclutterplots, maxdup=maxdup, 
-                              minreport=minreport, init_width=init_width, minimap_cores=minimap_cores_per_thread, silent=T)
+                              minreport=minreport, init_width=init_width, minimap_cores=minimap_cores_per_thread, julia_solver_path=solver_path, silent=T)
 
             
             )
 
 
+            print(paste0('Finished analysis of region ', idx))
 
             }))
 
@@ -272,7 +296,7 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
                     baseline_log_minsize_max=baseline_log_minsize_max, discovery_exact=discovery_exact, hltrack=hltrack, 
                     hllink=hllink, aln_pad_factor=aln_pad_factor, debug=debug, clean_after_yourself=clean_after_yourself, 
                     testrun_std=testrun_std, testrun_fullfa=testrun_fullfa, noclutterplots=noclutterplots, maxdup=maxdup, 
-                    minreport=minreport, init_width=init_width, minimap_cores=minimap_cores_per_thread))
+                    minreport=minreport, init_width=init_width,  minimap_cores=minimap_cores_per_thread))
     }
     
 
@@ -283,16 +307,6 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
 
 }
 
-
-#fasta_x = 'data/athaliana/An-1.chr.all.v2.0.fasta'
-#fasta_y = 'data/athaliana/C24.chr.all.v2.0.fasta'
-#threads <<-
-#threads <<- 1 
-#Sys.setenv(PATH = paste('/Users/hoeps/.juliaup/bin/', Sys.getenv("PATH"), sep=":"))
-#Sys.setenv(PATH = paste("/Users/hoeps/opt/anaconda3/envs/snakemake/bin/", Sys.getenv("PATH"), sep=":"))
-#Sys.setenv(PATH = paste("/Users/hoeps/opt/anaconda3/envs/nahrwhalsAPR/bin/", Sys.getenv("PATH"), sep=":"))
-#devtools::load_all()
-#nahrwhals(fasta_x, fasta_y)
 
 
 

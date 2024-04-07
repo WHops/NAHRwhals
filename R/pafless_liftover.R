@@ -1,16 +1,18 @@
 #' Creates a minimap2 index (.mmi) file for a genome assembly if it doesn't exist.
 #' @param params A list containing parameters for the function.
 #' @export
-create_mmi_if_doesnt_exists <- function(params) {
-  if (file.exists(params$genome_y_fa_mmi)) {
+create_mmi_if_doesnt_exists <- function(fasta, desired_fasta_mmi) {
+
+  dir.create(dirname(desired_fasta_mmi), recursive = TRUE, showWarnings = FALSE)
+
+  if (file.exists(desired_fasta_mmi)) {
     #print('Found existing minimap2 index ".mmi" file. Skipping re-calculation.')
     return()
   }
 
-
   print('No minimap2 index ".mmi" file of the assembly fasta found. Creating one now (takes around 1 minute for a whole genome assembly.)')
 
-  minimap2_indexing_command <- paste0(params$minimap2_bin, " -k 28 -w 255 --idx-no-seq -H -d ", params$genome_y_fa_mmi, " ", params$genome_y_fa)
+  minimap2_indexing_command <- paste0("minimap2 -k 28 -w 255 --idx-no-seq -H -d ", desired_fasta_mmi, " ", fasta)
   run_silent(minimap2_indexing_command)
 }
 

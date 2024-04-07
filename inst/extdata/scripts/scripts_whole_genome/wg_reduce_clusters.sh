@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail 
 
 # Check if the correct number of arguments is provided
 if [[ $# -ne 4 ]]; then

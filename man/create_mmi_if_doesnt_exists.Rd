@@ -4,7 +4,7 @@
 \alias{create_mmi_if_doesnt_exists}
 \title{Creates a minimap2 index (.mmi) file for a genome assembly if it doesn't exist.}
 \usage{
-create_mmi_if_doesnt_exists(params)
+create_mmi_if_doesnt_exists(fasta, desired_fasta_mmi)
 }
 \arguments{
 \item{params}{A list containing parameters for the function.}

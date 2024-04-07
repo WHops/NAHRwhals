@@ -1,25 +1,29 @@
 #' @export
-solve_mutation_julia_wrapper <- function(params, mat, gridlines_x, inmat_path, inlens_path, juliares_path){
-  
+solve_mutation_julia_wrapper <- function(params, mat, gridlines_x, inmat_path, inlens_path, juliares_path, julia_solver_path = NULL){
+
   mat <- flip_bitl_y_if_needed(mat)
   write.table(mat, inmat_path, col.names = F, row.names=F, quote=F, sep='\t')
   write.table(t(as.numeric(row.names(mat))), inlens_path, col.names = F, row.names=F, quote=F, sep='\t')
   write.table(t(as.numeric(colnames(mat))), inlens_path, append=T, col.names = F, row.names=F, quote=F, sep='\t')
-  run_solver_julia(params, inmat_path, inlens_path, juliares_path)
+  run_solver_julia(params, inmat_path, inlens_path, juliares_path, julia_solver_path)
   return(format_julia_output(juliares_path, gridlines_x, params$depth))
 }
 
 #' @export
-run_solver_julia <- function(params, inmat_path, inlens_path, outpath){
+run_solver_julia <- function(params, inmat_path, inlens_path, outpath, julia_solver_path){
   # Run julia
   julia_path = 'julia'
-  solver_path = system.file('extdata', 'scripts', 'scripts_nw_main', 'solver.jl', package='nahrwhals')
+
+  if (is.null(params$julia_solver_path)){
+    julia_solver_path = system.file('extdata', 'scripts', 'scripts_nw_main', 'solver.jl', package='nahrwhals')
+  }
+
   maxdepth = params$depth
   maxdup = params$maxdup
   minreport = params$minreport
   init_width = params$init_width
 # 
-  julia_cmd = paste0(julia_path, " ", solver_path, ' -d ', maxdepth, ' -u ', maxdup, ' -w ', init_width, ' -r ', minreport, ' -R 1000 ', inmat_path, ' ', inlens_path, ' ', outpath)
+  julia_cmd = paste0(julia_path, " ", julia_solver_path, ' -d ', maxdepth, ' -u ', maxdup, ' -w ', init_width, ' -r ', minreport, ' -R 1000 ', inmat_path, ' ', inlens_path, ' ', outpath)
   run_silent(julia_cmd)
 }
 

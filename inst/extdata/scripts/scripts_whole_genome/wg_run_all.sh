@@ -23,6 +23,7 @@ BP_MERGE_DISTANCE="$6"
 BP_COLLAPSE_REMOVE_DISTANCE="$7"
 EXCLUSION_MASK="$8"
 SCRIPTDIR_BASE="$9"
+EXPAND_bps=50000 
 EXPAND_FRACTION=1
 MERGE_DISTANCE=1000000
 FINAL_REGIONS_CLUSTER_DISTANCE=100000
@@ -45,7 +46,8 @@ ${SCRIPTDIR_BASE}/wg_filter_bps.sh "${OUTPUT_DIR}/wga_primary_bps.bed" "${OUTPUT
 ${SCRIPTDIR_BASE}/wg_extract_clusters.sh "${OUTPUT_DIR}/wga_primary_bps_distfiltered.bed" "${OUTPUT_DIR}/breakpoint_clusters_merged.bed" $BP_MERGE_DISTANCE
 
 # Step 5: Expand the clusters
-$BEDTOOLS slop -i "${OUTPUT_DIR}/breakpoint_clusters_merged.bed" -g "$GENOME_PATH" -b $EXPAND_FRACTION -pct > "${OUTPUT_DIR}/breakpoint_clusters_merged_expand.bed"
+#$BEDTOOLS slop -i "${OUTPUT_DIR}/breakpoint_clusters_merged.bed" -g "$GENOME_PATH" -b $EXPAND_FRACTION -pct > "${OUTPUT_DIR}/breakpoint_clusters_merged_expand.bed"
+$BEDTOOLS slop -i "${OUTPUT_DIR}/breakpoint_clusters_merged.bed" -g "$GENOME_PATH" -b $EXPAND_bps > "${OUTPUT_DIR}/breakpoint_clusters_merged_expand.bed"
 
 # Step 6: Filter clusters greater than 50,000 after expansion
 cp "${OUTPUT_DIR}/breakpoint_clusters_merged_expand.bed" "${OUTPUT_DIR}/breakpoint_clusters_merged_expand_50kb.bed"
@@ -62,10 +64,11 @@ awk 'BEGIN {FS=OFS="\t"} {print $1"_"$6,$8,$9,$6}' "${OUTPUT_DIR}/wga_primary_no
 # Step 9: Intersect the processed data
 $BEDTOOLS intersect -a "${OUTPUT_DIR}/contigmerges.bed" -b "${OUTPUT_DIR}/list.bed" | awk 'BEGIN {FS=OFS="\t"} {print $4,$2,$3}' > "${OUTPUT_DIR}/list_cut_final_prefilter.bed"
 
-${SCRIPTDIR_BASE}/wg_reduce_clusters.sh <(bedtools sort -i ${OUTPUT_DIR}/list_cut_final_prefilter.bed) ${OUTPUT_DIR}/list_cut_final.bed $FINAL_INTERVALS_PER_CLUSTER $FINAL_REGIONS_CLUSTER_DISTANCE
+${SCRIPTDIR_BASE}/wg_reduce_clusters.sh <(bedtools sort -i ${OUTPUT_DIR}/list_cut_final_prefilter.bed) $OUTPUT_FILE $FINAL_INTERVALS_PER_CLUSTER $FINAL_REGIONS_CLUSTER_DISTANCE
+
 
 if [ "$EXCLUSION_MASK" != "none" ]; then
-    $BEDTOOLS subtract -a "${OUTPUT_DIR}/list_cut_final.bed" -b "$EXCLUSION_MASK" > "${OUTPUT_DIR}/list_cut_final_exclusion.bed"
+    $BEDTOOLS subtract -a $OUTPUT_FILE -b "$EXCLUSION_MASK" > "${OUTPUT_DIR}/list_cut_final_exclusion.bed"
     mv "${OUTPUT_DIR}/list_cut_final_exclusion.bed" $OUTPUT_FILE
 fi
 

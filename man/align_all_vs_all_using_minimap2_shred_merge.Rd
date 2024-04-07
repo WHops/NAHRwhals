@@ -9,7 +9,8 @@ align_all_vs_all_using_minimap2_shred_merge(
   reference_fasta,
   asm_fasta,
   out_paf,
-  threads
+  threads,
+  outdir
 )
 }
 \arguments{

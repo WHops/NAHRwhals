@@ -64,7 +64,7 @@ nahrwhals_singlerun <- function(genome_x_fa = 'default', genome_y_fa  = 'default
                       debug = FALSE, clean_after_yourself = FALSE, testrun_std = FALSE,
                       testrun_fullfa = FALSE, minimap2_bin = "minimap2", bedtools_bin = 'bedtools',
                       noclutterplots = T,   maxdup = 2, minreport = 0.98, init_width = 1000,
-                      minimap_cores = 1, silent=F) {
+                      minimap_cores = 1, julia_solver_path = NULL, silent=F) {
 
 
   # Dev off
@@ -88,7 +88,7 @@ nahrwhals_singlerun <- function(genome_x_fa = 'default', genome_y_fa  = 'default
                 minimap2_bin = minimap2_bin, bedtools_bin = bedtools_bin, 
                 noclutterplots = noclutterplots, 
                 maxdup = maxdup, minreport = minreport, init_width = init_width, 
-                minimap_cores = minimap_cores, silent=silent)
+                minimap_cores = minimap_cores, julia_solver_path = julia_solver_path, silent=silent)
   
   if (testrun_std && testrun_fullfa) {
     stop("Parameters testrun_std and testrun_fullfa cannot both be TRUE.")
@@ -154,3 +154,4 @@ nahrwhals_singlerun <- function(genome_x_fa = 'default', genome_y_fa  = 'default
   wrapper_aln_and_analyse(params)
 
 }
+

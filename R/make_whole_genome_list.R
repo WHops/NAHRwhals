@@ -1,3 +1,38 @@
+# #' align_all_vs_all_using_minimap2
+# #' @param minimap2_bin Path to the minimap2 binary
+# #' @param reference_fasta Path to the reference fasta
+# #' @param asm_fasta Path to the assembly fasta
+# #' @param out_paf Path to the output paf file
+# #' @param threads Number of threads to use
+# #' @return Nothing
+# #' @export
+# align_all_vs_all_using_minimap2 <- function(minimap2_bin, reference_fasta, asm_fasta, out_paf, threads){
+
+#     # Search for a reference_mmi in the same folder as the reference_fasta. If it does not exist, create it.
+#     # for example for a file reference.fa, we want to create reference.mmi
+#     genome_x_fa_mmi = paste0(outdir,'/intermediate/mmis/', basename(asm_fa), '.mmi')
+#     if(!file.exists(genome_x_fa_mmi)){
+#         # Inform the user what happened and what we do 
+#         #message("Reference index ", reference_mmi, " does not exist. Creating it now.")
+#         minimap2_indexing_command <- paste0(minimap2_bin, " -k 28 -w 255 -H -d ", genome_x_fa_mmi, " ", reference_fasta)
+#         run_silent(minimap2_indexing_command)
+#     } #else {
+#         # Inform the user what happened and what we do
+#         #message("Found existing reference index ", reference_mmi, ". Skipping re-calculation.")
+#     #}
+
+#     # Check if the out_paf exists already. If it does, explain to the user and do not run the code. 
+#     if(file.exists(out_paf)){
+#         #message("Output file ", out_paf, " already exists. Skipping minimap2.")
+#         return()
+#     }
+#     minimap2_cmd = paste0(minimap2_bin, " -x asm5 -t ",threads, " -c ", reference_mmi, " ", asm_fasta, " > ", out_paf)
+#     run_silent(minimap2_cmd)
+
+#     # Inform the user
+#     #message("Minimap2 finished successfully. The output is in ", out_paf)
+# }
+
 #' align_all_vs_all_using_minimap2
 #' @param minimap2_bin Path to the minimap2 binary
 #' @param reference_fasta Path to the reference fasta
@@ -6,57 +41,12 @@
 #' @param threads Number of threads to use
 #' @return Nothing
 #' @export
-align_all_vs_all_using_minimap2 <- function(minimap2_bin, reference_fasta, asm_fasta, out_paf, threads){
-
-    # Search for a reference_mmi in the same folder as the reference_fasta. If it does not exist, create it.
-    # for example for a file reference.fa, we want to create reference.mmi
-    reference_mmi = paste0(dirname(reference_fasta), "/", sub(pattern = "^(.*)\\.[^\\.]+$", replacement = "\\1", basename(reference_fasta)), ".mmi")
-    if(!file.exists(reference_mmi)){
-        # Inform the user what happened and what we do 
-        #message("Reference index ", reference_mmi, " does not exist. Creating it now.")
-        minimap2_indexing_command <- paste0(minimap2_bin, " -k 28 -w 255 -H -d ", reference_mmi, " ", reference_fasta)
-        run_silent(minimap2_indexing_command)
-    } #else {
-        # Inform the user what happened and what we do
-        #message("Found existing reference index ", reference_mmi, ". Skipping re-calculation.")
-    #}
-
-    # Check if the out_paf exists already. If it does, explain to the user and do not run the code. 
-    if(file.exists(out_paf)){
-        #message("Output file ", out_paf, " already exists. Skipping minimap2.")
-        return()
-    }
-    minimap2_cmd = paste0(minimap2_bin, " -x asm5 -t ",threads, " -c ", reference_mmi, " ", asm_fasta, " > ", out_paf)
-    run_silent(minimap2_cmd)
-
-    # Inform the user
-    #message("Minimap2 finished successfully. The output is in ", out_paf)
-}
-
-#' align_all_vs_all_using_minimap2
-#' @param minimap2_bin Path to the minimap2 binary
-#' @param reference_fasta Path to the reference fasta
-#' @param asm_fasta Path to the assembly fasta
-#' @param out_paf Path to the output paf file
-#' @param threads Number of threads to use
-#' @return Nothing
-#' @export
-align_all_vs_all_using_minimap2_shred_merge <- function(awkscript, reference_fasta, asm_fasta, out_paf, threads){
+align_all_vs_all_using_minimap2_shred_merge <- function(awkscript, reference_fasta, asm_fasta, out_paf, threads, outdir){
 
     minimap2_bin = 'minimap2'
     bedtools_bin = 'bedtools'
-    # Search for a reference_mmi in the same folder as the reference_fasta. If it does not exist, create it.
-    # for example for a file reference.fa, we want to create reference.mmi
-    reference_mmi = paste0(dirname(reference_fasta), "/", sub(pattern = "^(.*)\\.[^\\.]+$", replacement = "\\1", basename(reference_fasta)), ".mmi")
-    if(!file.exists(reference_mmi)){
-        # Inform the user what happened and what we do 
-        message("Reference index ", reference_mmi, " does not exist. Creating it now.")
-        minimap2_indexing_command <- paste0(minimap2_bin, " -k 28 -w 20 -H -d ", reference_mmi, " ", reference_fasta)
-        run_silent(minimap2_indexing_command)
-    } #else {
-        # Inform the user what happened and what we do
-        #message("Found existing reference index ", reference_mmi, ". Skipping re-calculation.")
-    #}
+
+    reference_mmi = paste0(outdir,'/../../minimap_idxs/', basename(reference_fasta), '.mmi')
 
     # Check if the out_paf exists already. If it does, explain to the user and do not run the code. 
     if(file.exists(out_paf)){
@@ -65,13 +55,15 @@ align_all_vs_all_using_minimap2_shred_merge <- function(awkscript, reference_fas
     }
 
     params=list(bedtools_bin=bedtools_bin, fasta_awk_script=awkscript)
-    asm_fa_shredded = paste0(asm_fasta, "_10kbp_chunked.fa")
+    asm_fa_shredded = paste0(outdir,'/ref_fa_shredded/', basename(asm_fasta), '_10kbp_chunked.fa') #paste0(asm_fasta, "_10kbp_chunked.fa")
+    dir.create(dirname(asm_fa_shredded), showWarnings = F, recursive = T)
+
     alignment_chunked = paste0(out_paf, "_10kbp_chunked.paf")
     aligment_chunked_corrected = paste0(out_paf, "_10kbp_chunked_corrected.paf")
-
     shred_seq_bedtools_multifasta(asm_fasta, asm_fa_shredded, 10000, params)
     minimap2_cmd = paste0(minimap2_bin, " -t ",threads, " ", reference_mmi, " ", asm_fa_shredded, " > ", alignment_chunked)
-    run_silent(minimap2_cmd)
+    message("Running minimap2")
+    system(minimap2_cmd)
 
     correct_paf(alignment_chunked, aligment_chunked_corrected)
 
@@ -122,7 +114,7 @@ extract_test_list_from_paf <- function(all_vs_all_paf, out_dir, out_file, genome
     bedtools_bin = 'bedtools'
 
     command = paste0('bash ',wg_run_all_script, ' ', all_vs_all_paf, ' ', out_dir, ' ', out_file, ' ', genome_path, ' ', bedtools_bin, ' ', merge_distance, ' ', indel_ignore_distance, ' ', exclusion_mask, ' ', bashscripts_base)
-    run_silent(command)
+    system(command)
 
     # Inform the user
 }
@@ -161,10 +153,9 @@ wga_write_interval_list <- function(ref_fa, asm_fa, outdir, outfile, merge_dista
     #allpaf = '/Users/hoeps/PhD/projects/nahrcall/nahrchainer/out.paf'
     genome_file = paste0(outdir, "/ref.genome")
     # Make all-vs-all alignemnt
-
     awkscript = system.file('extdata', 'scripts', 'scripts_nw_main', 'awk_on_fasta_gpt4.sh', package='nahrwhals')
     
-    align_all_vs_all_using_minimap2_shred_merge(awkscript, ref_fa, asm_fa, allpaf, threads)
+    align_all_vs_all_using_minimap2_shred_merge(awkscript, ref_fa, asm_fa, allpaf, threads, outdir)
     
     # Write the genome file
     make_genome_file(ref_fa, genome_file)
@@ -172,7 +163,7 @@ wga_write_interval_list <- function(ref_fa, asm_fa, outdir, outfile, merge_dista
     extract_test_list_from_paf(allpaf, outdir, outfile, genome_file, bedtools_bin, merge_distance, indel_ignore_distance, exclusion_mask)
 
     # return the name of the final output list, which is in outdir/list_final.txt
-    return(outfile)
+    # return(outfile)
 }
 
 #' @export

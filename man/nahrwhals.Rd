@@ -7,7 +7,7 @@
 nahrwhals(
   ref_fa,
   asm_fa,
-  outdir,
+  outdir = "res",
   region = NULL,
   regionfile = NULL,
   anntrack = FALSE,
@@ -30,7 +30,8 @@ nahrwhals(
   testrun_std = FALSE,
   threads = 1,
   minimap_cores_per_thread = 1,
-  genome_y_fa_mmi = "default"
+  genome_y_fa_mmi = "default",
+  blacklist = NULL
 )
 }
 \arguments{

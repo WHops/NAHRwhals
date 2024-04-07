@@ -51,6 +51,7 @@ nahrwhals_singlerun(
   minreport = 0.98,
   init_width = 1000,
   minimap_cores = 1,
+  julia_solver_path = NULL,
   silent = F
 )
 }

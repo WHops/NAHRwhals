@@ -59,7 +59,7 @@ R
 R
 > library(nahrwhals)
 > nahrwhals(ref_fa = 'ref.fa', 
-            alt_fa = 'alt.fa,
+            asm_fa = 'asm.fa,
             region = 'chr:start-end',
             outdir = 'res',
             minimap_cores = 8)
@@ -70,19 +70,20 @@ R
 R
 > library(nahrwhals)
 > nahrwhals(ref_fa = 'ref.fa', 
-            alt_fa = 'alt.fa,
+            asm_fa = 'asm.fa,
             regions_file = 'regions.bed',
             outdir = 'res',
             threads = 8)
 ```
 
-3) Provide no region coordinates to invoke whole genome discovery mode
+3) Provide no region coordinates to invoke whole genome discovery mode. If ref.fa is human (or comparably complex), provide a blacklist bed file to skip centromeres and acrocentric chromsome arms. Tracks for hg38 and t2t are included in the package.
 ```
 R
 > library(nahrwhals)
 > nahrwhals(ref_fa = 'ref.fa', 
-            alt_fa = 'alt.fa,
+            asm_fa = 'asm.fa,
             outdir = 'res',
+            blacklist = system.file("extdata", "blacklists", "t2t_blacklist.bed", package = "nahrwhals"),
             threads = 8)
 ```
 

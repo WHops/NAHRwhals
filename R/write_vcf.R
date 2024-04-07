@@ -41,7 +41,6 @@
       df_subset$mut_maxsimple <- gsub("[0-9_]+", "", df_subset$mut_max)
       print(ID)
       for (mutation in unique(df_subset$mut_maxsimple)){
-        browser()
         if (mutation %in% c('ref', 'UNK', '.')){
           next()
         }
