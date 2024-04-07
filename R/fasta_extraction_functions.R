@@ -473,7 +473,7 @@ find_coords_mad <- function(liftover_coords, cpaf, winner_chr, start, end, lifto
     (start_pointers_arrived) & (end_pointers_arrived) #& start_end_ok
 
   if ((success == F) & (liftover_run == F)) {
-    print("exiting")
+    print("Liftover unsuccessful. Not pursung window further. ")
     return(NULL)
   }
 

@@ -284,10 +284,22 @@ run_minimap2 <-
     nthreads = params$minimap_cores
     minimap2loc <- params$minimap2_bin
     # Some self-defined parameters
+
+    preset = 'asm20'
+    N_param = 1000 # Number of alignments to keep
+    p_param = 0.1 # Min mapping score compare to best
+ 
+    # Emergency break: if the queryfasta is insanely large (>7Mbp), relax parameters so we do not get stuck. This is a very rare case.
+    if (file.size(queryfasta) > 6e6) {
+      preset = 'asm5'
+      N_param = 10
+      message("Emergency break: Query fasta is very large. Relaxing parameters.")
+    }
+
     run_silent(
       paste0(
         minimap2loc,
-        " -x asm20 -P -c -s 0 -M 0.2 -t ",
+        " -x ", preset, " -p ", p_param, ' -N ', N_param, " -c -s 0 -t ",
         nthreads,
         " ",
         targetfasta,

@@ -118,7 +118,7 @@ nahrwhals_singlerun <- function(genome_x_fa = 'default', genome_y_fa  = 'default
   default_param_values <- c("default", "Default", "auto", "Auto", "", NA, NULL, F)
 
   if (params$chunklen %in% default_param_values) {
-    params$chunklen <- determine_chunklen(params$start_x, params$end_x)
+    params$chunklen <- 1000 #determine_chunklen(params$start_x, params$end_x)
   }
   if (params$minlen %in% default_param_values) {
     params$minlen <- determine_compression(params$start_x, params$end_x)

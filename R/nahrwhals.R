@@ -159,7 +159,7 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
         #regions_to_genotype_df$end = 18010158 + 500000
         print(regions_to_genotype_df)
         # Prepare parallel runs
-
+        browser()
         # Explain to user that we are setting up nthreads parallel workers
         print(paste0('Initializing ', min(threads,nrow(regions_to_genotype_df)), ' parallel workers.'))
 
