@@ -60,7 +60,6 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
                       threads = 1, minimap_cores_per_thread = 1, genome_y_fa_mmi = "default", blacklist = NULL) {
 
 
-  
                         
     # Avoid scientific notations
     options(scipen=999)
@@ -93,6 +92,13 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
     } 
 
 
+    # Check if ref_fa and asm_fa exist. if no, stop the function.
+    if (!file.exists(ref_fa)){
+        stop(paste0('Reference file ', ref_fa, ' does not exist.'))
+    }
+    if (!file.exists(asm_fa)){
+        stop(paste0('Assembly file ', asm_fa, ' does not exist.'))
+    }
     
     # Take some of the more outlandish parameters out of the users hands.
     # TODO: a gardening trip to eradicate some of these parameters
@@ -137,8 +143,6 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
 
     create_mmi_if_doesnt_exists(asm_fa, genome_y_fa_mmi)
 
-    # 
-
 
     if (NW_mode == 'whole-genome'){
 
@@ -158,23 +162,13 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
         windows_file = paste0(window_dir,'/nahrwhals_windows.bed')
         regions_to_genotype_df = scan_for_windows(ref_fa, asm_fa, threads, windows_file, ref_masked_regions=blacklist) #Outfile is optional
 
-        # For debug
-        #regions_to_genotype_df = regions_to_genotype_df[1:10,]
-        #regions_to_genotype_df$end = regions_to_genotype_df$start + 20000
-
-
-        #print(paste0('Running nahrwhals on ', nrow(regions_to_genotype_df), ' regions.'))
-        #regions_to_genotype_df = regions_to_genotype_df[regions_to_genotype_df$start > 15094630,]
-
-        #regions_to_genotype_df$start = 18010158
-        #regions_to_genotype_df$end = 18010158 + 500000
-        print(regions_to_genotype_df)
+        message(regions_to_genotype_df)
         # Prepare parallel runs
         # Explain to user that we are setting up nthreads parallel workers
-        print(paste0('Initializing ', min(threads,nrow(regions_to_genotype_df)), ' parallel workers.'))
+        message(paste0('Initializing ', min(threads,nrow(regions_to_genotype_df)), ' parallel workers.'))
 
-        suppressMessages(suppressWarnings({cl <- parallel::makeCluster(min(threads,nrow(regions_to_genotype_df)), outfile = "")}))
-        suppressMessages(suppressWarnings({registerDoParallel(cl)}))
+        cl <- parallel::makeCluster(min(threads,nrow(regions_to_genotype_df)), outfile = "")
+        registerDoParallel(cl)
 
         # Initialize progress bar
         #pb <- txtProgressBar(0, nrow(regions_to_genotype_df), style = 3) 
@@ -220,8 +214,6 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
         }   
 
         stopCluster(cl)
-        #close(pb)
-        # Inform user
         message('Finished running nahrwhals on all regions.')
 
         tsv_to_bed_regional_dominance(logfile, res_bedfile)
@@ -298,7 +290,6 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
         stopCluster(cl)
         close(pb)
 
-
         tsv_to_bed_regional_dominance(logfile, res_bedfile)
 
     } else if (NW_mode == 'genotype_1region'){
@@ -323,11 +314,7 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
                     minreport=minreport, init_width=init_width,  minimap_cores=minimap_cores_per_thread))
     }
     
-
-    # Step 4: Run 'regional dominance' analysis
-    
-        
-        
+            
 
 }
 

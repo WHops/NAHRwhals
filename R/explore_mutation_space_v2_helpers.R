@@ -288,13 +288,17 @@ calc_symm <- function(bitl) {
 #' @export
 #' @author Wolfram Hoeps
 reduce_depth_if_needed <- function(bitlocus, increase_only, maxdepth) {
+  # [W, 8th April 2024]: This function seems irrelevant because 
+  # THe R-version here (i.e. non-julia implementation) is run on 
+  # depth 1 only, anyway. 
+
   # Prepare bitlocus that we will be working on.
   bitl <- flip_bitl_y_if_needed(bitlocus)
 
   # Decide if we should go forward.
   n_pairs <- dim(find_sv_opportunities(bitl))[1]
   if ((n_pairs > 200) & (maxdepth == 3) & (increase_only == F)) {
-    print("Uh oh that is a bit large. Reducing depth to 2. Try to avoid producing such large alignments.")
+    #print("Uh oh that is a bit large. Reducing depth to 2. Try to avoid producing such large alignments.")
     maxdepth <- 2
   }
 
@@ -302,12 +306,12 @@ reduce_depth_if_needed <- function(bitlocus, increase_only, maxdepth) {
   # DELME WHEN DONE.
   # should be 800! Moved to 200 for testing purposes only!!
   if ((n_pairs > 600) & (increase_only == F)) {
-    print("Huge Alignment! Going for depth 1. ")
+    #print("Huge Alignment! Going for depth 1. ")
     maxdepth <- 1
   }
 
   if (n_pairs > 2000){
-    print("More than 2000 pairs in first layer. Passing to Julia right away.")
+    #print("More than 2000 pairs in first layer. Passing to Julia right away.")
     maxdepth = 0
   }
   return(maxdepth)

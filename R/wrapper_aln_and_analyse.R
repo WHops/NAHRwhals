@@ -160,7 +160,6 @@ wrapper_aln_and_analyse <- function(params) {
   res <- solve_mutation(gridmatrix, maxdepth = 1, solve_th = params$eval_th, compression = params$compression, is_cluttered_already_paf = log_collection$cluttered_boundaries==T)
   if (max(res$eval) < 99.8){
     # Fahre schwere Geschuetze auf
-
     res_julia <- solve_mutation_julia_wrapper(params, gridmatrix, grid_xy[[1]], outlinks$solver_inmat_path, outlinks$solver_inlens_path, outlinks$solver_juliares_path, params$julia_solver_path)
     
     if (!all((dim(res_julia)) == c(1,3))){
