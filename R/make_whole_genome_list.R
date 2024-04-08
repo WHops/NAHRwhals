@@ -60,12 +60,21 @@ align_all_vs_all_using_minimap2_shred_merge <- function(awkscript, reference_fas
 
     alignment_chunked = paste0(out_paf, "_10kbp_chunked.paf")
     aligment_chunked_corrected = paste0(out_paf, "_10kbp_chunked_corrected.paf")
-    shred_seq_bedtools_multifasta(asm_fasta, asm_fa_shredded, 10000, params)
-    minimap2_cmd = paste0(minimap2_bin, " -t ",threads, " ", reference_mmi, " ", asm_fa_shredded, " > ", alignment_chunked)
-    message("Running minimap2")
-    system(minimap2_cmd)
 
-    correct_paf(alignment_chunked, aligment_chunked_corrected)
+    # if asm_fa_shredded does not exist:
+    if (!file.exists(asm_fa_shredded)){
+        shred_seq_bedtools_multifasta(asm_fasta, asm_fa_shredded, 10000, params)
+    }
+
+    if (!file.exists(alignment_chunked)){
+        minimap2_cmd = paste0(minimap2_bin, " -t ",threads, " ", reference_mmi, " ", asm_fa_shredded, " > ", alignment_chunked)
+        message("Running minimap2")
+        run_silent(minimap2_cmd)
+    }
+
+    if (!file.exists(aligment_chunked_corrected)){
+        correct_paf(alignment_chunked, aligment_chunked_corrected)
+    }
 
     paf <- read.table(aligment_chunked_corrected)
     paf$V1 = sub("_[0-9]+-[0-9]+$", "", paf$V1)
