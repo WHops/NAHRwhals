@@ -165,8 +165,6 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
 
         #print(paste0('Running nahrwhals on ', nrow(regions_to_genotype_df), ' regions.'))
         #regions_to_genotype_df = regions_to_genotype_df[regions_to_genotype_df$start > 15094630,]
-        regions_to_genotype_df = regions_to_genotype_df[1:30,]
-
 
         #regions_to_genotype_df$start = 18010158
         #regions_to_genotype_df$end = 18010158 + 500000
