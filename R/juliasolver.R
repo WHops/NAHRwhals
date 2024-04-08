@@ -6,7 +6,7 @@ solve_mutation_julia_wrapper <- function(params, mat, gridlines_x, inmat_path, i
   write.table(t(as.numeric(row.names(mat))), inlens_path, col.names = F, row.names=F, quote=F, sep='\t')
   write.table(t(as.numeric(colnames(mat))), inlens_path, append=T, col.names = F, row.names=F, quote=F, sep='\t')
 
-  if (dim(find_sv_opportunities(mat))[1] > 600){
+  if (dim(find_sv_opportunities(mat))[1] > 400){
     # Emergency break here for absoluvely berzerk large matrices. 
     params$init_width = 100
   }
@@ -29,7 +29,6 @@ run_solver_julia <- function(params, inmat_path, inlens_path, outpath, julia_sol
   init_width = params$init_width
 # 
   julia_cmd = paste0(julia_path, " ", julia_solver_path, ' -d ', maxdepth, ' -u ', maxdup, ' -w ', init_width, ' -r ', minreport, ' -R 1000 ', inmat_path, ' ', inlens_path, ' ', outpath)
-  message(julia_cmd)
   run_silent(julia_cmd)
 }
 
