@@ -311,7 +311,7 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
                     baseline_log_minsize_max=baseline_log_minsize_max, discovery_exact=discovery_exact, hltrack=hltrack, 
                     hllink=hllink, aln_pad_factor=aln_pad_factor, debug=debug, clean_after_yourself=clean_after_yourself, 
                     testrun_std=testrun_std, testrun_fullfa=testrun_fullfa, noclutterplots=noclutterplots, maxdup=maxdup, 
-                    minreport=minreport, init_width=init_width,  minimap_cores=minimap_cores_per_thread))
+                    minreport=minreport, init_width=init_width,  minimap_cores=threads))
     }
     
             

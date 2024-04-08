@@ -77,7 +77,7 @@ align_all_vs_all_using_minimap2_shred_merge <- function(awkscript, reference_fas
         correct_paf(alignment_chunked, alignment_chunked_corrected)
     }
 
-    message
+    
     paf <- read.table(alignment_chunked_corrected)
     paf$V1 = sub("_[0-9]+-[0-9]+$", "", paf$V1)
     colnames(paf) <- c(

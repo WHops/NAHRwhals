@@ -31,7 +31,7 @@ if [ ! -s ${OUTDIR}/output_colored_source_info.bed ]; then
 fi
 
 # Sort; this was previously part of regional_dom1.sh
-awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$9"\t"$10"\t"$11}' ${OUTDIR}/output_colored_source_info.bed | sort -k1,1 -k2,2n > ${OUTDIR}/sorted_intervals.bed
+awk '($3 > $2) {print $1"\t"$2"\t"$3"\t"$4"\t"$9"\t"$10"\t"$11}' ${OUTDIR}/output_colored_source_info.bed | sort -k1,1 -k2,2n > ${OUTDIR}/sorted_intervals.bed
 
 # Preprocess for merge
 $SCRIPTDIR_BASE/preprocess_for_merge.sh ${OUTDIR}/sorted_intervals.bed ${OUTDIR}/preprocessed_intervals.bed
