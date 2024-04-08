@@ -31,8 +31,7 @@ wrapper_aln_and_analyse <- function(params) {
   
   # Create output folder tree
   make_output_folder_structure(params$outdir, sequence_name_output)
-  
-  
+    
   # Define output files
   outlinks <- define_output_files(sequence_name_output, paste0(params$samplename_x, "_", params$samplename_y))
   while(!is.null(dev.list())){dev.off()}

@@ -50,7 +50,7 @@
 #' @examples
 #' nahrwhals(ref_fa="path/to/ref_genome.fasta", asm_fa="path/to/asm_genome.fasta", outdir="path/to/output")
 #'
-nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL, anntrack = FALSE, 
+nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=NULL, regionfile=NULL, anntrack = FALSE, 
                       depth = 3, eval_th = 98, chunklen = "default", minlen = "default", compression = "default",
                       max_size_col_plus_rows = 250, max_n_alns = 150, 
                       self_plots = TRUE, plot_only = FALSE,
@@ -66,7 +66,10 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
     options(scipen=999)
     library(doParallel)
 
-    
+    # If testrun_std is false and ref_fa or asm_fa are NULL, stop the function.
+    if ((ref_fa == 'default' || asm_fa == 'default') && (testrun_std==FALSE)){
+        stop('Please provide both a reference and an assembly genome. (unless testrun_std is TRUE)')
+    }
     if (is.null(region) && is.null(regionfile) && testrun_std==FALSE){
         print('No region or regionfile provided. Running whole genome discovery mode.')
         NW_mode = 'whole-genome'
@@ -78,7 +81,17 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
         NW_mode = 'genotype_regionfile'
     } else {
         stop('Please provide either a region or a regionfile, not both.')
-    }
+    } 
+    
+    if (testrun_std==TRUE){
+        print('Running testrun_std mode.')
+        ref_fa <- system.file("extdata/assemblies", "hg38_partial.fa", package = "nahrwhals")
+        asm_fa <- system.file("extdata/assemblies", "assembly_partial.fa", package = "nahrwhals")
+        region <- "chr1_partial:1700000-3300000"
+
+        message(paste0('Running a testmode with parameters: ref_fa=', ref_fa, ', asm_fa=', asm_fa, ', region=', region))
+    } 
+
 
     
     # Take some of the more outlandish parameters out of the users hands.
@@ -152,14 +165,13 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
 
         #print(paste0('Running nahrwhals on ', nrow(regions_to_genotype_df), ' regions.'))
         #regions_to_genotype_df = regions_to_genotype_df[regions_to_genotype_df$start > 15094630,]
-        #regions_to_genotype_df = regions_to_genotype_df[1,]
+        regions_to_genotype_df = regions_to_genotype_df[1:30,]
 
 
         #regions_to_genotype_df$start = 18010158
         #regions_to_genotype_df$end = 18010158 + 500000
         print(regions_to_genotype_df)
         # Prepare parallel runs
-        browser()
         # Explain to user that we are setting up nthreads parallel workers
         print(paste0('Initializing ', min(threads,nrow(regions_to_genotype_df)), ' parallel workers.'))
 
@@ -180,28 +192,32 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
             seqname_x <- row$chr
             start_x <- row$start
             end_x <- row$end
-            suppressMessages(suppressWarnings({
-            try(nahrwhals_singlerun(genome_x_fa=ref_fa, genome_y_fa=asm_fa, seqname_x=seqname_x, start_x=start_x, end_x=end_x, outdir=outdir,
+
+            tryCatch({
+
+                nahrwhals_singlerun(genome_x_fa=ref_fa, genome_y_fa=asm_fa, seqname_x=seqname_x, start_x=start_x, end_x=end_x, outdir=outdir,
                               genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=samplename_x, 
                               samplename_y=samplename_y, compare_full_fastas=compare_full_fastas, plot_only=plot_only, 
                               self_plots=self_plots, plot_xy_segmented=plot_xy_segmented, eval_th=eval_th, depth=depth, 
                               chunklen=chunklen, minlen=minlen, compression=compression, max_size_col_plus_rows=max_size_col_plus_rows, 
-                              max_n_alns=max_n_alns, use_paf_library=T, conversionpaf_link=paste0(window_dir,'/fullaln.paf'), 
+                              max_n_alns=max_n_alns, use_paf_library=use_paf_library, conversionpaf_link=conversionpaf_link, 
                               xpad=xpad, plot_minlen=plot_minlen, maxlen_refine=maxlen_refine, n_tests=n_tests, 
                               n_max_testchunks=n_max_testchunks, baseline_log_minsize_min=baseline_log_minsize_min, 
                               baseline_log_minsize_max=baseline_log_minsize_max, discovery_exact=discovery_exact, hltrack=hltrack, 
                               hllink=hllink, aln_pad_factor=aln_pad_factor, debug=debug, clean_after_yourself=clean_after_yourself, 
                               testrun_std=testrun_std, testrun_fullfa=testrun_fullfa, noclutterplots=noclutterplots, maxdup=maxdup, 
-                              minreport=minreport, init_width=init_width, minimap_cores=minimap_cores_per_thread, julia_solver_path=solver_path, 
-                              silent=T)
+                              minreport=minreport, init_width=init_width, minimap_cores=minimap_cores_per_thread, julia_solver_path=solver_path, silent=T)
 
-            )
+            }, error = function(e) {
+            })
+
+            tmp <- tempfile()  # Store the name of the temporary file
+            sink(tmp)          # Redirect output to the temporary file
+            gc()               # Run garbage collection
+            sink()             # Reset output to the console
+            unlink(tmp)        # Delete the temporary file
 
             print(paste0('Finished analysis of region ', idx, ' of ', nrow(regions_to_genotype_df)))
-
-
-            }))
-
 
         }   
 
@@ -246,8 +262,11 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
             seqname_x <- row$chr
             start_x <- row$start
             end_x <- row$end
-            suppressMessages(suppressWarnings({
-            try(nahrwhals_singlerun(genome_x_fa=ref_fa, genome_y_fa=asm_fa, seqname_x=seqname_x, start_x=start_x, end_x=end_x, outdir=outdir,
+            #suppressMessages(suppressWarnings({
+
+            tryCatch({
+                # This will fail but the error is caught and not printed
+                nahrwhals_singlerun(genome_x_fa=ref_fa, genome_y_fa=asm_fa, seqname_x=seqname_x, start_x=start_x, end_x=end_x, outdir=outdir,
                               genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=samplename_x, 
                               samplename_y=samplename_y, compare_full_fastas=compare_full_fastas, plot_only=plot_only, 
                               self_plots=self_plots, plot_xy_segmented=plot_xy_segmented, eval_th=eval_th, depth=depth, 
@@ -260,13 +279,20 @@ nahrwhals <- function(ref_fa, asm_fa, outdir='res', region=NULL, regionfile=NULL
                               testrun_std=testrun_std, testrun_fullfa=testrun_fullfa, noclutterplots=noclutterplots, maxdup=maxdup, 
                               minreport=minreport, init_width=init_width, minimap_cores=minimap_cores_per_thread, julia_solver_path=solver_path, silent=T)
 
-            
-            )
+            }, error = function(e) {
+                # Error handling (optional)
+                # This block can be empty if you just want to swallow the error
+            })
 
+            tmp <- tempfile()  # Store the name of the temporary file
+            sink(tmp)          # Redirect output to the temporary file
+            gc()               # Run garbage collection
+            sink()             # Reset output to the console
+            unlink(tmp)        # Delete the temporary file
 
             print(paste0('Finished analysis of region ', idx))
 
-            }))
+            #}))
 
 
         }   

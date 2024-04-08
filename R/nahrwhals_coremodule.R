@@ -95,7 +95,7 @@ nahrwhals_singlerun <- function(genome_x_fa = 'default', genome_y_fa  = 'default
   }
 
   if (testrun_std) {
-    print("Testmode! Running a standard testrun with sample data. (Expected runtime <1 min)")
+    print("Testmode! Running a standard testrun with sample data. (Expected runtime <30 sek.)")
     params$genome_x_fa <- system.file("extdata/assemblies", "hg38_partial.fa", package = "nahrwhals")
     params$genome_y_fa <- system.file("extdata/assemblies", "assembly_partial.fa", package = "nahrwhals")
     params$seqname_x <- "chr1_partial"
@@ -118,7 +118,7 @@ nahrwhals_singlerun <- function(genome_x_fa = 'default', genome_y_fa  = 'default
   default_param_values <- c("default", "Default", "auto", "Auto", "", NA, NULL, F)
 
   if (params$chunklen %in% default_param_values) {
-    params$chunklen <- 1000 #determine_chunklen(params$start_x, params$end_x)
+    params$chunklen <- determine_chunklen(params$start_x, params$end_x)
   }
   if (params$minlen %in% default_param_values) {
     params$minlen <- determine_compression(params$start_x, params$end_x)
@@ -127,7 +127,7 @@ nahrwhals_singlerun <- function(genome_x_fa = 'default', genome_y_fa  = 'default
     params$compression <- determine_compression(params$start_x, params$end_x)
   }
   if (params$genome_y_fa_mmi %in% default_param_values){
-    params$genome_y_fa_mmi = paste0(params$outdir,'/intermediate/mmis/', basename(params$genome_y_fa), '.mmi')
+    params$genome_y_fa_mmi = paste0(params$outdir,'/minimap_idxs/', basename(params$genome_y_fa), '.mmi')
   }
   if (params$bedtools_bin %in% default_param_values) {
     params$bedtools_bin <- "bedtools"
@@ -145,12 +145,9 @@ nahrwhals_singlerun <- function(genome_x_fa = 'default', genome_y_fa  = 'default
     params$start_x <- 1
     params$end_x <- Inf
   }
-  # Print final parameter values
-  # for (param_name in names(params)) {
-  #   cat(param_name, "=", params[[param_name]], "\n")
-  # }
-  #print(params$genome_y_fa)
+
   ##### Run the main NAHRwhals wrapper function #####
+
   wrapper_aln_and_analyse(params)
 
 }
