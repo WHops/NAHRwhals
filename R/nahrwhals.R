@@ -21,8 +21,8 @@
 #' @param ref_fa Path to the reference genome FASTA file. [required]
 #' @param asm_fa Path to the assembly genome FASTA file for comparison. [required]
 #' @param outdir Basedirectory to store output files and plots. [required]
-#' @param samplename_x Reference genome label for outputs [default: "Fasta_x"]
-#' @param samplename_y Assembly genome label for outputs [default: "Fasta_y"]
+#' @param ref_name Reference genome label for outputs [default: "Fasta_ref"]
+#' @param asm_name Assembly genome label for outputs [default: "Fasta_asm"]
 #' @param region Region to genotype in the format "chr:start-end". Specify this or regionfile, not both. [optional]
 #' @param regionfile Region to genotype in the format "chr:start-end". Specify this or region, not both. [optional]
 #' @param anntrack Includes annotation tracks (e.g. genes) in dotplot. Specify as 4-column bedfile (col 4: displayed name) [default: FALSE]
@@ -54,10 +54,10 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
                       depth = 3, eval_th = 98, chunklen = "default", minlen = "default", compression = "default",
                       max_size_col_plus_rows = 250, max_n_alns = 150, 
                       self_plots = TRUE, plot_only = FALSE,
-                      samplename_x = "Fasta_x", samplename_y = "Fasta_y",
+                      ref_name = "Fasta_ref", asm_name = "Fasta_asm",
                       use_paf_library = FALSE, conversionpaf_link = FALSE,
                       maxdup = 2, init_width = 1000, region_maxlen = 5000000, testrun_std = FALSE,
-                      threads = 1, minimap_cores_per_thread = 1, genome_y_fa_mmi = "default", blacklist = NULL) {
+                      threads = 1, genome_y_fa_mmi = "default", blacklist = NULL) {
 
 
                         
@@ -122,6 +122,7 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
     plot_xy_segmented = TRUE
     minimap2_bin = 'minimap2'
     bedtools_bin = 'bedtools'
+    minimap_cores_per_thread = 1
 
     logfile = paste0(outdir, '/nahrwhals_res.tsv')
     res_bedfile = paste0(outdir, '/nahrwhals_res.bed')
@@ -156,7 +157,7 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
         create_mmi_if_doesnt_exists(ref_fa, genome_x_fa_mmi)
 
         # Step 1: Scan the whole genome for windows to genotype
-        window_dir = paste0(outdir, '/whole-genome-windows/', samplename_x, '_', samplename_y)
+        window_dir = paste0(outdir, '/whole-genome-windows/', ref_name, '_', asm_name)
         dir.create(window_dir, showWarnings = F, recursive = T)
 
         windows_file = paste0(window_dir,'/nahrwhals_windows.bed')
@@ -178,7 +179,7 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
         foreach::foreach(idx = 1:nrow(regions_to_genotype_df)) %dopar% {
             #setTxtProgressBar(pb, idx)
             message(paste0('Running nahrwhals on region ', idx, ' of ', nrow(regions_to_genotype_df)))
-            suppressMessages(suppressWarnings(library(nahrwhals)))
+            library(nahrwhals)
 
             row <- regions_to_genotype_df[idx, ]
             seqname_x <- row$chr
@@ -188,8 +189,8 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
             tryCatch({
 
                 nahrwhals_singlerun(genome_x_fa=ref_fa, genome_y_fa=asm_fa, seqname_x=seqname_x, start_x=start_x, end_x=end_x, outdir=outdir,
-                              genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=samplename_x, 
-                              samplename_y=samplename_y, compare_full_fastas=compare_full_fastas, plot_only=plot_only, 
+                              genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=ref_name, 
+                              samplename_y=asm_name, compare_full_fastas=compare_full_fastas, plot_only=plot_only, 
                               self_plots=self_plots, plot_xy_segmented=plot_xy_segmented, eval_th=eval_th, depth=depth, 
                               chunklen=chunklen, minlen=minlen, compression=compression, max_size_col_plus_rows=max_size_col_plus_rows, 
                               max_n_alns=max_n_alns, use_paf_library=use_paf_library, conversionpaf_link=conversionpaf_link, 
@@ -246,7 +247,7 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
             #setTxtProgressBar(pb, idx)
             
             message(paste0('Running nahrwhals on region ', idx, ' of ', nrow(regions_to_genotype_df)))
-            suppressMessages(suppressWarnings(library(nahrwhals))) #<--- wtf no #TODO
+            library(nahrwhals)
 
             row <- regions_to_genotype_df[idx, ]
             seqname_x <- row$chr
@@ -257,8 +258,8 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
             tryCatch({
                 # This will fail but the error is caught and not printed
                 nahrwhals_singlerun(genome_x_fa=ref_fa, genome_y_fa=asm_fa, seqname_x=seqname_x, start_x=start_x, end_x=end_x, outdir=outdir,
-                              genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=samplename_x, 
-                              samplename_y=samplename_y, compare_full_fastas=compare_full_fastas, plot_only=plot_only, 
+                              genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=ref_name, 
+                              samplename_y=asm_name, compare_full_fastas=compare_full_fastas, plot_only=plot_only, 
                               self_plots=self_plots, plot_xy_segmented=plot_xy_segmented, eval_th=eval_th, depth=depth, 
                               chunklen=chunklen, minlen=minlen, compression=compression, max_size_col_plus_rows=max_size_col_plus_rows, 
                               max_n_alns=max_n_alns, use_paf_library=use_paf_library, conversionpaf_link=conversionpaf_link, 
@@ -301,8 +302,8 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
         end_x=as.numeric(region[3])
 
         try(nahrwhals_singlerun(genome_x_fa=ref_fa, genome_y_fa=asm_fa, seqname_x=seqname_x, start_x=start_x, end_x=end_x, outdir=outdir,
-                    genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=samplename_x, 
-                    samplename_y=samplename_y, compare_full_fastas=compare_full_fastas, plot_only=plot_only, 
+                    genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=ref_name, 
+                    samplename_y=asm_name, compare_full_fastas=compare_full_fastas, plot_only=plot_only, 
                     self_plots=self_plots, plot_xy_segmented=plot_xy_segmented, eval_th=eval_th, depth=depth, 
                     chunklen=chunklen, minlen=minlen, compression=compression, max_size_col_plus_rows=max_size_col_plus_rows, 
                     max_n_alns=max_n_alns, use_paf_library=use_paf_library, conversionpaf_link=conversionpaf_link, 

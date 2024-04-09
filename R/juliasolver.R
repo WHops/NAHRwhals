@@ -6,9 +6,25 @@ solve_mutation_julia_wrapper <- function(params, mat, gridlines_x, inmat_path, i
   write.table(t(as.numeric(row.names(mat))), inlens_path, col.names = F, row.names=F, quote=F, sep='\t')
   write.table(t(as.numeric(colnames(mat))), inlens_path, append=T, col.names = F, row.names=F, quote=F, sep='\t')
 
-  if (dim(find_sv_opportunities(mat))[1] > 400){
+  possible_moves = find_sv_opportunities(mat)
+  possible_dups = possible_moves[possible_moves$sv == 'dup',]
+  longest_dup = max(possible_dups$p2 - possible_dups$p1)
+
+  # Berzerk matrices are those that can explode due to the number of possible duplications.
+  # These conditions will trigger very rarely. 
+  breakcondition1 = dim(find_sv_opportunities(mat))[1] > 400
+  breakcondition2 = (dim(find_sv_opportunities(mat))[1] > 200) &
+                    (longest_dup > 40) &
+                    (nrow(possible_dups) > 40)
+
+  if (breakcondition1 | breakcondition2){
     # Emergency break here for absoluvely berzerk large matrices. 
-    params$init_width = 100
+    
+    # Inform the user what just happened and how we react
+    message(paste0('Warning. Julia detected a matrix prone to duplication-explosion. 
+    Setting the defalt parameter for the BFS init_width to 1/10 of default. 
+    This is unlikely to have an effect on the result.'))
+    params$init_width = params$init_width/10
   }
   run_solver_julia(params, inmat_path, inlens_path, juliares_path, julia_solver_path)
   return(format_julia_output(juliares_path, gridlines_x, params$depth))
@@ -29,7 +45,11 @@ run_solver_julia <- function(params, inmat_path, inlens_path, outpath, julia_sol
   init_width = params$init_width
 # 
   julia_cmd = paste0(julia_path, " ", julia_solver_path, ' -d ', maxdepth, ' -u ', maxdup, ' -w ', init_width, ' -r ', minreport, ' -R 1000 ', inmat_path, ' ', inlens_path, ' ', outpath)
-  run_silent(julia_cmd)
+  if (params$silent == F){
+    system(julia_cmd)
+  } else {
+    run_silent(julia_cmd)
+  }
 }
 
 #' @export

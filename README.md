@@ -78,7 +78,7 @@ R
             threads = 8)
 ```
 
-3) Provide no region coordinates to invoke whole genome discovery mode. If ref.fa is human (or comparably complex), provide a blacklist bed file to skip centromeres and acrocentric chromsome arms. Tracks for hg38 and t2t are included in the package.
+3) Provide no region coordinates to invoke whole genome discovery mode. If ref.fa is human (or comparably complex), you must provide a blacklist bed file to skip centromeres and acrocentric chromsome arms. Tracks for hg38 and t2t are included in the package.
 ```
 R
 > library(nahrwhals)
@@ -135,103 +135,76 @@ This PDF contains seven plots that document the NAHRwhals run:
 
 Figures and results from the NAHRwhals manuscript can be replicated by querying coordinates of interest (see supp. Tables) on a reference (parameter: genome_x_fa) against assembly fastas (parameter: genome_y_fa) (see https://doi.org/10.5281/zenodo.7635935). Note the use of T2T as reference. 
 
-# Parameters
 
-## Required
+# Run Modes and Required Parameters
 
-| Variable name | Description | Default value|
-|-|-|--|
-| genome_x_fa | Multi- or single-contig genome sequence in fasta format, typically a genome assembly used as reference, such as hg38 or T2T.| - |
-| genome_y_fa | Multi- or single-contig genome sequence in fasta format, typically a genome assembly to be analyzed, such as a de-novo assembled haplotype.| - |
-| seqname_x| Contigname of the region of interest on genome_x. | - |
-| start_x| Start of the region of interest on seqname_x. (Region of interest should typically be in a range of ~20kbp to ~5-10Mbp and not contain centromeric regions, which drive up computation time significantly.)| - |
-| end_x| End of the region of interest on seqname_x. | - |
+The script supports three distinct run modes, each with its own set of required parameters. Below is an outline of what is needed for each mode:
 
+## Common required Parameters
 
+These parameters are applicable across all run modes unless otherwise specified.
 
-
-Based on your updated function parameters and their descriptions, here's a revised README section:
-
-# Parameters
-
-## Required
-
-| Variable name | Description | Default value|
-|-|-|--|
-| ref_fa | Path to the reference genome FASTA file. | - |
-| asm_fa | Path to the assembly genome FASTA file for comparison. | - |
-| outdir | Basedirectory to store output files and plots. | - |
-
-## Recommended parameters
-
-| Variable name | Description | Default value |
-|-------|---|-------|
-| samplename_x | Reference genome label for outputs. | 'Fasta_x' |
-| samplename_y | Assembly genome label for outputs. | 'Fasta_y' |
-| region | Region to genotype in the format "chr:start-end". Mutually exclusive with 'regionfile' | [optional] |
-| regionfile | Path to a file listing regions to genotype in bed format. Mutually exclusive with 'region' | [optional] |
-| anntrack | Includes annotation tracks (e.g., genes) in dotplot. Specify as 4-column bedfile (col 4: displayed name). | FALSE |
-
-## Advanced parameters
-
-| Variable name | Description | Default value |
-|---|-------|-------|
-| depth | Depth of the BFS mutation search. | 3 |
-| eval_th | Evaluation threshold as a percentage. | 98 |
-| chunklen | Sequence chunk length alignment, "default" means automatic determination based on sequence length. | auto-detection |
-| minlen | Disregard alignments shorter than this from the segmentation. | 350 |
-| compression | Minimum segment length. | auto-detection |
-| max_size_col_plus_rows | Maximum size for the alignment matrix. | 250 |
-| max_n_alns | Maximum number of alignments for a single query sequence. | 150 |
-| self_plots | Generates self-comparison plots for the assembly and ref. | TRUE |
-| plot_only | Skip BFS/genotyping, just create dotplots. | FALSE |
-| use_paf_library | Use an external PAF library for alignments. | FALSE |
-| conversionpaf_link | If use_paf_library: provide link to whole-genome paf here. | FALSE |
-| maxdup | BFS: max number of duplications per chain. | 2 |
-| init_width | BFS: follow up only init_width best-scoring nodes per depth. | 1000 |
-| region_maxlen | Maximum length of a window that can be analysed. Larger windows will be split into overlapping fragments. | 5000000 |
-| testrun_std | Test the NAHRwhals installation. | FALSE |
-| threads | Number of windows to parallel genotype. | 1 |
-| minimap_cores_per_thread | Number of cores to give to minimap PER THREAD. | 1 |
-| genome_y_fa_mmi | Path to pre-indexed assembly genome with minimap2. | "default" |
+| Variable name | Description                                 | Default value |
+|---------------|---------------------------------------------|---------------|
+| ref_fa        | Path to the reference genome FASTA file.    | -     |
+| asm_fa        | Path to the assembly genome FASTA file for comparison. | - |
+| outdir        | Path to desired output directory                   | './res' |
 
 
-# Output columns
+## Whole-genome Mode
 
-The main output from a nahrwhals run is found in res/res.tsv. Here is a description of all columsn in this file: 
+- **Required Parameters:**
+  - `ref_fa`: Path to the reference genome FASTA file.
+  - `asm_fa`: Path to the assembly genome FASTA file for comparison.
+- **Optional but Recommended for Human Assemblies:**
+  - `blacklist`: Path to a blacklist file to exclude specific regions (e.g., centromeres) during analysis.
 
+## Multi-region Mode
 
-| Column Name| Description |
-|----|---|
-| seqname| The name of the sequence. This could be a chromosome, contig, or any other identifier for a sequence. |
-| start| The start position of the sequence. |
-| end| The end position of the sequence. |
-| sample | The name of the run, denoted as namex_namey.|
-| width_orig | The width of the input sequence. |
-| xpad | The amount of padding added to the sequence (obsolete).|
-| res_ref| Pairwise alignment concordance of the sequences on x and y in native state.|
-| res_max| Pairwise alignment concordance after applying the highest-scoring mutation.|
-| n_res_max| The number of mutation sequences obtaining res_max. If >1, there are alternative paths.|
-| mut_max| The highest-scoring mutation sequence. |
-| mut_simulated| The number of simulated mutations.|
-| mut_tested | The number of tested mutations (=mut_simulated minus rejected). |
-| search_depth | The depth of the search algorithm used.|
-| grid_compression | The amount of compression used for the grid, in bp. |
-| exceeds_x| QC: Whether or not the sequence exceeds the x-axis.|
-| exceeds_y| QC: Whether or not the sequence exceeds the y-axis.|
-| grid_inconsistency | QC: Whether or not there is inconsistency in the grid. |
-| flip_unsure| QC: Whether or not the algorithm was unsure about flipping the sequence.|
-| cluttered_boundaries | QC: Whether or not the sequence has cluttered boundaries.|
-| mut1_start | The start position of the first mutation.|
-| mut1_end | The end position of the first mutation.|
-| mut1_pos_pm| The confidence interval of both breakpoints (plus/minus). |
-| mut1_len | The length of the first mutation.|
-| mut1_len_pm| The confidence interval of SV length (plus/minus). |
-| mut2_len | The length of the second mutation. |
-| mut2_len_pm| The confidence interval of SV length (plus/minus).|
-| mut3_len | The length of the third mutation.|
-| mut3_len_pm| The confidence interval of SV length (plus/minus). |
+- **Required Parameters:**
+  - `ref_fa`: Path to the reference genome FASTA file.
+  - `asm_fa`: Path to the assembly genome FASTA file for comparison.
+  - `regionfile`: Path to a file listing regions to genotype in BED format.
 
+## Single-region Mode
+
+- **Required Parameters:**
+  - `ref_fa`: Path to the reference genome FASTA file.
+  - `asm_fa`: Path to the assembly genome FASTA file for comparison.
+  - `region`: Specific region to genotype, formatted as "chr:start-end".
+
+# Optional Parameters
+
+### Optional Recommended Parameters
+
+| Variable name           | Description                                                                                  | Default value |
+|-------------------------|----------------------------------------------------------------------------------------------|---------------|
+| ref_name            | Label for the reference genome used in outputs.                                              | 'Fasta_ref'     |
+| asm_name            | Label for the assembly genome used in outputs.                                               | 'Fasta_asm'     |
+| anntrack                | Include annotation tracks (e.g., genes) in dotplot. Specify as a 4-column bedfile (col 4: displayed name). | FALSE        |
+
+### Optional Advanced Parameters
+
+| Variable name           | Description                                                                                  | Default value |
+|-------------------------|----------------------------------------------------------------------------------------------|---------------|
+| depth                   | Depth of the BFS mutation search.                                                             | 3             |
+| eval_th                 | Evaluation threshold as a percentage.                                                         | 98            |
+| chunklen                | Sequence chunk length for alignment. | 'default' |
+| minlen                  | Minimum length for considering alignments in segmentation.                                     | 'default'    |
+| compression             | Minimum segment length.                                                                       | 'default'    |
+| max_size_col_plus_rows  | Maximum size for the alignment matrix.                                                        | 250           |
+| max_n_alns              | Maximum number of alignments for a single query sequence.                                     | 150           |
+| self_plots              | Generates self-comparison plots for the assembly and reference genomes.                      | TRUE          |
+| plot_only               | Skip BFS/genotyping and only create dotplots.                                                 | FALSE         |
+| use_paf_library         | Use an external PAF library for alignments.                                                   | FALSE         |
+| conversionpaf_link      | If `use_paf_library` is TRUE, provide link to whole-genome PAF here.                          | FALSE         |
+| maxdup                  | BFS: max number of duplications per chain.                                                    | 2             |
+| init_width              | BFS: follow up only the best-scoring `init_width` nodes per depth.                            | 1000          |
+| region_maxlen           | Maximum length of a window that can be analyzed. Larger windows will be split into overlapping fragments. | 5000000   |
+| threads                 | In whole genome / multi-region: regions analysed simultaneously. Single-region: cores for minimap2                                                       | 1             |
+| genome_y_fa_mmi         | Path to pre-indexed assembly genome with minimap2.                                            | 'default'     |
+
+Please adjust these parameters based on your specific requirements and the run mode you are using.
 
 
 # Report Errors
