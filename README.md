@@ -202,7 +202,7 @@ These parameters are applicable across all run modes unless otherwise specified.
 | init_width              | BFS: follow up only the best-scoring `init_width` nodes per depth.                            | 1000          |
 | region_maxlen           | Maximum length of a window that can be analyzed. Larger windows will be split into overlapping fragments. | 5000000   |
 | threads                 | In whole genome / multi-region: regions analysed simultaneously. Single-region: cores for minimap2                                                       | 1             |
-| genome_y_fa_mmi         | Path to pre-indexed assembly genome with minimap2.                                            | 'default'     |
+| asm_fa_mmi         | Path to pre-indexed assembly genome with minimap2. Useful to avoid re-calculating.                                            | 'default'     |
 
 Please adjust these parameters based on your specific requirements and the run mode you are using.
 

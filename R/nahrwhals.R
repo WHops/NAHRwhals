@@ -43,7 +43,7 @@
 #' @param testrun_std Test the NAHRwhals installation [default: FALSE]
 #' @param threads Number of windows to parallel genotype [default: 1]
 #' @param minimap_cores_per_thread Number of cores to give to minimap PER THREAD [default: 1]
-#' @param genome_y_fa_mmi Path to pre-indexed assembly genome with minimap2 [default: "default"]
+#' @param asm_fa_mmi Path to pre-indexed assembly genome with minimap2 [default: "default"]
 #' @return Performs the specified comparative genomics analysis, generating relevant output files and plots.
 #' @export
 #'
@@ -57,7 +57,7 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
                       ref_name = "Fasta_ref", asm_name = "Fasta_asm",
                       use_paf_library = FALSE, conversionpaf_link = FALSE,
                       maxdup = 2, init_width = 1000, region_maxlen = 5000000, testrun_std = FALSE,
-                      threads = 1, genome_y_fa_mmi = "default", blacklist = NULL) {
+                      threads = 1, asm_fa_mmi = "default", blacklist = NULL) {
 
 
                         
@@ -138,11 +138,11 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
         run_silent(paste0("samtools faidx ", asm_fa))
     }
 
-    if (genome_y_fa_mmi == 'default'){
-        genome_y_fa_mmi = paste0(outdir,'/minimap_idxs/', basename(asm_fa), '.mmi')
+    if (asm_fa_mmi == 'default'){
+        asm_fa_mmi = paste0(outdir,'/minimap_idxs/', basename(asm_fa), '.mmi')
     }
 
-    create_mmi_if_doesnt_exists(asm_fa, genome_y_fa_mmi)
+    create_mmi_if_doesnt_exists(asm_fa, asm_fa_mmi)
 
 
     if (NW_mode == 'whole-genome'){
@@ -189,7 +189,7 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
             tryCatch({
 
                 nahrwhals_singlerun(genome_x_fa=ref_fa, genome_y_fa=asm_fa, seqname_x=seqname_x, start_x=start_x, end_x=end_x, outdir=outdir,
-                              genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=ref_name, 
+                              genome_y_fa_mmi=asm_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=ref_name, 
                               samplename_y=asm_name, compare_full_fastas=compare_full_fastas, plot_only=plot_only, 
                               self_plots=self_plots, plot_xy_segmented=plot_xy_segmented, eval_th=eval_th, depth=depth, 
                               chunklen=chunklen, minlen=minlen, compression=compression, max_size_col_plus_rows=max_size_col_plus_rows, 
@@ -228,14 +228,15 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
 
         # Check if any region is longer than region_maxlen
         if (any(regions_to_genotype_df$end - regions_to_genotype_df$start > region_maxlen)){
-            regions_to_genotype_df = split_regions(regions_to_genotype_df, region_maxlen, region_maxlen/2)
             print('Some regions were longer than region_maxlen. They were split into smaller regions.')
+            regions_to_genotype_df = split_genotype_windows_above_max_size(regions_to_genotype_df, region_maxlen, region_maxlen/2)
         }
 
         print(paste0('Running nahrwhals on ', nrow(regions_to_genotype_df), ' regions.'))
         print(regions_to_genotype_df)
 
         # Prepare parallel runs
+        print(threads)
         suppressMessages(suppressWarnings({cl <- parallel::makeCluster(min(threads,nrow(regions_to_genotype_df)), outfile = "")}))
         suppressMessages(suppressWarnings({registerDoParallel(cl)}))
 
@@ -258,7 +259,7 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
             tryCatch({
                 # This will fail but the error is caught and not printed
                 nahrwhals_singlerun(genome_x_fa=ref_fa, genome_y_fa=asm_fa, seqname_x=seqname_x, start_x=start_x, end_x=end_x, outdir=outdir,
-                              genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=ref_name, 
+                              genome_y_fa_mmi=asm_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=ref_name, 
                               samplename_y=asm_name, compare_full_fastas=compare_full_fastas, plot_only=plot_only, 
                               self_plots=self_plots, plot_xy_segmented=plot_xy_segmented, eval_th=eval_th, depth=depth, 
                               chunklen=chunklen, minlen=minlen, compression=compression, max_size_col_plus_rows=max_size_col_plus_rows, 
@@ -289,7 +290,7 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
         }   
 
         stopCluster(cl)
-        close(pb)
+        message('Finished running nahrwhals on all regions.')
 
         tsv_to_bed_regional_dominance(logfile, res_bedfile)
 
@@ -302,7 +303,7 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
         end_x=as.numeric(region[3])
 
         try(nahrwhals_singlerun(genome_x_fa=ref_fa, genome_y_fa=asm_fa, seqname_x=seqname_x, start_x=start_x, end_x=end_x, outdir=outdir,
-                    genome_y_fa_mmi=genome_y_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=ref_name, 
+                    genome_y_fa_mmi=asm_fa_mmi, anntrack=anntrack, logfile=logfile, samplename_x=ref_name, 
                     samplename_y=asm_name, compare_full_fastas=compare_full_fastas, plot_only=plot_only, 
                     self_plots=self_plots, plot_xy_segmented=plot_xy_segmented, eval_th=eval_th, depth=depth, 
                     chunklen=chunklen, minlen=minlen, compression=compression, max_size_col_plus_rows=max_size_col_plus_rows, 
