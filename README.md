@@ -1,5 +1,3 @@
-# <span style="color: red"> [April 8th, 2024] NAHRwhals is currently undergoing re-factoring. Please do not use! NAHRwhals will be back available on April 10th.  </span> 
-
 <img src="https://github.com/WHops/NAHRwhals/blob/main/NAHRwhals.png?raw=true">
 
 
