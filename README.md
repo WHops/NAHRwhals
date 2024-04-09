@@ -139,7 +139,7 @@ This PDF contains seven plots that document the NAHRwhals run:
 
 
 
-Figures and results from the NAHRwhals manuscript can be replicated by querying coordinates of interest (see supp. Tables) on a reference (parameter: genome_x_fa) against assembly fastas (parameter: genome_y_fa) (see https://doi.org/10.5281/zenodo.7635935). Note the use of T2T as reference. 
+Figures and results from the NAHRwhals manuscript can be replicated by querying coordinates of interest (see supp. Tables and https://doi.org/10.5281/zenodo.7635935). Note the use of T2T as reference. 
 
 
 # Run Modes and Required Parameters
