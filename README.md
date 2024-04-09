@@ -54,7 +54,7 @@ R
 
 # Usage
 
-1) Provide region=chr:start-end coordinates to genotype single region
+1) Provide region=chr:start-end coordinates to genotype a single region
 ```
 R
 > library(nahrwhals)
@@ -62,10 +62,10 @@ R
             asm_fa = 'asm.fa,
             region = 'chr:start-end',
             outdir = 'res',
-            minimap_cores = 8)
+            threads = 8)
 ```
 
-2) Provide regionsfile to coordinate multiple regions at once
+2) Provide a regions.bedfile to genotype multiple regions at once
 ```
 R
 > library(nahrwhals)
@@ -76,7 +76,9 @@ R
             threads = 8)
 ```
 
-3) Provide no region coordinates to invoke whole genome discovery mode. If ref.fa is human (or comparably complex), you must provide a blacklist bed file to skip centromeres and acrocentric chromsome arms. Tracks for hg38 and t2t are included in the package.
+3) Provide no region coordinates to invoke whole genome discovery mode. If ref.fa is human (or comparably complex), you must provide a blacklist bed file to skip centromeres and acrocentric chromsome arms. Tracks for hg38 and t2t are included in the package. Resources: ~1h using 16cpus, max-memory usage ~40Gb.
+
+
 ```
 R
 > library(nahrwhals)
@@ -86,6 +88,8 @@ R
             blacklist = system.file("extdata", "blacklists", "t2t_blacklist.bed", package = "nahrwhals"),
             threads = 8)
 ```
+
+
 
 ## Postprocessing 
 Modes 2 and 3 automatically invoke post-processing of the nahrwhals_res.tsv file. This can be also done post-hoc on any res.tsv:
@@ -153,27 +157,26 @@ These parameters are applicable across all run modes unless otherwise specified.
 | outdir        | Path to desired output directory                   | './res' |
 
 
-## Whole-genome Mode
+## Mode-dependent required Parameters
+### Single-region Mode
 
-- **Required Parameters:**
-  - `ref_fa`: Path to the reference genome FASTA file.
-  - `asm_fa`: Path to the assembly genome FASTA file for comparison.
-- **Optional but Recommended for Human Assemblies:**
-  - `blacklist`: Path to a blacklist file to exclude specific regions (e.g., centromeres) during analysis.
+| Variable name | Description                                 | Default value |
+|---------------|---------------------------------------------|---------------|
+| region        | reference coordinates to genotype                   | - |
 
-## Multi-region Mode
 
-- **Required Parameters:**
-  - `ref_fa`: Path to the reference genome FASTA file.
-  - `asm_fa`: Path to the assembly genome FASTA file for comparison.
-  - `regionfile`: Path to a file listing regions to genotype in BED format.
+### Multi-region Mode
 
-## Single-region Mode
+| Variable name | Description                                 | Default value |
+|---------------|---------------------------------------------|---------------|
+| regionfile        | path to a bedfile with reference coords to genotype                 | - |
 
-- **Required Parameters:**
-  - `ref_fa`: Path to the reference genome FASTA file.
-  - `asm_fa`: Path to the assembly genome FASTA file for comparison.
-  - `region`: Specific region to genotype, formatted as "chr:start-end".
+### Whole-genome Mode
+
+| Variable name | Description                                 | Default value |
+|---------------|---------------------------------------------|---------------|
+| blacklist        | path to a blacklist bedfile of centromeres and acrocentric chr arms to skip. Required to avoid explosion of runtimes in human genomes.                  | - |
+
 
 # Optional Parameters
 
