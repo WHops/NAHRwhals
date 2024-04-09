@@ -67,13 +67,13 @@ R
             minimap_cores = 8)
 ```
 
-2) Provide regions_file to coordinate multiple regions at once
+2) Provide regionsfile to coordinate multiple regions at once
 ```
 R
 > library(nahrwhals)
 > nahrwhals(ref_fa = 'ref.fa', 
             asm_fa = 'asm.fa,
-            regions_file = 'regions.bed',
+            regionfile = 'regions.bed',
             outdir = 'res',
             threads = 8)
 ```
@@ -89,11 +89,15 @@ R
             threads = 8)
 ```
 
-
+## Postprocessing 
+Modes 2 and 3 automatically invoke post-processing of the nahrwhals_res.tsv file. This can be also done post-hoc on any res.tsv:
+```
+> nahrwhals::tsv_to_bed_regional_dominance('/your/nahrwhals.tsv', '/output/nahrwhals.bed')
+```
 
 # Output
 
-Key results in the .res folder are:
+Key results in the outdir folder are:
 
 ## 1. **res/res.tsv**: The SV call output file.
 
@@ -204,8 +208,6 @@ These parameters are applicable across all run modes unless otherwise specified.
 | threads                 | In whole genome / multi-region: regions analysed simultaneously. Single-region: cores for minimap2                                                       | 1             |
 | asm_fa_mmi         | Path to pre-indexed assembly genome with minimap2. Useful to avoid re-calculating.                                            | 'default'     |
 
-Please adjust these parameters based on your specific requirements and the run mode you are using.
-
 
 # Report Errors
 
@@ -213,7 +215,7 @@ Please help improve the code by [reporting](https://github.com/WHops/nahrchainer
 
 # Citation
 
-For more information on how NAHRwhals, check out our [preprint](https://www.biorxiv.org/content/10.1101/2023.03.09.531868v1)!
+For more information about NAHRwhals, check out our [preprint](https://www.biorxiv.org/content/10.1101/2023.03.09.531868v1)!
 
 
 # Correspondence

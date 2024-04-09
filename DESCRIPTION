@@ -1,6 +1,6 @@
 Package: nahrwhals
 Title: Toolset for detection of Repeat-associated SVs from assembly data
-Version: 1.2
+Version: 1.4
 Authors@R: 
     person(given = "Wolfram ",
            family = "Hops",
