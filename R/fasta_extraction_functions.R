@@ -25,17 +25,37 @@ extract_subseq_bedtools <- function(infasta, seqname, start, end, outfasta, para
   tmp_seq_length_file <- paste0("seq_length_", random_tag, ".txt")
   
   # Get sequence lengths using bedtools faidx and store in a temporary file
-  #run_silent(paste0("samtools faidx ", infasta))
+
+  # If infasta.fai does not exist...
+  #
+  
+  # Check if the .fai file exists
+  fai_file <- paste0(infasta, ".fai")
+
+  if (!file.exists(fai_file)) {
+    run_silent(paste0("samtools faidx ", infasta))
+    if (!file.exists(fai_file)){
+      stop(paste0("Error: Fasta index file ", fai_file, " is missing but could not be created (no writing permissions?)"))
+    }
+  } else {
+    # Check if the .fai file is empty
+    if (file.size(fai_file) == 0) {
+      stop(paste0("Error: Fasta index file ", fai_file, " is empty. Please delete and/or recreate the file."))
+    } 
+  }
+    
   run_silent(paste0("cut -f1,2 ", infasta, ".fai > ", tmp_seq_length_file))
   # Read the sequence lengths into R
   seq_lengths <- read.table(tmp_seq_length_file, stringsAsFactors = FALSE, col.names = c("seqname", "length"))
   
   # Adjust the 'end' position if it exceeds the contig length
+
   contig_length <- seq_lengths[seq_lengths$seqname == seqname, "length"]
   if (!is.na(contig_length) && contig_length < end) {
     end <- contig_length
   }
   
+  print("THAT WORKED")
   # Write coordinates into the temporary BED file. Make sure to write out numbers in non-scientific
   write.table(data.frame(seqname, start, end), file = tmp_bedfile, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
   
