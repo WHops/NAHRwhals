@@ -124,7 +124,11 @@ extract_test_list_from_paf <- function(all_vs_all_paf, out_dir, out_file, genome
     wg_run_all_script = system.file('extdata', 'scripts', 'scripts_whole_genome', 'wg_run_all.sh', package='nahrwhals')
     bedtools_bin = 'bedtools'
 
+    if (is.null(exclusion_mask)){
+        exclusion_mask = 'none'
+    }
     command = paste0('bash ',wg_run_all_script, ' ', all_vs_all_paf, ' ', out_dir, ' ', out_file, ' ', genome_path, ' ', bedtools_bin, ' ', merge_distance, ' ', indel_ignore_distance, ' ', exclusion_mask, ' ', bashscripts_base)
+
     system(command)
 
     # Inform the user

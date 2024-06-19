@@ -57,7 +57,7 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
                       ref_name = "Fasta_ref", asm_name = "Fasta_asm",
                       use_paf_library = FALSE, conversionpaf_link = FALSE,
                       maxdup = 2, init_width = 1000, region_maxlen = 5000000, testrun_std = FALSE,
-                      threads = 1, asm_fa_mmi = "default", blacklist = NULL) {
+                      threads = 1, asm_fa_mmi = "default", blacklist = 'none') {
 
 
                         
@@ -148,7 +148,7 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
     if (NW_mode == 'whole-genome'){
 
         # If blacklist is not provided, warn the user that this is necessary for whole genomes with centromeres, such as humans.
-        if (is.null(blacklist)){
+        if (blacklist=='none'){
             message('Warning: Whole Genome mode selected, but no blacklist was provided. If you are analysing large complex genomes (e.g. human), as mask for centromeres is required.')
         }
 
