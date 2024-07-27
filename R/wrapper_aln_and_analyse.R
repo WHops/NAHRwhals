@@ -35,8 +35,11 @@ wrapper_aln_and_analyse <- function(params) {
   # Define output files
   outlinks <- define_output_files(sequence_name_output, paste0(params$samplename_x, "_", params$samplename_y))
   while(!is.null(dev.list())){dev.off()}
+
+  # start a pdf
   pdf(file = outlinks$outpdf_main)
 
+  
 
   # Print only if params$silent is FALSE
   if (!params$silent) {
@@ -61,6 +64,8 @@ wrapper_aln_and_analyse <- function(params) {
       res_empty <- data.frame(eval = 0, mut1 = "ref")
       res_empty <- annotate_res_out_with_positions_lens(res_empty, NULL)
       write_results(res_empty, outlinks, params)
+      while(!is.null(dev.list())){dev.off()}
+
       return()
     }
     chr_start_end_pad_params <- extract_sequence_wrapper(params, outlinks)
@@ -69,6 +74,8 @@ wrapper_aln_and_analyse <- function(params) {
       res_empty <- data.frame(eval = 0, mut1 = "ref")
       res_empty <- annotate_res_out_with_positions_lens(res_empty, NULL)
       write_results(res_empty, outlinks, params)
+      while(!is.null(dev.list())){dev.off()}
+
       return()
     }
     chr_start_end_pad <- chr_start_end_pad_params[[1]]
@@ -79,6 +86,8 @@ wrapper_aln_and_analyse <- function(params) {
   if (log_collection$cluttered_boundaries == T){
     write_results(data.frame(), outlinks, params)
     log_collection <<- init_log_with_def_values()
+    while(!is.null(dev.list())){dev.off()}
+
     return('EARLY FINISH!')
   }
 
@@ -94,6 +103,8 @@ wrapper_aln_and_analyse <- function(params) {
     if (params$clean_after_yourself) {
       clean_after_yourself(outlinks)
     }
+
+    while(!is.null(dev.list())){dev.off()}
     return()
   }
 
@@ -107,6 +118,8 @@ wrapper_aln_and_analyse <- function(params) {
     res_empty <- annotate_res_out_with_positions_lens(res_empty, NULL)
 
     write_results(res_empty, outlinks, params)
+    while(!is.null(dev.list())){dev.off()}
+
     return()
   }
 
@@ -121,6 +134,7 @@ wrapper_aln_and_analyse <- function(params) {
     res_empty <- data.frame(eval = 0, mut1 = "ref")
     res_empty <- annotate_res_out_with_positions_lens(res_empty, NULL)
     write_results(res_empty, outlinks, params)
+    while(!is.null(dev.list())){dev.off()}
 
     return()
   } else {
@@ -152,6 +166,8 @@ wrapper_aln_and_analyse <- function(params) {
     res_empty <- data.frame(eval = 0, mut1 = "ref")
     res_empty <- annotate_res_out_with_positions_lens(res_empty, NULL)
     write_results(res_empty, outlinks, params)
+    while(!is.null(dev.list())){dev.off()}
+
     return()
   }
   if (!params$silent) {
@@ -178,8 +194,11 @@ wrapper_aln_and_analyse <- function(params) {
 
 
   make_modified_grid_plot(res, gridmatrix, outlinks)
-  Sys.sleep(2)  # Step 5: Save
+
+  Sys.sleep(1)  
+  # Step 5: Save
   write_results(res, outlinks, params)
+  while(!is.null(dev.list())){dev.off()}
 
 }
 

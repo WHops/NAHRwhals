@@ -50,6 +50,12 @@ Confirm the installation with a testrun (producing output files and plots in the
 R
 > library(nahrwhals)
 > nahrwhals(testrun_std=T)
+
+(This is equivalent to running the following command)
+> nahrwhals(ref_fa = 'inst/extdata/assemblies/hg38_partial.fa', 
+            asm_fa = 'inst/extdata/assemblies/assembly_partial.fa', 
+            anntrack='inst/extdata/assemblies/hg38_partial_genes.bed',
+            region='chr1_partial:1700000-3300000')
 ```
 
 # Usage

@@ -87,8 +87,8 @@ nahrwhals <- function(ref_fa='default', asm_fa='default', outdir='res', region=N
         ref_fa <- system.file("extdata/assemblies", "hg38_partial.fa", package = "nahrwhals")
         asm_fa <- system.file("extdata/assemblies", "assembly_partial.fa", package = "nahrwhals")
         region <- "chr1_partial:1700000-3300000"
-
-        message(paste0('Running a testmode with parameters: ref_fa=', ref_fa, ', asm_fa=', asm_fa, ', region=', region))
+        anntrack <- system.file("extdata/assemblies", "hg38_partial_genes.bed", package = "nahrwhals")
+        message(paste0('Running a testmode with parameters: ref_fa=', ref_fa, ', asm_fa=', asm_fa, ', region=', region, ', anntrack=', anntrack))
     } 
 
 
