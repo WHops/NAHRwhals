@@ -64,7 +64,7 @@ R
 > library(nahrwhals)
 > nahrwhals(testrun_std=T)
 
-(The latter is equivalent to running te following command)
+(The latter is equivalent to running the following command:)
 > nahrwhals(ref_fa = 'inst/extdata/assemblies/hg38_partial.fa', 
             asm_fa = 'inst/extdata/assemblies/assembly_partial.fa', 
             anntrack='inst/extdata/assemblies/hg38_partial_genes.bed',
