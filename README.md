@@ -23,7 +23,21 @@ cd NAHRwhals
 ```
 ### (2) Install dependencies
  
-We recommend using mamba to install dependencies:
+We recommend using mamba to install dependencies.
+
+#### For Mac Silicon (M1, M2, M3) Users: 
+```
+conda config --set channel_priority flexible
+export CONDA_SUBDIR=osx-64
+mamba env create --file env_nahrwhals.yml
+conda activate nahrwhals
+
+julia -e 'using Pkg; Pkg.add("DelimitedFiles"); Pkg.add("ProgressMeter"); Pkg.add("ArgParse")'
+unset CONDA_SUBDIR
+```
+
+
+#### For all other users:
 
 ```
 conda config --set channel_priority flexible
@@ -32,7 +46,6 @@ conda activate nahrwhals
 
 julia -e 'using Pkg; Pkg.add("DelimitedFiles"); Pkg.add("ProgressMeter"); Pkg.add("ArgParse")'
 ```
-
 
 ### (3) Install NAHRwhals
 
@@ -51,7 +64,7 @@ R
 > library(nahrwhals)
 > nahrwhals(testrun_std=T)
 
-(This is equivalent to running the following command)
+(The latter is equivalent to running te following command)
 > nahrwhals(ref_fa = 'inst/extdata/assemblies/hg38_partial.fa', 
             asm_fa = 'inst/extdata/assemblies/assembly_partial.fa', 
             anntrack='inst/extdata/assemblies/hg38_partial_genes.bed',
