@@ -6,7 +6,7 @@ channels:
   - defaults
 dependencies:
   - r-pillar=1.9.0
-  - minimap2
+  - minimap2=2.28
   - bedtools
   - bedops
   - gawk
