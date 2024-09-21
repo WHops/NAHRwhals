@@ -29,11 +29,19 @@ We recommend using mamba to install dependencies.
 ```
 conda config --set channel_priority flexible
 export CONDA_SUBDIR=osx-64
-mamba env create --file env_nahrwhals.yml
+mamba env create --file env_nahrwhals_apple_silicon.yml
 conda activate nahrwhals
-
-julia -e 'using Pkg; Pkg.add("DelimitedFiles"); Pkg.add("ProgressMeter"); Pkg.add("ArgParse")'
 unset CONDA_SUBDIR
+
+# Install Julia manually:
+# Step 1: download a julia .dmg file:
+wget https://julialang-s3.julialang.org/bin/mac/aarch64/1.10/julia-1.10.5-macaarch64.dmg
+# Step 2: install by double clicking and adding to your applications
+# Step 3: update your $PATH in .zshrc or .profile to point to julia: 
+export PATH=/Applications/Julia-1.10.app/Contents/Resources/julia/bin:$PATH
+# Step 4: Install julia packages
+julia -e 'using Pkg; Pkg.add("DelimitedFiles"); Pkg.add("ProgressMeter"); Pkg.add("ArgParse")'
+
 ```
 
 
