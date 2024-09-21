@@ -25,7 +25,7 @@ cd NAHRwhals
  
 We recommend using mamba to install dependencies.
 
-#### For Mac Silicon (M1, M2, M3) Users: 
+#### For Mac Silicon (M1, M2, M3) Users (Untested!): 
 ```
 conda config --set channel_priority flexible
 export CONDA_SUBDIR=osx-64
