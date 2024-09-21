@@ -243,7 +243,7 @@ Please help improve the code by [reporting](https://github.com/WHops/nahrchainer
 
 # Citation
 
-For more information about NAHRwhals, check out our [preprint](https://www.biorxiv.org/content/10.1101/2023.03.09.531868v1)!
+For more information about NAHRwhals, check out our [publication](https://www.nature.com/articles/s41467-024-52027-9)
 
 
 # Correspondence
